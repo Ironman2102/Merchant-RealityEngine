@@ -15,7 +15,7 @@ The project has three connected experiences:
 
 Use `./start.sh` to start the web app (Node.js 20+). To run the separate offline Python prototype, install its dependencies with `python3 -m pip install -r prototype/requirements.txt` and run `./start.sh prototype`.
 
-for chaman chelesani ( windows user ) :
+for windows user :
 
 Requires Node.js 20 or later.
 
