@@ -27,7 +27,7 @@ npm run preview    # serve the production build
 npm run selftest   # run the engines on all four scenarios and print results
 ```
 
-No API keys, accounts or network services are needed.
+No API keys or accounts are needed. The guided demo runs in the browser. Analyze sends the dataset to the investigation API in `api-src/`.
 
 ## Routes
 
@@ -41,7 +41,7 @@ No API keys, accounts or network services are needed.
 | `/demo/merchant`, `/demo/graph`, `/demo/detection`, `/demo/patterns` | Demo merchant profile and evidence views |
 | `/demo/analyst`, `/demo/response`, `/demo/audit` | Simulated analyst review, response and audit |
 | `/ai-engine` | Empty workspace before a user dataset is analyzed; latest uploaded result afterward |
-| `/ai-engine/analyze` | Upload a merchant dataset and run the seven-layer analysis in the browser |
+| `/ai-engine/analyze` | Upload a merchant dataset. The API in `api-src/` runs layers 1–5 and stores the case |
 | `/ai-engine/portfolio` | The single latest uploaded analysis; empty before the first run |
 | `/ai-engine/investigations`, `/ai-engine/merchant`, `/ai-engine/graph`, `/ai-engine/detection`, `/ai-engine/patterns` | Findings for the latest uploaded dataset only; require a completed run |
 | `/ai-engine/analyst`, `/ai-engine/response`, `/ai-engine/audit` | Review and action tools scoped to the latest uploaded dataset only |
@@ -57,7 +57,7 @@ The old `/demo/upload` link redirects to `/ai-engine/analyze`. The demo's four-m
 | Fabricated commercial substance | Online store that cannot substantiate sales | Case opened on four independent families; outcome stays unresolved |
 | Legitimate Diwali growth | Real 3× festival surge | **No case opened.** The volume alarm is explained |
 
-The demo and AI Engine use separate state. Demo pages show only their four built-in merchants. The AI Engine displays no demo merchants or sample datasets; it waits for a user JSON upload and runs that dataset through the browser seven-layer pipeline. Only the latest upload is kept while the workspace is open. The optional Python prototype uses its own committed synthetic CSV dataset and runs offline; its report is not served by the web app.
+The demo and AI Engine use separate state. Demo pages show only their four built-in merchants. The AI Engine displays no demo merchants or sample datasets; it waits for a user JSON upload and sends that file to the investigation API. Only the latest upload is kept while the workspace is open. The optional Python prototype uses its own committed synthetic CSV dataset and runs offline; its report is not served by the web app.
 
 ## How it works in brief
 
@@ -85,7 +85,9 @@ frontend/
     styles/
     types/
     utils/
-backend/        reserved for a future API
+api-src/        investigation API: routes, seven-layer run, case store
+api/            Vercel adapter only. Read api-src/ for the API
+backend/        pointer to api-src/
 docs/           project and data documentation
 prototype/      separate offline Python experiment and generated output
 scripts/        sample export and engine self-test
