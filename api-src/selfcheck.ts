@@ -16,6 +16,7 @@ assert.equal(steps[5].state, 'waiting');
 assert.equal(steps[6].state, 'waiting');
 assert.equal((opened.body.result as { decision: string }).decision, 'OPEN_CASE');
 
+
 const id = opened.body.id as string;
 const noted = reviewInvestigation(id, { notes: 'Collections do not match a bakery.' });
 assert.match((noted.body.workflow as { summary: string }[])[4].summary, /bakery/);
