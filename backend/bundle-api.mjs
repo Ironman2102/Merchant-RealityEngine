@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
 await build({
-  entryPoints: [join(root, 'http.ts')],
+  entryPoints: [join(root, 'src', 'http.ts')],
   bundle: true,
   platform: 'node',
   format: 'esm',

@@ -190,6 +190,7 @@ export function UploadPage() {
               </li>
             ))}
           </ol>
+          <div className="mt-4 border-t border-line pt-3"><Link to={`/ai-engine/cases/${encodeURIComponent(serverCase.id)}`} className="text-sm text-zinc-300 hover:text-white">Open persistent case workspace →</Link></div>
           {serverError && <div className="mt-3 flex gap-2 text-sm text-neutral-300"><X size={15} className="mt-0.5 shrink-0" />{serverError}</div>}
           {serverCase.workflow[5]?.state !== 'done' && (
             <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4 text-sm">

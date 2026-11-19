@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { getInvestigation, labelInvestigation, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
+import { getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
 
 const LIMIT = 2_000_000;
 
@@ -38,6 +38,9 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
   try {
     const pathname = new URL(req.url || '/', 'http://localhost').pathname.replace(/\/+$/, '') || '/';
     const path = pathname.replace(/^\/api/, '') || '/';
+    if (path === '/health' && (req.method || 'GET') === 'GET') {
+      return send(res, { status: 200, body: { status: 'ok', service: 'merchant-reality-engine-api', storage: process.env.MRE_CASE_STORE === 'memory' ? 'memory' : 'local-json', liveConnectors: 0 } });
+    }
     const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|label))?)?$/);
     const method = req.method || 'GET';
     if (!match) return send(res, { status: 404, body: { error: 'Unknown investigation route.' } });
@@ -46,7 +49,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (!id) {
       if (method === 'GET') {
         const caseId = url.searchParams.get('id');
-        return send(res, caseId ? getInvestigation(caseId) : { status: 400, body: { error: 'Pass the case id.' } });
+        return send(res, caseId ? getInvestigation(caseId) : listInvestigations());
       }
       if (method !== 'POST') return send(res, { status: 405, body: { error: 'POST a dataset to open a case.' } });
       const body = await readBody(req);

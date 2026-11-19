@@ -1,6 +1,6 @@
 /**
  * L3 detector library. Each detector is a small, transparent function of the event store, profile and coverage.
- * The prototype implements 21 of the 112 designed patterns; the rest are catalogued in data/evidence.ts.
+ * The prototype implements 20 of the 112 designed patterns; the rest are catalogued in data/evidence.ts.
  */
 import type { MerchantProfile, Scenario, CoverageKey } from '../types/merchant';
 import type { PaymentEvent } from '../types/payment';

@@ -1,12 +1,11 @@
 import { randomBytes } from 'node:crypto';
-import { datasetToScenario } from '../frontend/src/data/dataset';
-import { LAYERS, MECHANISMS } from '../frontend/src/data/evidence';
-import { runInvestigation } from '../frontend/src/engines/investigationEngine';
-import { profileUpdates, reliabilityUpdates } from '../frontend/src/engines/learningEngine';
-import { actionLog, planResponse } from '../frontend/src/engines/responseEngine';
-import type { ResponseLevel } from '../frontend/src/types/investigation';
-import type { Label } from '../frontend/src/types/merchant';
-import { emptyUser, getCase, putCase, readUser, type CaseRecord } from './store';
+import { LAYERS, MECHANISMS } from '../../frontend/src/data/evidence';
+import { profileUpdates, reliabilityUpdates } from '../../frontend/src/engines/learningEngine';
+import { actionLog, planResponse } from '../../frontend/src/engines/responseEngine';
+import type { ResponseLevel } from '../../frontend/src/types/investigation';
+import type { Label } from '../../frontend/src/types/merchant';
+import { emptyUser, getCase, listCases, putCase, readUser, type CaseRecord } from './store';
+import { analyzeDataset, ENGINE_VERSION } from './algorithms/analyze';
 
 export interface ApiReply { status: number; body: Record<string, unknown> }
 
@@ -49,6 +48,7 @@ function view(rec: CaseRecord): ApiReply {
     body: {
       id: rec.id,
       createdAt: rec.createdAt,
+      engineVersion: rec.engineVersion ?? ENGINE_VERSION,
       merchant: { id: result.scenario.profile.id, name: result.scenario.profile.name, category: result.scenario.profile.category, city: result.scenario.profile.city },
       workflow: LAYERS.map((layer, i) => ({ layer: layer.n, code: layer.code, name: layer.name, state: state[i], summary: steps[i] })),
       result: {
@@ -61,6 +61,12 @@ function view(rec: CaseRecord): ApiReply {
         topMechanism: mechanism,
         evidence: { illicit: n('ILLICIT'), benign: n('BENIGN'), unknown: n('UNKNOWN') },
       },
+      coverage: result.l1.sources.map(source => ({ name: source.name, state: source.state, records: source.records, note: source.note })),
+      evidenceItems: result.evidence.map(item => ({
+        id: item.id, name: item.name, family: item.family, status: item.status,
+        observed: item.observed, expected: item.expected, explanation: item.explanation,
+        metrics: item.metrics, sourceRecordIds: item.records,
+      })),
       user: { notes: user.notes, clarification: user.clarification, chosenLevel: user.chosenLevel, legalVerified: user.legalVerified, escrowConfirmed: user.escrowConfirmed, executed: user.executed, label: user.label },
       response: rec.response,
       learning: rec.learning,
@@ -83,10 +89,10 @@ function ensure(id: string, body: unknown): CaseRecord | ApiReply {
 }
 
 export function openInvestigation(raw: unknown, id = `INV-${randomBytes(4).toString('hex')}`): ApiReply {
-  const parsed = datasetToScenario(raw);
-  if (!parsed.ok || !parsed.scenario) return fail(400, parsed.errors.join(' ') || 'Dataset could not be read.');
+  const analysis = analyzeDataset(raw);
+  if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
   const rec: CaseRecord = {
-    id, createdAt: new Date().toISOString(), dataset: raw, result: runInvestigation(parsed.scenario),
+    id, createdAt: new Date().toISOString(), engineVersion: analysis.engineVersion, dataset: raw, result: analysis.result,
     user: emptyUser(), response: null, learning: null,
   };
   putCase(rec);
@@ -96,6 +102,22 @@ export function openInvestigation(raw: unknown, id = `INV-${randomBytes(4).toStr
 export function getInvestigation(id: string): ApiReply {
   const rec = getCase(id);
   return rec ? view(rec) : fail(404, 'No case with that id.');
+}
+
+export function listInvestigations(): ApiReply {
+  return {
+    status: 200,
+    body: {
+      cases: listCases().map(rec => ({
+        id: rec.id,
+        createdAt: rec.createdAt,
+        merchant: { id: rec.result.scenario.profile.id, name: rec.result.scenario.profile.name, category: rec.result.scenario.profile.category, city: rec.result.scenario.profile.city },
+        result: { decision: rec.result.fusion.decision, priority: rec.result.fusion.priority, recommended: rec.result.review.recommended, legitStatus: rec.result.review.legitStatus },
+        user: { executed: rec.user.executed, label: rec.user.label },
+        workflow: view(rec).body.workflow,
+      })),
+    },
+  };
 }
 
 export function reviewInvestigation(id: string, body: unknown): ApiReply {

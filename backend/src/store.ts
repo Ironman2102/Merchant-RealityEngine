@@ -1,14 +1,15 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { InvestigationResult, ResponseLevel, UserState } from '../frontend/src/types/investigation';
-import type { Label } from '../frontend/src/types/merchant';
-import type { ResponsePlan } from '../frontend/src/engines/responseEngine';
-import type { ReliabilityUpdate } from '../frontend/src/engines/learningEngine';
+import type { InvestigationResult, ResponseLevel, UserState } from '../../frontend/src/types/investigation';
+import type { Label } from '../../frontend/src/types/merchant';
+import type { ResponsePlan } from '../../frontend/src/engines/responseEngine';
+import type { ReliabilityUpdate } from '../../frontend/src/engines/learningEngine';
 
 export interface CaseRecord {
   id: string;
   createdAt: string;
+  engineVersion?: string;
   dataset: unknown;
   result: InvestigationResult;
   user: UserState;
@@ -16,7 +17,7 @@ export interface CaseRecord {
   learning: { updates: ReliabilityUpdate[]; profile: string[] } | null;
 }
 
-// ponytail: one process plus a JSON file (or /tmp on Vercel). A second machine will not see these cases. Upgrade path is a database keyed by case id.
+// Local development store. Replace with a shared database adapter before a multi-user pilot.
 const mem = new Map<string, CaseRecord>();
 
 function dir(): string | null {
@@ -35,7 +36,26 @@ export function putCase(rec: CaseRecord): void {
   const file = fileFor(rec.id);
   if (!file) return;
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, JSON.stringify(rec));
+  const temporary = `${file}.${process.pid}.tmp`;
+  writeFileSync(temporary, JSON.stringify(rec), { mode: 0o600 });
+  renameSync(temporary, file);
+}
+
+export function listCases(): CaseRecord[] {
+  const root = dir();
+  if (!root) return [...mem.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  mkdirSync(root, { recursive: true });
+  const records = new Map<string, CaseRecord>([...mem.values()].map(rec => [rec.id, rec]));
+  for (const name of readdirSync(root)) {
+    if (!name.endsWith('.json')) continue;
+    try {
+      const rec = JSON.parse(readFileSync(join(root, name), 'utf8')) as CaseRecord;
+      if (rec && typeof rec.id === 'string' && rec.result) records.set(rec.id, rec);
+    } catch {
+      // Ignore a damaged case file in the list; individual case retrieval reports it as unavailable.
+    }
+  }
+  return [...records.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export function getCase(id: string): CaseRecord | undefined {

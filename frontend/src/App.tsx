@@ -18,6 +18,7 @@ import { PatternsPage } from './pages/PatternsPage';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { CasePage } from './pages/CasePage';
 import { AIEnginePage } from './pages/AIEnginePage';
+import { ServerCasePage } from './pages/ServerCasePage';
 import { PortfolioProvider } from './hooks/usePortfolio';
 import { InvestigationProvider, useInvestigation } from './hooks/useInvestigation';
 import { EngineShell } from './components/navigation/EngineShell';
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/ai-engine" element={<EngineShell />}>
             <Route index element={<AIEnginePage />} />
             <Route path="analyze" element={<UploadPage />} />
+            <Route path="cases/:id" element={<ServerCasePage />} />
             <Route path="portfolio" element={<PortfolioPage />} />
             <Route element={<RequireUserDataset />}>
               <Route path="portfolio/:key" element={<CasePage />} />

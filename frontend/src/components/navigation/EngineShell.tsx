@@ -29,7 +29,7 @@ export function EngineShell() {
       <div className="flex min-h-screen bg-bg">
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel/60 lg:flex">
           <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="AI Engine">{nav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex items-center gap-2.5 rounded px-3 py-2 text-sm transition-colors', isActive ? 'bg-zinc-400/10 text-zinc-200' : 'text-mute hover:bg-panel2 hover:text-ink')}><n.icon size={16} />{n.label}</NavLink>)}</nav>
-          <div className="border-t border-line p-4 text-xs text-dim">Only the dataset you choose is analyzed. Processing stays in this browser.</div>
+          <div className="border-t border-line p-4 text-xs text-dim">Uploads are analyzed by the local backend. No partner data connectors are configured.</div>
         </aside>
         <div className="min-w-0 flex-1">
           <main className="mx-auto max-w-[1280px] space-y-6 px-5 py-6">

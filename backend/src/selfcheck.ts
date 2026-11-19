@@ -4,8 +4,8 @@ import { labelInvestigation, openInvestigation, respondInvestigation, reviewInve
 
 process.env.MRE_CASE_STORE = 'memory';
 
-const sweet = JSON.parse(readFileSync(new URL('../frontend/public/samples/01-sweet-crumbs-betting-front.json', import.meta.url), 'utf8'));
-const diwali = JSON.parse(readFileSync(new URL('../frontend/public/samples/04-anand-sweets-diwali-genuine.json', import.meta.url), 'utf8'));
+const sweet = JSON.parse(readFileSync(new URL('../../frontend/public/samples/01-sweet-crumbs-betting-front.json', import.meta.url), 'utf8'));
+const diwali = JSON.parse(readFileSync(new URL('../../frontend/public/samples/04-anand-sweets-diwali-genuine.json', import.meta.url), 'utf8'));
 
 const opened = openInvestigation(sweet);
 assert.equal(opened.status, 200);
