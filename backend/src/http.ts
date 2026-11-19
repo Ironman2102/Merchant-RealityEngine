@@ -3,6 +3,15 @@ import { getInvestigation, labelInvestigation, listInvestigations, openInvestiga
 
 const LIMIT = 2_000_000;
 
+/** Per-client token bucket: 60 requests per minute. ponytail: in-memory, per process; move to a shared store with >1 API process. */
+const buckets = new Map<string, { tokens: number; at: number }>();
+function allowed(req: IncomingMessage, now = Date.now()): boolean {
+  const k = req.socket.remoteAddress ?? 'local', b = buckets.get(k) ?? { tokens: 60, at: now };
+  b.tokens = Math.min(60, b.tokens + ((now - b.at) / 60000) * 60); b.at = now;
+  if (b.tokens < 1) { buckets.set(k, b); return false; }
+  b.tokens -= 1; buckets.set(k, b); return true;
+}
+
 async function readBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   let n = 0;
@@ -36,6 +45,7 @@ function send(res: ServerResponse, reply: ApiReply): void {
 /** One router for the local server and the Vercel function. */
 export async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
+    if (!allowed(req)) return send(res, { status: 429, body: { error: 'Too many requests. Try again in a minute.' } });
     const pathname = new URL(req.url || '/', 'http://localhost').pathname.replace(/\/+$/, '') || '/';
     const path = pathname.replace(/^\/api/, '') || '/';
     if (path === '/health' && (req.method || 'GET') === 'GET') {

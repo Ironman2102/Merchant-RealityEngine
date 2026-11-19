@@ -1,0 +1,5 @@
+{
+  "_note": "Undeclared hosts. 'known' = confirmed betting/gambling hosts (load MeitY blocking orders here; the entry below is the synthetic demo host only). A crawler category of 'gambling' counts the same as a known host. 'keywords' = weak host-name hints, used only to raise a lead, never alone.",
+  "known": [{ "host": "stakearena.example", "source": "synthetic demo fixture", "addedOn": "2026-11-19" }],
+  "keywords": ["bet", "satta", "matka", "casino", "exch", "stake", "surewin", "lottery", "teenpatti"]
+}

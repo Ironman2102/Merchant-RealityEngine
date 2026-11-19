@@ -16,6 +16,8 @@ export interface PaymentEvent {
   payerState: string;         // 2-letter state code
   linkedSaleId?: string;      // refund -> original sale
   beneficiaryHash?: string;   // settlement / payout beneficiary
+  payerMobileHash?: string;   // payer's registered mobile, pseudonymised
+  destHolderHash?: string;    // refund / transfer destination account holder, pseudonymised
   channel: Channel;
   linkId?: string;            // payment link used, if any
   orderId?: string | null;    // order feed linkage, if available

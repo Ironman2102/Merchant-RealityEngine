@@ -16,7 +16,7 @@ const LABELS: { id: Label; name: string; blurb: string; tone: Tone }[] = [
 ];
 
 export function L7View() {
-  const { result: r, user, setLabel, audit } = useInvestigation();
+  const { result: r, user, setLabel, audit, custom } = useInvestigation();
   const label = user.label;
   const rel = useMemo(() => (label ? reliabilityUpdates(r.evidence, label) : []), [label, r]);
   const upd = label ? profileUpdates(r, label) : [];
@@ -25,8 +25,8 @@ export function L7View() {
   return (
     <LayerFrame n={7} evidenceCount={audit.length} evidenceLabel="audit entries" summary={label ? <>Case labelled <b className="text-ink">{LABELS.find(l => l.id === label)!.name}</b>. Learning updates are staged below.</> : 'Choose a label to see how this outcome feeds back into detectors and profiles.'}>
       <Panel title="Adjudicated label" subtitle="Simulated adjudication. In production a human or a legal process decides.">
-        <div className="grid gap-3 md:grid-cols-3">{LABELS.map(l => <button key={l.id} onClick={() => setLabel(label === l.id ? null : l.id)} aria-pressed={label === l.id} className={cx('rounded border p-3 text-left transition-colors', label === l.id ? 'border-zinc-400 bg-zinc-400/5' : 'border-line bg-panel2 hover:border-line2')}><div className="flex items-center justify-between"><span className="font-mono text-[12px]">{l.id}</span>{l.id === r.scenario.scriptedLabel && <Badge tone="info">Scripted outcome</Badge>}</div><div className="mt-1 text-[13px] text-mute">{l.blurb}</div></button>)}</div>
-        {!label && <div className="mt-3"><Btn size="sm" onClick={() => setLabel(r.scenario.scriptedLabel)}>Apply the scripted outcome for this scenario</Btn></div>}
+        <div className="grid gap-3 md:grid-cols-3">{LABELS.map(l => <button key={l.id} onClick={() => setLabel(label === l.id ? null : l.id)} aria-pressed={label === l.id} className={cx('rounded border p-3 text-left transition-colors', label === l.id ? 'border-zinc-400 bg-zinc-400/5' : 'border-line bg-panel2 hover:border-line2')}><div className="flex items-center justify-between"><span className="font-mono text-[12px]">{l.id}</span>{!custom && l.id === r.scenario.scriptedLabel && <Badge tone="info">Scripted outcome</Badge>}</div><div className="mt-1 text-[13px] text-mute">{l.blurb}</div></button>)}</div>
+        {!label && !custom && <div className="mt-3"><Btn size="sm" onClick={() => setLabel(r.scenario.scriptedLabel)}>Apply the scripted outcome for this scenario</Btn></div>}
       </Panel>
       <Panel title="This investigation" subtitle="Counts and labels below belong to the selected merchant only.">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

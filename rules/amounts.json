@@ -1,0 +1,5 @@
+{
+  "_note": "Deposit and bonus-tier amounts common on betting/gaming deposit pages (observed patterns; est.). Round ₹500 multiples are tested separately.",
+  "bonusTiers": [99, 199, 249, 299, 399, 499, 999, 1499, 1999, 2999, 4999, 9999],
+  "roundStep": 500, "roundMin": 500
+}

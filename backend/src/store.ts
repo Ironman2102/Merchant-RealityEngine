@@ -10,7 +10,8 @@ export interface CaseRecord {
   id: string;
   createdAt: string;
   engineVersion?: string;
-  dataset: unknown;
+  /** SHA-256 of the uploaded file. The raw upload is never stored (it contains payer identifiers). */
+  datasetSha256: string;
   result: InvestigationResult;
   user: UserState;
   response: ResponsePlan | null;
@@ -20,6 +21,10 @@ export interface CaseRecord {
 // Local development store. Replace with a shared database adapter before a multi-user pilot.
 const mem = new Map<string, CaseRecord>();
 
+/** Case ids are minted by the server only. Anything else is rejected before it can reach the filesystem. */
+export const CASE_ID = /^INV-[0-9a-f]{8}$/;
+export const isCaseId = (id: unknown): id is string => typeof id === 'string' && CASE_ID.test(id);
+
 function dir(): string | null {
   if (process.env.MRE_CASE_STORE === 'memory') return null;
   if (process.env.VERCEL) return '/tmp/mre-cases';
@@ -27,11 +32,13 @@ function dir(): string | null {
 }
 
 function fileFor(id: string): string | null {
+  if (!isCaseId(id)) return null;
   const root = dir();
   return root ? join(root, `${id}.json`) : null;
 }
 
 export function putCase(rec: CaseRecord): void {
+  if (!isCaseId(rec.id)) throw Object.assign(new Error('Invalid case id.'), { status: 400 });
   mem.set(rec.id, rec);
   const file = fileFor(rec.id);
   if (!file) return;
@@ -50,7 +57,7 @@ export function listCases(): CaseRecord[] {
     if (!name.endsWith('.json')) continue;
     try {
       const rec = JSON.parse(readFileSync(join(root, name), 'utf8')) as CaseRecord;
-      if (rec && typeof rec.id === 'string' && rec.result) records.set(rec.id, rec);
+      if (rec && isCaseId(rec.id) && rec.result) records.set(rec.id, rec);
     } catch {
       // Ignore a damaged case file in the list; individual case retrieval reports it as unavailable.
     }
@@ -59,6 +66,7 @@ export function listCases(): CaseRecord[] {
 }
 
 export function getCase(id: string): CaseRecord | undefined {
+  if (!isCaseId(id)) return;
   const hit = mem.get(id);
   if (hit) return hit;
   const file = fileFor(id);
@@ -76,21 +84,3 @@ export const emptyUser = (): UserState => ({
   notes: '', clarification: '', chosenLevel: null, legalVerified: false, escrowConfirmed: false, executed: false, label: null, audit: [],
 });
 
-export function readUser(input: unknown, base: UserState): UserState {
-  if (!input || typeof input !== 'object') return base;
-  const u = input as Partial<UserState>;
-  const level = u.chosenLevel;
-  const levels: ResponseLevel[] = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
-  const labels: Label[] = ['CONFIRMED_ILLICIT', 'ADJUDICATED_BENIGN', 'UNRESOLVED'];
-  return {
-    ...base,
-    notes: typeof u.notes === 'string' ? u.notes.slice(0, 2000) : base.notes,
-    clarification: typeof u.clarification === 'string' ? u.clarification.slice(0, 2000) : base.clarification,
-    chosenLevel: level && levels.includes(level) ? level : base.chosenLevel,
-    legalVerified: typeof u.legalVerified === 'boolean' ? u.legalVerified : base.legalVerified,
-    escrowConfirmed: typeof u.escrowConfirmed === 'boolean' ? u.escrowConfirmed : base.escrowConfirmed,
-    executed: base.executed,
-    label: u.label && labels.includes(u.label) ? u.label : base.label,
-    audit: base.audit,
-  };
-}

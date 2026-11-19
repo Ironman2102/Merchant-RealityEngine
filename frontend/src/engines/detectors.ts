@@ -32,7 +32,9 @@ function matchWindows(c: Ctx) {
   const inWin = (m: number) => wins.some(([a, b]) => m >= a && m < b);
   return { fixDays, inWin };
 }
-const offHours = (c: Ctx, e: PaymentEvent) => { const h = istHour(e.eventTime); return h < c.p.hours[0] || h >= c.p.hours[1]; };
+/** Outside trading hours. Overnight businesses (open > close, e.g. [22, 6]) wrap past midnight. */
+export const outsideHours = (h: number, [open, close]: [number, number] | number[]) => open < close ? h < open || h >= close : h < open && h >= close;
+const offHours = (c: Ctx, e: PaymentEvent) => outsideHours(istHour(e.eventTime), c.p.hours);
 
 export const DETECTORS: Def[] = [
   { id: 'A1', name: 'Ticket outside expected band', family: 'A', lineage: 'acq.ticket', system: 'acquirer', reliability: 0.8, fakeDifficulty: 0.2, affinity: [0.1, 0.4, 0.2, 0.1], requires: ['acquiring'],

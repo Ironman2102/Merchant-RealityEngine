@@ -29,6 +29,8 @@ export interface DatasetTransaction {
   refundOfTransactionId?: string;  // REFUND only: the original sale
   paidTo?: string;                 // REFUND / TRANSFER: destination account, if not the payer
   beneficiaryAccount?: string;     // SETTLEMENT / TRANSFER: account that received the money
+  payerMobile?: string;            // payer's registered mobile (pseudonymised on import), lets refunds to the payer's own other account count as the payer's
+  destHolder?: string;             // REFUND / TRANSFER: account-holder identity of the destination (pseudonymised on import)
   sourceFeed?: string;
 }
 
@@ -123,6 +125,7 @@ const STATES: CoverageState[] = ['AVAILABLE', 'PARTIAL', 'MISSING'];
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const isStr = (x: unknown): x is string => typeof x === 'string' && x.length > 0;
 const strArr = (x: unknown) => Array.isArray(x) && x.every(isStr);
+const MAX_AMOUNT = 1_000_000;
 
 function defaultSource(t: DatasetTransaction): string {
   return t.type === 'SETTLEMENT' ? 'settlement.ledger' : t.type === 'TRANSFER' ? 'payout.ledger' : t.type === 'REFUND' || t.type === 'CHARGEBACK' ? 'acquirer.refund' : 'acquirer.upi';
@@ -163,6 +166,10 @@ export function datasetToScenario(raw: unknown): ParseResult {
   ];
   req.forEach(([k, ok, t]) => { if (!ok(m[k])) errors.push(`merchant.${k} is required (${t}).`); });
   if (!Array.isArray(m.hours) || m.hours.length !== 2 || !m.hours.every(isNum)) errors.push('merchant.hours is required as [open, close] in 24h, e.g. [7, 22].');
+  else if (!m.hours.every(h => Number.isInteger(h) && h >= 0 && h <= 24) || m.hours[0] === m.hours[1]) errors.push('merchant.hours must be two different whole hours between 0 and 24. Overnight businesses may close before they open, e.g. [22, 6].');
+  if (isNum(m.ticketMin) && isNum(m.ticketMax) && !(m.ticketMin >= 0 && m.ticketMin < m.ticketMax)) errors.push('merchant.ticketMin must be at least 0 and below merchant.ticketMax.');
+  if (isNum(m.accountAgeDays) && m.accountAgeDays < 0) errors.push('merchant.accountAgeDays cannot be negative.');
+  if (isNum(m.baselineWeekly) && m.baselineWeekly <= 0) errors.push('merchant.baselineWeekly must be above 0.');
   const defaults = { products: [], catchment: 'LOCAL', expectedRoundShare: 0.06, seasonalPeak: 1, declaredDomains: [], declaredChannels: [], declaredActivity: [] } as Partial<MerchantProfile>;
   const profile = { ...defaults, ...m } as MerchantProfile;
 
@@ -173,12 +180,15 @@ export function datasetToScenario(raw: unknown): ParseResult {
 
   const ids = new Set<string>();
   const events: PaymentEvent[] = [];
+  const seenEvent = new Set<string>();
+  let duplicates = 0;
   d.transactions!.forEach((t, i) => {
     const at = `transactions[${i}]${t && isStr(t.id) ? ` (${t.id})` : ''}`;
     if (!t || typeof t !== 'object') { errors.push(`${at} is not an object.`); return; }
     if (!isStr(t.id)) errors.push(`${at}: "id" is required.`); else if (ids.has(t.id)) errors.push(`${at}: duplicate id.`); else ids.add(t.id);
     if (!TYPES.includes(t.type)) errors.push(`${at}: "type" must be one of ${TYPES.join(', ')}.`);
     if (!isNum(t.amount) || t.amount < 0) errors.push(`${at}: "amount" must be a positive number in rupees.`);
+    else if (t.amount > MAX_AMOUNT) errors.push(`${at}: "amount" is above ₹${MAX_AMOUNT.toLocaleString('en-IN')}; check the units (rupees, not paise).`);
     const channel = normalizeChannel(t.channel);
     if (!channel) errors.push(`${at}: "channel" must be one of ${CHANNELS.join(', ')} (UPI is also accepted as UPI_LINK).`);
     if (!isStr(t.merchantId)) errors.push(`${at}: "merchantId" is required.`);
@@ -198,10 +208,17 @@ export function datasetToScenario(raw: unknown): ParseResult {
     if (t.orderId !== undefined) ev.orderId = t.orderId;
     if (t.refundOfTransactionId) ev.linkedSaleId = t.refundOfTransactionId;
     if (t.beneficiaryAccount) ev.beneficiaryHash = hashId(t.beneficiaryAccount);
+    if (t.payerMobile) ev.payerMobileHash = hashId(t.payerMobile);
+    if (t.destHolder) ev.destHolderHash = hashId(t.destHolder);
+    // Exact duplicates only when a payer id is present: two anonymous payers can pay the same amount in the same second.
+    const dupKey = t.payerId ? `${t.type}|${t.merchantId}|${t.payerId}|${t.amount}|${time}` : null;
+    if (dupKey && seenEvent.has(dupKey)) { duplicates++; return; }
+    if (dupKey) seenEvent.add(dupKey);
     events.push(ev);
   });
   if (errors.length) { if (errors.length > 25) errors.splice(25, errors.length, '…more errors not shown.'); return { ok: false, errors, warnings }; }
   events.sort((a, b) => a.eventTime - b.eventTime);
+  if (duplicates) warnings.push(`${duplicates} exact duplicate transaction(s) (same type, payer, amount and time) were dropped.`);
 
   const own = events.filter(e => e.merchantId === profile.id);
   if (!own.length) return fail(`No transactions belong to merchant.id "${profile.id}". Check the merchantId on each transaction.`);
@@ -212,6 +229,8 @@ export function datasetToScenario(raw: unknown): ParseResult {
   const weekly: WeeklyPoint[] = [];
   d.weeklySales!.forEach((w, i) => {
     if (!w || !isStr(w.week) || !(w.actual === null || isNum(w.actual)) || !isNum(w.seasonalMultiplier)) errors.push(`weeklySales[${i}] needs week (text), actual (number or null) and seasonalMultiplier (number).`);
+    else if (w.seasonalMultiplier < 0.2 || w.seasonalMultiplier > 6) errors.push(`weeklySales[${i}].seasonalMultiplier must be between 0.2 and 6.`);
+    else if (w.actual !== null && w.actual < 0) errors.push(`weeklySales[${i}].actual cannot be negative.`);
     else weekly.push({ week: w.week, actual: w.actual, seasonalMult: w.seasonalMultiplier });
   });
   if (weekly.length < 6) warnings.push('Fewer than 6 weeks of history: baselines and CUSUM will be less reliable.');
@@ -226,6 +245,10 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (d.orders?.length && !d.dataAvailability?.orders) coverage.orders = 'AVAILABLE';
   if (d.bankCredits?.length && !d.dataAvailability?.bank) coverage.bank = 'AVAILABLE';
   if (d.purchaserVerification && !d.dataAvailability?.verification) coverage.verification = 'AVAILABLE';
+  const pv = d.purchaserVerification;
+  if (pv && !(isNum(pv.contacted) && isNum(pv.confirmed) && Number.isInteger(pv.contacted) && Number.isInteger(pv.confirmed) && pv.contacted > 0 && pv.confirmed >= 0 && pv.confirmed <= pv.contacted))
+    errors.push('purchaserVerification needs whole numbers with 0 ≤ confirmed ≤ contacted and contacted > 0.');
+  if (coverage.calendar === 'AVAILABLE' && !fixtures.length) warnings.push('The match calendar is marked AVAILABLE but has no fixtures; calendar checks will be UNKNOWN.');
   if (errors.length) return { ok: false, errors, warnings };
 
   const web = { embeds: d.website?.embeds ?? [], catalogue: d.website?.catalogue ?? [] };

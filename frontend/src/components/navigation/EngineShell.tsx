@@ -20,9 +20,11 @@ const RESULT_NAV = [
 ];
 
 export function EngineShell() {
-  const { custom, started, detailsOpen } = useInvestigation();
+  const { custom, started, detailsOpen, caseId } = useInvestigation();
   const hasRun = !!custom && started;
-  const nav = hasRun && detailsOpen ? [...BASE_NAV, ...RESULT_NAV] : BASE_NAV;
+  // A saved case keeps its views under /ai-engine/cases/:id/... so every page survives a reload.
+  const caseNav = caseId ? RESULT_NAV.map(n => ({ ...n, to: n.to.replace('/ai-engine/', `/ai-engine/cases/${caseId}/`), end: true })) : RESULT_NAV;
+  const nav = hasRun && detailsOpen ? [...BASE_NAV, ...caseNav] : BASE_NAV;
   return (
     <>
       <PublicNav landing />

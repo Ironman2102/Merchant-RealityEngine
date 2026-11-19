@@ -52,6 +52,7 @@ export default function App() {
             <Route index element={<AIEnginePage />} />
             <Route path="analyze" element={<UploadPage />} />
             <Route path="cases/:id" element={<ServerCasePage />} />
+            <Route path="cases/:id/:view" element={<ServerCasePage />} />
             <Route path="portfolio" element={<PortfolioPage />} />
             <Route element={<RequireUserDataset />}>
               <Route path="portfolio/:key" element={<CasePage />} />

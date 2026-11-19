@@ -22,6 +22,6 @@ export function profileUpdates(res: InvestigationResult, label: Label): string[]
   }
   const host = sc.web.embeds.find(e => e.merchantId === sc.primaryMerchantId && e.category !== 'own');
   return [host ? `Add ${host.host} to the undeclared-host watchlist; flag every merchant link found on it.` : 'Add the merchant’s order and fulfilment gaps to the substantiation checklist.',
-    sc.id === 'rotation' ? 'Link beneficiary BEN_GGR_OLD to the cohort watchlist; any new account settling to it is flagged on day one.' : 'Pattern signature saved for cohort search across similar merchants.',
+    res.cohort.some(c => c.beneficiaryMatch) ? `Link the settlement beneficiary shared with ${res.cohort.find(c => c.beneficiaryMatch)!.name} to the cohort watchlist; any new account settling to it is flagged on day one.` : 'Pattern signature saved for cohort search across similar merchants.',
     'Detector reliabilities raised for the signals that fired (see table).', 'Merchant profile marked “under review”; automatic seasonal refresh suspended.'];
 }

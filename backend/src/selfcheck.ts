@@ -39,9 +39,9 @@ assert.equal((quiet.body.result as { decision: string }).decision, 'NO_CASE');
 const bad = openInvestigation({ format: 'nope' });
 assert.equal(bad.status, 400);
 
-const rebuilt = respondInvestigation('INV-rebuilt', { chosenLevel: 'L0', dataset: diwali });
-assert.equal(rebuilt.status, 200);
-assert.equal((rebuilt.body.workflow as { state: string }[])[5].state, 'done');
+// Cases are never rebuilt under a caller-chosen id (path-traversal fix).
+assert.equal(respondInvestigation('INV-rebuilt', { chosenLevel: 'L0', dataset: diwali }).status, 400);
+assert.equal(respondInvestigation('INV-0000abcd', { chosenLevel: 'L0', dataset: diwali }).status, 404);
 
 console.log('api selfcheck ok');
 console.log(steps.map((s, i) => `L${i + 1} ${s.state}: ${s.summary}`).join('\n'));

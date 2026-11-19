@@ -4,8 +4,9 @@ import { profileUpdates, reliabilityUpdates } from '../../frontend/src/engines/l
 import { actionLog, planResponse } from '../../frontend/src/engines/responseEngine';
 import type { ResponseLevel } from '../../frontend/src/types/investigation';
 import type { Label } from '../../frontend/src/types/merchant';
-import { emptyUser, getCase, listCases, putCase, readUser, type CaseRecord } from './store';
+import { emptyUser, getCase, isCaseId, listCases, putCase, type CaseRecord } from './store';
 import { analyzeDataset, ENGINE_VERSION } from './algorithms/analyze';
+import { sha256 } from './adapters/canonicalDataset';
 
 export interface ApiReply { status: number; body: Record<string, unknown> }
 
@@ -48,6 +49,7 @@ function view(rec: CaseRecord): ApiReply {
     body: {
       id: rec.id,
       createdAt: rec.createdAt,
+      scenario: result.scenario,
       engineVersion: rec.engineVersion ?? ENGINE_VERSION,
       merchant: { id: result.scenario.profile.id, name: result.scenario.profile.name, category: result.scenario.profile.category, city: result.scenario.profile.city },
       workflow: LAYERS.map((layer, i) => ({ layer: layer.n, code: layer.code, name: layer.name, state: state[i], summary: steps[i] })),
@@ -75,24 +77,18 @@ function view(rec: CaseRecord): ApiReply {
   };
 }
 
-function ensure(id: string, body: unknown): CaseRecord | ApiReply {
-  const input = body && typeof body === 'object' ? body as { dataset?: unknown; user?: unknown } : {};
-  let rec = getCase(id);
-  if (!rec && input.dataset) {
-    const opened = openInvestigation(input.dataset, id);
-    if (opened.status !== 200) return opened;
-    rec = getCase(id);
-  }
-  if (!rec) return fail(404, 'No case with that id. Call this step again with the original dataset so the server can rebuild it.');
-  rec.user = readUser(input.user, rec.user);
-  return rec;
+/** Load an existing case. Cases are never created here, and client-supplied user state is never trusted. */
+function ensure(id: string): CaseRecord | ApiReply {
+  if (!isCaseId(id)) return fail(400, 'Invalid case id.');
+  return getCase(id) ?? fail(404, 'No case with that id.');
 }
 
-export function openInvestigation(raw: unknown, id = `INV-${randomBytes(4).toString('hex')}`): ApiReply {
+export function openInvestigation(raw: unknown): ApiReply {
+  const id = `INV-${randomBytes(4).toString('hex')}`;
   const analysis = analyzeDataset(raw);
   if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
   const rec: CaseRecord = {
-    id, createdAt: new Date().toISOString(), engineVersion: analysis.engineVersion, dataset: raw, result: analysis.result,
+    id, createdAt: new Date().toISOString(), engineVersion: analysis.engineVersion, datasetSha256: sha256(JSON.stringify(raw)), result: analysis.result,
     user: emptyUser(), response: null, learning: null,
   };
   putCase(rec);
@@ -100,6 +96,7 @@ export function openInvestigation(raw: unknown, id = `INV-${randomBytes(4).toStr
 }
 
 export function getInvestigation(id: string): ApiReply {
+  if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   return rec ? view(rec) : fail(404, 'No case with that id.');
 }
@@ -121,7 +118,7 @@ export function listInvestigations(): ApiReply {
 }
 
 export function reviewInvestigation(id: string, body: unknown): ApiReply {
-  const rec = ensure(id, body);
+  const rec = ensure(id);
   if ('status' in rec) return rec;
   const input = body as { notes?: unknown; clarification?: unknown };
   if (typeof input.notes === 'string') rec.user.notes = input.notes.slice(0, 2000);
@@ -132,7 +129,7 @@ export function reviewInvestigation(id: string, body: unknown): ApiReply {
 }
 
 export function respondInvestigation(id: string, body: unknown): ApiReply {
-  const rec = ensure(id, body);
+  const rec = ensure(id);
   if ('status' in rec) return rec;
   const input = body as { chosenLevel?: ResponseLevel; legalVerified?: boolean; escrowConfirmed?: boolean };
   if (input.chosenLevel) {
@@ -155,7 +152,7 @@ export function respondInvestigation(id: string, body: unknown): ApiReply {
 }
 
 export function labelInvestigation(id: string, body: unknown): ApiReply {
-  const rec = ensure(id, body);
+  const rec = ensure(id);
   if ('status' in rec) return rec;
   const label = (body as { label?: Label }).label;
   if (!label || !LABELS.includes(label)) return fail(400, 'label must be CONFIRMED_ILLICIT, ADJUDICATED_BENIGN, or UNRESOLVED.');

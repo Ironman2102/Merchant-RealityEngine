@@ -51,7 +51,11 @@ export function L5View() {
       </div>
       <Panel title="Analyst reasoning" subtitle="Generated from the evidence; the analyst can accept or override it.">
         <ul className="space-y-2 text-[13px]">{rv.reasoning.map((t, i) => <li key={i} className="flex gap-2"><ShieldCheck size={15} className="mt-0.5 shrink-0 text-zinc-300" /><span className="text-ink/90">{t}</span></li>)}</ul>
-        {rv.legitStatus === 'FAILED' && r.scenario.id === 'bakery' && <div className="mt-3"><Callout tone="warn" title="Why the legitimate chain fails here">Checkout provenance (G6) shows the payment link on an undeclared betting deposit page, and refund destinations (D9) do not match the original payers. These come from different data sources and are both hard to explain away with a bakery story.</Callout></div>}
+        {rv.legitStatus === 'FAILED' && (() => {
+          const top = [...r.evidence].filter(e => e.status === 'ILLICIT').sort((a, b) => b.strength * b.reliability - a.strength * a.reliability)
+            .filter((e, i, xs) => xs.findIndex(x => x.system === e.system) === i).slice(0, 2);
+          return top.length === 2 && <div className="mt-3"><Callout tone="warn" title="Why the legitimate chain fails here">{top.map(e => `${e.name} (${e.id}): ${e.observed}.`).join(' ')} These come from different data sources, so one innocent explanation would have to cover both.</Callout></div>;
+        })()}
       </Panel>
       <Panel title="Evidence inspection" subtitle={item ? `Showing evidence for “${item.label}”. Select another link or clear.` : 'Showing all informative signals. Select a link above to focus.'} right={item && <Btn size="sm" variant="ghost" onClick={() => setSel(null)}>Clear</Btn>}>
         <Tabs<Tool> value={tool} onChange={setTool} tabs={[{ id: 'signals', label: 'Signals and records' }, { id: 'links', label: 'Payment links' }, { id: 'refunds', label: 'Refund reconciliation' }, { id: 'domain', label: 'Domain provenance' }, { id: 'gaps', label: `Coverage gaps (${gaps.length})` }]} />

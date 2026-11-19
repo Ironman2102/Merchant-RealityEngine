@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Download, FileJson, FileUp, Play, ShieldAlert, ShieldCheck, X } from 'lucide-react';
 import { useInvestigation } from '../hooks/useInvestigation';
 import { usePortfolio } from '../hooks/usePortfolio';
@@ -77,6 +77,7 @@ export function UploadPage() {
       setLoadingSample(false);
     }
   };
+  const navigate = useNavigate();
   const analyse = async () => {
     if (!parsed?.scenario || !raw) return;
     setPosting(true); setServerError('');
@@ -84,9 +85,9 @@ export function UploadPage() {
       const response = await fetch('/api/investigations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: raw });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || `The investigation API rejected the file (${response.status}).`);
-      setServerCase(body);
-      setDetailsOpen(false); loadCustom(parsed.scenario, true); setCaseKey(addUploaded(parsed.scenario)); setAnalysed(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setServerCase(body); setCaseKey(addUploaded(parsed.scenario)); setAnalysed(true);
+      // Open the persistent case: same seven-layer run as the demo, saved on the server, survives reload.
+      navigate(`/ai-engine/cases/${encodeURIComponent(body.id)}?run=1`);
     } catch (e) {
       setServerError(e instanceof Error ? e.message : 'The investigation API is not reachable.');
     } finally { setPosting(false); }
