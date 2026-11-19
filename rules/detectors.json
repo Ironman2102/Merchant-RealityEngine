@@ -1,0 +1,576 @@
+{
+ "_note": "One row per detector. sensitivity = P(fires | front), falsePositive = P(fires | genuine): EXPERT PRIORS (est.) until learned from labels (plan P8). LLR when firing = ln(sensitivity/falsePositive) x grade; when clearly not firing = ln((1-sensitivity)/(1-falsePositive)) x (0.35 + 0.65 x fakeDifficulty). It fires only if p <= alpha AND effect >= minEffect (practical significance, so big samples do not flag trivial differences). affinity = [rotation, laundering, fabricated, other].",
+ "A1": {
+  "name": "Ticket sizes vs category norm",
+  "family": "A",
+  "lineage": "amounts",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.55,
+  "falsePositive": 0.06,
+  "alpha": 0.001,
+  "minEffect": 0.2,
+  "effectFull": 0.4,
+  "minN": 30,
+  "fakeDifficulty": 0.3,
+  "affinity": [
+   0.1,
+   0.4,
+   0.2,
+   0.1
+  ],
+  "test": "One-sample Kolmogorov–Smirnov vs lognormal category norm; effect = KS distance D. Menu prices are discrete, so genuine shops show D ≈ 0.15; the practical bar is 0.20."
+ },
+ "A4": {
+  "name": "Round-number heaping",
+  "family": "A",
+  "lineage": "amounts",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.6,
+  "falsePositive": 0.04,
+  "alpha": 0.001,
+  "minEffect": 0.08,
+  "effectFull": 0.25,
+  "minN": 30,
+  "fakeDifficulty": 0.3,
+  "affinity": [
+   0.1,
+   0.5,
+   0.2,
+   0.2
+  ],
+  "test": "Beta-binomial upper tail vs category round-amount rate; effect = excess share"
+ },
+ "A5": {
+  "name": "Deposit / bonus-tier amounts",
+  "family": "A",
+  "lineage": "amounts",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.45,
+  "falsePositive": 0.03,
+  "alpha": 0.001,
+  "minEffect": 0.05,
+  "effectFull": 0.2,
+  "minN": 30,
+  "fakeDifficulty": 0.4,
+  "affinity": [
+   0.1,
+   0.7,
+   0.1,
+   0.2
+  ],
+  "test": "Beta-binomial upper tail vs category rate of betting bonus-tier amounts; effect = excess share"
+ },
+ "B6": {
+  "name": "Payers from outside the service area",
+  "family": "B",
+  "lineage": "payer.geo",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.6,
+  "falsePositive": 0.06,
+  "alpha": 0.001,
+  "minEffect": 0.1,
+  "effectFull": 0.35,
+  "minN": 30,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.1,
+   0.5,
+   0.2,
+   0.1
+  ],
+  "test": "Beta-binomial upper tail of payers outside home + neighbouring states vs category rate; effect = excess share"
+ },
+ "B7": {
+  "name": "Heavy repeat payers",
+  "family": "B",
+  "lineage": "payer.repeat",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.5,
+  "falsePositive": 0.05,
+  "alpha": 0.001,
+  "minEffect": 0.1,
+  "effectFull": 0.35,
+  "minN": 30,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.2,
+   0.6,
+   0.1,
+   0.2
+  ],
+  "test": "Beta-binomial upper tail: share of sales from payers paying >= 8 times in a week vs category rate"
+ },
+ "B9": {
+  "name": "Independent purchaser verification",
+  "family": "B",
+  "lineage": "panel",
+  "provenance": "panel",
+  "requires": [
+   "verification"
+  ],
+  "sensitivity": 0.75,
+  "falsePositive": 0.05,
+  "alpha": 0.05,
+  "minEffect": 0.2,
+  "effectFull": 0.5,
+  "minN": 5,
+  "fakeDifficulty": 0.95,
+  "affinity": [
+   0,
+   0.1,
+   0.9,
+   0
+  ],
+  "test": "Exact binomial lower tail of confirmations vs 80% for genuine merchants; effect = shortfall"
+ },
+ "C2": {
+  "name": "Sales outside category trading hours",
+  "family": "C",
+  "lineage": "timing.hours",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.5,
+  "falsePositive": 0.06,
+  "alpha": 0.001,
+  "minEffect": 0.1,
+  "effectFull": 0.35,
+  "minN": 30,
+  "fakeDifficulty": 0.2,
+  "affinity": [
+   0.1,
+   0.3,
+   0.2,
+   0.2
+  ],
+  "test": "Beta-binomial upper tail of off-hours sales vs category rate; effect = excess share"
+ },
+ "C5": {
+  "name": "Pre-match funding",
+  "family": "C",
+  "lineage": "timing.calendar",
+  "provenance": "calendar",
+  "requires": [
+   "calendar"
+  ],
+  "sensitivity": 0.7,
+  "falsePositive": 0.02,
+  "alpha": 0.01,
+  "minEffect": 2,
+  "effectFull": 5,
+  "minN": 20,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.1,
+   0.8,
+   0.1,
+   0.3
+  ],
+  "test": "Permutation test: in-window share on match days vs randomly chosen days (2,000 draws); effect = rate ratio"
+ },
+ "D7": {
+  "name": "Refunds without an original sale",
+  "family": "D",
+  "lineage": "refunds",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.4,
+  "falsePositive": 0.02,
+  "alpha": 0.01,
+  "minEffect": 0.15,
+  "effectFull": 0.5,
+  "minN": 3,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.1,
+   0.5,
+   0.3,
+   0.3
+  ],
+  "test": "Beta-binomial upper tail of orphan refunds vs 2% norm; effect = excess share"
+ },
+ "D9": {
+  "name": "Refunds paid to someone other than the payer",
+  "family": "D",
+  "lineage": "refunds",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.45,
+  "falsePositive": 0.03,
+  "alpha": 0.01,
+  "minEffect": 0.2,
+  "effectFull": 0.6,
+  "minN": 3,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.2,
+   0.6,
+   0.1,
+   0.3
+  ],
+  "test": "Beta-binomial upper tail vs 5% norm, excluding refunds to the payer's own other accounts; effect = excess share"
+ },
+ "D10": {
+  "name": "Payments without an order",
+  "family": "D",
+  "lineage": "orders",
+  "provenance": "orders",
+  "requires": [
+   "orders"
+  ],
+  "sensitivity": 0.7,
+  "falsePositive": 0.04,
+  "alpha": 0.001,
+  "minEffect": 0.2,
+  "effectFull": 0.6,
+  "minN": 20,
+  "fakeDifficulty": 0.9,
+  "affinity": [
+   0,
+   0.2,
+   0.8,
+   0
+  ],
+  "test": "Exact binomial upper tail of unmatched payments vs 5%; effect = excess share"
+ },
+ "E1": {
+  "name": "Payment link shared with other merchants",
+  "family": "E",
+  "lineage": "web.graph",
+  "provenance": "crawler",
+  "requires": [
+   "website"
+  ],
+  "sensitivity": 0.4,
+  "falsePositive": 0.02,
+  "alpha": 1,
+  "minEffect": 1,
+  "effectFull": 3,
+  "minN": 0,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.5,
+   0.6,
+   0.1,
+   0.2
+  ],
+  "test": "Deterministic: number of other merchants with links on the same third-party host"
+ },
+ "E3": {
+  "name": "Continuity with a dormant peer",
+  "family": "E",
+  "lineage": "cohort",
+  "provenance": "network",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.6,
+  "falsePositive": 0.02,
+  "alpha": 0.01,
+  "minEffect": 0.55,
+  "effectFull": 0.85,
+  "minN": 10,
+  "fakeDifficulty": 0.5,
+  "affinity": [
+   0.9,
+   0.1,
+   0,
+   0.1
+  ],
+  "test": "Hypergeometric test of payer overlap with the peer; effect = continuity score (needs a lifecycle hand-off)"
+ },
+ "F2": {
+  "name": "Account opened as a similar one went quiet",
+  "family": "F",
+  "lineage": "lifecycle",
+  "provenance": "network",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.5,
+  "falsePositive": 0.03,
+  "alpha": 1,
+  "minEffect": 1,
+  "effectFull": 1,
+  "minN": 0,
+  "fakeDifficulty": 0.5,
+  "affinity": [
+   0.8,
+   0.1,
+   0.1,
+   0.1
+  ],
+  "test": "Deterministic: account < 45 days old and started within 7 days of a dormant peer's last sale"
+ },
+ "F5": {
+  "name": "Settlement beneficiary changes",
+  "family": "F",
+  "lineage": "settlement",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.45,
+  "falsePositive": 0.03,
+  "alpha": 0.01,
+  "minEffect": 2,
+  "effectFull": 4,
+  "minN": 3,
+  "fakeDifficulty": 0.7,
+  "affinity": [
+   0.7,
+   0.3,
+   0.1,
+   0.3
+  ],
+  "test": "Poisson upper tail of beneficiary changes vs category rate per year; needs >= 2 changes or a beneficiary shared with a peer"
+ },
+ "F7": {
+  "name": "Orders not delivered / reused tracking",
+  "family": "F",
+  "lineage": "fulfilment",
+  "provenance": "fulfilment",
+  "requires": [
+   "fulfillment"
+  ],
+  "sensitivity": 0.7,
+  "falsePositive": 0.03,
+  "alpha": 0.001,
+  "minEffect": 0.2,
+  "effectFull": 0.6,
+  "minN": 10,
+  "fakeDifficulty": 0.9,
+  "affinity": [
+   0,
+   0.1,
+   0.9,
+   0
+  ],
+  "test": "Exact binomial lower tail of delivered share vs 90%; reused tracking counts as undelivered; effect = shortfall"
+ },
+ "F8": {
+  "name": "Settlements missing from bank credits",
+  "family": "F",
+  "lineage": "bank",
+  "provenance": "bank",
+  "requires": [
+   "bank"
+  ],
+  "sensitivity": 0.6,
+  "falsePositive": 0.03,
+  "alpha": 0.001,
+  "minEffect": 0.2,
+  "effectFull": 0.6,
+  "minN": 3,
+  "fakeDifficulty": 0.9,
+  "affinity": [
+   0.1,
+   0.4,
+   0.4,
+   0.2
+  ],
+  "test": "Exact binomial upper tail of unmatched settlements vs 2%; effect = excess share"
+ },
+ "G2": {
+  "name": "Catalogue does not fit the category",
+  "family": "G",
+  "lineage": "catalogue",
+  "provenance": "crawler",
+  "requires": [
+   "website"
+  ],
+  "sensitivity": 0.45,
+  "falsePositive": 0.05,
+  "alpha": 0.01,
+  "minEffect": 0.2,
+  "effectFull": 0.6,
+  "minN": 5,
+  "fakeDifficulty": 0.25,
+  "affinity": [
+   0,
+   0.1,
+   0.9,
+   0.1
+  ],
+  "test": "Exact binomial upper tail of off-category or reused-image items vs 5%; effect = excess share"
+ },
+ "G6": {
+  "name": "Payment link on an undeclared site",
+  "family": "G",
+  "lineage": "checkout",
+  "provenance": "crawler",
+  "requires": [
+   "website"
+  ],
+  "sensitivity": 0.6,
+  "falsePositive": 0.01,
+  "alpha": 1,
+  "minEffect": 1,
+  "effectFull": 1,
+  "minN": 0,
+  "fakeDifficulty": 0.7,
+  "affinity": [
+   0.1,
+   0.9,
+   0.1,
+   0.3
+  ],
+  "test": "Deterministic: link embedded on an undeclared host (a known betting host also triggers override R-01)"
+ },
+ "H1": {
+  "name": "Volume above seasonal expectation",
+  "family": "H",
+  "lineage": "volume",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.5,
+  "falsePositive": 0.06,
+  "alpha": 0.01,
+  "minEffect": 1.3,
+  "effectFull": 2,
+  "minN": 6,
+  "fakeDifficulty": 0.4,
+  "affinity": [
+   0.2,
+   0.3,
+   0.3,
+   0.2
+  ],
+  "test": "Log-normal weekly volume model with festival calendar offsets; Stouffer z over the last 4 weeks; effect = actual / expected"
+ },
+ "H2": {
+  "name": "Recent change in behaviour",
+  "family": "H",
+  "lineage": "volume",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.45,
+  "falsePositive": 0.05,
+  "alpha": 0.05,
+  "minEffect": 0.7,
+  "effectFull": 0.95,
+  "minN": 8,
+  "fakeDifficulty": 0.4,
+  "affinity": [
+   0.3,
+   0.3,
+   0.3,
+   0.2
+  ],
+  "test": "Bayesian online changepoint: P(change in last 4 weeks); CUSUM with h set for one false alarm per merchant-year"
+ },
+ "H3": {
+  "name": "Joint off-profile cluster",
+  "family": "H",
+  "lineage": "joint",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.55,
+  "falsePositive": 0.03,
+  "alpha": 0.001,
+  "minEffect": 0.1,
+  "effectFull": 0.3,
+  "minN": 30,
+  "fakeDifficulty": 0.5,
+  "affinity": [
+   0.4,
+   0.45,
+   0.2,
+   0.3
+  ],
+  "test": "Beta-binomial upper tail of sales with >= 2 off-profile traits (round, out-of-area, off-hours/pre-match) vs 1%"
+ },
+ "I2": {
+  "name": "Onward payouts to many accounts",
+  "family": "I",
+  "lineage": "payouts",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.45,
+  "falsePositive": 0.05,
+  "alpha": 0.01,
+  "minEffect": 2,
+  "effectFull": 5,
+  "minN": 0,
+  "fakeDifficulty": 0.5,
+  "affinity": [
+   0.1,
+   0.3,
+   0.1,
+   0.8
+  ],
+  "test": "Poisson upper tail of distinct payout beneficiaries vs category norm; effect = ratio"
+ },
+ "I3": {
+  "name": "Money swept out soon after settlement",
+  "family": "I",
+  "lineage": "payouts",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.5,
+  "falsePositive": 0.04,
+  "alpha": 0.01,
+  "minEffect": 0.3,
+  "effectFull": 0.8,
+  "minN": 3,
+  "fakeDifficulty": 0.5,
+  "affinity": [
+   0.2,
+   0.6,
+   0.1,
+   0.6
+  ],
+  "test": "Exact binomial upper tail of settlements followed by an onward payout within 24 h vs 10%; effect = excess share"
+ },
+ "K1": {
+  "name": "Declared profile far from category norm",
+  "family": "K",
+  "lineage": "kyc",
+  "provenance": "kyc",
+  "requires": [],
+  "sensitivity": 0.35,
+  "falsePositive": 0.04,
+  "alpha": 0.01,
+  "minEffect": 2,
+  "effectFull": 4,
+  "minN": 0,
+  "fakeDifficulty": 0.3,
+  "affinity": [
+   0.2,
+   0.4,
+   0.4,
+   0.2
+  ],
+  "test": "Chi-square on standardised gaps between the declared profile and the category norm (catchment, hours width, ticket ceiling, round share)"
+ }
+}

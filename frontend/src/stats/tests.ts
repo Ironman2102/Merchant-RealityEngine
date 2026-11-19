@@ -107,3 +107,15 @@ export function mcnemarExact(b: number, c: number): TestResult {
  * Used as a conservative evidence weight (in nats) until a detector's likelihood ratio has been learned from labels.
  */
 export const sbbLlr = (p: number, cap = 4) => (p >= 1 / Math.E ? 0 : Math.min(cap, -Math.log(-Math.E * p * Math.log(Math.max(p, 1e-300)))));
+
+/** One-sample Kolmogorov–Smirnov test against a continuous CDF (asymptotic, Stephens' correction). Effect = D. */
+export function ksOneSample(xs: readonly number[], cdf: (x: number) => number): TestResult {
+  const x = [...xs].sort((a, b) => a - b), n = x.length;
+  if (!n) return { statistic: 0, p: 1 };
+  let d = 0;
+  x.forEach((v, i) => { const F = cdf(v); d = Math.max(d, (i + 1) / n - F, F - i / n); });
+  const lam = (Math.sqrt(n) + 0.12 + 0.11 / Math.sqrt(n)) * d;
+  let p = 0;
+  for (let k = 1; k <= 100; k++) { const t = 2 * (k % 2 ? 1 : -1) * Math.exp(-2 * k * k * lam * lam); p += t; if (Math.abs(t) < 1e-12) break; }
+  return { statistic: d, p: Math.min(1, Math.max(0, p)) };
+}

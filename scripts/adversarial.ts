@@ -10,6 +10,7 @@ type D = any;
 const load = (f: string): D => JSON.parse(readFileSync(`frontend/public/samples/${f}`, 'utf8'));
 const BET = '01-sweet-crumbs-betting-front.json', ROT = '02-merchant-rotation.json', FAB = '03-fabricated-online-store.json';
 const DIWALI = '04-anand-sweets-diwali-genuine.json', CHAI = '05-chai-corner-night-betting.json', GOOD = '06-shree-ganesh-sweets-genuine.json';
+const KIRANA = '08-nandi-kirana-genuine.json';
 const own = (d: D, type?: string) => d.transactions.filter((t: D) => t.merchantId === d.merchant.id && (!type || t.type === type));
 
 interface Case { name: string; base: string; should: 'OPEN_CASE' | 'NO_CASE' | 'REJECT' | 'NO_CRASH'; mutate: (d: D) => void; known?: string }
@@ -30,9 +31,9 @@ const CASES: Case[] = [
   { name: 'quiet launderer: + single stable beneficiary', base: BET, should: 'OPEN_CASE',
     mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); } },
   { name: 'quiet launderer: + website feed missing', base: BET, should: 'OPEN_CASE',
-    known: 'fixed in S2 (Bayesian fusion + provenance gate)', mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING' }; delete d.website; } },
+    mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING' }; delete d.website; } },
   { name: 'quiet launderer: + no match calendar', base: BET, should: 'OPEN_CASE',
-    known: 'fixed in S2 (Bayesian fusion + provenance gate)', mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING' }; delete d.website; d.matchFixtures = []; d.dataAvailability.calendar = 'MISSING'; } },
+    mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING' }; delete d.website; d.matchFixtures = []; d.dataAvailability.calendar = 'MISSING'; } },
   { name: 'acquirer-only feed: betting front, every non-acquiring source MISSING', base: BET, should: 'OPEN_CASE',
     mutate: d => { d.dataAvailability = { acquiring: 'AVAILABLE', website: 'MISSING', orders: 'MISSING', bank: 'MISSING', fulfillment: 'MISSING', calendar: 'MISSING', verification: 'MISSING' }; delete d.website; d.orders = []; d.bankCredits = []; d.purchaserVerification = null; d.matchFixtures = []; } },
   { name: 'threshold-hugging: betting sales re-amounted to non-round values', base: BET, should: 'OPEN_CASE',
@@ -40,7 +41,7 @@ const CASES: Case[] = [
   { name: 'threshold-hugging: off-hours betting sales shifted to 21:00 local', base: BET, should: 'OPEN_CASE',
     mutate: d => { own(d, 'SALE').forEach((t: D) => { const istHour = (new Date(t.time).getTime() / 3600000 + 5.5) % 24; if (istHour < 7 || istHour >= 22) t.time = new Date(new Date(t.time).getTime() - ((istHour - 21 + 24) % 24) * 3600000).toISOString(); }); } },
   { name: 'false positive: genuine sweets gets new bank account mid-period', base: GOOD, should: 'NO_CASE',
-    known: 'fixed in S2 (Bayesian fusion + provenance gate)', mutate: d => { const s = own(d, 'SETTLEMENT').sort((a: D, b: D) => new Date(a.time).getTime() - new Date(b.time).getTime()); s.forEach((t: D, i: number) => { if (i >= s.length / 2) t.beneficiaryAccount = 'BEN-NEWBANK'; }); } },
+    mutate: d => { const s = own(d, 'SETTLEMENT').sort((a: D, b: D) => new Date(a.time).getTime() - new Date(b.time).getTime()); s.forEach((t: D, i: number) => { if (i >= s.length / 2) t.beneficiaryAccount = 'BEN-NEWBANK'; }); } },
   { name: 'false positive: genuine sweets near a college, 30% payers from 5 other states', base: GOOD, should: 'NO_CASE',
     mutate: d => { own(d, 'SALE').forEach((t: D, i: number) => { if (i % 3 === 0) t.payerState = ['MH', 'TN', 'DL', 'UP', 'WB'][i % 5]; }); } },
   { name: 'false positive: genuine sweets gift-box season, 30% sales at 500/1000', base: GOOD, should: 'NO_CASE',
@@ -48,7 +49,7 @@ const CASES: Case[] = [
   { name: 'false positive: genuine sweets late-night delivery app, 30% sales 22:00-23:30', base: GOOD, should: 'NO_CASE',
     mutate: d => { own(d, 'SALE').forEach((t: D, i: number) => { if (i % 3 === 0) t.time = t.time.slice(0, 10) + 'T22:30:00+05:30'; }); } },
   { name: 'false positive: genuine diwali + one bank change + 3 refunds to UPI wallet', base: DIWALI, should: 'NO_CASE',
-    known: 'fixed in S2 (Bayesian fusion + provenance gate)', mutate: d => { const s = own(d, 'SETTLEMENT'); s.forEach((t: D, i: number) => { if (i >= s.length / 2) t.beneficiaryAccount = 'BEN-NEW'; }); own(d, 'REFUND').slice(0, 3).forEach((t: D) => { t.paidTo = 'WALLET-X'; }); } },
+    mutate: d => { const s = own(d, 'SETTLEMENT'); s.forEach((t: D, i: number) => { if (i >= s.length / 2) t.beneficiaryAccount = 'BEN-NEW'; }); own(d, 'REFUND').slice(0, 3).forEach((t: D) => { t.paidTo = 'WALLET-X'; }); } },
   { name: 'robustness: merchant with zero SALEs but refunds', base: GOOD, should: 'REJECT',
     mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && t.type === 'SALE')); } },
   { name: 'robustness: negative amount', base: GOOD, should: 'REJECT',
@@ -69,6 +70,20 @@ const CASES: Case[] = [
     mutate: d => { const s0 = own(d, 'SALE')[0]; for (let i = 0; i < 50; i++) d.transactions.push({ ...s0, id: s0.id + '-dup' + i, amount: 1 }); } },
   { name: 'scale: 50k sales runtime under 5s', base: GOOD, should: 'NO_CRASH',
     mutate: d => { const s0 = own(d, 'SALE')[0]; for (let i = 0; i < 50000; i++) d.transactions.push({ ...s0, id: s0.id + '-s' + i }); } },
+  { name: 'A5: betting front amounts moved to deposit-tier values', base: BET, should: 'OPEN_CASE',
+    mutate: d => { own(d, 'SALE').forEach((t: D, i: number) => { if (i % 2 === 0) t.amount = [199, 999, 1999, 499][i % 4]; }); } },
+  { name: 'A5 false positive: genuine sweets with real catalogue prices 499/999', base: GOOD, should: 'NO_CASE',
+    mutate: d => { d.website = { embeds: d.website?.embeds ?? [], catalogue: [{ sku: 'S1', name: 'Box', price: 499, inCategory: true, dupImage: false }, { sku: 'S2', name: 'Big box', price: 999, inCategory: true, dupImage: false }] }; own(d, 'SALE').forEach((t: D, i: number) => { if (i % 4 === 0) t.amount = i % 8 === 0 ? 499 : 999; }); } },
+  { name: 'B7: betting front, 5 payers each deposit about 10 times a week', base: BET, should: 'OPEN_CASE',
+    mutate: d => { own(d, 'SALE').slice(0, 100).forEach((t: D, i: number) => { t.payerId = 'heavy' + (i % 5); }); } },
+  { name: 'B7 false positive: genuine kirana with 5 daily regulars', base: KIRANA, should: 'NO_CASE',
+    mutate: d => { own(d, 'SALE').slice(0, 40).forEach((t: D, i: number) => { t.payerId = 'regular' + (i % 5); }); } },
+  { name: 'I3 single signal: genuine sweets sweeps each settlement within 2 hours', base: GOOD, should: 'NO_CASE',
+    mutate: d => { own(d, 'SETTLEMENT').forEach((s: D, i: number) => { d.transactions.push({ id: 'SWEEP' + i, merchantId: d.merchant.id, type: 'TRANSFER', amount: Math.round(s.amount * 0.9), time: new Date(new Date(s.time).getTime() + 2 * 3600000).toISOString(), channel: 'PAYOUT', beneficiaryAccount: 'OWN-CURRENT-ACCOUNT' }); }); } },
+  { name: 'K1 single signal: genuine sweets declares national, 0-24h, tickets to 1 lakh', base: GOOD, should: 'NO_CASE',
+    mutate: d => { Object.assign(d.merchant, { catchment: 'NATIONAL', hours: [0, 24], ticketMax: 100000 }); } },
+  { name: 'Telegram betting: no website, no calendar, no refunds or payouts, heavy repeat depositors', base: BET, should: 'OPEN_CASE',
+    mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING', calendar: 'MISSING' }; delete d.website; d.matchFixtures = []; own(d, 'SALE').slice(0, 100).forEach((t: D, i: number) => { t.payerId = 'heavy' + (i % 5); }); } },
   // ADD MORE CASES BELOW (copy the shape above exactly)
 ];
 
@@ -84,7 +99,7 @@ for (const c of CASES) {
     else {
       const f = r.result.fusion;
       const nan = JSON.stringify(r.result.evidence.map(e => e.strength)).includes('null') || Number.isNaN(f.priorityScore);
-      got = f.decision; detail = `${f.priority} score=${f.priorityScore.toFixed(2)} fam=${f.independentFamilies.join('')} sys=${f.systems.length} ill=${r.result.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id).join(',')}${nan ? ' NaN!' : ''}`;
+      got = f.decision; detail = `${f.priority} score=${f.priorityScore.toFixed(2)} P=${f.posterior.toExponential(1)} fam=${f.independentFamilies.join('')} sys=${f.systems.length} ill=${r.result.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id).join(',')}${nan ? ' NaN!' : ''}`;
       if (nan) got = 'NAN';
     }
   } catch (e) { got = 'CRASH'; detail = (e as Error).message.slice(0, 120); }

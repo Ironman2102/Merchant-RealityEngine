@@ -1,7 +1,8 @@
 import type { Scenario } from '../types/merchant';
 import type { InvestigationResult, L1Result, LayerId, Timeline } from '../types/investigation';
 import type { PaymentEvent } from '../types/payment';
-import { buildWeeklyRows } from './residualEngine';
+import { volumeModel } from './residualEngine';
+import { RULES } from '../../../rules/index';
 import { cusum } from './cusumEngine';
 import { cohortContinuity } from './cohortContinuity';
 import { runDetectors } from './detectors';
@@ -40,9 +41,9 @@ const TL: Record<LayerId, Timeline[]> = {
 /** Pure, deterministic. Same scenario in → same result out. */
 export function runInvestigation(sc: Scenario): InvestigationResult {
   const events = sc.events.filter(e => e.merchantId === sc.primaryMerchantId);
-  const rows = buildWeeklyRows(sc.profile, sc.weekly), cs = cusum(rows), cohort = cohortContinuity(sc);
-  const evidence = runDetectors({ sc, p: sc.profile, all: events, sales: events.filter(e => e.type === 'SALE'), refunds: events.filter(e => e.type === 'REFUND'),
+  const vol = volumeModel(sc), rows = vol.rows, cs = cusum(rows, vol.z), cohort = cohortContinuity(sc);
+  const evidence = runDetectors({ sc, p: sc.profile, norm: RULES.mcc(sc.profile.mcc), vol, all: events, sales: events.filter(e => e.type === 'SALE'), refunds: events.filter(e => e.type === 'REFUND'),
     settlements: events.filter(e => e.type === 'SETTLEMENT'), transfers: events.filter(e => e.type === 'TRANSFER'), rows, cusum: cs, cohort });
-  const fusion = fuse(evidence), review = buildReview(evidence, fusion), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
+  const fusion = fuse(evidence, sc.profile), review = buildReview(evidence, fusion), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
   return { scenario: sc, events, l1: layer1(sc, events), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, timelines: TL };
 }

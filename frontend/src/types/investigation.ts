@@ -42,6 +42,20 @@ export interface FusionResult {
   priority: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
   priorityScore: number;
   unknownIds: string[];
+  /* ---- Bayesian engine (v2) ---- */
+  rulesVersion: string;
+  prior: number;                          // base rate P(front) before evidence
+  posterior: number;                      // P(front | evidence), median of draws
+  posteriorCi: [number, number];          // 90% interval from detector-uncertainty draws
+  logOdds: { prior: number; families: { family: Family; llr: number; items: string[] }[]; overrides: { id: string; llr: number; when: string }[]; total: number };
+  provenances: { provenance: string; nats: number }[];
+  mechanismPosterior: Record<Mechanism, number>;
+  decisionAnalysis: DecisionAnalysis;
+}
+export interface DecisionAnalysis {
+  actions: { level: ResponseLevel; label: string; expectedLoss: number; expectedLossLow: number; expectedLossHigh: number; autoAllowed: boolean }[];
+  recommended: ResponseLevel;
+  reason: string;
 }
 
 export type ChainVerdict = 'SUPPORTED' | 'FAILED' | 'PARTIAL' | 'UNVERIFIED' | 'NOT_SUPPORTED';

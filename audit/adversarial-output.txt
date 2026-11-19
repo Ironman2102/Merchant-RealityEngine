@@ -1,29 +1,36 @@
-PASS | baseline: betting front unchanged | want OPEN_CASE got OPEN_CASE | HIGH score=0.73 fam=ABCDEFGHI sys=4 ill=A1,A4,B6,C5,D7,D9,E1,F5,G6,H1,H3,I2
-PASS | baseline: genuine sweets unchanged | want NO_CASE got NO_CASE | NONE score=0.00 fam=H sys=1 ill=H1
-PASS | evasion: betting front declares NATIONAL catchment, 0-24h, ticket 1-100000 | want OPEN_CASE got OPEN_CASE | HIGH score=0.64 fam=CDEFGHI sys=4 ill=C5,D7,D9,E1,F5,G6,H1,H3,I2
-PASS | evasion: betting front sets seasonalMultiplier = actual/baseline | want OPEN_CASE got OPEN_CASE | HIGH score=0.71 fam=ABCDEFGHI sys=4 ill=A1,A4,B6,C5,D7,D9,E1,F5,G6,H3,I2
-PASS | robustness: purchaserVerification contacted=0 | want NO_CRASH got NO_CASE | NONE score=0.00 fam=H sys=1 ill=H1
-PASS | quiet launderer: betting front with refunds, transfers removed | want OPEN_CASE got OPEN_CASE | HIGH score=0.65 fam=ABCEFGH sys=3 ill=A1,A4,B6,C5,E1,F5,G6,H1,H3
-PASS | quiet launderer: + single stable beneficiary | want OPEN_CASE got OPEN_CASE | HIGH score=0.61 fam=ABCEGH sys=2 ill=A1,A4,B6,C5,E1,G6,H1,H3
-WEAK | quiet launderer: + website feed missing | want OPEN_CASE got NO_CASE | NONE score=0.00 fam=ABCH sys=1 ill=A1,A4,B6,C5,H1,H3
-WEAK | quiet launderer: + no match calendar | want OPEN_CASE got NO_CASE | NONE score=0.00 fam=ABH sys=1 ill=A1,A4,B6,H1,H3
-PASS | acquirer-only feed: betting front, every non-acquiring source MISSING | want OPEN_CASE got OPEN_CASE | MEDIUM score=0.50 fam=ABDFHI sys=3 ill=A1,A4,B6,D7,D9,F5,H1,H3,I2
-PASS | threshold-hugging: betting sales re-amounted to non-round values | want OPEN_CASE got OPEN_CASE | HIGH score=0.69 fam=ABCDEFGHI sys=4 ill=A1,B6,C5,D7,D9,E1,F5,G6,H1,H3,I2
-PASS | threshold-hugging: off-hours betting sales shifted to 21:00 local | want OPEN_CASE got OPEN_CASE | HIGH score=0.73 fam=ABCDEFGHI sys=4 ill=A1,A4,B6,C5,D7,D9,E1,F5,G6,H1,H3,I2
-WEAK | false positive: genuine sweets gets new bank account mid-period | want NO_CASE got OPEN_CASE | LOW score=0.14 fam=FH sys=3 ill=F5,F8,H1
-PASS | false positive: genuine sweets near a college, 30% payers from 5 other states | want NO_CASE got NO_CASE | NONE score=0.00 fam=BH sys=1 ill=B6,H1
-PASS | false positive: genuine sweets gift-box season, 30% sales at 500/1000 | want NO_CASE got NO_CASE | NONE score=0.00 fam=AH sys=1 ill=A4,H1
-PASS | false positive: genuine sweets late-night delivery app, 30% sales 22:00-23:30 | want NO_CASE got NO_CASE | NONE score=0.00 fam=H sys=1 ill=C2,H1
-WEAK | false positive: genuine diwali + one bank change + 3 refunds to UPI wallet | want NO_CASE got OPEN_CASE | LOW score=0.23 fam=DFH sys=3 ill=D9,F5,F8,H1
+PASS | baseline: betting front unchanged | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHI sys=3 ill=A1,A4,B6,C5,D7,D9,E1,G6,H3,I3
+PASS | baseline: genuine sweets unchanged | want NO_CASE got NO_CASE | NONE score=0.00 P=1.2e-6 fam= sys=0 ill=
+PASS | evasion: betting front declares NATIONAL catchment, 0-24h, ticket 1-100000 | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHIK sys=4 ill=A1,A4,B6,C5,D7,D9,E1,G6,H3,I3,K1
+PASS | evasion: betting front sets seasonalMultiplier = actual/baseline | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHI sys=3 ill=A1,A4,B6,C5,D7,D9,E1,G6,H3,I3
+PASS | robustness: purchaserVerification contacted=0 | want NO_CRASH got REJECT | purchaserVerification needs whole numbers with 0 ≤ confirmed ≤ contacted and contacted > 0.
+PASS | quiet launderer: betting front with refunds, transfers removed | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCEGH sys=3 ill=A1,A4,B6,C5,E1,G6,H3
+PASS | quiet launderer: + single stable beneficiary | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCEGH sys=3 ill=A1,A4,B6,C5,E1,G6,H3
+PASS | quiet launderer: + website feed missing | want OPEN_CASE got OPEN_CASE | HIGH score=0.99 P=9.9e-1 fam=ABCH sys=2 ill=A1,A4,B6,C5,H3
+PASS | quiet launderer: + no match calendar | want OPEN_CASE got OPEN_CASE | LOW score=0.39 P=3.9e-1 fam=ABH sys=1 ill=A1,A4,B6,H3
+PASS | acquirer-only feed: betting front, every non-acquiring source MISSING | want OPEN_CASE got OPEN_CASE | HIGH score=0.99 P=9.9e-1 fam=ABDHI sys=1 ill=A1,A4,B6,D7,D9,H3,I3
+PASS | threshold-hugging: betting sales re-amounted to non-round values | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHI sys=3 ill=A1,B6,C5,D7,D9,E1,G6,H3,I3
+PASS | threshold-hugging: off-hours betting sales shifted to 21:00 local | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHI sys=3 ill=A1,A4,B6,C5,D7,D9,E1,G6,H3,I3
+PASS | false positive: genuine sweets gets new bank account mid-period | want NO_CASE got NO_CASE | NONE score=0.00 P=1.6e-5 fam=F sys=1 ill=F8
+PASS | false positive: genuine sweets near a college, 30% payers from 5 other states | want NO_CASE got NO_CASE | NONE score=0.00 P=6.7e-6 fam= sys=1 ill=B6
+PASS | false positive: genuine sweets gift-box season, 30% sales at 500/1000 | want NO_CASE got NO_CASE | NONE score=0.00 P=4.1e-5 fam=A sys=1 ill=A4
+PASS | false positive: genuine sweets late-night delivery app, 30% sales 22:00-23:30 | want NO_CASE got NO_CASE | NONE score=0.00 P=8.5e-6 fam=C sys=1 ill=C2
+PASS | false positive: genuine diwali + one bank change + 3 refunds to UPI wallet | want NO_CASE got NO_CASE | NONE score=0.00 P=1.6e-5 fam=F sys=1 ill=F8
 PASS | robustness: merchant with zero SALEs but refunds | want REJECT got REJECT | The merchant has no SALE transactions to analyse.
 PASS | robustness: negative amount | want REJECT got REJECT | transactions[0] (TX0001): "amount" must be a positive number in rupees.
-PASS | robustness: ticketMin > ticketMax | want NO_CRASH got NO_CASE | NONE score=0.00 fam=AH sys=1 ill=A1,H1
-PASS | robustness: hours [22,6] overnight business | want NO_CASE got NO_CASE | NONE score=0.00 fam=CH sys=1 ill=C2,H1
-PASS | robustness: all weeklySales actual null | want NO_CRASH got NO_CASE | NONE score=0.00 fam= sys=0 ill=
-PASS | robustness: seasonalMultiplier 0 | want NO_CRASH got NO_CASE | NONE score=0.00 fam=H sys=1 ill=H1
-WEAK | robustness: purchaserVerification confirmed > contacted | want REJECT got NO_CASE | NONE score=0.00 fam=H sys=1 ill=H1
-PASS | robustness: 1 sale only | want NO_CRASH got NO_CASE | NONE score=0.00 fam=DH sys=1 ill=D7,H1
-PASS | robustness: duplicate payment split into 50 rupee-1 sales same payer same second | want NO_CRASH got NO_CASE | NONE score=0.00 fam=H sys=1 ill=A1,H1
-PASS | scale: 50k sales runtime under 5s | want NO_CRASH got NO_CASE | NONE score=0.00 fam=CH sys=1 ill=C5,H1
+PASS | robustness: ticketMin > ticketMax | want NO_CRASH got REJECT | merchant.ticketMin must be at least 0 and below merchant.ticketMax.
+PASS | robustness: hours [22,6] overnight business | want NO_CASE got NO_CASE | NONE score=0.00 P=1.2e-6 fam= sys=0 ill=
+PASS | robustness: all weeklySales actual null | want NO_CRASH got NO_CASE | NONE score=0.00 P=1.3e-6 fam= sys=0 ill=
+PASS | robustness: seasonalMultiplier 0 | want NO_CRASH got REJECT | weeklySales[0].seasonalMultiplier must be between 0.2 and 6. | weeklySales[1].seasonalMultiplier must be between 0.2 and 6.
+PASS | robustness: purchaserVerification confirmed > contacted | want REJECT got REJECT | purchaserVerification needs whole numbers with 0 ≤ confirmed ≤ contacted and contacted > 0.
+PASS | robustness: 1 sale only | want NO_CRASH got NO_CASE | NONE score=0.00 P=1.7e-3 fam=D sys=1 ill=D7
+PASS | robustness: duplicate payment split into 50 rupee-1 sales same payer same second | want NO_CRASH got NO_CASE | NONE score=0.00 P=1.2e-6 fam= sys=0 ill=
+PASS | scale: 50k sales runtime under 5s | want NO_CRASH got NO_CASE | NONE score=0.00 P=1.2e-6 fam= sys=0 ill=
+PASS | A5: betting front amounts moved to deposit-tier values | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHI sys=3 ill=A1,A4,A5,B6,C5,D7,D9,E1,G6,H3,I3
+PASS | A5 false positive: genuine sweets with real catalogue prices 499/999 | want NO_CASE got NO_CASE | NONE score=0.00 P=1.3e-6 fam= sys=0 ill=
+PASS | B7: betting front, 10 payers each deposit about 10 times in a week | want OPEN_CASE got OPEN_CASE | HIGH score=1.00 P=1.0e+0 fam=ABCDEGHI sys=3 ill=A1,A4,B6,C5,D7,D9,E1,G6,H3,I3
+PASS | B7 false positive: genuine kirana with 5 daily regulars | want NO_CASE got NO_CASE | NONE score=0.00 P=8.2e-6 fam=H sys=1 ill=H1
+PASS | I3 single signal: genuine sweets sweeps each settlement within 2 hours | want NO_CASE got NO_CASE | NONE score=0.00 P=2.5e-5 fam=I sys=1 ill=I3
+PASS | K1 single signal: genuine sweets declares national, 0-24h, tickets to 1 lakh | want NO_CASE got NO_CASE | NONE score=0.00 P=2.3e-5 fam=K sys=1 ill=K1
+PASS | Telegram betting: no website, no calendar, no refunds or payouts, heavy repeat depositors | want OPEN_CASE got OPEN_CASE | LOW score=0.39 P=3.9e-1 fam=ABH sys=1 ill=A1,A4,B6,H3
 
-22/27 robust, 5 weaknesses
+34/34 robust, 0 weaknesses

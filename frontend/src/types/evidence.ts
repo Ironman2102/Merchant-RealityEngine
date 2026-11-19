@@ -1,6 +1,8 @@
 import type { CoverageKey } from './merchant';
 
-export type Family = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I';
+export type Family = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'K';
+/** Where the evidence's data comes from. Two items with the same provenance are not independent sources. */
+export type Provenance = 'payments' | 'calendar' | 'crawler' | 'panel' | 'orders' | 'fulfilment' | 'bank' | 'network' | 'kyc';
 export type EvidenceStatus = 'ILLICIT' | 'BENIGN' | 'UNKNOWN';
 export type Mechanism = 'ROTATION' | 'TRANSACTION_LAUNDERING' | 'FABRICATED_SUBSTANCE' | 'OTHER_ABUSE';
 
@@ -21,4 +23,14 @@ export interface EvidenceItem {
   metrics: Record<string, string | number>;
   records: string[];          // event ids / link ids behind the signal
   requires: CoverageKey[];
+  /* ---- statistical fields (v2 engine) ---- */
+  llr: number;                // evidence weight in nats: >0 towards "front", <0 towards "genuine", 0 = UNKNOWN
+  provenance: Provenance;
+  test: string;               // the statistical test that produced p
+  p: number | null;           // p-value against the category / peer norm (null for deterministic checks)
+  effect: number | null;      // practical effect size (see test)
+  effectLabel: string;        // what `effect` measures
+  ci: [number, number] | null;// 90% interval for the observed rate / effect, where defined
+  n: number;                  // observations behind the test
+  expectedSource: string;     // where the expectation came from (category norm, calendar, peers…)
 }

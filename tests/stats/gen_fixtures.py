@@ -48,5 +48,9 @@ add("sbbLlr", [0.01], -math.log(-math.e * 0.01 * math.log(0.01)))
 add("sbbLlr", [0.5], 0.0)
 # ADD MORE CASES BELOW (same shape)
 
+add("lognormalCdf", [900, 600, 0.5], float(stats.lognorm.cdf(900, 0.5, scale=600)))
+_x = [120, 300, 420, 515, 560, 640, 700, 810, 950, 1200, 1500, 2100, 2600, 3100, 4000]
+add("ksOneSample_lognorm", [_x, 600, 0.5], float(stats.kstest(_x, stats.lognorm(0.5, scale=600).cdf, method="exact").pvalue), 0.01)
+
 json.dump(cases, open("tests/stats/fixtures/reference.json", "w"), indent=1)
 print(len(cases), "cases written")

@@ -26,6 +26,7 @@ const TEST_DATASETS = [
   { file: '02-merchant-rotation.json', title: 'Nova Gift Emporium · merchant rotation' },
   { file: '03-fabricated-online-store.json', title: 'Aarav Home Decor Online · fabricated commercial activity' },
   { file: '04-anand-sweets-diwali-genuine.json', title: 'Anand Sweets & Bakes · genuine Diwali growth' },
+  { file: '09-telegram-betting-no-website.json', title: 'Kaveri Mithai Stores · Telegram betting link, no website' },
 ];
 
 export function UploadPage() {

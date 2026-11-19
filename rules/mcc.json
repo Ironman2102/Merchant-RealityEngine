@@ -1,11 +1,163 @@
 {
-  "_note": "Expected behaviour per merchant category. EXPERT PRIORS (est.), not measurements: replaced by portfolio peer baselines when a peer group has >= 10 merchants (plan P9). ticket = lognormal(ln median, sigma). Shares are fractions of sales. reviewedOn = when a person last checked the row.",
-  "default": { "name": "Other retail", "ticket": { "median": 600, "sigma": 0.7 }, "open": 9, "close": 21, "roundShare": 0.08, "nightShare": 0.02, "offAreaShare": 0.08, "catchment": "LOCAL", "refundRate": 0.03, "heavyRepeatShare": 0.03, "bonusShare": 0.02, "payoutBeneficiaries": 3, "beneficiaryChangesPerYear": 0.3, "festivalSector": "retail", "reviewedOn": "2026-11-19" },
-  "5462": { "name": "Bakeries and sweet shops", "ticket": { "median": 600, "sigma": 0.5 }, "open": 7, "close": 22, "roundShare": 0.06, "nightShare": 0.01, "offAreaShare": 0.05, "catchment": "LOCAL", "refundRate": 0.02, "heavyRepeatShare": 0.04, "bonusShare": 0.01, "payoutBeneficiaries": 3, "beneficiaryChangesPerYear": 0.3, "festivalSector": "sweets", "reviewedOn": "2026-11-19" },
-  "5411": { "name": "Grocery and kirana", "ticket": { "median": 700, "sigma": 0.6 }, "open": 7, "close": 22, "roundShare": 0.06, "nightShare": 0.01, "offAreaShare": 0.04, "catchment": "LOCAL", "refundRate": 0.01, "heavyRepeatShare": 0.08, "bonusShare": 0.01, "payoutBeneficiaries": 5, "beneficiaryChangesPerYear": 0.3, "festivalSector": "grocery", "reviewedOn": "2026-11-19" },
-  "5812": { "name": "Restaurants", "ticket": { "median": 650, "sigma": 0.6 }, "open": 7, "close": 23, "roundShare": 0.07, "nightShare": 0.03, "offAreaShare": 0.08, "catchment": "LOCAL", "refundRate": 0.02, "heavyRepeatShare": 0.03, "bonusShare": 0.02, "payoutBeneficiaries": 4, "beneficiaryChangesPerYear": 0.3, "festivalSector": "food", "reviewedOn": "2026-11-19" },
-  "5814": { "name": "Fast food and tiffin", "ticket": { "median": 350, "sigma": 0.5 }, "open": 7, "close": 22, "roundShare": 0.04, "nightShare": 0.02, "offAreaShare": 0.06, "catchment": "LOCAL", "refundRate": 0.02, "heavyRepeatShare": 0.06, "bonusShare": 0.02, "payoutBeneficiaries": 3, "beneficiaryChangesPerYear": 0.3, "festivalSector": "food", "reviewedOn": "2026-11-19" },
-  "5947": { "name": "Gift, card and novelty", "ticket": { "median": 900, "sigma": 0.7 }, "open": 10, "close": 21, "roundShare": 0.12, "nightShare": 0.01, "offAreaShare": 0.08, "catchment": "LOCAL", "refundRate": 0.03, "heavyRepeatShare": 0.02, "bonusShare": 0.02, "payoutBeneficiaries": 3, "beneficiaryChangesPerYear": 0.3, "festivalSector": "gifts", "reviewedOn": "2026-11-19" },
-  "5712": { "name": "Furniture and home furnishings", "ticket": { "median": 4500, "sigma": 0.8 }, "open": 0, "close": 24, "roundShare": 0.05, "nightShare": 0.06, "offAreaShare": 0.6, "catchment": "NATIONAL", "refundRate": 0.05, "heavyRepeatShare": 0.005, "bonusShare": 0.005, "payoutBeneficiaries": 6, "beneficiaryChangesPerYear": 0.3, "festivalSector": "durables", "reviewedOn": "2026-11-19" },
-  "5943": { "name": "Stationery and office supplies", "ticket": { "median": 350, "sigma": 0.7 }, "open": 8, "close": 21, "roundShare": 0.07, "nightShare": 0.01, "offAreaShare": 0.06, "catchment": "LOCAL", "refundRate": 0.02, "heavyRepeatShare": 0.04, "bonusShare": 0.02, "payoutBeneficiaries": 3, "beneficiaryChangesPerYear": 0.3, "festivalSector": "retail", "reviewedOn": "2026-11-19" }
+ "_note": "Expected behaviour per merchant category. EXPERT PRIORS (est.), not measurements: replaced by portfolio peer baselines when a peer group has >= 10 merchants (plan P9). ticket = lognormal(ln median, sigma). Shares are fractions of sales. offHoursShare = share of sales outside open\u2013close. reviewedOn = when a person last checked the row.",
+ "default": {
+  "name": "Other retail",
+  "ticket": {
+   "median": 600,
+   "sigma": 0.7
+  },
+  "open": 9,
+  "close": 21,
+  "roundShare": 0.08,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.08,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 3,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-19"
+ },
+ "5462": {
+  "name": "Bakeries and sweet shops",
+  "ticket": {
+   "median": 600,
+   "sigma": 0.5
+  },
+  "open": 7,
+  "close": 22,
+  "roundShare": 0.06,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.05,
+  "catchment": "LOCAL",
+  "refundRate": 0.02,
+  "heavyRepeatShare": 0.04,
+  "bonusShare": 0.01,
+  "payoutBeneficiaries": 3,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "sweets",
+  "reviewedOn": "2026-11-19"
+ },
+ "5411": {
+  "name": "Grocery and kirana",
+  "ticket": {
+   "median": 700,
+   "sigma": 0.6
+  },
+  "open": 7,
+  "close": 22,
+  "roundShare": 0.06,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.04,
+  "catchment": "LOCAL",
+  "refundRate": 0.01,
+  "heavyRepeatShare": 0.08,
+  "bonusShare": 0.01,
+  "payoutBeneficiaries": 5,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "grocery",
+  "reviewedOn": "2026-11-19"
+ },
+ "5812": {
+  "name": "Restaurants",
+  "ticket": {
+   "median": 650,
+   "sigma": 0.6
+  },
+  "open": 7,
+  "close": 23,
+  "roundShare": 0.07,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.08,
+  "catchment": "LOCAL",
+  "refundRate": 0.02,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "food",
+  "reviewedOn": "2026-11-19"
+ },
+ "5814": {
+  "name": "Fast food and tiffin",
+  "ticket": {
+   "median": 350,
+   "sigma": 0.5
+  },
+  "open": 7,
+  "close": 22,
+  "roundShare": 0.04,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.06,
+  "catchment": "LOCAL",
+  "refundRate": 0.02,
+  "heavyRepeatShare": 0.06,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 3,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "food",
+  "reviewedOn": "2026-11-19"
+ },
+ "5947": {
+  "name": "Gift, card and novelty",
+  "ticket": {
+   "median": 900,
+   "sigma": 0.7
+  },
+  "open": 10,
+  "close": 21,
+  "roundShare": 0.12,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.08,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.02,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 3,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-19"
+ },
+ "5712": {
+  "name": "Furniture and home furnishings",
+  "ticket": {
+   "median": 4500,
+   "sigma": 0.8
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.05,
+  "offHoursShare": 0.0,
+  "offAreaShare": 0.6,
+  "catchment": "NATIONAL",
+  "refundRate": 0.05,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.005,
+  "payoutBeneficiaries": 6,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "durables",
+  "reviewedOn": "2026-11-19"
+ },
+ "5943": {
+  "name": "Stationery and office supplies",
+  "ticket": {
+   "median": 350,
+   "sigma": 0.7
+  },
+  "open": 8,
+  "close": 21,
+  "roundShare": 0.07,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.06,
+  "catchment": "LOCAL",
+  "refundRate": 0.02,
+  "heavyRepeatShare": 0.04,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 3,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-19"
+ }
 }

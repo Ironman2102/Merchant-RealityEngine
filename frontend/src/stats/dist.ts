@@ -82,3 +82,6 @@ export function negBinomInterval(mu: number, theta: number, level = 0.95): [numb
   const z = normalQuantile(1 - a);
   return [Math.max(0, mu - z * sd), mu + z * sd];
 }
+
+/* ---------- log-normal ---------- */
+export const lognormalCdf = (x: number, median: number, sigma: number) => (x <= 0 ? 0 : normalCdf(Math.log(x / median) / sigma));

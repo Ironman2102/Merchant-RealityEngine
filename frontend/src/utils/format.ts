@@ -10,3 +10,10 @@ export const inrK = (n: number) => n >= 1e7 ? `₹${(n / 1e7).toFixed(2)}Cr` : n
 export const pct = (x: number, d = 0) => (x * 100).toFixed(d) + '%';
 export const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 export const cx = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');
+
+/** Probability for display. Never prints 0% or 100%: the model is not that certain, whatever the arithmetic says. */
+export const fmtProb = (v: number) => (v > 0.999 ? '> 99.9%' : v < 0.001 ? '< 0.1%' : `${(v * 100).toFixed(v < 0.1 || v > 0.9 ? 1 : 0)}%`);
+/** "P(front) = 78%" / "P(front) > 99.9%". */
+export const probEq = (v: number) => { const s = fmtProb(v); return /^[<>]/.test(s) ? s : `= ${s}`; };
+/** 90% interval text that stays readable at the extremes. */
+export const fmtInterval = ([lo, hi]: [number, number]) => (lo > 0.999 ? '90% interval above 99.9%' : hi < 0.001 ? '90% interval below 0.1%' : `90% interval ${fmtProb(lo)} to ${fmtProb(hi)}`);
