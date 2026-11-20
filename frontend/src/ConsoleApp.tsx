@@ -5,6 +5,7 @@ import { AIEnginePage } from './pages/AIEnginePage';
 import { UploadPage } from './pages/UploadPage';
 import { ServerCasePage } from './pages/ServerCasePage';
 import { PortfolioPage } from './pages/PortfolioPage';
+import { ImprovementsPage } from './pages/ImprovementsPage';
 import { CasePage } from './pages/CasePage';
 import { InvestigationPage } from './pages/InvestigationPage';
 import { TracePage } from './pages/TracePage';
@@ -37,6 +38,7 @@ export default function ConsoleApp() {
             <Route path="cases/:id" element={<ServerCasePage />} />
             <Route path="cases/:id/:view" element={<ServerCasePage />} />
             <Route path="portfolio" element={<PortfolioPage />} />
+            <Route path="improvements" element={<ImprovementsPage />} />
             <Route element={<RequireUserDataset />}>
               <Route path="investigations" element={<InvestigationPage />} />
               <Route path="trace" element={<TracePage />} />

@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build && cp dist-console/console.html dist-console/index.html"
+  publish = "dist-console"
+
+[functions]
+  directory = "netlify/functions"
+  included_files = ["workflow/*.json"]
+  node_bundler = "esbuild"
+
+[functions.api]
+  timeout = 60
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

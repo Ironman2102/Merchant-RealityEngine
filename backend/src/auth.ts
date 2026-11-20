@@ -3,7 +3,7 @@
  * cookie. Roles: analyst < reviewer; legal and admin are separate powers (see workflow.ts for who may do what).
  * Upgrade path: the pilot PA's SSO (OIDC) replaces login(); sessions and roles stay.
  */
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 import { getDb } from './db';
 import { verifyIdToken, type OidcCheck } from './oidc';
@@ -15,6 +15,39 @@ export interface Actor { id: number; username: string; role: Role }
 const SESSION_MS = 12 * 3600 * 1000;
 export const COOKIE = 'mre_session';
 const tokenHash = (t: string) => createHash('sha256').update(t).digest('hex');
+const sessionSecret = () => process.env.MRE_SESSION_SECRET || process.env.MRE_HASH_KEY || '';
+
+/** A signed cookie still names the user after the function's temporary database is gone. */
+function signActor(actor: Actor): string | null {
+  const secret = sessionSecret();
+  if (!secret) return null;
+  const body = Buffer.from(JSON.stringify({ id: actor.id, username: actor.username, role: actor.role, exp: Date.now() + SESSION_MS })).toString('base64url');
+  const sig = createHmac('sha256', secret).update(body).digest('base64url');
+  return `v1.${body}.${sig}`;
+}
+
+function actorFromSigned(token: string): Actor | null {
+  const secret = sessionSecret();
+  if (!secret || !token.startsWith('v1.')) return null;
+  const [, body, sig] = token.split('.');
+  if (!body || !sig) return null;
+  const expect = createHmac('sha256', secret).update(body).digest('base64url');
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expect);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as { id?: number; username?: string; role?: Role; exp?: number };
+    if (!payload.exp || payload.exp < Date.now() || typeof payload.id !== 'number' || !payload.username || !payload.role || !ROLES.includes(payload.role)) return null;
+    return { id: payload.id, username: payload.username, role: payload.role };
+  } catch { return null; }
+}
+
+function issueSession(actor: Actor): string {
+  const signed = signActor(actor);
+  const token = signed ?? randomBytes(32).toString('base64url');
+  getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), actor.id, Date.now() + SESSION_MS);
+  return token;
+}
 const scrypt = (pw: string, salt: string) => scryptSync(pw, salt, 64, { N: 16384, r: 8, p: 1 }).toString('hex');
 
 export function createUser(username: string, password: string, role: Role): Actor {
@@ -33,9 +66,8 @@ export function login(username: string, password: string): { token: string; acto
   const got = Buffer.from(scrypt(password, row?.pw_salt ?? 'no-such-user-salt'), 'hex');
   const want = Buffer.from(row?.pw_hash ?? '00'.repeat(64), 'hex');
   if (!row || row.disabled || !timingSafeEqual(got, want)) return null;
-  const token = randomBytes(32).toString('base64url');
-  getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), row.id, Date.now() + SESSION_MS);
-  return { token, actor: { id: row.id, username: row.username, role: row.role } };
+  const actor = { id: row.id, username: row.username, role: row.role };
+  return { token: issueSession(actor), actor };
 }
 
 function usernameFromSub(sub: string): string {
@@ -60,15 +92,16 @@ export function loginWithIdToken(idToken: string, check: OidcCheck): { token: st
     id = existing.id;
     getDb().prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
   }
-  const token = randomBytes(32).toString('base64url');
-  getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), id, Date.now() + SESSION_MS);
-  return { token, actor: { id, username, role } };
+  const actor = { id, username, role };
+  return { token: issueSession(actor), actor };
 }
 
 export function logout(token: string): void { getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(tokenHash(token)); }
 
 export function actorFromToken(token: string | undefined): Actor | null {
   if (!token) return null;
+  const signed = actorFromSigned(token);
+  if (signed) return signed;
   const row = getDb().prepare('SELECT u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND u.disabled = 0')
     .get(tokenHash(token), Date.now()) as Actor | undefined;
   return row ?? null;

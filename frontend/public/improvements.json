@@ -1,0 +1,38 @@
+{
+  "synthetic": true,
+  "heldOut": 300,
+  "models": [
+    {
+      "name": "Neural network",
+      "version": "nn-v0",
+      "kind": "Two hidden layers, 32 and 16 units",
+      "averagePrecision": 1.0,
+      "ece": 2.4025280232132443e-06,
+      "recall": "17/17",
+      "genuineFp": "0/283"
+    },
+    {
+      "name": "LightGBM tree model",
+      "version": "m1-v0",
+      "kind": "Gradient-boosted trees",
+      "averagePrecision": 1.0,
+      "ece": 0.0,
+      "recall": "17/17",
+      "genuineFp": "0/283"
+    },
+    {
+      "name": "Bayesian engine",
+      "version": "rules",
+      "kind": "The decision maker",
+      "averagePrecision": 0.914749100330051,
+      "ece": 0.09763900059150132,
+      "recall": "17/17",
+      "genuineFp": "34/283"
+    }
+  ],
+  "rsi": {
+    "definition": "Relative score improvement: (neural-network average precision \u2212 comparison average precision) / comparison average precision. Positive means the network ranks the held-out synthetic fronts higher.",
+    "versusLightGBM": 0.0,
+    "versusBayesian": 0.09319593715827611
+  }
+}

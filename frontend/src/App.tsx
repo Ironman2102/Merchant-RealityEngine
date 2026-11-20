@@ -18,6 +18,7 @@ import { PatternsPage } from './pages/PatternsPage';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { CasePage } from './pages/CasePage';
 import { AIEnginePage } from './pages/AIEnginePage';
+import { ImprovementsPage } from './pages/ImprovementsPage';
 import { ServerCasePage } from './pages/ServerCasePage';
 import { TracePage } from './pages/TracePage';
 import { PortfolioProvider } from './hooks/usePortfolio';
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="cases/:id" element={<ServerCasePage />} />
             <Route path="cases/:id/:view" element={<ServerCasePage />} />
             <Route path="portfolio" element={<PortfolioPage />} />
+            <Route path="improvements" element={<ImprovementsPage />} />
             <Route element={<RequireUserDataset />}>
               <Route path="portfolio/:key" element={<CasePage />} />
               <Route path="investigations" element={<InvestigationPage />} />

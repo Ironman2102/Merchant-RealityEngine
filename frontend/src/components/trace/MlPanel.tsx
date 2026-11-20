@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Badge, Panel } from '../ui/ui';
 import { getPilotJson } from '../../services/pilotApi';
 import { fmtProb } from '../../utils/format';
+import { ModelSandbox } from './ModelSandbox';
 
 interface Opinion { p: number; modelVersion: string; synthetic?: boolean; drivers: { feature: string; shap: number }[] }
 
@@ -10,17 +11,18 @@ const words = (feature: string) => feature.replace(/^llr_/, 'Weight for ').repla
 
 export function MlPanel({ caseId, posterior }: { caseId: string | null; posterior: number }) {
   const [ml, setMl] = useState<Opinion | null | undefined>(undefined);
+  const [reload, setReload] = useState(0);
   useEffect(() => {
     if (!caseId) { setMl(null); return; }
     let live = true;
     getPilotJson(caseId, 'trace').then(body => { if (live) setMl((body.ml as Opinion | null) ?? null); }).catch(() => { if (live) setMl(null); });
     return () => { live = false; };
-  }, [caseId]);
+  }, [caseId, reload]);
   const both = ml && ((ml.p >= 0.1 && posterior >= 0.1) || (ml.p < 0.1 && posterior < 0.1));
   return (
     <Panel title="AI model (second opinion)" subtitle="A trained model on the detector scores. It does not choose the action.">
       {ml === undefined && <p className="text-sm text-mute">Asking the model…</p>}
-      {ml === null && <p className="text-sm">AI model offline. The decision does not depend on it.</p>}
+      {ml === null && <div className="space-y-2"><p className="text-sm">AI model offline. The decision does not depend on it.</p><ModelSandbox onReady={() => setReload(n => n + 1)} /></div>}
       {ml && (
         <div className="space-y-2 text-sm">
           <div className="flex flex-wrap items-center gap-2">

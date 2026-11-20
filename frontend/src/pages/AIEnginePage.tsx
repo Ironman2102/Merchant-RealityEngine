@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileUp, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, FileUp, RefreshCw } from 'lucide-react';
 import { useInvestigation } from '../hooks/useInvestigation';
 import { Badge, Btn } from '../components/ui/ui';
 import { listPilotCases, type PilotCaseSummary } from '../services/pilotApi';
+import { ModelSandbox } from '../components/trace/ModelSandbox';
 
 export function AIEnginePage() {
   const { custom, started, allDone, status, result } = useInvestigation();
@@ -24,19 +25,31 @@ export function AIEnginePage() {
     <div className="mx-auto max-w-5xl space-y-7 py-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1.5 text-xs text-mute"><Sparkles size={14} /> MERCHANT RISK WORKSPACE</div>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">AI Engine</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mute">Ingest a merchant dataset, inspect explainable risk signals, record an analyst review, and keep the case available for follow-up.</p>
+          <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Is this shop someone else’s front?</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed">A merchant can pass KYC and still process payments for a different business. This tool reads the payments and says whether to open a case.</p>
         </div>
-        <Link to="/ai-engine/analyze"><Btn variant="primary"><FileUp size={15} />Start an analysis <ArrowRight size={14} /></Btn></Link>
+        <Link to="/ai-engine/analyze"><Btn variant="primary"><FileUp size={15} />Check a merchant <ArrowRight size={14} /></Btn></Link>
       </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          ['Data intake', 'Validated JSON upload', 'info'],
-          ['Case storage', 'Local JSON persistence', 'warn'],
-          ['Partner connectors', 'None configured', 'mute'],
-        ].map(([label, value, tone]) => <div key={label} className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">{label}</div><div className="mt-2"><Badge tone={tone as 'info' | 'warn' | 'mute'}>{value}</Badge></div></div>)}
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The problem</div><p className="mt-2 text-sm">A registered shop can take payments that do not belong to the business it declared.</p></div>
+        <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The output</div><p className="mt-2 text-sm">Open a case, or do not. You also get a probability and a range, not a bare yes.</p></div>
+        <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The limit</div><p className="mt-2 text-sm">A second person approves anything that restricts funds. The trained model is a second opinion and does not decide.</p></div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Link to="/ai-engine/analyze?sample=01-sweet-crumbs-betting-front.json" className="rounded-lg border border-line bg-panel p-4 hover:border-line2">
+          <div className="text-xs text-mute">Worked example · case expected</div>
+          <div className="mt-2 font-medium">Sweet Crumbs Bakery</div>
+          <p className="mt-1 text-sm text-mute">Declared as a local bakery. Payments look like betting deposits. The tool should open a case.</p>
+        </Link>
+        <Link to="/ai-engine/analyze?sample=04-anand-sweets-diwali-genuine.json" className="rounded-lg border border-line bg-panel p-4 hover:border-line2">
+          <div className="text-xs text-mute">Worked example · no case expected</div>
+          <div className="mt-2 font-medium">Anand Sweets &amp; Bakes</div>
+          <p className="mt-1 text-sm text-mute">Sales jump in the Diwali fortnight and still look like a sweet shop. The tool should not open a case.</p>
+        </Link>
+      </div>
+      <div className="rounded-lg border border-line bg-panel px-4 py-3">
+        <ModelSandbox />
+        <p className="mt-2 text-xs text-dim">Checking a file starts the model sandbox, runs the model, then stops the sandbox. That does not change the case decision.</p>
       </div>
 
       {custom && started && <div className="rounded-lg border border-line bg-panel p-5">
@@ -46,7 +59,7 @@ export function AIEnginePage() {
 
       <section className="rounded-lg border border-line bg-panel">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4"><div><h2 className="font-semibold">Investigation cases</h2><p className="mt-1 text-xs text-mute">Cases saved by this local backend instance.</p></div><Btn size="sm" onClick={() => void refresh()} disabled={loading}><RefreshCw size={13} />Refresh</Btn></div>
-        {error && <div className="px-5 py-4 text-sm text-neutral-300">{error} Start the app with <span className="font-mono">./start.sh</span> to connect to the case service.</div>}
+        {error && <div className="px-5 py-4 text-sm text-neutral-300" role="alert">{error}{error.includes('Sign in') ? ' Sign in again. The hosted case list does not use a local start script.' : <> Start the app with <span className="font-mono">./start.sh</span> when you are running it on this computer.</>}</div>}
         {!error && loading && <div className="px-5 py-8 text-center text-sm text-mute">Loading saved cases…</div>}
         {!error && !loading && cases.length === 0 && <div className="px-5 py-9 text-center"><div className="text-sm font-medium">No saved cases yet</div><p className="mt-1 text-xs text-mute">Upload a dataset to create the first investigation.</p><Link to="/ai-engine/analyze" className="mt-4 inline-flex"><Btn size="sm" variant="primary"><FileUp size={13} />Analyze a dataset</Btn></Link></div>}
         {!error && cases.length > 0 && <p className="border-b border-line px-5 py-3 text-sm" data-testid="portfolio-queue">{cases.filter(c => c.result.decision === 'OPEN_CASE').length} cases · about {cases.filter(c => c.result.decision === 'OPEN_CASE').reduce((s, c) => s + (1 - (c.result.posterior ?? 0)), 0).toFixed(2)} expected false alarms</p>}

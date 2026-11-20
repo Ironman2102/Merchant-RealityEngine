@@ -13,7 +13,7 @@ import { caseTrace, evidencePack } from './trace';
 import { getInvestigation } from './workflow';
 import { authenticateServiceKey, idempotent, type Scope, type ServicePrincipal } from './serviceKeys';
 import type { Actor } from './auth';
-import { mlScore } from './ml';
+import { scoreWithHost } from './ml';
 
 export interface V1Req { method: string; path: string; header: (name: string) => string | undefined; body: unknown }
 
@@ -28,7 +28,7 @@ async function scoreOf(raw: unknown): Promise<ApiReply> {
   const top = [...f.mechanisms].sort((a, b) => b.score - a.score)[0];
   const topEvidence = ran.result.evidence.filter(e => e.status === 'ILLICIT').sort((a, b) => b.llr - a.llr).slice(0, 8)
     .map(e => ({ id: e.id, name: e.name, observed: e.observed, llr: e.llr }));
-  const ml = await mlScore(ran.result);
+  const ml = await scoreWithHost(ran.result);
   return {
     status: 200,
     body: {

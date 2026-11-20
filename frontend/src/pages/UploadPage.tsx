@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Download, FileJson, FileUp, Play, ShieldAlert, ShieldCheck, X } from 'lucide-react';
 import { useInvestigation } from '../hooks/useInvestigation';
 import { usePortfolio } from '../hooks/usePortfolio';
@@ -79,6 +79,25 @@ export function UploadPage() {
     }
   };
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  useEffect(() => {
+    const file = params.get('sample');
+    if (!file || !TEST_DATASETS.some(item => item.file === file)) return;
+    setSampleFile(file);
+    void (async () => {
+      setLoadingSample(true);
+      try {
+        const response = await fetch(`${BASE}samples/${file}`);
+        if (!response.ok) throw new Error(`Could not load the test file (${response.status}).`);
+        const sample = TEST_DATASETS.find(item => item.file === file)!;
+        read(sample.title, await response.text());
+      } catch (e) {
+        setParsed({ ok: false, errors: [(e as Error).message], warnings: [] });
+      } finally { setLoadingSample(false); }
+    })();
+    // The sample query is read once, when the page opens from a worked example.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const analyse = async () => {
     if (!parsed?.scenario || !raw) return;
     setPosting(true); setServerError('');

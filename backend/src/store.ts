@@ -6,6 +6,7 @@
  */
 import { createHash } from 'node:crypto';
 import type { ActionRecord, InvestigationResult, ResponseLevel, UserState } from '../../frontend/src/types/investigation';
+import type { MlOpinion } from './ml';
 import type { Label } from '../../frontend/src/types/merchant';
 import type { ResponsePlan } from '../../frontend/src/engines/responseEngine';
 import type { ReliabilityUpdate } from '../../frontend/src/engines/learningEngine';
@@ -28,6 +29,8 @@ export interface CaseRecord {
   response: ResponsePlan | null;
   learning: { updates: ReliabilityUpdate[]; profile: string[] } | null;
   pending: Pending;
+  /** Saved second opinion from the file that opened the case. Absent on older rows. */
+  ml?: MlOpinion;
 }
 export interface AuditRow extends ActionRecord { actorId: number | null; prevHash: string; hash: string }
 

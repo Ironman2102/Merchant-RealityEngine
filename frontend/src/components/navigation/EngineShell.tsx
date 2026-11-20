@@ -9,6 +9,7 @@ const BASE_NAV = [
   { to: '/ai-engine', label: 'My workspace', icon: BrainCircuit, end: true },
   { to: '/ai-engine/analyze', label: 'Analyze your data', icon: FileUp, end: true },
   { to: '/ai-engine/portfolio', label: 'My results', icon: Store, end: false },
+  { to: '/ai-engine/improvements', label: 'Improvements', icon: BarChart3, end: true },
 ];
 const RESULT_NAV = [
   { to: '/ai-engine/investigations', label: 'Seven-layer findings', icon: FileSearch, end: false },

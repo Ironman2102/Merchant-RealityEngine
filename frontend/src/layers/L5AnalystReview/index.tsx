@@ -5,6 +5,7 @@ import { LayerFrame } from '../../components/common/LayerFrame';
 import { RecordPeek } from '../../components/common/RecordPeek';
 import { Badge, Btn, Callout, Panel, StatusBadge, Tabs, Td, Th, rowCls, tableCls, Mono, type Tone } from '../../components/ui/ui';
 import { RESPONSE_LEVELS } from '../../data/evidence';
+import { AnswerBanner } from '../../components/common/AnswerBanner';
 import type { ChainItem, ChainVerdict } from '../../types/investigation';
 import { cx } from '../../utils/format';
 
@@ -27,7 +28,7 @@ function Chain({ title, tone, items, mode, sel, onSel }: { title: string; tone: 
         {items.map((it, i) => (
           <li key={it.label}><button onClick={() => onSel(it.label)} className={cx('flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-panel2/60', sel === it.label && 'bg-panel2')}>
             <span className="relative mt-0.5 flex flex-col items-center"><span className={cx('h-2.5 w-2.5 rounded-full', vTone[mode][it.verdict] === 'bad' ? 'bg-neutral-400' : vTone[mode][it.verdict] === 'ok' ? 'bg-gray-400' : vTone[mode][it.verdict] === 'warn' ? 'bg-stone-400' : 'bg-slate-500')} />{i < items.length - 1 && <span className="absolute top-3 h-8 w-px bg-line2" />}</span>
-            <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">{it.label}</span><span className="block text-xs text-mute">{it.detail}</span><span className="mt-1 block text-[11px] text-dim">Tests: {it.evidenceIds.join(', ')}</span></span>
+            <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">{it.label}</span>{sel === it.label && <><span className="block text-xs text-mute">{it.detail}</span><span className="mt-1 block text-[11px] text-dim">Tests: {it.evidenceIds.join(', ')}</span></>}</span>
             <Badge tone={vTone[mode][it.verdict]}>{vLabel[mode][it.verdict]}</Badge></button></li>))}
       </ol>
     </div>
@@ -42,9 +43,9 @@ export function L5View() {
   const sc = r.scenario, byId = new Map(r.events.map(e => [e.id, e]));
   const refunds = r.events.filter(e => e.type === 'REFUND'), gaps = Object.entries(sc.coverage).filter(([k, v]) => v === 'MISSING' && GAPS[k]);
   const level = user.chosenLevel ?? rv.recommended;
-  const statusTone: Tone = rv.legitStatus === 'FAILED' ? 'bad' : rv.legitStatus === 'HOLDS' ? 'ok' : 'warn';
   return (
-    <LayerFrame n={5} evidenceCount={rv.legit.length + rv.front.length} evidenceLabel="chain links tested" summary={<>Legitimate explanation: <Badge tone={statusTone}>{rv.legitStatus === 'FAILED' ? 'Fails' : rv.legitStatus === 'HOLDS' ? 'Holds' : 'Inconclusive'}</Badge> Recommended action: <b className="text-ink">{level} {RESPONSE_LEVELS.find(l => l.id === level)!.name}</b></>}>
+    <LayerFrame n={5} evidenceCount={rv.legit.length + rv.front.length} evidenceLabel="chain links tested" summary={<>{r.fusion.decision === 'OPEN_CASE' ? 'Open a case' : 'No case'}. Recommended action: <b className="text-ink">{level} {RESPONSE_LEVELS.find(l => l.id === level)!.name}</b></>}>
+      <AnswerBanner result={r} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Chain title="Legitimate business chain" tone="ok" items={rv.legit} mode="legit" sel={sel} onSel={setSel} />
         <Chain title="Potential front chain" tone="bad" items={rv.front} mode="front" sel={sel} onSel={setSel} />

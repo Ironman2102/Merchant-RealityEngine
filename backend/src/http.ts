@@ -5,6 +5,9 @@ import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
+import { modelHostConfigured, modelOnline, startModelSandbox } from './modelHost';
+import { scoreWithHost } from './ml';
+import { getCase, putCase } from './store';
 
 const LIMIT = 2_000_000;
 
@@ -69,6 +72,16 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
     if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
+    if (path === '/model' && method === 'GET') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to see the model sandbox.' } });
+      const online = await modelOnline();
+      return send(res, { status: 200, body: { online, configured: modelHostConfigured(), detail: online ? 'The model is answering.' : 'The model sandbox is not answering.' } });
+    }
+    if (path === '/model/start' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to start the model sandbox.' } });
+      const started = await startModelSandbox();
+      return send(res, { status: started.state === 'unconfigured' ? 503 : 200, body: { ...started, configured: modelHostConfigured() } });
+    }
 
     if (path.startsWith('/v1')) {
       const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
@@ -83,7 +96,16 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (!id) {
       if (method === 'GET') { const caseId = url.searchParams.get('id'); return send(res, caseId ? getInvestigation(caseId) : listInvestigations()); }
       if (method !== 'POST') return send(res, { status: 405, body: { error: 'POST a dataset to open a case.' } });
-      return send(res, openInvestigation(await readBody(req), actor));
+      const opened = openInvestigation(await readBody(req), actor);
+      const caseId = typeof opened.body.id === 'string' ? opened.body.id : '';
+      if (opened.status === 200 && caseId) {
+        const rec = getCase(caseId);
+        if (rec && !rec.ml) {
+          const ml = await scoreWithHost(rec.result);
+          if (ml) { rec.ml = ml; putCase(rec); }
+        }
+      }
+      return send(res, opened);
     }
     if (method === 'GET') {
       if (!action) return send(res, getInvestigation(id));
