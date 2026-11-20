@@ -12,5 +12,5 @@
     "isolatedModules": true,
     "types": ["node"]
   },
-  "include": ["frontend/src", "scripts", "api-src", "api", "backend/src", "tests", "rules"]
+  "include": ["frontend/src", "scripts", "api-src", "api", "backend/src", "tests", "rules", "engine", "adapters", "cli", "console", "workflow"]
 }
