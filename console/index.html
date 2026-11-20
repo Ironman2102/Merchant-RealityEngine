@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Merchant Reality Engine</title>
+  <style>
+    body { font: 15px/1.4 system-ui, sans-serif; margin: 2rem auto; max-width: 40rem; }
+    label { display: block; margin-top: 0.8rem; }
+    input, button { font: inherit; padding: 0.3rem 0.5rem; }
+    button:focus, input:focus { outline: 2px solid #111; }
+    .err { color: #8a1f11; }
+  </style>
+</head>
+<body>
+  <h1>Analyst console</h1>
+  <p>This screen is the product. The marketing site does not hold cases. Sign in with a local account.</p>
+  <form id="in">
+    <label>Username <input id="user" name="username" autocomplete="username" required /></label>
+    <label>Password <input id="pass" name="password" type="password" autocomplete="current-password" required /></label>
+    <p><button type="submit">Sign in</button></p>
+    <p id="msg" class="err" role="status"></p>
+  </form>
+  <pre id="out"></pre>
+  <script>
+    const msg = document.getElementById('msg'), out = document.getElementById('out');
+    document.getElementById('in').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: user.value, password: pass.value }) });
+      if (!res.ok) { msg.textContent = 'Sign-in refused.'; return; }
+      const list = await fetch('/api/investigations');
+      out.textContent = await list.text();
+    });
+  </script>
+</body>
+</html>

@@ -72,7 +72,9 @@ function txnRow(t: DatasetTransaction, typeOf: Record<string, string>, channelOf
   ];
 }
 
-const datasets = load();
-writeLayout('examples/generic-pa', datasets, 'generic');
-writeLayout('examples/alt-pa', datasets, 'alt');
-console.log(`Wrote ${datasets.length} merchants into examples/generic-pa and examples/alt-pa`);
+if (process.argv[1]?.endsWith('export-pa-files.ts')) {
+  const datasets = load();
+  writeLayout('examples/generic-pa', datasets, 'generic');
+  writeLayout('examples/alt-pa', datasets, 'alt');
+  console.log(`Wrote ${datasets.length} merchants into examples/generic-pa and examples/alt-pa`);
+}

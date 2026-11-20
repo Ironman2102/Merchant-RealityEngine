@@ -11,6 +11,21 @@ The project has three connected experiences:
 - **Offline Python prototype** (`./start.sh prototype`): a separate synthetic-data experiment; its multi-merchant report is not part of the web app.
 > **Everything is synthetic.** Merchants, transactions, websites, crawler snapshots and portfolio figures are fabricated and deterministic. Nothing is verified real-world evidence. There are no customers, partners or performance claims. The response design is a product proposal, not a statement of legal or regulatory requirements, and nothing freezes real money.
 
+## Measured on the synthetic portfolio
+
+These figures are copied from the report files. They are synthetic. They are not real-world accuracy.
+
+| Figure | Value | Source |
+|---|---|---|
+| Recall | 0.684 (39/57), Wilson 0.555–0.790 | `reports/benchmark.md` |
+| Precision | 0.975 (39/40), Wilson 0.871–0.996 | `reports/benchmark.md` |
+| Genuine-merchant false-positive rate | 0.001 (1/943), Wilson 0.000–0.006 | `reports/benchmark.md` |
+| M1 AUC-PR | 1.000, bootstrap 1.000–1.000 | `reports/model-comparison.md` |
+| Bayesian AUC-PR | 0.915, bootstrap 0.805–1.000 | `reports/model-comparison.md` |
+| Opened queue | 40 cases, expected false alarms 0.02 | `reports/benchmark.md` |
+
+The trained model is a second opinion. It does not choose the action. Throughput on this machine is in `reports/perf.md`. The red-team rate is in `reports/redteam.md`.
+
 ## Run it
 
 Use `./start.sh` to start the web app (Node.js 20+). To run the separate offline Python prototype, install its dependencies with `python3 -m pip install -r prototype/requirements.txt` and run `./start.sh prototype`.

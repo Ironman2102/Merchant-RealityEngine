@@ -13,6 +13,7 @@ import { caseTrace, evidencePack } from './trace';
 import { getInvestigation } from './workflow';
 import { authenticateServiceKey, idempotent, type Scope, type ServicePrincipal } from './serviceKeys';
 import type { Actor } from './auth';
+import { mlScore } from './ml';
 
 export interface V1Req { method: string; path: string; header: (name: string) => string | undefined; body: unknown }
 
@@ -20,19 +21,21 @@ interface BatchState { status: 'queued' | 'running' | 'done' | 'error'; result?:
 const batches = new Map<string, BatchState>();
 let batchLock: Promise<void> = Promise.resolve();
 
-function scoreOf(raw: unknown): ApiReply {
+async function scoreOf(raw: unknown): Promise<ApiReply> {
   const ran = analyzeDataset(raw);
   if (!ran.ok) return { status: 400, body: { error: ran.errors.join(' ') } };
   const f = ran.result.fusion;
   const top = [...f.mechanisms].sort((a, b) => b.score - a.score)[0];
   const topEvidence = ran.result.evidence.filter(e => e.status === 'ILLICIT').sort((a, b) => b.llr - a.llr).slice(0, 8)
     .map(e => ({ id: e.id, name: e.name, observed: e.observed, llr: e.llr }));
+  const ml = await mlScore(ran.result);
   return {
     status: 200,
     body: {
       decision: f.decision, posterior: f.posterior, ci: f.posteriorCi, prior: f.prior,
       recommended: f.decisionAnalysis.recommended, mechanism: top?.id ?? null, topEvidence,
-      rulesVersion: f.rulesVersion, ml: null,
+      rulesVersion: f.rulesVersion,
+      ml: ml ? { p: ml.p, pRaw: ml.pRaw, drivers: ml.drivers, modelVersion: ml.modelVersion, synthetic: true } : null,
     },
   };
 }
@@ -53,26 +56,27 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
 
   if (req.path === '/v1/score' && req.method === 'POST') {
     const denied = allow(principal, 'score'); if (denied) return denied;
-    return scoreOf(req.body);
+    return await scoreOf(req.body);
   }
 
   const caseMatch = req.path.match(/^\/v1\/cases(?:\/([^/]+)(?:\/(trace|pack))?)?$/);
   if (caseMatch && req.method === 'POST' && !caseMatch[1]) {
     const denied = allow(principal, 'cases'); if (denied) return denied;
+    const score = await scoreOf(req.body);
+    if (score.status !== 200) return score;
     const raw = JSON.stringify(req.body);
     const idem = req.header('idempotency-key');
     return idempotent(idem, createHash('sha256').update(raw).digest('hex'), () => {
       const opened = openInvestigation(req.body, serviceActor(principal));
       if (opened.status !== 200) return opened;
       const id = (opened.body as { id?: string }).id;
-      const score = scoreOf(req.body);
       return { status: 200, body: { id, ...score.body } };
     });
   }
   if (caseMatch && req.method === 'GET' && caseMatch[1]) {
     if (!principal.scopes.includes('read') && !principal.scopes.includes('cases')) return { status: 403, body: { error: 'This key cannot read cases.' } };
     const id = caseMatch[1];
-    if (caseMatch[2] === 'trace') return caseTrace(id);
+    if (caseMatch[2] === 'trace') return await caseTrace(id);
     if (caseMatch[2] === 'pack') return evidencePack(id, serviceActor(principal));
     return getInvestigation(id);
   }

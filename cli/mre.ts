@@ -1,14 +1,16 @@
 /** Merchant Reality Engine command line. */
+import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { loadHashKey } from '../adapters/pseudonym';
 import { mapExport } from '../adapters/mapExport';
 import { createServiceKey } from '../backend/src/serviceKeys';
 import { analyze } from '../engine/index';
 import { loadWorkflow, validateWorkflow } from '../engine/workflowConfig';
+import { demoLearn, rollbackRules } from '../scripts/demo-learn';
 import { runBatch } from './batch';
 
 const [cmd, ...rest] = process.argv.slice(2);
-const later = new Set(['features', 'serve', 'demo', 'verify-audit', 'user:add']);
+const later = new Set(['features', 'demo', 'verify-audit', 'user:add']);
 
 if (!cmd || cmd === '--help') {
   console.log('mre batch | features | serve | demo | validate-config | verify-audit | user:add | key:create');
@@ -50,6 +52,17 @@ if (cmd === 'batch') {
     if (warnings.length) console.log(`${warnings.length} mapping warnings`);
     console.log(`workflow ${cfg.responses.map(r => r.id).join(', ')} · ${sample.length} merchants · ${opened} cases`);
   } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
+} else if (cmd === 'serve') {
+  const i = rest.indexOf('--port');
+  const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], {
+    stdio: 'inherit',
+    env: { ...process.env, PORT: i >= 0 ? rest[i + 1] : (process.env.PORT || '8787') },
+  });
+  child.on('exit', code => process.exit(code ?? 0));
+} else if (cmd === 'demo:learn') {
+  process.exit(demoLearn());
+} else if (cmd === 'rollback') {
+  rollbackRules();
 } else if (cmd === 'key:create') {
   const name = rest[0], scopes = (rest[1] ?? '').split(',').filter(Boolean);
   if (!name || !scopes.length) { console.error('mre key:create <name> <scopes,comma>'); process.exit(2); }

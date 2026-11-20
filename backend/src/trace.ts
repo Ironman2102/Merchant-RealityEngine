@@ -7,15 +7,18 @@
 import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { buildPack } from '../../engine/pack';
 import { appendAudit, getCase, isCaseId, readAudit, verifyAudit } from './store';
+import { mlScore } from './ml';
 import type { ApiReply } from './workflow';
 import type { Actor } from './auth';
 
 const fail = (status: number, error: string): ApiReply => ({ status, body: { error } });
 
-export function caseTrace(id: string): ApiReply {
+export async function caseTrace(id: string): Promise<ApiReply> {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
-  return rec ? { status: 200, body: buildTrace(rec.result) as unknown as Record<string, unknown> } : fail(404, 'No case with that id.');
+  if (!rec) return fail(404, 'No case with that id.');
+  const ml = await mlScore(rec.result);
+  return { status: 200, body: { ...buildTrace(rec.result), ml: ml ? { ...ml, synthetic: true } : null } as unknown as Record<string, unknown> };
 }
 
 export function evidencePack(id: string, actor: Actor): ApiReply {

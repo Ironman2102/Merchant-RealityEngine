@@ -83,7 +83,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (method === 'GET') {
       if (!action) return send(res, getInvestigation(id));
-      if (action === 'trace') return send(res, caseTrace(id));
+      if (action === 'trace') return send(res, await caseTrace(id));
       if (action === 'pack') return send(res, evidencePack(id, actor));
       if (action === 'audit') return send(res, auditStatus(id));
       return send(res, { status: 405, body: { error: 'Use POST for this step.' } });
