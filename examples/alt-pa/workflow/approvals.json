@@ -1,0 +1,12 @@
+{
+  "actions": {
+    "open": ["analyst", "reviewer", "admin"],
+    "review": ["analyst", "reviewer", "admin"],
+    "propose": ["analyst", "reviewer", "admin"],
+    "labelBenign": ["analyst", "reviewer", "admin"]
+  },
+  "levels": {
+    "RESTRICT_FLOW": { "approvers": 2, "approverRoles": ["reviewer", "admin"] }
+  },
+  "confirmedIllicit": { "people": 2, "confirmRoles": ["reviewer", "admin", "legal"] }
+}

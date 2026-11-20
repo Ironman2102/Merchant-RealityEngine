@@ -23,6 +23,14 @@ CREATE TABLE IF NOT EXISTS audit (
   case_id TEXT NOT NULL REFERENCES cases(id), seq INTEGER NOT NULL, at TEXT NOT NULL, actor TEXT NOT NULL, actor_id INTEGER,
   action TEXT NOT NULL, detail TEXT NOT NULL, prev_hash TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY (case_id, seq));
 CREATE TABLE IF NOT EXISTS llm_cache (key TEXT PRIMARY KEY, created_at TEXT NOT NULL, model TEXT NOT NULL, text TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS service_keys (
+  id TEXT PRIMARY KEY, name TEXT NOT NULL, key_hash TEXT UNIQUE NOT NULL, scopes TEXT NOT NULL,
+  created_at TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS idempotency (
+  key TEXT PRIMARY KEY, body_sha256 TEXT NOT NULL, response_json TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS deliveries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT NOT NULL, case_id TEXT NOT NULL, url TEXT NOT NULL,
+  ok INTEGER NOT NULL, attempts INTEGER NOT NULL, at TEXT NOT NULL);
 `;
 
 export function getDb(): DatabaseSync {

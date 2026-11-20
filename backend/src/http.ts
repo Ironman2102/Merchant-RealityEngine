@@ -1,8 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
+import { v1FromNode } from './v1';
 
 const LIMIT = 2_000_000;
 
@@ -57,13 +59,21 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     const token = readCookie(req), actor: Actor | null = actorFromToken(token);
     if (path === '/auth/login' && method === 'POST') {
       if (!allowed(`login:${ip}`, 10)) return send(res, { status: 429, body: { error: 'Too many sign-in attempts. Wait a minute.' } });
-      const b = await readBody(req) as { username?: unknown; password?: unknown };
-      const s = typeof b.username === 'string' && typeof b.password === 'string' ? login(b.username, b.password) : null;
-      if (!s) return send(res, { status: 401, body: { error: 'Wrong username or password.' } });
+      const b = await readBody(req) as { username?: unknown; password?: unknown; idToken?: unknown };
+      const check = typeof b.idToken === 'string' ? oidcCheckFromEnv() : null;
+      const s = typeof b.idToken === 'string'
+        ? (check ? loginWithIdToken(b.idToken, check) : null)
+        : typeof b.username === 'string' && typeof b.password === 'string' ? login(b.username, b.password) : null;
+      if (!s) return send(res, { status: 401, body: { error: typeof b.idToken === 'string' ? 'The identity token was not accepted.' : 'Wrong username or password.' } });
       return send(res, { status: 200, body: { user: s.actor } }, { 'set-cookie': sessionCookie(s.token) });
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
-    if (path === '/auth/me' && method === 'GET') return actor ? send(res, { status: 200, body: { user: actor } }) : send(res, { status: 401, body: { error: 'Not signed in.' } });
+    if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
+
+    if (path.startsWith('/v1')) {
+      const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
+      if (v1) return send(res, v1);
+    }
 
     const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit))?)?$/);
     if (!match) return send(res, { status: 404, body: { error: 'Unknown route.' } });
@@ -77,7 +87,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (method === 'GET') {
       if (!action) return send(res, getInvestigation(id));
-      if (action === 'trace') return send(res, caseTrace(id));
+      if (action === 'trace') return send(res, await caseTrace(id));
       if (action === 'pack') return send(res, evidencePack(id, actor));
       if (action === 'audit') return send(res, auditStatus(id));
       return send(res, { status: 405, body: { error: 'Use POST for this step.' } });

@@ -7,7 +7,7 @@ import { lnChoose } from '../../frontend/src/stats/dist';
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const r = rng(11);
 
   // One-sided CUSUM, k = 0.5. Siegmund: ARL0 ≈ (e^{2kb} − 2kb − 1)/(2k²), b = h + 1.166 → h ≈ 2.24 for ARL0 = 52;

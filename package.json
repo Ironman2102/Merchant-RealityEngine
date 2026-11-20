@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node backend/bundle-api.mjs && tsc --noEmit && vite build",
+    "build": "node backend/bundle-api.mjs && tsc --noEmit && vite build && vite build --config vite.console.config.ts",
     "preview": "vite preview",
     "api": "tsx backend/src/server.ts",
     "check:api": "MRE_CASE_STORE=memory tsx backend/src/selfcheck.ts",
@@ -18,7 +18,8 @@
     "security": "tsx scripts/security.ts",
     "lint:noscript": "! grep -rnE \"(scenario|sc)\\.id ===\" frontend/src",
     "user:add": "tsx scripts/user-add.ts",
-    "dev:users": "tsx scripts/dev-users.ts"
+    "dev:users": "tsx scripts/dev-users.ts",
+    "mre": "tsx cli/mre.ts"
   },
   "dependencies": {
     "@stdlib/math-base-special-betainc": "^0.2.3",

@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-console
 *.log
 .DS_Store
 backend/src/data/*.json
@@ -8,4 +9,7 @@ backend/data/
 .venv/
 ml/data/
 ml/models/*/candidates/
+examples/portfolio/
+rules/history/
+rules/proposals/
 __pycache__/

@@ -17,8 +17,8 @@ for (const c of ref) {
 }
 const walk = (d: string): string[] => readdirSync(d).flatMap(f => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : p.endsWith('.test.ts') ? [p] : []; });
 for (const file of walk('tests')) {
-  const mod = await import('../' + file) as { default?: () => number };
-  const bad = mod.default ? mod.default() : 0; n++; if (bad) { fails += bad; console.log(`FAIL ${file}: ${bad} assertion(s)`); }
+  const mod = await import('../' + file) as { default?: () => number | Promise<number> };
+  const bad = mod.default ? await mod.default() : 0; n++; if (bad) { fails += bad; console.log(`FAIL ${file}: ${bad} assertion(s)`); }
 }
 console.log(`${n - fails}/${n} stats checks passed`);
 process.exit(fails ? 1 : 0);

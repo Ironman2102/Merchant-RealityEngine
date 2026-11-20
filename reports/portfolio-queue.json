@@ -1,0 +1,486 @@
+{
+  "opened": 40,
+  "expectedFalseAlarms": 0.018402007814374177,
+  "queue": [
+    {
+      "merchantId": "M-PF-0195",
+      "name": "Merchant 0195",
+      "posterior": 0.9999999466535017,
+      "ci": [
+        0.9999998663182522,
+        0.9999999999999973
+      ],
+      "expectedLoss": 99999.99546554765,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0812",
+      "name": "Merchant 0812",
+      "posterior": 0.9999982357783664,
+      "ci": [
+        0.9999936380749915,
+        0.9999999999872968
+      ],
+      "expectedLoss": 99999.85004116116,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0510",
+      "name": "Merchant 0510",
+      "posterior": 0.999997879410314,
+      "ci": [
+        0.9999892821230841,
+        0.9999999999864094
+      ],
+      "expectedLoss": 99999.8197498767,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0598",
+      "name": "Merchant 0598",
+      "posterior": 0.9999978557617285,
+      "ci": [
+        0.9999896088712221,
+        0.9999999999828222
+      ],
+      "expectedLoss": 99999.81773974693,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0860",
+      "name": "Merchant 0860",
+      "posterior": 0.9999978526585697,
+      "ci": [
+        0.9999902803054206,
+        0.9999999999909239
+      ],
+      "expectedLoss": 99999.81747597843,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0021",
+      "name": "Merchant 0021",
+      "posterior": 0.9999978130540307,
+      "ci": [
+        0.9999914421388918,
+        0.9999999999823648
+      ],
+      "expectedLoss": 99999.81410959261,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0112",
+      "name": "Merchant 0112",
+      "posterior": 0.9999977951540174,
+      "ci": [
+        0.9999895879628535,
+        0.9999999999815992
+      ],
+      "expectedLoss": 99999.81258809149,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0083",
+      "name": "Merchant 0083",
+      "posterior": 0.9999973178644962,
+      "ci": [
+        0.9999908652684883,
+        0.9999999999814626
+      ],
+      "expectedLoss": 99999.77201848218,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0767",
+      "name": "Merchant 0767",
+      "posterior": 0.9999965397239894,
+      "ci": [
+        0.9999839032759752,
+        0.999999999976264
+      ],
+      "expectedLoss": 99999.7058765391,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0362",
+      "name": "Merchant 0362",
+      "posterior": 0.9999963615392135,
+      "ci": [
+        0.9999844351789938,
+        0.999999999974614
+      ],
+      "expectedLoss": 99999.69073083316,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0577",
+      "name": "Merchant 0577",
+      "posterior": 0.9999945731606311,
+      "ci": [
+        0.999974989324064,
+        0.9999999999598617
+      ],
+      "expectedLoss": 99999.53871865365,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0140",
+      "name": "Merchant 0140",
+      "posterior": 0.9999879149102755,
+      "ci": [
+        0.9999769065520527,
+        0.9999999999986043
+      ],
+      "expectedLoss": 99998.97276737343,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0456",
+      "name": "Merchant 0456",
+      "posterior": 0.9999876824563869,
+      "ci": [
+        0.9999908303489611,
+        0.999999999990015
+      ],
+      "expectedLoss": 99998.95300879289,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0624",
+      "name": "Merchant 0624",
+      "posterior": 0.9999832888584322,
+      "ci": [
+        0.9999845434522365,
+        0.9999999999870697
+      ],
+      "expectedLoss": 99998.57955296675,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0708",
+      "name": "Merchant 0708",
+      "posterior": 0.9999832056985103,
+      "ci": [
+        0.9999806721596666,
+        0.9999999999969565
+      ],
+      "expectedLoss": 99998.57248437338,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0962",
+      "name": "Merchant 0962",
+      "posterior": 0.9999825427695102,
+      "ci": [
+        0.9999735713528494,
+        0.9999999999915219
+      ],
+      "expectedLoss": 99998.51613540838,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0746",
+      "name": "Merchant 0746",
+      "posterior": 0.9999786231354991,
+      "ci": [
+        0.9999114787596823,
+        0.9999999999923541
+      ],
+      "expectedLoss": 99998.18296651743,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0586",
+      "name": "Merchant 0586",
+      "posterior": 0.9999747184437603,
+      "ci": [
+        0.999970100356846,
+        0.9999999999836819
+      ],
+      "expectedLoss": 99997.85106771963,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0283",
+      "name": "Merchant 0283",
+      "posterior": 0.999956136381985,
+      "ci": [
+        0.9999114688419083,
+        0.9999999999920631
+      ],
+      "expectedLoss": 99996.27159246872,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0151",
+      "name": "Merchant 0151",
+      "posterior": 0.9999504821392496,
+      "ci": [
+        0.999964221569148,
+        0.9999999999527968
+      ],
+      "expectedLoss": 99995.79098183622,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0929",
+      "name": "Merchant 0929",
+      "posterior": 0.9999388272329305,
+      "ci": [
+        0.999956090849338,
+        0.9999999998966891
+      ],
+      "expectedLoss": 99994.80031479911,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0372",
+      "name": "Merchant 0372",
+      "posterior": 0.9999208872097988,
+      "ci": [
+        0.9997728534371608,
+        0.9999999999621334
+      ],
+      "expectedLoss": 99993.2754128329,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0957",
+      "name": "Merchant 0957",
+      "posterior": 0.9999144254686069,
+      "ci": [
+        0.9998362463618342,
+        0.9999999998901186
+      ],
+      "expectedLoss": 99992.72616483159,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0266",
+      "name": "Merchant 0266",
+      "posterior": 0.9999086115868646,
+      "ci": [
+        0.9998560243166628,
+        0.999999999981943
+      ],
+      "expectedLoss": 99992.2319848835,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0420",
+      "name": "Merchant 0420",
+      "posterior": 0.9998518435717663,
+      "ci": [
+        0.9997282687941664,
+        0.9999999999144082
+      ],
+      "expectedLoss": 99987.40670360012,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0219",
+      "name": "Merchant 0219",
+      "posterior": 0.9998507495235193,
+      "ci": [
+        0.9997931870519283,
+        0.9999999997990595
+      ],
+      "expectedLoss": 99987.31370949914,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0001",
+      "name": "Merchant 0001",
+      "posterior": 0.9998336367869519,
+      "ci": [
+        0.9996236100378131,
+        0.9999999999445525
+      ],
+      "expectedLoss": 99985.85912689092,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0213",
+      "name": "Merchant 0213",
+      "posterior": 0.9997957073207163,
+      "ci": [
+        0.9991416706802009,
+        0.999999992049709
+      ],
+      "expectedLoss": 99982.63512226091,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0386",
+      "name": "Merchant 0386",
+      "posterior": 0.9996176862135049,
+      "ci": [
+        0.9995149952767264,
+        0.9999999991139281
+      ],
+      "expectedLoss": 99967.50332814793,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0529",
+      "name": "Merchant 0529",
+      "posterior": 0.9994017366847957,
+      "ci": [
+        0.9957011256182959,
+        0.9999999869214018
+      ],
+      "expectedLoss": 99949.14761820764,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0146",
+      "name": "Merchant 0146",
+      "posterior": 0.9993442238673487,
+      "ci": [
+        0.9953505915595634,
+        0.9999999667160157
+      ],
+      "expectedLoss": 99944.25902872464,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0931",
+      "name": "Merchant 0931",
+      "posterior": 0.999241861912811,
+      "ci": [
+        0.996199360762703,
+        0.9999999684876641
+      ],
+      "expectedLoss": 99935.55826258894,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0974",
+      "name": "Merchant 0974",
+      "posterior": 0.9991775607897054,
+      "ci": [
+        0.996343585034267,
+        0.9999999951735749
+      ],
+      "expectedLoss": 99930.09266712496,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0334",
+      "name": "Merchant 0334",
+      "posterior": 0.9982926605504456,
+      "ci": [
+        0.9824006533856705,
+        0.9999998814877769
+      ],
+      "expectedLoss": 99854.8761467879,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0052",
+      "name": "Merchant 0052",
+      "posterior": 0.9982294414105306,
+      "ci": [
+        0.99798564632915,
+        0.9999999927973052
+      ],
+      "expectedLoss": 99849.50251989512,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0263",
+      "name": "Merchant 0263",
+      "posterior": 0.9981168363236215,
+      "ci": [
+        0.9796550878598171,
+        0.9999998666069938
+      ],
+      "expectedLoss": 99839.93108750784,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0040",
+      "name": "Merchant 0040",
+      "posterior": 0.9980654015810972,
+      "ci": [
+        0.9926390524612736,
+        0.9999999879820414
+      ],
+      "expectedLoss": 99835.55913439328,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0196",
+      "name": "Merchant 0196",
+      "posterior": 0.9980097648522233,
+      "ci": [
+        0.9939138373152369,
+        0.9999999988276816
+      ],
+      "expectedLoss": 99830.83001243898,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0803",
+      "name": "Merchant 0803",
+      "posterior": 0.9977812087085957,
+      "ci": [
+        0.9973949775100488,
+        0.9999999893318045
+      ],
+      "expectedLoss": 99811.40274023065,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    },
+    {
+      "merchantId": "M-PF-0215",
+      "name": "Merchant 0215",
+      "posterior": 0.9975481550373241,
+      "ci": [
+        0.986195264229562,
+        0.9999999948224393
+      ],
+      "expectedLoss": 99791.59317817255,
+      "action": "L3",
+      "decision": "OPEN_CASE"
+    }
+  ]
+}

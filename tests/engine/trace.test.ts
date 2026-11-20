@@ -13,7 +13,7 @@ import { templateSummary, verifySummary } from '../../backend/src/llm';
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const files = readdirSync('frontend/public/samples').filter(f => /^0\d-.*\.json$/.test(f));
   for (const f of files) {
     const r = analyzeDataset(JSON.parse(readFileSync(`frontend/public/samples/${f}`, 'utf8')));

@@ -16,6 +16,7 @@
  "benignLlrFloor": -1.5,
  "posteriorDraws": 1000,
  "detectorPriorStrength": 20,
+ "portfolio": { "fdrQ": 0.10 },
  "mechanismPrior": {
   "TRANSACTION_LAUNDERING": 0.4,
   "ROTATION": 0.2,

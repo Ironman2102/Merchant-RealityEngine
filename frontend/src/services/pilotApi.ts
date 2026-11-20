@@ -2,7 +2,7 @@ export interface PilotCaseSummary {
   id: string;
   createdAt: string;
   merchant: { id: string; name: string; category: string; city: string };
-  result: { decision: string; priority: string; recommended: string; legitStatus: string };
+  result: { decision: string; priority: string; recommended: string; legitStatus: string; posterior?: number };
   user: { executed: boolean; label: string | null };
   workflow: { layer: number; code: string; name: string; state: 'done' | 'waiting' | 'blocked'; summary: string }[];
 }

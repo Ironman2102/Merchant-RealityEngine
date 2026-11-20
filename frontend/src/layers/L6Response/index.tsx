@@ -5,11 +5,24 @@ import { Badge, Btn, Callout, Panel, Mono, Td, Th, rowCls, tableCls } from '../.
 import { LEVEL_ORDER, RESPONSE_LEVELS } from '../../data/evidence';
 import { planResponse } from '../../engines/responseEngine';
 import { cx, inr } from '../../utils/format';
+import { me } from '../../services/pilotApi';
 import { useState } from 'react';
 
 export function L6View() {
   const { result: r, user, patch, setLevel, execute, audit, caseId, pending, approve, syncError } = useInvestigation();
   const [escrow, setEscrow] = useState(false);
+  const [selfRefusal, setSelfRefusal] = useState('');
+  const onApprove = async (ok: boolean) => {
+    setSelfRefusal('');
+    if (ok && proposal) {
+      const who = await me();
+      if (who && who.id === proposal.by.id) {
+        setSelfRefusal('You cannot approve your own proposal. A different person must approve it.');
+        return;
+      }
+    }
+    approve(ok, { escrowConfirmed: escrow });
+  };
   const plan = planResponse(r, user), meta = RESPONSE_LEVELS.find(l => l.id === plan.level)!;
   const proposal = pending?.response, needsTwo = ['L3', 'L4', 'L5'].includes(plan.level);
   const log = caseId ? audit.filter(a => /^L\d/.test(a.action)) : audit.filter(a => a.actor === 'MRE response engine');
@@ -33,9 +46,9 @@ export function L6View() {
               {proposal ? (<div className="rounded border border-stone-400/30 bg-stone-400/5 p-3">
                 <div className="text-sm"><b>{proposal.level}</b> proposed by <b>{proposal.by.username}</b> · {new Date(proposal.at).toLocaleString()}</div>
                 {proposal.level === 'L4' && <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" className="accent-zinc-300" checked={escrow} onChange={e => setEscrow(e.target.checked)} />Escrow or reserve clause confirmed in the merchant agreement</label>}
-                <div className="mt-3 flex gap-2"><Btn size="sm" variant="primary" onClick={() => approve(true, { escrowConfirmed: escrow })}>Approve</Btn><Btn size="sm" onClick={() => approve(false)}>Reject</Btn></div>
+                <div className="mt-3 flex gap-2"><Btn size="sm" variant="primary" onClick={() => void onApprove(true)}>Approve</Btn><Btn size="sm" onClick={() => void onApprove(false)}>Reject</Btn></div>
               </div>) : <div className="text-xs text-mute">No proposal is waiting for approval.</div>}
-              {syncError && <div role="alert" className="flex gap-2 rounded border border-stone-400/30 bg-stone-400/5 px-3 py-2 text-xs text-stone-200"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{syncError}</div>}
+              {(syncError || selfRefusal) && <div role="alert" className="flex gap-2 rounded border border-stone-400/30 bg-stone-400/5 px-3 py-2 text-xs text-stone-200"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{selfRefusal || syncError}</div>}
             </div>
           ) : plan.authorityRequired ? (
             <div className="space-y-3 text-sm">

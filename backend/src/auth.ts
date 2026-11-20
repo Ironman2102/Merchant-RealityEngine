@@ -6,6 +6,7 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 import { getDb } from './db';
+import { verifyIdToken, type OidcCheck } from './oidc';
 
 export type Role = 'analyst' | 'reviewer' | 'legal' | 'admin';
 export const ROLES: Role[] = ['analyst', 'reviewer', 'legal', 'admin'];
@@ -35,6 +36,33 @@ export function login(username: string, password: string): { token: string; acto
   const token = randomBytes(32).toString('base64url');
   getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), row.id, Date.now() + SESSION_MS);
   return { token, actor: { id: row.id, username: row.username, role: row.role } };
+}
+
+function usernameFromSub(sub: string): string {
+  const cleaned = sub.replace(/[^a-z0-9._-]/gi, '').slice(0, 40);
+  return cleaned.length >= 3 ? cleaned : `oidc-${createHash('sha256').update(sub).digest('hex').slice(0, 12)}`;
+}
+
+/** Opens a session for a verified ID token. The role is the group map, not a password. */
+export function loginWithIdToken(idToken: string, check: OidcCheck): { token: string; actor: Actor } | null {
+  const verified = verifyIdToken(idToken, check);
+  if (!verified.ok || !ROLES.includes(verified.role as Role)) return null;
+  const role = verified.role as Role;
+  const username = usernameFromSub(verified.sub);
+  const existing = getDb().prepare('SELECT id, disabled FROM users WHERE username = ?').get(username) as { id: number; disabled: number } | undefined;
+  let id: number;
+  if (!existing) {
+    const salt = randomBytes(16).toString('hex');
+    const made = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at) VALUES (?, ?, ?, ?, ?)').run(username, role, salt, scrypt(randomBytes(24).toString('base64url'), salt), new Date().toISOString());
+    id = Number(made.lastInsertRowid);
+  } else if (existing.disabled) return null;
+  else {
+    id = existing.id;
+    getDb().prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
+  }
+  const token = randomBytes(32).toString('base64url');
+  getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), id, Date.now() + SESSION_MS);
+  return { token, actor: { id, username, role } };
 }
 
 export function logout(token: string): void { getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(tokenHash(token)); }
