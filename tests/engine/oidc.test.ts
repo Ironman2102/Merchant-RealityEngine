@@ -6,7 +6,9 @@ function token(privateKey: KeyObject, body: Record<string, unknown>, opts?: { ta
   const h = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
   const p = Buffer.from(JSON.stringify(body)).toString('base64url');
   const sig = sign('RSA-SHA256', Buffer.from(`${h}.${p}`), privateKey).toString('base64url');
-  return `${h}.${p}.${opts?.tamper ? sig.slice(0, -2) + 'aa' : sig}`;
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const flipped = alphabet[(alphabet.indexOf(sig[0]) + 1) % alphabet.length] + sig.slice(1);
+  return `${h}.${p}.${opts?.tamper ? flipped : sig}`;
 }
 
 export default function (): number {

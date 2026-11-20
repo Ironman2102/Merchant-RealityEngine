@@ -16,7 +16,7 @@ export default function (): number {
   check('alt validates', validateWorkflow(alt).length === 0);
   const broken: WorkflowConfig = structuredClone(def);
   broken.approvals.levels.L3.approvers = 0;
-  check('zero approvers rejected', validateWorkflow(broken).some(e => e.includes('L3')));
+  check('bad workflow rejection', validateWorkflow(broken).some(e => e.includes('L3')));
 
   const raw = JSON.parse(readFileSync('frontend/public/samples/01-sweet-crumbs-betting-front.json', 'utf8'));
   const prevDir = process.env.MRE_WORKFLOW_DIR;
@@ -38,6 +38,8 @@ export default function (): number {
   const id = opened.body.id as string;
   const proposed = respondInvestigation(id, { chosenLevel: 'RESTRICT_FLOW' }, ana);
   check('alt propose', proposed.status === 200 && (proposed.body.status === 'ALT_WAITING'), String(proposed.body.status));
+  const self = approveInvestigation(id, { approve: true }, ana);
+  check('self-approval refused', self.status === 403, String(self.status));
   const one = approveInvestigation(id, { approve: true }, rev);
   check('one approver is not enough', one.status === 200 && (one.body.user as { executed: boolean }).executed === false);
   const two = approveInvestigation(id, { approve: true }, rev2);

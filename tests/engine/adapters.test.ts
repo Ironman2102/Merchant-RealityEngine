@@ -41,7 +41,7 @@ export default function (): number {
       check(`${file} ${layout} analyzes`, got.ok, got.ok ? '' : got.errors.slice(0, 4).join('; '));
       if (!got.ok) continue;
       check(`${file} ${layout} decision`, got.result.fusion.decision === expected.result.fusion.decision, `${got.result.fusion.decision} vs ${expected.result.fusion.decision}`);
-      check(`${file} ${layout} posterior`, Math.abs(got.result.fusion.posterior - expected.result.fusion.posterior) <= 1e-9,
+      check(`${file} ${layout} posterior within 1e-9`, Math.abs(got.result.fusion.posterior - expected.result.fusion.posterior) <= 1e-9,
         `${got.result.fusion.posterior} vs ${expected.result.fusion.posterior}`);
       const blob = JSON.stringify(dataset);
       check(`${file} ${layout} no raw payer`, rawIds.every(id => !blob.includes(id)));
