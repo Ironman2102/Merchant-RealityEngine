@@ -61,8 +61,10 @@ The honest one-liner for judges: *"The code and the statistics are verified, and
 | # | Metric | Definition | Target | Produced by | Status |
 |---|---|---|---|---|---|
 | R1 | **Adversarial suite pass rate** | hand-built evasions + honest edge cases | 100% | `npm run adversarial` | ✅ 34/34 |
-| R2 | **Evasion rate per detector** | share of red-team mutations that silence each detector | report all; backstop exists for every one | red team (S5) | ⬜ |
-| R3 | **Attacker cost to evade** | smallest mutation budget that pushes P below the opening bar | rising release on release | S5 | ⬜ |
+| R2 | **Evasion rate per detector** | share of red-team mutations that silence each detector | report all; backstop exists for every one | `scripts/redteam.ts` (T15) | ⬜ |
+| R3 | **Attacker cost to evade** | smallest mutation budget that pushes P below the opening bar | rising release on release | T15 | ⬜ |
+| R6 | **Learning effect** | evasion recall and genuine FP rate before vs after an approved proposal, with CIs and McNemar p | evasion recall up; FP non-inferior (≤ +0.5 pt) | `mre demo:learn` (T16) | ⬜ |
+| R7 | **Label-learning convergence** | learned sensitivity / false-positive rate vs simulated truth | truth inside 90% interval | T14 test | ⬜ |
 | R4 | **Robust recall** | recall on held-out mutated fronts | ≥ 0.70 | S5 / T9 | ⬜ |
 | R5 | **Engine invariants** | UNKNOWN neutral, monotone, order-invariant, deterministic, uploaded multiplier ignored | all pass | `tests/engine` | ✅ |
 

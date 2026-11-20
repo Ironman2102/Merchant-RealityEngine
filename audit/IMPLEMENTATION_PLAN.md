@@ -103,7 +103,8 @@ For the hackathon, ship a second, deliberately different mapping and workflow pa
 | H4 | Portfolio demo: 1,000-merchant synthetic export, FDR-controlled queue, benchmark with CIs | 3 |
 | H6 | **AI model: train LightGBM M1 on the H4 portfolio, calibrate, SHAP, compare with the Bayesian model, serve it, show it in the trace and console** | 4 |
 | H5 | Pitch hardening: one-command start, offline-safe demo, README, architecture diagram, 5-minute script, Q&A sheet | 2 |
-| | **Total** | **≈ 21 dev-days** (about 2 weeks with 2 people; order: H1 → H2 → H2b → H3 → H4 → H6 → H5) |
+| H7 | **Self-improvement under human control:** learn detector rates from labels (P8 core), red-team search with attacker cost (P10 core), improvement loop with backtest, admin approval, shadow, promote and rollback (P11 core); `mre demo:learn` ("watch it learn") | 6 |
+| | **Total** | **≈ 27 dev-days** (order chosen by the owner: GROK_INSTRUCTIONS T1–T16; finale 26 Nov 2026, so every commit must leave the demo working) |
 
 If the hackathon deadline is shorter, cut in this order: H3 SSO → H2 webhooks → extra sinks → the M3 anomaly stretch → H4 benchmark report polish. **Never cut** H1, the API, the mapping + workflow config with its live switch, the trained AI model M1 with its comparison against the Bayesian model, the one-command start, or the honest-limits slide.
 
@@ -181,6 +182,9 @@ If the hackathon deadline is shorter, cut in this order: H3 SSO → H2 webhooks 
   8. deployment slide;
   9. limits and roadmap.
 - Rehearse the failure paths: API down → the batch output still shows; a wrong password; a self-approval refused.
+
+### 0.5b Self-improvement ("RSI") done safely
+The engine learns from labels, attacks itself, and proposes its own rule changes. **It never applies them by itself.** Every change is backtested with confidence intervals and a McNemar test, approved by a named admin who did not create it, run in shadow, then promoted, with one-step rollback and a hash-chained rules audit. Proposals can only move numbers inside pre-set bands. Detailed tasks: GROK_INSTRUCTIONS.md T14–T16.
 
 ### 0.6 What we deliberately do not build for the hackathon
 Our own case-management system beyond what exists; multi-tenant SaaS; Kafka or streaming connectors (offer them as "on request"); the AI-written summary (owner declined the SDK for now); the sequence and graph models M4/M5 (need real labels); feeding M1 into the decision (it stays a second opinion until it wins a backtest on real labels).

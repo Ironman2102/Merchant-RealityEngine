@@ -9,7 +9,7 @@
   - `442b315` S1: safety fixes, rules data, stats module, saved cases use the demo's 7-layer views
   - `d8c6174` S2: statistical detectors, Bayesian fusion, decision theory
   - `96054a8` S3: reasoning trace, evidence pack, sign-in and maker/checker governance
-- **Status date:** 20 Nov 2026 · **Current priority:** hackathon track H1–H5 (§7), then S4–S7
+- **Status date:** 20 Nov 2026 · **Current priority:** GROK_INSTRUCTIONS.md T1–T16 in order (finale 26 Nov 2026; every commit must keep the demo working), then S4–S7
 
 ---
 
@@ -223,6 +223,7 @@ We do not know PayU's internal systems. Design for a typical PA, never claim to 
 | H3 | Standalone analyst console (`console/`, own Vite build served by `mre serve`) separate from the website (`frontend/`); generic OIDC SSO; accessibility pass | 3 |
 | H4 | 1,000-merchant synthetic portfolio in a PA-style export; Benjamini–Hochberg queue showing expected false alarms; benchmark with Wilson intervals | 3 |
 | H6 | **Trained AI model M1 (LightGBM) on the portfolio: calibrated, SHAP, compared with the Bayesian model, served by FastAPI, shown as "AI model (second opinion)" in the trace** | 4 |
+| H7 | **Self-improvement under human control** (GROK_INSTRUCTIONS T14–T16): learning from labels, red team with attacker cost, propose → backtest → admin approve → shadow → promote → rollback, `mre demo:learn` | 6 |
 | H5 | `docker compose up` + `mre demo`; offline-safe; README for engineers; `docs/PITCH.md` (5-minute script + CTO Q&A sheet) | 2 |
 
 **Order:** H1 → H2 → H2b → H3 → H4 → H6 → H5. **Cut order if time is short:** H3 SSO → H2 webhooks → extra sinks → M3 stretch.

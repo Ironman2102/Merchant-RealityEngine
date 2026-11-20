@@ -1,9 +1,12 @@
 # Instructions for the next AI assistant (Grok): build the hackathon version
 
 > **Paste this into Grok:**
-> "You are continuing work on the Merchant Reality Engine repo, branch `webapp-standalone`. Read `GROK_INSTRUCTIONS.md` top to bottom, then `IMPLEMENTATION_STATUS.md` and `MEASUREMENT_PLAN.md`. Do the tasks in order T1 → T12. For each task: make only the listed changes, run the listed checks, and commit with the given message. If a check fails twice, or anything is unclear or contradicts these instructions, STOP and report. Do not guess, and do not invent design. Never push. Never add a dependency that is not on the approved list."
+> "You are continuing work on the Merchant Reality Engine repo, branch `webapp-standalone`. Read `GROK_INSTRUCTIONS.md` top to bottom, then `IMPLEMENTATION_STATUS.md` and `MEASUREMENT_PLAN.md`. Do the tasks in order T1 → T16 (T13 is optional and can be skipped). For each task: make only the listed changes, run the listed checks, and commit with the given message. If a check fails twice, or anything is unclear or contradicts these instructions, STOP and report. Do not guess, and do not invent design. Never push. Never add a dependency that is not on the approved list."
 
 ---
+
+## 0a. Deadline
+The on-campus finale is on **26 Nov 2026** (IIM Bangalore × PayU "Follow the Money" challenge). It's an exhibition: judges visit stalls, and a **working prototype is mandatory**. The owner chose to run T1–T16 in order, knowing they will not all finish by then. So **every commit must leave the demo working** (`npm test && npm run build` green, and the console usable). The last fully passing commit is what gets demoed. Never leave the branch broken overnight.
 
 ## 0. Situation in one paragraph
 The Merchant Reality Engine tells an Indian payment aggregator (PA) **how likely a merchant is a front for something else** (for example betting collections behind a bakery's UPI link). It says how sure it is and why, and what to do, with evidence a regulator can follow. Stages S1–S3 are built and tested on branch `mre-v2`: the statistical detectors, a Bayesian model, the trace, governance and security. We are entering a **hackathon judged by PayU's technical leadership, including the CTO**. Goals:
@@ -356,6 +359,7 @@ Write `reports/model-comparison.md`. **Report honestly whichever is better**; if
 **Commit:** `T11: Docker image, compose, mre demo, performance report`
 
 ### T12. README and pitch material
+(When T14–T16 are done, add a README section "How it improves itself, under human control" and a pitch beat for `mre demo:learn`.)
 - Rewrite `README.md` for engineers:
   1. problem and the RBI clause;
   2. architecture diagram (ASCII or SVG in `docs/`);
@@ -390,15 +394,133 @@ Write `reports/model-comparison.md`. **Report honestly whichever is better**; if
 
 ---
 
+## 4b. Self-improvement tasks ("the engine gets better, under human control")
+These three tasks make the engine **learn from analyst decisions, attack itself to find blind spots, and propose its own fixes**. A named person must approve every fix before it takes effect. **It never changes itself without approval**: in a regulated decision, autonomous self-modification could be steered by the very fraudsters it judges, and RBI and FIU-IND expect every change to have an owner.
+
+The headline demo is **"watch it learn"**:
+1. The red team finds an evasion that slips past.
+2. The engine proposes a rule change and backtests it on the portfolio.
+3. An admin approves it.
+4. The same evasion is now caught.
+5. Honest merchants' false-alarm rate is unchanged within its confidence interval.
+
+### T14. Learning from labels (Bayesian detector statistics)
+**Goal:** every final label updates how much each detector is trusted, per merchant category, and new cases use the updated numbers.
+- **SQLite** (`backend/src/db.ts` schema additions):
+  - `label_events(case_id TEXT, detector TEXT, mcc TEXT, fired INTEGER, label TEXT, actor_id INTEGER, at TEXT)`, one row per non-UNKNOWN detector when a case gets a **final** label;
+  - `learning_versions(version TEXT PRIMARY KEY, created_at TEXT, n_labels INTEGER, stats_sha256 TEXT)`.
+- **`engine/learnedRates.ts`:**
+  - `effectiveRates(detectorId: string, mcc: string, events: LabelEventSummary): { sensitivity: number; falsePositive: number; nPos: number; nNeg: number }`.
+  - Priors from `rules/detectors.json`: `a1 = s·k, b1 = (1−s)·k, a0 = f·k, b0 = (1−f)·k`, with `k = rules/engine.json detectorPriorStrength` (20).
+  - CONFIRMED_ILLICIT cases add to (a1, b1) by whether the detector fired; ADJUDICATED_BENIGN cases add to (a0, b0). **UNRESOLVED adds nothing.**
+  - **Partial pooling across MCCs:** `s_mcc = (a1_mcc + κ·s_all) / (a1_mcc + b1_mcc + κ)`, with `κ = rules/engine.json learning.poolKappa` (add `"learning": {"poolKappa": 20, "analystCap": 0.2, "minLabelsToShow": 5}`). Same for f.
+  - Floors and ceilings: `0.05 ≤ s ≤ 0.99`, `0.005 ≤ f ≤ 0.5`.
+  - **Per-analyst cap:** one actor's events count with weight `min(1, analystCap · N_total / N_actor)` per detector, so no single person moves a detector by more than 20%.
+- **Engine hook:** add an optional `rates?: (id: string) => { sensitivity: number; falsePositive: number }` to `Ctx`, `judge()`, `fuse()` and `traceEngine`.
+  - When absent, behaviour is **byte-identical to today**; the existing tests must pass unchanged.
+  - The server builds `rates` from SQLite when it opens a new case, and stores `learningVersion` on the result.
+  - **Existing cases are never re-scored silently;** they keep the version they were decided with.
+- **`workflow.ts` `labelInvestigation`:** on a final label, insert the `label_events`. Never insert them for the merchant's own disputes: add `"origin": "merchant_dispute"` handling and skip those.
+- **Trace:** in the evidence table, each detector shows "sensitivity 0.60 → 0.66 (from 12 labels)" once `nPos + nNeg ≥ minLabelsToShow`. `learningEngine.ts`'s display-only numbers are replaced by these real ones.
+- **Tests** in `tests/engine/learning.test.ts`:
+  - simulate 400 labelled outcomes for one detector with true s = 0.8, f = 0.02 → the learned values lie inside their 90% Beta intervals around the truth;
+  - UNRESOLVED changes nothing;
+  - one analyst labelling 100 cases moves a detector by at most the cap;
+  - with zero labels, the 9 samples' posteriors are unchanged (±1e-12).
+
+**Commit:** `T14: learn detector sensitivity and false-positive rates from labels (Bayesian, pooled, capped)`
+
+### T15. Red team: the engine attacks itself
+**Goal:** systematically find the cheapest ways a fraudster could evade detection, measured on the T8 portfolio.
+- **`scripts/mutations.ts`** (created in T8; extend it). Every operator is pure, seeded, and returns a **valid** `mre-dataset/v1`:
+  - `nudgeRound` (round amounts ±₹37);
+  - `spreadHours` (move off-hours sales to 20:00–21:30);
+  - `blendGenuine(p)` (add a share p of sales copied from a genuine sample);
+  - `slowRamp` (rewrite `weeklySales` to grow ≤ 8% per week);
+  - `rotateLinks` (a new link id every 20 sales);
+  - `localMules(p)` (set share p of payers to the home state);
+  - `appOnly` (remove website data and mark it MISSING);
+  - `dropCalendar`;
+  - `bonusAmounts` (round amounts → nearest bonus tier);
+  - `delaySweep` (onward transfers 30 h after settlement);
+  - `splitMerchant(k)` (keep 1/k of sales, as if spread over k accounts);
+  - `jitterTiming` (±10 min).
+- **`rules/redteam.json`:** an attacker cost per operator, e.g. `{"nudgeRound":1,"spreadHours":2,"blendGenuine":10,"slowRamp":4,"rotateLinks":2,"localMules":6,"appOnly":3,"dropCalendar":1,"bonusAmounts":1,"delaySweep":2,"splitMerchant":5,"jitterTiming":1}`. For parameterised operators, cost × parameter (blendGenuine 10 × p·10; splitMerchant 5 × k).
+- **`scripts/redteam.ts --portfolio examples/portfolio --truth examples/portfolio-truth/truth.csv --seed 7 --variants 500`:**
+  - **Random search:** for each of up to 50 fronts, 10 random combinations of 1–3 operators.
+  - **Greedy search:** from each front, repeatedly apply the single operator (with its parameter grid) that lowers P(front) most, up to 3 steps, stopping once P < the opening bar.
+  - An evasion = a mutated front with `decision === 'NO_CASE'`.
+- **Writes:**
+  - `reports/redteam.md`:
+    - overall evasion rate (Wilson CI);
+    - per-detector **silencing rate** (share of variants where a detector that fired on the original no longer fires);
+    - the 10 cheapest evasions with their operator lists;
+    - **attacker cost to evade** per front (median, p10);
+    - the share of fronts that could not be evaded within cost 20.
+  - `examples/redteam/evasions.jsonl` (`{baseMerchantId, operators, cost, posterior, dataset}`).
+- **Tests:** same seed → identical report; every operator output passes `datasetToScenario`; on genuine samples, operators never *raise* P above the bar (sanity check).
+
+**Commit:** `T15: red-team search over evasion operators with attacker-cost and silencing reports`
+
+### T16. Controlled improvement loop (propose → backtest → approve → shadow → promote, with rollback)
+**Goal:** turn red-team findings into rule changes that a human approves.
+- **Bands:** in `rules/detectors.json`, every detector gets `"bands": {"minEffect": [lo, hi], "alpha": [lo, hi]}`.
+  - Defaults: minEffect ±40% of today's value, clipped to sensible ranges; alpha within [0.0005, 0.05].
+  - Proposals may only move numbers **inside these bands**. They never touch costs, priors, guard-rails or code.
+- **Rules override mechanism:** `rules/index.ts` gets `withDetectorOverrides(patch: Record<string, Partial<{minEffect: number; alpha: number}>>, fn: () => T): T`. It sets an override map that `RULES.detector()` reads, then restores it in `finally`. Synchronous only; document that it is not safe across awaits.
+- **`engine/improver.ts`:** `propose(input: { portfolio: MreDataset[]; truth: Map<string, 0|1>; evasions: MreDataset[] }): Proposal | null`.
+  1. Take the detectors most often silenced in `evasions`.
+  2. For each, try 5 grid values of `minEffect` (and `alpha`) inside its band.
+  3. For each candidate, **backtest** on portfolio + evasions: recall on evasions, overall recall and genuine FP rate, all with Wilson CIs, plus McNemar exact on champion vs challenger decisions.
+  4. **Accept** a candidate only if: the genuine FP rate's 95% upper bound rises by ≤ 0.5 percentage points over the champion's; evasion recall improves; and McNemar p < 0.05 on the evasion set.
+  5. Return the best, or `null` with the reason.
+- **`Proposal`** = `{ id, createdAt, createdBy: 'mre-improver' | username, patch, rationale, backtest: { champion: Metrics, challenger: Metrics, mcnemarP }, status: 'proposed' | 'approved' | 'rejected' | 'shadow' | 'live' | 'rolled_back' }`. Saved to `rules/proposals/<id>.json`.
+- **Versions:** approving writes the patched `rules/detectors.json`, bumps `rules/engine.json` `version` (patch number +1), and saves a full snapshot to `rules/history/<version>/`.
+- **Audit:** a new table `rules_audit` with the **same hash-chain logic** as case audit. Refactor `appendAudit` / `verifyAudit` in `store.ts` to take the table name, or add a parallel pair; one entry per propose, approve, reject, shadow, promote and rollback.
+- **API** (session auth; **admin role only**; **approver ≠ the user who triggered the proposal**; `mre-improver`-created proposals can be approved by any admin):
+  - `POST /api/rules/proposals/run` (runs red team + improver on the loaded portfolio, returns the proposal);
+  - `GET /api/rules/proposals`;
+  - `POST /api/rules/proposals/:id/{approve,reject,promote}`;
+  - `POST /api/rules/rollback {version}`;
+  - `GET /api/rules/audit` (verification result).
+- **Shadow:** an approved proposal enters `shadow` first. `mre batch` then writes both `decision` and `challenger_decision` columns. **Promote** makes it live. For the demo, promote can follow shadow immediately; in production the plan's rule is 14 days.
+- **Console** `/rules` page (admin):
+  - the proposal list;
+  - the diff (old → new numbers, with the detector name in words);
+  - the backtest table with CIs and the McNemar p;
+  - Approve / Reject / Promote buttons;
+  - the version history with Rollback;
+  - the audit-chain status.
+- **`mre demo:learn`** (scripted "watch it learn", also used as a test):
+  1. score the portfolio with the champion rules;
+  2. run the red team and print one evasion that slips through;
+  3. run the improver and print the proposal and backtest;
+  4. approve it (as dev-admin; create that user in `dev-users.ts`);
+  5. promote it;
+  6. re-score and print: the evasion is caught, and the genuine FP rate with its CI before vs after.
+  
+  It exits 1 if the improver finds no acceptable proposal (report why).
+- **Tests** in `tests/engine/improver.test.ts`:
+  - a proposal can never move a number outside its band;
+  - the creator cannot approve their own proposal;
+  - approve → promote → rollback restores byte-identical `rules/` files;
+  - the rules audit chain verifies and tampering is detected;
+  - with no proposals applied, the 9 samples are unchanged.
+
+**Commit:** `T16: controlled improvement loop with backtests, admin approval, shadow, promote and rollback`
+
+---
+
 ## 5. When to stop and ask the owner
 - Any test that passed before your change now fails and you cannot fix it in 2 attempts.
 - A task needs a dependency not on the approved list.
 - Anything would push to GitHub, publish, deploy, download data, or create an external account.
-- A change would make the default-config behaviour differ from today's (any change to the 9 samples' decisions or posteriors beyond ±1e-9).
+- A change would make the default-config behaviour differ from today's (any change to the 9 samples' decisions or posteriors beyond ±1e-9). The only exceptions: learned rates once real labels exist (T14), and a rules version an admin explicitly approved and promoted (T16).
 - You are about to put PayU's name or branding into the product UI.
 
 ## 6. Definition of done (hackathon)
 - `npm test && npm run build && .venv/bin/pytest ml/tests` all pass.
 - `npm run mre -- batch --in examples/generic-pa --mapping adapters/mappings/generic-pa-v1.json --out /tmp/out` and the same with `examples/alt-pa` + `alt-pa-example.json` give the same decisions.
 - `docker compose up` → console at :8787: sign in, open the Telegram case, trace shows the Bayesian waterfall **and** the AI model panel, maker/checker works, evidence pack downloads.
-- `reports/benchmark.md`, `reports/model-comparison.md` and `reports/perf.md` exist, and the README/pitch numbers match them.
+- `reports/benchmark.md`, `reports/model-comparison.md`, `reports/perf.md` and `reports/redteam.md` exist, and the README/pitch numbers match them.
+- `npm run mre -- demo:learn` shows an evasion found, a proposal backtested, approved and promoted, the evasion caught on re-run, and the genuine FP rate unchanged within its CI.
