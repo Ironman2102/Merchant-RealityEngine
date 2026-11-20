@@ -13,10 +13,12 @@
     "test:dataset": "node --import tsx scripts/test-dataset-import.ts",
     "samples": "tsx scripts/export-samples.ts",
     "test": "npm run -s test:stats && npm run -s selftest >/dev/null && npm run -s check:api && npm run -s test:dataset && npm run -s security && npm run -s adversarial && npm run -s lint:noscript",
-    "test:stats": "tsx tests/run.ts",
+    "test:stats": "MRE_CASE_STORE=memory tsx tests/run.ts",
     "adversarial": "tsx scripts/adversarial.ts",
     "security": "tsx scripts/security.ts",
-    "lint:noscript": "! grep -rnE \"(scenario|sc)\\.id ===\" frontend/src"
+    "lint:noscript": "! grep -rnE \"(scenario|sc)\\.id ===\" frontend/src",
+    "user:add": "tsx scripts/user-add.ts",
+    "dev:users": "tsx scripts/dev-users.ts"
   },
   "dependencies": {
     "@stdlib/math-base-special-betainc": "^0.2.3",

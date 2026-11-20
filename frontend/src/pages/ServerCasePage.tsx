@@ -12,11 +12,12 @@ import { MerchantPage } from './MerchantPage';
 import { AnalystPage } from './AnalystPage';
 import { ResponsePage } from './ResponsePage';
 import { AuditPage } from './AuditPage';
+import { TracePage } from './TracePage';
 
 /** Saved case = the same seven-layer screens as the guided demo, loaded from the server record and saved back to it. */
 const VIEWS: Record<string, () => JSX.Element> = {
   investigations: () => <InvestigationPage />, graph: EvidenceGraphPage, detection: DetectionPage, patterns: PatternsPage,
-  merchant: MerchantPage, analyst: AnalystPage, response: ResponsePage, audit: AuditPage,
+  merchant: MerchantPage, analyst: AnalystPage, response: ResponsePage, audit: AuditPage, trace: TracePage,
 };
 export const CASE_VIEWS = Object.keys(VIEWS);
 

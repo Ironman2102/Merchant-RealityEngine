@@ -19,6 +19,7 @@ import { PortfolioPage } from './pages/PortfolioPage';
 import { CasePage } from './pages/CasePage';
 import { AIEnginePage } from './pages/AIEnginePage';
 import { ServerCasePage } from './pages/ServerCasePage';
+import { TracePage } from './pages/TracePage';
 import { PortfolioProvider } from './hooks/usePortfolio';
 import { InvestigationProvider, useInvestigation } from './hooks/useInvestigation';
 import { EngineShell } from './components/navigation/EngineShell';
@@ -57,6 +58,7 @@ export default function App() {
             <Route element={<RequireUserDataset />}>
               <Route path="portfolio/:key" element={<CasePage />} />
               <Route path="investigations" element={<InvestigationPage />} />
+              <Route path="trace" element={<TracePage />} />
               <Route path="patterns" element={<PatternsPage />} />
               <Route path="merchant" element={<MerchantPage />} />
               <Route path="graph" element={<EvidenceGraphPage />} />
@@ -81,6 +83,7 @@ export default function App() {
               <Route path="analyst" element={<AnalystPage />} />
               <Route path="response" element={<ResponsePage />} />
               <Route path="audit" element={<AuditPage />} />
+              <Route path="trace" element={<TracePage />} />
               <Route path="portfolio" element={<PortfolioPage />} />
               <Route path="portfolio/:key" element={<CasePage />} />
               <Route path="patterns" element={<PatternsPage />} />

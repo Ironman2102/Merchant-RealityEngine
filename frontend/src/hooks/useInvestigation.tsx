@@ -6,7 +6,7 @@ import { runInvestigation } from '../engines/investigationEngine';
 import { actionLog, planResponse } from '../engines/responseEngine';
 import { fmtDateTime } from '../utils/format';
 import { LAYERS } from '../data/evidence';
-import { updatePilotCase, type ServerUser } from '../services/pilotApi';
+import { approvePilotCase, updatePilotCase, type ServerUser } from '../services/pilotApi';
 
 const IDS: LayerId[] = [1, 2, 3, 4, 5, 6, 7];
 const idle = (): Record<LayerId, LayerStatus> => ({ 1: 'pending', 2: 'pending', 3: 'pending', 4: 'pending', 5: 'pending', 6: 'pending', 7: 'pending' });
@@ -24,6 +24,8 @@ interface Ctx {
   audit: ActionRecord[];
   /** Saved-case mode: analyst actions are written to the server and the server's reply replaces local state. */
   caseId: string | null; loadCase: (id: string, sc: Scenario, server: ServerUser, animate?: boolean) => void; syncError: string;
+  /** Server-side governance state for a saved case: proposals waiting for a second person, and audit-chain status. */
+  pending: ServerUser['pending']; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
 }
 const C = createContext<Ctx | null>(null);
 export const useInvestigation = () => { const c = useContext(C); if (!c) throw new Error('InvestigationProvider missing'); return c; };
@@ -39,6 +41,8 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserState>(freshUser());
   const [caseId, setCaseId] = useState<string | null>(null);
   const [syncError, setSyncError] = useState('');
+  const [pending, setPending] = useState<ServerUser['pending']>({});
+  const [auditIntact, setAuditIntact] = useState<boolean | null>(null);
   const userRef = useRef(user);
   userRef.current = user;
   const token = useRef(0);
@@ -74,11 +78,11 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => () => { token.current++; }, []);
 
-  const adopt = useCallback((s: ServerUser) => setUser(u => ({
+  const adopt = useCallback((s: ServerUser) => { setPending(s.pending ?? {}); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
     ...u, notes: s.user.notes, clarification: s.user.clarification, chosenLevel: (s.user.chosenLevel as ResponseLevel | null), legalVerified: s.user.legalVerified,
     escrowConfirmed: s.user.escrowConfirmed, executed: s.user.executed, label: (s.user.label as Label | null),
-    audit: s.audit.map((a, i) => ({ seq: i + 1, at: fmtDateTime(Date.parse(a.at)), actor: a.actor, action: a.action, detail: a.detail })),
-  })), []);
+    audit: s.audit.map((a, i) => ({ seq: a.seq ?? i + 1, at: fmtDateTime(Date.parse(a.at)), actor: a.actor, action: a.action, detail: a.detail, hash: a.hash })),
+  })); }, []);
   const loadCase = useCallback((id: string, sc: Scenario, server: ServerUser, animate = false) => {
     token.current++; setCustom(sc); setScenarioId('custom'); setCaseId(id); setSyncError(''); selectLayer(1);
     setUser(freshUser()); adopt(server);
@@ -90,6 +94,11 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     setSyncError('');
     try { adopt(await updatePilotCase(caseId, action, payload) as ServerUser); }
     catch (e) { setSyncError(e instanceof Error ? e.message : 'Could not save to the case record.'); }
+  }, [caseId, adopt]);
+  const approve = useCallback((ok: boolean, extra: { escrowConfirmed?: boolean; reason?: string } = {}) => {
+    if (!caseId) return;
+    setSyncError('');
+    approvePilotCase(caseId, ok, extra).then(r => adopt(r as ServerUser)).catch(e => setSyncError(e instanceof Error ? e.message : 'Could not save the approval.'));
   }, [caseId, adopt]);
 
   const patch = useCallback((p: Partial<UserState>) => setUser(u => ({ ...u, ...p })), []);
@@ -108,6 +117,6 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     return [...sys, ...user.audit].map((a, i) => ({ ...a, seq: i + 1 }));
   }, [status, user.audit, t0]);
 
-  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit, caseId, loadCase, syncError };
+  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit, caseId, loadCase, syncError, pending, auditIntact, approve };
   return <C.Provider value={v}>{children}</C.Provider>;
 }

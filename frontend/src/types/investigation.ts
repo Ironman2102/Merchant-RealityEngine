@@ -70,7 +70,7 @@ export interface AnalystReview {
 
 export type ResponseLevel = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 export interface HoldRecord { id: string; amount: number; scope: string; expires: string; reviewBy: string; approver: string; basis: string }
-export interface ActionRecord { seq: number; at: string; actor: string; action: string; detail: string }
+export interface ActionRecord { seq: number; at: string; actor: string; action: string; detail: string; hash?: string }
 
 export interface UserState {
   notes: string;

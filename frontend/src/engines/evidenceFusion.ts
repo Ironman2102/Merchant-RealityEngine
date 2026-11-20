@@ -39,7 +39,7 @@ function familyLlr(items: EvidenceItem[], llrOf: (e: EvidenceItem) => number, rh
   return part(pos) + part(neg);
 }
 
-export function fuse(evidence: EvidenceItem[], profile: MerchantProfile): FusionResult {
+export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: { draws?: number } = {}): FusionResult {
   const E = RULES.engine, rho = E.familyRho, pr = priorFor(profile);
   const priorLogOdds = logit(pr.rate) + Math.log(pr.odds);
   const byFam = new Map<Family, EvidenceItem[]>();
@@ -52,7 +52,7 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile): Fusion
 
   // Monte-Carlo interval: redraw each fired/calm detector's LLR from Beta(s), Beta(f), and the base rate.
   const r = rng(seedOf(profile.id + '|fusion')), k = E.detectorPriorStrength, draws: number[] = [];
-  for (let d = 0; d < E.posteriorDraws; d++) {
+  for (let d = 0; d < (opts.draws ?? E.posteriorDraws); d++) {
     const sampled = new Map<string, number>();
     evidence.forEach(e => {
       if (e.status === 'UNKNOWN') return;
@@ -67,7 +67,7 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile): Fusion
     draws.push(sigmoid(lo));
   }
   draws.sort((a, b) => a - b);
-  const posterior = sigmoid(total), posteriorCi: [number, number] = [quantile(draws, 0.05), quantile(draws, 0.95)];
+  const posterior = sigmoid(total), posteriorCi: [number, number] = draws.length ? [quantile(draws, 0.05), quantile(draws, 0.95)] : [posterior, posterior];
 
   // Provenance and family contributions (positive side only: what supports "front").
   const items: FusedItem[] = evidence.map(e => ({ evidence: e, counted: e.status !== 'UNKNOWN', weight: e.llr,
@@ -79,9 +79,9 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile): Fusion
   const independent = strongProv.length >= E.gate.minProvenances || strongFam.length >= E.gate.minFamiliesSingleProvenance;
   const gatePassed = posterior >= E.gate.openPosterior && independent;
   const gateReason = gatePassed
-    ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}) from a ${fmtProb(pr.rate)} base rate; evidence from ${strongProv.length} independent source(s) (${strongProv.map(p => p.provenance).join(', ')}) across ${strongFam.length} families.`
+    ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}) from a ${fmtProb(sigmoid(priorLogOdds))} base rate (category rate adjusted for account age); evidence from ${strongProv.length} independent source(s) (${strongProv.map(p => p.provenance).join(', ')}) across ${strongFam.length} families.`
     : posterior < E.gate.openPosterior
-      ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}), below the ${fmtProb(E.gate.openPosterior)} needed to open a case. Base rate ${fmtProb(pr.rate)}.`
+      ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}), below the ${fmtProb(E.gate.openPosterior)} needed to open a case. Base rate ${fmtProb(sigmoid(priorLogOdds))} (category rate adjusted for account age).`
       : `P(front) ${probEq(posterior)} but the support comes from one data source and fewer than ${E.gate.minFamiliesSingleProvenance} independent families; a second source is needed.`;
 
   const families: FamilySummary[] = FAMILIES.map(f => {
