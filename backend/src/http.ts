@@ -49,7 +49,7 @@ function send(res: ServerResponse, reply: ApiReply, headers: Record<string, stri
 export async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const ip = req.socket.remoteAddress ?? 'local';
-    if (!allowed(ip)) return send(res, { status: 429, body: { error: 'Too many requests. Try again in a minute.' } });
+    if (!allowed(`all:${ip}`, 300)) return send(res, { status: 429, body: { error: 'Too many requests. Try again in a minute.' } });
     const url = new URL(req.url || '/', 'http://localhost');
     const path = (url.pathname.replace(/\/+$/, '') || '/').replace(/^\/api/, '') || '/';
     const method = req.method || 'GET';
@@ -61,8 +61,9 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
 
     const token = readCookie(req), actor: Actor | null = actorFromToken(token);
     if (path === '/auth/login' && method === 'POST') {
-      if (!allowed(`login:${ip}`, 10)) return send(res, { status: 429, body: { error: 'Too many sign-in attempts. Wait a minute.' } });
       const b = await readBody(req) as { username?: unknown; password?: unknown; idToken?: unknown };
+      const who = typeof b.username === 'string' ? b.username.trim().toLowerCase() : '';
+      if (!allowed(`login:${ip}:${who}`, 30)) return send(res, { status: 429, body: { error: 'Too many sign-in attempts. Wait a minute.' } });
       const check = typeof b.idToken === 'string' ? oidcCheckFromEnv() : null;
       const s = typeof b.idToken === 'string'
         ? (check ? loginWithIdToken(b.idToken, check) : null)

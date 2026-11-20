@@ -6,6 +6,13 @@ import { handle } from '../../backend/src/http.ts';
 
 if (!process.env.MRE_DB_FILE) process.env.MRE_DB_FILE = '/tmp/mre.db';
 
+function publishEnv(): void {
+  for (const name of ['MRE_BOOT_USERS', 'MRE_BOOT_USER', 'MRE_BOOT_PASSWORD', 'MRE_HASH_KEY', 'MRE_SESSION_SECRET', 'MRE_ML_URL', 'MRE_ML_TIMEOUT', 'DAYTONA_API_KEY', 'DAYTONA_API_URL', 'DAYTONA_SANDBOX_ID']) {
+    const value = boot(name);
+    if (value) process.env[name] = value;
+  }
+}
+
 function boot(name: string): string | undefined {
   const fromPlatform = typeof Netlify !== 'undefined' ? Netlify.env.get(name) : undefined;
   return fromPlatform || process.env[name];
@@ -70,8 +77,9 @@ function nodeRes(): { res: ServerResponse; finish: () => { status: number; heade
 }
 
 export default async (req: Request) => {
+  publishEnv();
   ensureAdmin();
-  const ip = req.headers.get('x-nf-client-connection-ip') || 'netlify';
+  const ip = req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'netlify';
   const body = Buffer.from(await req.arrayBuffer());
   const { res, finish } = nodeRes();
   await handle(nodeReq(req, ip, body), res);

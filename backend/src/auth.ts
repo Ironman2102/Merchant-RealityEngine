@@ -42,6 +42,32 @@ function actorFromSigned(token: string): Actor | null {
   } catch { return null; }
 }
 
+function envValue(name: string): string {
+  const platform = (globalThis as { Netlify?: { env?: { get?: (key: string) => string | undefined } } }).Netlify?.env?.get?.(name);
+  return platform || process.env[name] || '';
+}
+
+export function bootAccounts(): { username: string; password: string; role: Role }[] {
+  const out: { username: string; password: string; role: Role }[] = [];
+  const many = envValue('MRE_BOOT_USERS');
+  for (const part of many.split(',')) {
+    const [username, password, role] = part.split(':');
+    if (!username || !password || password.length < 12 || !ROLES.includes(role as Role)) continue;
+    out.push({ username, password, role: role as Role });
+  }
+  const password = envValue('MRE_BOOT_PASSWORD');
+  const username = envValue('MRE_BOOT_USER') || 'admin';
+  if (password.length >= 12 && !out.some(u => u.username === username)) out.push({ username, password, role: 'admin' });
+  return out;
+}
+
+function sameSecret(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
 function issueSession(actor: Actor): string {
   const signed = signActor(actor);
   const token = signed ?? randomBytes(32).toString('base64url');
@@ -61,9 +87,19 @@ export function createUser(username: string, password: string, role: Role): Acto
 
 /** Returns a session token, or null. Same work whether or not the user exists (no username probing by timing). */
 export function login(username: string, password: string): { token: string; actor: Actor } | null {
-  const row = getDb().prepare('SELECT id, username, role, pw_salt, pw_hash, disabled FROM users WHERE username = ?').get(username) as
+  const name = username.trim();
+  const pw = password.trim();
+  const boot = bootAccounts().find(u => u.username === name);
+  if (boot) {
+    if (!sameSecret(pw, boot.password)) return null;
+    const existing = getDb().prepare('SELECT id, username, role, disabled FROM users WHERE username = ?').get(name) as { id: number; username: string; role: Role; disabled: number } | undefined;
+    if (existing?.disabled) return null;
+    const actor = existing ? { id: existing.id, username: existing.username, role: existing.role } : createUser(boot.username, boot.password, boot.role);
+    return { token: issueSession(actor), actor };
+  }
+  const row = getDb().prepare('SELECT id, username, role, pw_salt, pw_hash, disabled FROM users WHERE username = ?').get(name) as
     { id: number; username: string; role: Role; pw_salt: string; pw_hash: string; disabled: number } | undefined;
-  const got = Buffer.from(scrypt(password, row?.pw_salt ?? 'no-such-user-salt'), 'hex');
+  const got = Buffer.from(scrypt(pw, row?.pw_salt ?? 'no-such-user-salt'), 'hex');
   const want = Buffer.from(row?.pw_hash ?? '00'.repeat(64), 'hex');
   if (!row || row.disabled || !timingSafeEqual(got, want)) return null;
   const actor = { id: row.id, username: row.username, role: row.role };

@@ -48,7 +48,7 @@ export async function me(): Promise<SessionUser | null> {
   return r.ok ? ((await r.json()) as { user: SessionUser }).user : null;
 }
 export async function signIn(username: string, password: string): Promise<SessionUser> {
-  const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username, password }) });
+  const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ username: username.trim(), password: password.trim() }) });
   const body = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(body.error || 'Sign-in failed.');
   return body.user as SessionUser;

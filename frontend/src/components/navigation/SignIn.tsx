@@ -26,7 +26,7 @@ export function SignInGate({ children }: { children: (user: SessionUser, logout:
           {error && <p role="alert" className="text-xs text-stone-200">{error}</p>}
           <Btn variant="primary" disabled={busy}><LogIn size={14} />{busy ? 'Signing in…' : 'Sign in'}</Btn>
         </form>
-        <p className="mt-4 text-[11px] text-dim">No account yet? An administrator creates one with <code>npm run user:add -- &lt;username&gt; &lt;role&gt;</code>.</p>
+        <p className="mt-4 text-[11px] text-dim">Use the username and password you were given. Several people can be signed in at once.</p>
       </Panel>
     </div>
   );
