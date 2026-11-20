@@ -3,6 +3,187 @@
 **Repo:** `dhruv11bhandari/Merchant-RealityEngine` · baseline `1d1d9a8` · 19 Nov 2026
 **Supersedes:** the earlier plan in this file and `audit/PLAN.md` (kept for rationale).
 **Inputs:** `audit/REPORT.md` (27 adversarial cases, security probe), `audit/market-research.md`, `audit/hardcoding-scan.md`.
+**Updated 20 Nov 2026:** S1–S3 (P0–P7) are built on branch `mre-v2`; see `IMPLEMENTATION_STATUS.md`. **Part 0 below is now the top priority** and comes before the remaining phases (P8–P12, ML1–ML4).
+
+---
+
+## Part 0: Current priority — standalone product that plugs into a PA's workflow (hackathon)
+
+### 0.1 Context
+This is being built for a hackathon judged by **PayU's technical leadership, including the CTO**. Two changes follow:
+1. **It becomes a standalone product, not a page inside the marketing website.** The engine has to run on its own, inside a payment aggregator's infrastructure, with our UI as one optional way in.
+2. **It must be obviously easy for a PA's team (PayU or any other) to apply to their existing workflow.** That means no new process and no data leaving their environment, and the integration must start with the lowest-effort option.
+
+We do **not** know PayU's internal systems, case-management tools or data schema. Everything here is designed for a typical large Indian PA and must say so. Do not claim to integrate with any named PayU system. Do not use PayU's name, logo or branding in the product UI; the pitch may say "built for payment aggregators such as PayU".
+
+### 0.2 What the judges will probe, and where the answer lives
+| Likely question (CTO / engineering leads) | Our answer | Built in |
+|---|---|---|
+| How does this plug into what we already run? | Four modes: daily file run, scoring API with notifications, analyst web app on your login, evidence pack attached to your existing cases | H1–H3 |
+| Does our data leave our network? | No. One container in your VPC or data centre; IDs pseudonymised with your key; payment data stays in India **[verify RBI data-localisation wording before quoting]** | H2, S1 |
+| Latency and scale? | Measured numbers, not claims: merchants per minute in batch, p50/p95 per API call, on stated hardware | H2, H4 |
+| How do you avoid drowning analysts in false alarms? | Practical-significance gate, small-merchant shrinkage, P ≥ 10% plus independent sources, portfolio false-discovery control with the expected false-alarm count shown | S2, H4 |
+| Why should a regulator trust it? | Reasoning trace, every number checkable; maker/checker; hash-chained audit; RBI-mapped evidence pack | S3 |
+| Can our risk team tune it without you? | Yes: thresholds, norms, costs and calendars are versioned JSON, changed through an approval loop | S1, P11 |
+| What's your accuracy? | Honest: synthetic-calibrated only; benchmark with confidence intervals; a shadow pilot is how real numbers get measured | H4 |
+| What happens when fraudsters adapt? | Adversarial suite now; red team and drift alarms on the roadmap | S2, P10 |
+
+### 0.3 Target architecture (no big file moves; new entry points on the current layout)
+Moving every file into a monorepo is churn with no user value and the highest-risk change to hand to another assistant. Instead, "standalone" comes from new entry points:
+```
+engine/index.ts        PUBLIC API of the engine: analyze(dataset) → { result, trace }, features(result), buildPack, RULES.
+                       Re-exports frontend/src/engines + stats + data/dataset. No React, no Node-only imports.
+adapters/              mapping JSON (PA export columns → mre-dataset/v1) + mapExport.ts (Node, HMAC pseudonymisation)
+workflow/              workflow-fit config (§0.4b): outputs, responses, approvals, statuses, roles, labels
+cli/mre.ts             mre batch | serve | demo | features | validate-config | verify-audit | user:add
+console/               STANDALONE analyst web app: own index.html + main.tsx + vite.console.config.ts → dist-console/
+                       reuses frontend/src pages/layers/hooks; routes: queue, cases/:id/*, trace, sign-in. No marketing pages.
+frontend/              the WEBSITE only (home, architecture, guided demo). /ai-engine routes removed; "Open console" link.
+backend/               API server; `mre serve` also serves dist-console/ on the same port (one URL = the standalone app)
+ml/                    Python: AI model training, registry, scoring (§0.5 H6)
+deploy/                Dockerfile (one image: Node + Python ML runtime), docker-compose.yml
+```
+
+### 0.3b Where the AI is (say this clearly in the README and the pitch)
+| Layer | What it is | Learned from data? | Status |
+|---|---|---|---|
+| 1. Statistical detectors | 25 hypothesis tests vs category norms, calendar and independent sources | Norms are priors now; learned from the portfolio later (P9) | Built (S2) |
+| 2. Bayesian evidence model | Probabilistic model: base rate × likelihood ratios → P(front) with a 90% interval, mechanism posterior, expected-loss decision | Sensitivities are priors now; learned from labels later (P8) | Built (S2) |
+| 3. **Trained ML model (M1)** | **LightGBM classifier on the detector outputs and peer ratios; calibrated; SHAP explanations; shown as a second opinion next to the Bayesian model** | **Yes: trained on the labelled synthetic portfolio now, retrained on real labels in a pilot** | **H6 (hackathon)** |
+| 4. Anomaly model (M3) | Isolation Forest on merchant features; needs no labels | Yes (unsupervised) | H6 stretch |
+| 5. Language model (summary writer) | Writes the case summary from the trace; never decides; output verified | No | Off: owner declined the SDK for now |
+
+The pitch must make clear that the **decision is explainable by construction** (layers 1–2). The **trained model (layer 3) is a challenger**: it replaces the probability only if it wins a statistical backtest on real labels (§10B.8).
+
+### 0.4 Integration modes (least effort for the PA first)
+| Mode | What the PA does | What they get | Phase |
+|---|---|---|---|
+| **A. Daily file run (shadow)** | Drop daily exports (CSV/JSON/Parquet) in a folder or bucket | `scores.csv` (merchant, P(front), interval, action, top reasons), `cases.jsonl`, one evidence pack per opened case | H1 |
+| **B. Scoring API** | Call `POST /v1/score` from their systems; optionally receive `case.opened` webhooks | JSON: probability, interval, decision, recommended action, top evidence, trace link | H2 |
+| **C. Analyst console** | Analysts sign in with the company's login | Case queue, 7-layer case view, trace, maker/checker approvals | H3 |
+| **D. Evidence pack attachment** | Attach our pack to cases in their own tool | RBI mapping, STR draft facts, audit with hashes | done (S3) |
+
+### 0.4b Workflow fit: "tell us your workflow, we configure to it"
+We don't know any PA's exact systems, so flexibility is the design principle, not an afterthought. Everything that differs between companies is **configuration (versioned JSON, approved through the same maker/checker loop)**, never a code fork. The pitch line: *"Whatever your workflow is, this adapts to it: we change config files, not your process."*
+
+| What differs between PAs | Where it is configured | Default shipped |
+|---|---|---|
+| Export layout: columns, codes, units (paise/rupees), timezone | `adapters/mappings/<name>.json` | `generic-pa-v1.json` |
+| Where results go | `workflow/outputs.json`: list of sinks. Built in: files, webhook, pull API. Others (S3/SFTP/Kafka/SQS/email) are small connectors behind one `Sink` interface, added on request | files + webhook |
+| Which response levels exist and what they are called | `workflow/responses.json`: levels, labels, descriptions, which are allowed automatically | L0–L5 as today |
+| Who may do what; how many approvers | `workflow/approvals.json`: role → actions, approvals needed per level, which role approves | maker/checker as today |
+| Case statuses their tool uses | `workflow/statuses.json`: maps our states (opened, proposed, approved, labelled, closed) to theirs | ours |
+| Roles and login | `workflow/roles.json` + OIDC group mapping | analyst / reviewer / legal / admin |
+| Risk appetite: costs, thresholds, norms, calendars | `rules/*.json` (already built) | expert priors |
+| Labels and outcomes they record | `workflow/labels.json`: their outcome codes → CONFIRMED_ILLICIT / ADJUDICATED_BENIGN / UNRESOLVED | ours |
+
+**Guard-rails that configuration cannot switch off** (enforced in code and covered by tests):
+- nobody approves their own proposal;
+- actions that restrict funds need a distinct approver;
+- the audit trail is always hash-chained;
+- raw identifiers are never stored;
+- missing data never moves the score.
+
+A config file that breaks one of these is rejected at load time with a clear error.
+
+**Onboarding a new PA, as a repeatable 3-step process:**
+1. Share one sample export and their workflow.
+2. We write the mapping and workflow files, and `mre validate-config` checks them against the sample.
+3. Run in shadow (daily file mode) and compare our queue with their current alerts.
+
+For the hackathon, ship a second, deliberately different mapping and workflow pair (`examples/alt-pa/`): different column names, paise amounts, three approval levels and their own status names. Switch to it live in the demo to show the claim is real.
+
+### 0.5 Hackathon phases (do these before P8)
+| Phase | Scope | Days |
+|---|---|---|
+| H1 | Engine package + CLI batch mode + mapping-based adapter | 3 |
+| H2 | Container, versioned scoring API, webhooks, service keys, measured performance | 3 |
+| H2b | Workflow-fit layer (§0.4b): `workflow/*.json`, `Sink` interface, config validator with guard-rails, `examples/alt-pa/` | 3 |
+| H3 | Standalone analyst console, separate from the site; generic OIDC SSO option | 3 |
+| H4 | Portfolio demo: 1,000-merchant synthetic export, FDR-controlled queue, benchmark with CIs | 3 |
+| H6 | **AI model: train LightGBM M1 on the H4 portfolio, calibrate, SHAP, compare with the Bayesian model, serve it, show it in the trace and console** | 4 |
+| H5 | Pitch hardening: one-command start, offline-safe demo, README, architecture diagram, 5-minute script, Q&A sheet | 2 |
+| | **Total** | **≈ 21 dev-days** (about 2 weeks with 2 people; order: H1 → H2 → H2b → H3 → H4 → H6 → H5) |
+
+If the hackathon deadline is shorter, cut in this order: H3 SSO → H2 webhooks → extra sinks → the M3 anomaly stretch → H4 benchmark report polish. **Never cut** H1, the API, the mapping + workflow config with its live switch, the trained AI model M1 with its comparison against the Bayesian model, the one-command start, or the honest-limits slide.
+
+### H1. Engine package, CLI batch mode, adapter (3 d)
+| # | File | Change |
+|---|---|---|
+| H1.1 | `engine/index.ts`, `tsconfig.json` | Public engine entry re-exporting existing modules; no file moves. Add `engine`, `adapters`, `cli`, `workflow`, `console` to tsconfig `include` |
+| H1.2 | `engine/index.ts` | Public API: `analyze(dataset, opts?) → { result, trace }`, `buildEvidencePack`, `RULES`, `version`. No React, no Node-only imports (node:crypto stays in adapters/server) |
+| H1.3 | `adapters/mappings/generic-pa-v1.json` | Column mapping: source column → canonical field, value maps (channel codes, txn types), timezone, amount unit (paise/rupees), date format. Plus `merchant-master` mapping for MCC, city, onboarding date |
+| H1.4 | `adapters/src/mapExport.ts` | Read CSV/JSON (Node built-ins only; Parquet later via pyarrow in the ML stage) → per-merchant `mre-dataset/v1`; HMAC pseudonymisation here, with the PA's key |
+| H1.5 | `cli/mre.ts` `batch` | `mre batch --in <dir> --mapping <file> --out <dir>` → `scores.csv`, `cases.jsonl`, `packs/<merchant>.json`, `run.json` (rules version, input hashes, timings). Idempotent: re-running the same input gives byte-identical output |
+| **Exit** | | A 200-merchant synthetic export in a *different* column layout runs end to end via a mapping file only; output deterministic; genuine samples stay NO_CASE |
+
+### H2. Container, scoring API, webhooks, performance (3 d)
+| # | File | Change |
+|---|---|---|
+| H2.1 | `backend/openapi.yaml` | OpenAPI 3.1 for `/v1`: `POST /v1/score` (one merchant dataset → result), `POST /v1/batches` + `GET /v1/batches/:id`, `GET /v1/cases/:id/{trace,pack}`, `GET /v1/health`. Existing UI routes stay under `/api` |
+| H2.2 | `backend/src/serviceKeys.ts` | Service-to-service API keys (hashed, scoped: `score`, `batch`, `read`), separate from analyst sessions; `Idempotency-Key` header on POSTs |
+| H2.3 | `backend/src/webhooks.ts` | `case.opened`, `case.approved`, `case.labelled` events; HMAC-SHA256 signature header; retries with backoff; delivery log in SQLite |
+| H2.4 | `deploy/Dockerfile`, `deploy/docker-compose.yml` | One image (Node 22+, non-root user, read-only filesystem except the data volume); `mre serve` / `mre batch`; health check |
+| H2.5 | `scripts/perf.ts` | Measure: batch merchants/minute and API p50/p95 on the stated machine; write `reports/perf.md`. Quote only these numbers |
+| **Exit** | | `docker compose up` → API scores a sample; contract tests match `openapi.yaml`; webhook signature verified by a test receiver; perf report generated |
+
+### H2b. Workflow-fit layer (3 d)
+| # | File | Change |
+|---|---|---|
+| H2b.1 | `workflow/{outputs,responses,approvals,statuses,roles,labels}.json` + `engine/workflowConfig.ts` | Typed loader; today's hard-coded maker/checker rules and L0–L5 move here as the default config |
+| H2b.2 | `backend/src/sinks/` | `interface Sink { deliver(event): Promise<void> }`; built-ins `file`, `webhook`, `pull`; every delivery logged and retried |
+| H2b.3 | `cli/mre.ts` `validate-config` | Loads mapping + workflow files, runs them on a sample export, reports problems; refuses configs that break a guard-rail (§0.4b) |
+| H2b.4 | `examples/alt-pa/` | A second mapping + workflow set (different columns, paise, 3 approval levels, own status names) |
+| H2b.5 | Tests | Guard-rail tests (self-approval impossible under every shipped config); the same portfolio gives the same probabilities under both configs (only labels, levels and routing differ) |
+| **Exit** | | `mre validate-config examples/alt-pa` passes; switching configs changes the workflow, not the scores; a config that removes the second approver is rejected |
+
+### H3. Standalone analyst console (3 d)
+| # | File | Change |
+|---|---|---|
+| H3.1 | `console/` + `vite.console.config.ts` | Its own Vite entry (reuses `frontend/src` pages, layers and hooks), built to `dist-console/` and served by `mre serve`: case queue, saved-case 7-layer views, trace, approvals, audit (moved from `/ai-engine`). No marketing pages |
+| H3.2 | `frontend/ (website only)` | Home, architecture, guided demo; "Open console" link. No case data, no API calls |
+| H3.3 | `backend/src/oidc.ts` | Generic OIDC sign-in (authorization-code + PKCE) configured by env; IdP groups → roles mapping file. Local accounts stay for the demo |
+| H3.4 | Accessibility pass | Keyboard navigation, focus states, labelled controls, text alternatives for charts, contrast. WCAG 2.2 AA basics on the console |
+| **Exit** | | Console and site build and deploy separately; console works with local accounts and with a test OIDC provider; axe or manual a11y checklist passes |
+
+### H4. Portfolio demo and honest metrics (3 d) [pulls the essentials forward from P9 and P12]
+| # | File | Change |
+|---|---|---|
+| H4.1 | `scripts/gen-portfolio.ts` | 1,000 synthetic merchants (~940 genuine across 8 MCCs incl. festival, bank-switch, college-area, overnight, small-merchant cases; ~60 bad across 5 typologies incl. Telegram betting), exported in the generic PA column layout, generator parameters independent of `rules/` |
+| H4.2 | `engine/portfolio.ts` | Score all merchants; Benjamini–Hochberg at q = 0.10; queue shows "N cases, about M expected false alarms" |
+| H4.3 | `scripts/benchmark.ts` | Precision, recall, genuine-merchant FP rate with Wilson 95% intervals; per-typology recall; labelled "synthetic-calibrated" |
+| H4.4 | Console | Portfolio queue page sorted by expected loss |
+| **Exit** | | Report generated with intervals; queue renders 1,000 merchants in under 2 s; numbers in the pitch come only from this report |
+
+### H6. The trained AI model (4 d) [the hackathon slice of ML1–ML3 in Part III-B]
+| # | File | Change |
+|---|---|---|
+| H6.1 | `cli/mre.ts` `features` + `engine/features.ts` | For every merchant: one row of model features computed by the **TypeScript engine** (so Python and TypeScript can never disagree): for each of the 25 detectors `llr`, `effect`, `fired` (0/1), `unknown` (0/1); plus the posterior and log-odds; plus coverage flags. ~105 columns. Writes `ml/data/features.csv` |
+| H6.2 | `ml/train_m1.py` | LightGBM binary classifier. Stratified 5-fold CV + 30% held-out test (split by merchant). Monotonic constraint +1 on every `llr_*` column. `scale_pos_weight` for imbalance. Seeded random search (30 trials) on CV AUC-PR. Isotonic calibration on out-of-fold predictions. TreeSHAP. Writes `ml/models/m1-v0/{model.txt, calibrator.json, features.json, metrics.json, model_card.md}` |
+| H6.3 | `ml/compare.py` | On the held-out test set: AUC-PR (bootstrap 95% CI), recall at the operating point, genuine FP rate (Wilson CI), ECE, for **M1 vs the Bayesian posterior**, plus McNemar on their decisions. Writes `reports/model-comparison.md`. Report honestly whichever wins |
+| H6.4 | `ml/score.py` + `ml/serve.py` | Batch: `python -m ml.score --features <csv> --model ml/models/m1-v0 --out <csv>` (probability, calibrated probability, top 5 SHAP drivers). API: FastAPI `POST /score` on `127.0.0.1:8790` |
+| H6.5 | Server + console | `mre batch --ml` adds `ml_p` and `ml_drivers` columns; the API calls the ML service if it is up (500 ms timeout) and returns `ml: null` with a note if it is down. Trace page gets an **"AI model (second opinion)"** panel: calibrated probability, top SHAP drivers in plain words, model version, "trained on synthetic data" badge, agreement or disagreement with the Bayesian model |
+| H6.6 | Stretch: M3 | `ml/train_m3.py` Isolation Forest per MCC on the same features → anomaly percentile shown as "unusual vs peers" (no labels needed) |
+| **Exit** | | `ml/models/m1-v0` exists with a model card; `reports/model-comparison.md` has CIs; the trace shows the AI panel for a saved case; stopping the ML service degrades gracefully; `pytest ml/tests` passes (leakage test: shuffled labels → AUC-PR ≈ base rate) |
+
+### H5. Pitch hardening (2 d)
+- `docker compose up` + `mre demo` seeds the portfolio, users and three showcase cases (Telegram betting, honest Diwali spike, honest bank switch).
+- Offline-safe: no external calls at all during the demo.
+- `README.md` rewritten for a technical audience: problem, architecture diagram, integration modes, security model, how to run, honest limits.
+- `docs/PITCH.md`: a 5-minute script and a Q&A sheet built from §0.2:
+  1. the RBI clause;
+  2. upload or batch;
+  3. queue with expected false alarms;
+  4. Telegram case trace;
+  5. the honest Diwali merchant;
+  6. maker/checker;
+  7. evidence pack;
+  8. deployment slide;
+  9. limits and roadmap.
+- Rehearse the failure paths: API down → the batch output still shows; a wrong password; a self-approval refused.
+
+### 0.6 What we deliberately do not build for the hackathon
+Our own case-management system beyond what exists; multi-tenant SaaS; Kafka or streaming connectors (offer them as "on request"); the AI-written summary (owner declined the SDK for now); the sequence and graph models M4/M5 (need real labels); feeding M1 into the decision (it stays a second opinion until it wins a backtest on real labels).
 
 ---
 
@@ -330,6 +511,8 @@ Compute: everything up to M3 trains on a laptop CPU in minutes (5,000 merchants 
 ---
 
 ## Part IV: Build phases
+
+> **Order now:** Part 0 (H1–H5, hackathon) first, then P8 onwards. P0–P7 are done (S1–S3).
 
 Effort is in dev-days for one experienced TypeScript developer. Each phase ends with its exit test.
 
