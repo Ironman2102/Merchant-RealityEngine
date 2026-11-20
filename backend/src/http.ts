@@ -3,6 +3,7 @@ import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation
 import { actorFromToken, clearCookie, login, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
+import { v1FromNode } from './v1';
 
 const LIMIT = 2_000_000;
 
@@ -64,6 +65,11 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
     if (path === '/auth/me' && method === 'GET') return actor ? send(res, { status: 200, body: { user: actor } }) : send(res, { status: 401, body: { error: 'Not signed in.' } });
+
+    if (path.startsWith('/v1')) {
+      const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
+      if (v1) return send(res, v1);
+    }
 
     const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit))?)?$/);
     if (!match) return send(res, { status: 404, body: { error: 'Unknown route.' } });

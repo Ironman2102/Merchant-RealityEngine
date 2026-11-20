@@ -8,6 +8,7 @@ import { appendAudit, emptyUser, getCase, isCaseId, listCases, putCase, readAudi
 import { analyzeDataset, ENGINE_VERSION } from './algorithms/analyze';
 import { sha256 } from './adapters/canonicalDataset';
 import type { Actor, Role } from './auth';
+import { emit } from './events';
 
 export interface ApiReply { status: number; body: Record<string, unknown> }
 
@@ -110,12 +111,13 @@ export function openInvestigation(raw: unknown, actor: Actor): ApiReply {
   const analysis = analyzeDataset(raw);
   if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
   const rec: CaseRecord = {
-    id, createdAt: new Date().toISOString(), createdBy: actor.id, engineVersion: analysis.engineVersion, datasetSha256: sha256(JSON.stringify(raw)),
+    id, createdAt: new Date().toISOString(), createdBy: actor.id > 0 ? actor.id : null, engineVersion: analysis.engineVersion, datasetSha256: sha256(JSON.stringify(raw)),
     result: analysis.result, user: emptyUser(), response: null, learning: null, pending: {},
   };
   putCase(rec);
   const f = analysis.result.fusion;
   appendAudit(id, [{ action: 'Case analysed', detail: `${f.decision} · P(front) ${f.posterior.toFixed(4)} [${f.posteriorCi.map(x => x.toFixed(4)).join(', ')}] · rules ${f.rulesVersion} · dataset ${rec.datasetSha256.slice(0, 16)}` }], actor);
+  void emit('case.opened', id, { decision: f.decision, posterior: f.posterior });
   return view(getCase(id)!);
 }
 
@@ -181,6 +183,7 @@ export function respondInvestigation(id: string, body: unknown, actor: Actor): A
     rec.user.chosenLevel = level; rec.user.executed = false;
     putCase(rec);
     appendAudit(id, [{ action: `${level} proposed`, detail: `Waiting for ${needsLegal(level) ? 'legal' : 'reviewer'} approval by a different person.` }], actor);
+    void emit('case.response.proposed', id, { level });
     return view(getCase(id)!);
   }
   delete rec.pending.response;
@@ -206,6 +209,7 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
   }
   if (needsLegal(p.level)) { rec.user.legalVerified = true; rec.user.escrowConfirmed = input.escrowConfirmed === true; }
   execute(rec, p.level, actor, `${actor.username} (${actor.role}); proposed by ${p.by.username}${reason ? `; ${reason}` : ''}`);
+  void emit('case.response.approved', id, { level: p.level });
   return view(getCase(id)!);
 }
 
@@ -222,6 +226,7 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
     if (!can(actor, WORKERS)) return fail(403, 'Your role cannot label cases.');
     finalize(); putCase(rec);
     appendAudit(id, [{ action: `Label ${label}`, detail: rec.learning?.profile[0] ?? '' }], actor);
+    void emit('case.labelled', id, { label });
     return view(getCase(id)!);
   }
   if (!rec.pending.label) {
@@ -236,6 +241,7 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
   const first = rec.pending.label.by.username;
   finalize(); putCase(rec);
   appendAudit(id, [{ action: 'Label CONFIRMED_ILLICIT', detail: `Proposed by ${first}, confirmed by ${actor.username}. ${rec.learning?.profile[0] ?? ''}` }], actor);
+  void emit('case.labelled', id, { label });
   return view(getCase(id)!);
 }
 

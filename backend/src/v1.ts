@@ -1,0 +1,121 @@
+/** Versioned API. Service keys, not browser sessions. /v1/score does not create a case. */
+import { createHash, randomBytes } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import type { IncomingMessage } from 'node:http';
+import { loadHashKey } from '../../adapters/pseudonym';
+import { runBatch } from '../../cli/batch';
+import { analyzeDataset } from './algorithms/analyze';
+import type { ApiReply } from './workflow';
+import { openInvestigation } from './workflow';
+import { caseTrace, evidencePack } from './trace';
+import { getInvestigation } from './workflow';
+import { authenticateServiceKey, idempotent, type Scope, type ServicePrincipal } from './serviceKeys';
+import type { Actor } from './auth';
+
+export interface V1Req { method: string; path: string; header: (name: string) => string | undefined; body: unknown }
+
+interface BatchState { status: 'queued' | 'running' | 'done' | 'error'; result?: unknown; error?: string }
+const batches = new Map<string, BatchState>();
+let batchLock: Promise<void> = Promise.resolve();
+
+function scoreOf(raw: unknown): ApiReply {
+  const ran = analyzeDataset(raw);
+  if (!ran.ok) return { status: 400, body: { error: ran.errors.join(' ') } };
+  const f = ran.result.fusion;
+  const top = [...f.mechanisms].sort((a, b) => b.score - a.score)[0];
+  const topEvidence = ran.result.evidence.filter(e => e.status === 'ILLICIT').sort((a, b) => b.llr - a.llr).slice(0, 8)
+    .map(e => ({ id: e.id, name: e.name, observed: e.observed, llr: e.llr }));
+  return {
+    status: 200,
+    body: {
+      decision: f.decision, posterior: f.posterior, ci: f.posteriorCi, prior: f.prior,
+      recommended: f.decisionAnalysis.recommended, mechanism: top?.id ?? null, topEvidence,
+      rulesVersion: f.rulesVersion, ml: null,
+    },
+  };
+}
+
+function allow(p: ServicePrincipal, scope: Scope): ApiReply | null {
+  return p.scopes.includes(scope) ? null : { status: 403, body: { error: `This key does not have the ${scope} scope.` } };
+}
+
+function serviceActor(p: ServicePrincipal): Actor {
+  return { id: 0, username: `key:${p.name}`, role: 'analyst' };
+}
+
+export async function handleV1(req: V1Req): Promise<ApiReply | null> {
+  if (!req.path.startsWith('/v1')) return null;
+  if (req.path === '/v1/health' && req.method === 'GET') return { status: 200, body: { status: 'ok', service: 'merchant-reality-engine-v1' } };
+  const principal = authenticateServiceKey(req.header('authorization'));
+  if (!principal) return { status: 401, body: { error: 'Send Authorization: Bearer <service key>.' } };
+
+  if (req.path === '/v1/score' && req.method === 'POST') {
+    const denied = allow(principal, 'score'); if (denied) return denied;
+    return scoreOf(req.body);
+  }
+
+  const caseMatch = req.path.match(/^\/v1\/cases(?:\/([^/]+)(?:\/(trace|pack))?)?$/);
+  if (caseMatch && req.method === 'POST' && !caseMatch[1]) {
+    const denied = allow(principal, 'cases'); if (denied) return denied;
+    const raw = JSON.stringify(req.body);
+    const idem = req.header('idempotency-key');
+    return idempotent(idem, createHash('sha256').update(raw).digest('hex'), () => {
+      const opened = openInvestigation(req.body, serviceActor(principal));
+      if (opened.status !== 200) return opened;
+      const id = (opened.body as { id?: string }).id;
+      const score = scoreOf(req.body);
+      return { status: 200, body: { id, ...score.body } };
+    });
+  }
+  if (caseMatch && req.method === 'GET' && caseMatch[1]) {
+    if (!principal.scopes.includes('read') && !principal.scopes.includes('cases')) return { status: 403, body: { error: 'This key cannot read cases.' } };
+    const id = caseMatch[1];
+    if (caseMatch[2] === 'trace') return caseTrace(id);
+    if (caseMatch[2] === 'pack') return evidencePack(id, serviceActor(principal));
+    return getInvestigation(id);
+  }
+
+  if (req.path === '/v1/batches' && req.method === 'POST') {
+    const denied = allow(principal, 'batch'); if (denied) return denied;
+    const body = (req.body ?? {}) as { files?: Record<string, string>; mapping?: string };
+    const idem = req.header('idempotency-key');
+    return idempotent(idem, createHash('sha256').update(JSON.stringify(body)).digest('hex'), () => {
+      const id = `bat_${randomBytes(6).toString('hex')}`;
+      batches.set(id, { status: 'queued' });
+      const run = async () => {
+        const state = batches.get(id)!;
+        state.status = 'running';
+        try {
+          if (!body.mapping || !body.files) throw new Error('Body needs mapping and files.');
+          const dir = join(tmpdir(), id);
+          mkdirSync(dir, { recursive: true });
+          for (const [name, b64] of Object.entries(body.files)) writeFileSync(join(dir, name), Buffer.from(b64, 'base64'));
+          const out = join(dir, 'out');
+          runBatch({ inDir: dir, mappingPath: body.mapping, outDir: out, key: loadHashKey() });
+          state.status = 'done';
+          state.result = { out };
+        } catch (e) {
+          state.status = 'error';
+          state.error = e instanceof Error ? e.message : 'Batch failed.';
+        }
+      };
+      const start = batchLock.then(run, run);
+      batchLock = start.then(() => undefined, () => undefined);
+      return { status: 202, body: { batchId: id } };
+    });
+  }
+  const batchGet = req.path.match(/^\/v1\/batches\/([^/]+)$/);
+  if (batchGet && req.method === 'GET') {
+    if (!principal.scopes.includes('read') && !principal.scopes.includes('batch')) return { status: 403, body: { error: 'This key cannot read batches.' } };
+    const state = batches.get(batchGet[1]);
+    if (!state) return { status: 404, body: { error: 'No batch with that id.' } };
+    return { status: 200, body: { batchId: batchGet[1], status: state.status, ...(state.error ? { error: state.error } : {}), ...(state.result ? { result: state.result } : {}) } };
+  }
+  return { status: 404, body: { error: 'Unknown /v1 route.' } };
+}
+
+export function v1FromNode(method: string, path: string, req: IncomingMessage, body: unknown): Promise<ApiReply | null> {
+  return handleV1({ method, path, body, header: n => { const v = req.headers[n.toLowerCase()]; return Array.isArray(v) ? v[0] : v; } });
+}

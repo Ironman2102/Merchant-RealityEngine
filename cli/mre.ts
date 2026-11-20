@@ -1,10 +1,11 @@
 /** Merchant Reality Engine command line. */
 import { parseArgs } from 'node:util';
 import { loadHashKey } from '../adapters/pseudonym';
+import { createServiceKey } from '../backend/src/serviceKeys';
 import { runBatch } from './batch';
 
 const [cmd, ...rest] = process.argv.slice(2);
-const later = new Set(['features', 'serve', 'demo', 'validate-config', 'verify-audit', 'user:add', 'key:create']);
+const later = new Set(['features', 'serve', 'demo', 'validate-config', 'verify-audit', 'user:add']);
 
 if (!cmd || cmd === '--help') {
   console.log('mre batch | features | serve | demo | validate-config | verify-audit | user:add | key:create');
@@ -23,6 +24,13 @@ if (cmd === 'batch') {
   try { key = loadHashKey(); } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
   const { merchants, opened } = runBatch({ inDir: values.in, mappingPath: values.mapping, outDir: values.out, key });
   console.log(`scored ${merchants} merchants, opened ${opened}`);
+} else if (cmd === 'key:create') {
+  const name = rest[0], scopes = (rest[1] ?? '').split(',').filter(Boolean);
+  if (!name || !scopes.length) { console.error('mre key:create <name> <scopes,comma>'); process.exit(2); }
+  try {
+    const made = createServiceKey(name, scopes);
+    console.log(made.key);
+  } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
 } else if (later.has(cmd)) {
   console.error(`mre ${cmd} is not implemented yet`);
   process.exit(2);

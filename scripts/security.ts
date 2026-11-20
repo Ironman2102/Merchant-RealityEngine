@@ -51,6 +51,47 @@ getDb().prepare("UPDATE audit SET actor = 'someone-else' WHERE case_id = ? AND s
 probe('audit tampering detected', ((await (await call(`/investigations/${opened.id}/audit`, { cookie: ana })).json()) as { ok: boolean }).ok === false);
 probe('unknown case not created on update', (await call('/investigations/INV-00000000/review', { method: 'POST', body: '{}', cookie: ana })).status === 404);
 
+const { createServiceKey, revokeServiceKey } = await import('../backend/src/serviceKeys');
+const { signBody, signatureMatches } = await import('../backend/src/sinks/webhook');
+const { setSinks, whenIdle } = await import('../backend/src/events');
+const { createServer: createHook } = await import('node:http');
+const scoreKey = createServiceKey('score-probe', ['score']);
+const caseKey = createServiceKey('case-probe', ['cases']);
+const v1 = (path: string, opts: { method?: string; body?: string; key?: string } = {}) =>
+  fetch(`http://127.0.0.1:${(srv.address() as AddressInfo).port}${path}`, {
+    method: opts.method ?? 'GET',
+    body: opts.body,
+    headers: { ...(opts.body !== undefined ? { 'content-type': 'application/json' } : {}), ...(opts.key ? { authorization: `Bearer ${opts.key}` } : {}) },
+  });
+probe('/v1 without a key', (await v1('/v1/score', { method: 'POST', body: ds })).status === 401);
+probe('key without cases scope cannot open', (await v1('/v1/cases', { method: 'POST', body: ds, key: scoreKey.key })).status === 403);
+const scored = await v1('/v1/score', { method: 'POST', body: ds, key: scoreKey.key });
+const scoredBody = await scored.json() as { posterior?: number; decision?: string; ci?: number[] };
+probe('/v1/score returns a probability', scored.status === 200 && typeof scoredBody.posterior === 'number' && Array.isArray(scoredBody.ci) && typeof scoredBody.decision === 'string');
+revokeServiceKey(scoreKey.id);
+probe('revoked key', (await v1('/v1/score', { method: 'POST', body: ds, key: scoreKey.key })).status === 401);
+
+let hooked = '';
+let hookedSig = '';
+const hook = createHook((q, s) => {
+  const chunks: Buffer[] = [];
+  q.on('data', c => chunks.push(c));
+  q.on('end', () => {
+    hooked = Buffer.concat(chunks).toString('utf8');
+    hookedSig = String(q.headers['x-mre-signature'] ?? '');
+    s.writeHead(204); s.end();
+  });
+}).listen(0, '127.0.0.1');
+await new Promise(r => hook.once('listening', r));
+process.env.MRE_WEBHOOK_SECRET = 'hook-secret';
+setSinks([{ type: 'webhook', url: `http://127.0.0.1:${(hook.address() as AddressInfo).port}/hook`, secretEnv: 'MRE_WEBHOOK_SECRET', events: ['case.opened'] }]);
+const openedV1 = await v1('/v1/cases', { method: 'POST', body: ds, key: caseKey.key });
+await whenIdle();
+probe('webhook signed', openedV1.status === 200 && signatureMatches(hooked, hookedSig, 'hook-secret'));
+probe('altered webhook body fails verification', hooked.length > 0 && !signatureMatches(hooked.replace('OPEN_CASE', 'NO_CASE'), hookedSig, 'hook-secret') && signBody(hooked, 'hook-secret') === hookedSig);
+hook.close();
+setSinks([]);
+
 srv.close();
 let failed = 0;
 for (const [name, ok] of results) { console.log(`${ok ? 'blocked' : 'OPEN   '}  ${name}`); if (!ok) failed++; }
