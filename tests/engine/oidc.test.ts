@@ -11,7 +11,7 @@ function token(privateKey: KeyObject, body: Record<string, unknown>, opts?: { ta
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean) => { if (!ok) { bad++; console.log(`  ✗ ${name}`); } };
+  const check = (name: string, ok: boolean) => { if (!ok) { bad++; console.log(`  ✗ ${name}`); } else console.log(`  ✓ ${name}`); };
   const key = generateKeyPairSync('rsa', { modulusLength: 2048 });
   const jwk = key.publicKey.export({ format: 'jwk' }) as Record<string, unknown>;
   const now = 1_700_000_000;

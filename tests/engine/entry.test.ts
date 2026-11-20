@@ -7,7 +7,7 @@ const SAMPLES = readdirSync('frontend/public/samples').filter(f => /^0[1-9]-/.te
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   check('nine samples', SAMPLES.length === 9, String(SAMPLES.length));
   for (const file of SAMPLES) {
     const raw = JSON.parse(readFileSync(`frontend/public/samples/${file}`, 'utf8'));

@@ -13,7 +13,7 @@ export default function (): number {
   const prev = process.env.MRE_HASH_KEY;
   process.env.MRE_HASH_KEY = 'batch-test-key';
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const a = mkdtempSync(join(tmpdir(), 'mre-batch-a-'));
   const b = mkdtempSync(join(tmpdir(), 'mre-batch-b-'));
   const opts = { inDir: 'examples/generic-pa', mappingPath: 'adapters/mappings/generic-pa-v1.json', key: KEY };

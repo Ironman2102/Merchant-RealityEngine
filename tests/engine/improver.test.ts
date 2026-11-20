@@ -7,7 +7,7 @@ import { RULES } from '../../rules/index';
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const a4 = RULES.detector('A4');
   check('minEffect inside the band', insideBand('A4', { minEffect: a4.minEffect }));
   check('minEffect outside the band is rejected', !insideBand('A4', { minEffect: a4.minEffect * 3 }));

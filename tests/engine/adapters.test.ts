@@ -16,7 +16,7 @@ export default function (): number {
   const prev = process.env.MRE_HASH_KEY;
   process.env.MRE_HASH_KEY = 'adapter-test-key';
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
 
   const round = '"a,b","say ""hi""",plain,\r\n1,2,3,4\r\n';
   const parsed = parseCsv(round);

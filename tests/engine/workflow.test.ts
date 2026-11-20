@@ -9,7 +9,7 @@ import { pseudonymize } from '../../backend/src/adapters/canonicalDataset';
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const def = loadWorkflow('workflow');
   const alt = loadWorkflow('examples/alt-pa/workflow');
   check('default validates', validateWorkflow(def).length === 0);
