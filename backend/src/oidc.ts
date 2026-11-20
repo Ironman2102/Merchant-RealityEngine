@@ -20,6 +20,19 @@ export function roleFromGroups(groups: string[], map: Record<string, string>): s
   return null;
 }
 
+/** Issuer, audience, nonce, key, and group map come from the process environment. A missing piece means OIDC is off. */
+export function oidcCheckFromEnv(now?: number): OidcCheck | null {
+  const issuer = process.env.MRE_OIDC_ISSUER;
+  const audience = process.env.MRE_OIDC_AUDIENCE;
+  const nonce = process.env.MRE_OIDC_NONCE;
+  const jwkRaw = process.env.MRE_OIDC_JWK;
+  const groupsRaw = process.env.MRE_OIDC_GROUPS;
+  if (!issuer || !audience || !nonce || !jwkRaw || !groupsRaw) return null;
+  try {
+    return { issuer, audience, nonce, now, jwk: JSON.parse(jwkRaw) as Record<string, unknown>, groupsToRoles: JSON.parse(groupsRaw) as Record<string, string> };
+  } catch { return null; }
+}
+
 export function verifyIdToken(token: string, check: OidcCheck): { ok: true; role: string; sub: string } | { ok: false; error: string } {
   const parts = token.split('.');
   if (parts.length !== 3) return { ok: false, error: 'malformed' };

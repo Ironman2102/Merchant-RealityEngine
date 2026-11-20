@@ -2,7 +2,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import type { IncomingMessage } from 'node:http';
 import { loadHashKey } from '../../adapters/pseudonym';
 import { runBatch } from '../../cli/batch';
@@ -95,7 +95,10 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
           if (!body.mapping || !body.files) throw new Error('Body needs mapping and files.');
           const dir = join(tmpdir(), id);
           mkdirSync(dir, { recursive: true });
-          for (const [name, b64] of Object.entries(body.files)) writeFileSync(join(dir, name), Buffer.from(b64, 'base64'));
+          for (const [name, b64] of Object.entries(body.files)) {
+            if (name !== basename(name) || name === '.' || name === '..' || name.includes('/') || name.includes('\\')) throw new Error('Batch file name must be a single basename.');
+            writeFileSync(join(dir, name), Buffer.from(b64, 'base64'));
+          }
           const out = join(dir, 'out');
           runBatch({ inDir: dir, mappingPath: body.mapping, outDir: out, key: loadHashKey() });
           state.status = 'done';

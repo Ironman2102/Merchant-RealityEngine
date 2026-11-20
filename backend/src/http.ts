@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
@@ -58,9 +59,12 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     const token = readCookie(req), actor: Actor | null = actorFromToken(token);
     if (path === '/auth/login' && method === 'POST') {
       if (!allowed(`login:${ip}`, 10)) return send(res, { status: 429, body: { error: 'Too many sign-in attempts. Wait a minute.' } });
-      const b = await readBody(req) as { username?: unknown; password?: unknown };
-      const s = typeof b.username === 'string' && typeof b.password === 'string' ? login(b.username, b.password) : null;
-      if (!s) return send(res, { status: 401, body: { error: 'Wrong username or password.' } });
+      const b = await readBody(req) as { username?: unknown; password?: unknown; idToken?: unknown };
+      const check = typeof b.idToken === 'string' ? oidcCheckFromEnv() : null;
+      const s = typeof b.idToken === 'string'
+        ? (check ? loginWithIdToken(b.idToken, check) : null)
+        : typeof b.username === 'string' && typeof b.password === 'string' ? login(b.username, b.password) : null;
+      if (!s) return send(res, { status: 401, body: { error: typeof b.idToken === 'string' ? 'The identity token was not accepted.' : 'Wrong username or password.' } });
       return send(res, { status: 200, body: { user: s.actor } }, { 'set-cookie': sessionCookie(s.token) });
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
