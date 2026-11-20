@@ -13,7 +13,7 @@ import { getDb } from './db';
 import type { Actor } from './auth';
 
 export interface Pending {
-  response?: { level: ResponseLevel; by: { id: number; username: string }; at: string };
+  response?: { level: string; by: { id: number; username: string }; at: string; approvals?: { id: number; username: string }[] };
   label?: { label: Label; by: { id: number; username: string }; at: string };
 }
 export interface CaseRecord {
