@@ -64,7 +64,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       return send(res, { status: 200, body: { user: s.actor } }, { 'set-cookie': sessionCookie(s.token) });
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
-    if (path === '/auth/me' && method === 'GET') return actor ? send(res, { status: 200, body: { user: actor } }) : send(res, { status: 401, body: { error: 'Not signed in.' } });
+    if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
 
     if (path.startsWith('/v1')) {
       const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
