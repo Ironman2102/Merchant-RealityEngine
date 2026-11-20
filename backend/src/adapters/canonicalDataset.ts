@@ -1,9 +1,7 @@
-import { createHash, createHmac, randomBytes } from 'node:crypto';
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { datasetToScenario } from '../../../frontend/src/data/dataset';
 import type { Scenario } from '../../../frontend/src/types/merchant';
+import { loadHashKey, pseudonym as hmacPseudonym } from '../../../adapters/pseudonym';
 
 export interface DatasetAdapterResult {
   ok: boolean;
@@ -13,21 +11,7 @@ export interface DatasetAdapterResult {
 }
 
 /** HMAC key for identifiers. Production must supply MRE_HASH_KEY; development keeps a local random key file (0600). */
-let key: Buffer | null = null;
-function hashKey(): Buffer {
-  if (key) return key;
-  if (process.env.MRE_HASH_KEY) return (key = Buffer.from(process.env.MRE_HASH_KEY, 'utf8'));
-  if (process.env.NODE_ENV === 'production') throw new Error('MRE_HASH_KEY is required in production.');
-  const file = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'data', '.hashkey');
-  if (!existsSync(file)) {
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, randomBytes(32).toString('hex'), { mode: 0o600 });
-  }
-  chmodSync(file, 0o600);
-  return (key = Buffer.from(readFileSync(file, 'utf8').trim(), 'utf8'));
-}
-
-export const pseudonym = (raw: string) => 'p_' + createHmac('sha256', hashKey()).update(raw).digest('hex').slice(0, 24);
+export const pseudonym = (raw: string) => hmacPseudonym(raw, loadHashKey());
 export const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
 const ID_FIELDS = ['payerId', 'paidTo', 'beneficiaryAccount', 'payerMobile', 'destHolder'] as const;

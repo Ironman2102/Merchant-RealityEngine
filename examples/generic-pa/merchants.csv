@@ -1,0 +1,10 @@
+merchant_id,legal_name,city,mcc,category,declared_min_ticket,declared_max_ticket,open_hour,close_hour,state,catchment,declared_weekly_volume,onboarded_on,domains
+M-SCB-001,Sweet Crumbs Bakery,"Bengaluru, India",5462,Bakeries,150,1200,7,22,KA,LOCAL,180000,2023-08-09,sweetcrumbs.example
+M-NOVA-204,Nova Gift Emporium,"Mumbai, India",5947,"Gift, card and novelty shops",200,3500,10,21,MH,LOCAL,90000,2026-09-29,novagifts.example
+M-AHD-310,Aarav Home Decor Online,"Jaipur, India",5712,Furniture and home furnishings,800,9000,0,24,,NATIONAL,150000,2026-03-06,aaravhome.example
+M-ANS-045,Anand Sweets & Bakes,"Bengaluru, India",5462,Bakeries,150,1200,7,22,KA,LOCAL,160000,2020-03-27,anandsweets.example
+M-CCC-210,Chai Corner Café,"Hyderabad, India",5814,Eating places and restaurants,40,600,6,22,TS,LOCAL,111600,2023-08-09,chaicorner.example
+M-SGS-118,Shree Ganesh Sweets,"Pune, India",5462,Bakeries,150,1200,7,22,MH,LOCAL,160000,2020-03-27,shreeganeshsweets.example
+M-UTC-077,Udupi Tiffin Corner,"Mysuru, India",5814,Fast food restaurants,60,700,7,22,KA,LOCAL,88000,2020-03-24,udupitiffin.example
+M-NKG-302,Nandi Kirana & General,"Chennai, India",5411,Grocery stores,80,2500,7,22,TN,LOCAL,208000,2020-04-01,nandikirana.example
+M-KMS-077,Kaveri Mithai Stores,"Bengaluru, India",5462,Bakeries,150,1200,7,22,KA,LOCAL,180000,2023-08-09,
