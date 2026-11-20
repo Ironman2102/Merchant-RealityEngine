@@ -18,7 +18,8 @@
     "security": "tsx scripts/security.ts",
     "lint:noscript": "! grep -rnE \"(scenario|sc)\\.id ===\" frontend/src",
     "user:add": "tsx scripts/user-add.ts",
-    "dev:users": "tsx scripts/dev-users.ts"
+    "dev:users": "tsx scripts/dev-users.ts",
+    "mre": "tsx cli/mre.ts"
   },
   "dependencies": {
     "@stdlib/math-base-special-betainc": "^0.2.3",
