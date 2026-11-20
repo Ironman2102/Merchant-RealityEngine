@@ -1,5 +1,5 @@
 import { NavLink, Link, Outlet } from 'react-router-dom';
-import { Activity, BarChart3, Briefcase, Boxes, FileSearch, GitFork, ListChecks, ShieldAlert, Store } from 'lucide-react';
+import { Activity, BarChart3, Briefcase, Boxes, FileSearch, GitFork, ListChecks, ScrollText, ShieldAlert, Store } from 'lucide-react';
 import { PublicNav } from './PublicNav';
 import { useInvestigation } from '../../hooks/useInvestigation';
 import { cx } from '../../utils/format';
@@ -7,6 +7,7 @@ import { cx } from '../../utils/format';
 const NAV = [
   { to: '/demo', label: 'Four merchant scenarios', icon: Briefcase, end: true },
   { to: '/demo/investigations', label: 'Seven-layer run', icon: FileSearch },
+  { to: '/demo/trace', label: 'Reasoning trace', icon: ScrollText },
   { to: '/demo/merchant', label: 'Merchant profile', icon: Store },
   { to: '/demo/graph', label: 'Evidence graph', icon: GitFork },
   { to: '/demo/detection', label: 'Detection engine', icon: Activity },

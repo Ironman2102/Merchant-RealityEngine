@@ -4,19 +4,20 @@ import { useInvestigation } from '../../hooks/useInvestigation';
 import { LayerFrame } from '../../components/common/LayerFrame';
 import { Badge, Bar, Callout, Card, Panel, StatusBadge, Tabs, Mono, statusTone, Td, Th, rowCls, tableCls } from '../../components/ui/ui';
 import { FAMILIES, MECHANISMS } from '../../data/evidence';
-import { MIN_INDEPENDENT_FAMILIES } from '../../engines/evidenceFusion';
-import { cx, pct } from '../../utils/format';
+import { RULES } from '../../../../rules/index';
+import { cx, pct, fmtProb } from '../../utils/format';
 
 type Step = 'in' | 'corr' | 'unk' | 'weight' | 'indep' | 'mech';
 export function L4View() {
   const { result: r } = useInvestigation();
   const f = r.fusion, [step, setStep] = useState<Step>('in');
-  const collapsed = f.items.filter(i => i.evidence.status !== 'UNKNOWN' && !i.counted), counted = f.items.filter(i => i.counted).sort((a, b) => b.weight - a.weight);
+  const counted = f.items.filter(i => i.counted).sort((a, b) => b.weight - a.weight), shared = f.logOdds.families.filter(x => x.items.length > 1);
+  const P = fmtProb;
   const top = f.mechanisms[0];
   return (
     <LayerFrame n={4} summary={<>{f.decision === 'OPEN_CASE' ? <>Case opened, priority <b className="text-ink">{f.priority}</b>. Leading hypothesis: <b className="text-ink">{MECHANISMS.find(m => m.id === top.id)!.name}</b>.</> : <>No case opened. {f.gateReason}</>}</>}>
-      <Panel title="Fusion pipeline" subtitle="Six rules between raw evidence and a case.">
-        <Tabs<Step> value={step} onChange={setStep} tabs={[{ id: 'in', label: '1 Evidence in' }, { id: 'corr', label: '2 Correlated signals' }, { id: 'unk', label: '3 UNKNOWN excluded' }, { id: 'weight', label: '4 Reliability and fake difficulty' }, { id: 'indep', label: '5 Source independence' }, { id: 'mech', label: '6 Mechanisms' }]} />
+      <Panel title="Fusion pipeline" subtitle="Bayes' rule: base rate × the likelihood ratio of each evidence family → probability this merchant is a front.">
+        <Tabs<Step> value={step} onChange={setStep} tabs={[{ id: 'in', label: '1 Evidence in' }, { id: 'corr', label: '2 Same-family shrinkage' }, { id: 'unk', label: '3 UNKNOWN excluded' }, { id: 'weight', label: '4 Evidence weights (nats)' }, { id: 'indep', label: '5 Probability and gate' }, { id: 'mech', label: '6 Mechanisms' }]} />
         <div className="pt-4">
           {step === 'in' && (
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -26,9 +27,9 @@ export function L4View() {
             </div>)}
           {step === 'corr' && (
             <div className="space-y-3">
-              <Callout tone="info" title="Several signals from one family are not several facts">Signals in the same family that read the same data are collapsed to the strongest one, so one underlying fact is counted once.</Callout>
-              {collapsed.length === 0 ? <div className="text-sm text-mute">No correlated duplicates in this case.</div> : collapsed.map(i => (
-                <div key={i.evidence.id} className="flex flex-wrap items-center gap-3 rounded border border-line bg-panel2 px-3 py-2 text-[13px]"><MinusCircle size={15} className="text-stone-300" /><Mono>{i.evidence.id}</Mono><span>{i.evidence.name}</span><span className="text-mute">{i.reason}</span></div>))}
+              <Callout tone="info" title="Several signals from one family are not several facts">{`Within a family the strongest signal counts in full and each further one only ρ = ${RULES.engine.familyRho} of its weight, because they read related data.`}</Callout>
+              {shared.length === 0 ? <div className="text-sm text-mute">No family has more than one informative signal in this case.</div> : shared.map(x => (
+                <div key={x.family} className="flex flex-wrap items-center gap-3 rounded border border-line bg-panel2 px-3 py-2 text-[13px]"><MinusCircle size={15} className="text-stone-300" /><Mono>{x.family}</Mono><span>{x.items.join(', ')}</span><span className="text-mute">family weight {x.llr >= 0 ? '+' : ''}{x.llr.toFixed(2)} nats after shrinkage</span></div>))}
               <div className="text-xs text-dim">{r.evidence.filter(e => e.status !== 'UNKNOWN').length} informative signals in, {counted.length} counted.</div>
             </div>)}
           {step === 'unk' && (
@@ -38,15 +39,15 @@ export function L4View() {
               {f.unknownIds.length === 0 && <div className="text-sm text-mute">Every detector had the data it needed.</div>}
             </div>)}
           {step === 'weight' && (
-            <div className="overflow-x-auto"><table className={tableCls}><thead><tr><Th>Signal</Th><Th>Status</Th><Th>Strength</Th><Th>Reliability</Th><Th>Fake difficulty</Th><Th>Effective weight</Th></tr></thead>
-              <tbody>{counted.map(i => <tr key={i.evidence.id} className={rowCls}><Td><Mono className="text-zinc-300">{i.evidence.id}</Mono> {i.evidence.name}</Td><Td><StatusBadge s={i.evidence.status} /></Td><Td className="tabular-nums">{i.evidence.strength.toFixed(2)}</Td><Td className="tabular-nums">{i.evidence.reliability.toFixed(2)}</Td>
-                <Td className="tabular-nums">{i.evidence.status === 'BENIGN' ? i.evidence.fakeDifficulty.toFixed(2) : <span className="text-dim">n/a</span>}</Td><Td><div className="flex items-center gap-2"><Bar className="w-24" value={i.weight} tone={statusTone(i.evidence.status)} /><span className="font-mono text-xs">{i.weight.toFixed(2)}</span></div></Td></tr>)}</tbody></table>
-              <p className="mt-3 text-xs text-mute">Illicit weight = strength × reliability. Benign weight is also scaled by how hard the evidence is to fake: easy-to-match facts such as opening hours count for little, while verified orders and bank reconciliation count for a lot.</p></div>)}
+            <div className="overflow-x-auto"><table className={tableCls}><thead><tr><Th>Signal</Th><Th>Status</Th><Th>p-value</Th><Th>Effect</Th><Th>n</Th><Th>Weight (nats)</Th></tr></thead>
+              <tbody>{counted.map(i => <tr key={i.evidence.id} className={rowCls}><Td><Mono className="text-zinc-300">{i.evidence.id}</Mono> {i.evidence.name}</Td><Td><StatusBadge s={i.evidence.status} /></Td><Td className="tabular-nums">{i.evidence.p === null ? <span className="text-dim">rule</span> : i.evidence.p < 1e-4 ? i.evidence.p.toExponential(1) : i.evidence.p.toFixed(4)}</Td><Td className="tabular-nums">{i.evidence.effect === null ? '—' : i.evidence.effect.toFixed(2)}</Td><Td className="tabular-nums">{i.evidence.n}</Td>
+                <Td><div className="flex items-center gap-2"><Bar className="w-24" value={Math.min(1, Math.abs(i.weight) / 4)} tone={statusTone(i.evidence.status)} /><span className="font-mono text-xs">{i.weight >= 0 ? '+' : ''}{i.weight.toFixed(2)}</span></div></Td></tr>)}</tbody></table>
+              <p className="mt-3 text-xs text-mute">A signal fires only when it is both statistically significant (p ≤ α) and practically large. Its weight is the log likelihood ratio ln(sensitivity ÷ false-positive rate). A calm signal pushes the other way, scaled down when it is easy to fake: matching opening hours counts for little, verified orders count for a lot. Sensitivities are expert priors until learned from labels.</p></div>)}
           {step === 'indep' && (
             <div className="space-y-3">
-              <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-9">{f.families.map(x => { const sup = f.independentFamilies.includes(x.family); return <div key={x.family} className={cx('rounded border p-2.5 text-center', sup ? 'border-neutral-400/50 bg-neutral-400/5' : 'border-line bg-panel2')}><div className="font-mono text-sm text-zinc-300">{x.family}</div><div className="text-[10px] text-mute">{x.illicit} illicit signals</div><div className="mt-1 font-mono text-xs">{x.mass.toFixed(2)}</div></div>; })}</div>
-              <div className="flex flex-wrap items-center gap-3 text-sm"><span className="text-mute">Independent families:</span><b>{f.independentFamilies.length}</b><span className="text-mute">(minimum {MIN_INDEPENDENT_FAMILIES})</span><span className="text-mute">Source systems:</span><b>{f.systems.length}</b><span className="text-dim">{f.systems.join(', ') || '—'}</span></div>
-              <Callout tone={f.gatePassed ? 'warn' : 'ok'} title={f.gatePassed ? 'Two-independent-family requirement met' : 'Two-independent-family requirement not met'}>{f.gateReason}</Callout>
+              <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-10">{f.families.map(x => { const sup = f.independentFamilies.includes(x.family); return <div key={x.family} className={cx('rounded border p-2.5 text-center', sup ? 'border-neutral-400/50 bg-neutral-400/5' : 'border-line bg-panel2')}><div className="font-mono text-sm text-zinc-300">{x.family}</div><div className="text-[10px] text-mute">{x.illicit} illicit signals</div><div className="mt-1 font-mono text-xs">{x.mass.toFixed(2)}</div></div>; })}</div>
+              <div className="flex flex-wrap items-center gap-3 text-sm"><span className="text-mute">Base rate</span><b>{P(f.prior)}</b><span className="text-mute">→ P(front)</span><b>{P(f.posterior)}</b><span className="text-dim">90%: {P(f.posteriorCi[0])} – {P(f.posteriorCi[1])}</span><span className="text-mute">Independent sources:</span><b>{f.systems.length}</b><span className="text-dim">{f.systems.join(', ') || '—'}</span><span className="text-mute">Families:</span><b>{f.independentFamilies.length}</b></div>
+              <Callout tone={f.gatePassed ? 'warn' : 'ok'} title={f.gatePassed ? 'Probability and independence requirements met' : 'Case not opened'}>{f.gateReason}</Callout>
             </div>)}
           {step === 'mech' && (
             <div className="grid gap-3 md:grid-cols-2">{f.mechanisms.map((m, i) => { const meta = MECHANISMS.find(x => x.id === m.id)!; return (
@@ -62,7 +63,7 @@ export function L4View() {
           <div className="flex items-start gap-3">{f.decision === 'OPEN_CASE' ? <XCircle className="mt-0.5 text-neutral-300" size={22} /> : <CheckCircle2 className="mt-0.5 text-gray-300" size={22} />}
             <div><div className="text-base font-semibold">{f.decision === 'OPEN_CASE' ? `Investigation case opened for ${r.scenario.profile.name}` : `No illicit case opened for ${r.scenario.profile.name}`}</div>
               <p className="mt-1 max-w-2xl text-sm text-mute">{f.decision === 'OPEN_CASE' ? `Hypotheses are ranked, not proven. A human analyst reviews the case next (L5). ${f.gateReason}` : `${f.gateReason} The volume signal is logged and the profile can be refreshed.`}</p></div></div>
-          <div className="flex gap-6 text-right"><div><div className="text-xs text-mute">Priority</div><div className="text-xl font-semibold">{f.priority}</div></div><div><div className="text-xs text-mute">Illicit mass</div><div className="font-mono text-xl">{f.illicitMass.toFixed(2)}</div></div><div><div className="text-xs text-mute">Benign mass</div><div className="font-mono text-xl">{f.benignMass.toFixed(2)}</div></div></div>
+          <div className="flex gap-6 text-right"><div><div className="text-xs text-mute">Priority</div><div className="text-xl font-semibold">{f.priority}</div></div><div><div className="text-xs text-mute">P(front)</div><div className="font-mono text-xl">{P(f.posterior)}</div></div><div><div className="text-xs text-mute">Benign mass</div><div className="font-mono text-xl">{f.benignMass.toFixed(2)}</div></div></div>
         </div>
       </Card>
     </LayerFrame>

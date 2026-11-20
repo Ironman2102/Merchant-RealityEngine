@@ -1,0 +1,12 @@
+{
+  "_note": "Land-border neighbours of Indian states/UTs (2-letter codes). Payers from a neighbouring state count as local for catchment tests.",
+  "AP": ["TS","KA","TN","OD","CG"], "AR": ["AS","NL"], "AS": ["AR","NL","MN","MZ","TR","ML","WB"], "BR": ["UP","JH","WB"],
+  "CG": ["MP","UP","JH","OD","AP","TS","MH"], "DL": ["HR","UP"], "GA": ["MH","KA"], "GJ": ["RJ","MP","MH","DN"],
+  "HR": ["PB","HP","UK","UP","RJ","DL","CH"], "HP": ["JK","LA","PB","HR","UK"], "JH": ["BR","UP","CG","OD","WB"],
+  "JK": ["LA","HP","PB"], "KA": ["GA","MH","TS","AP","TN","KL"], "KL": ["KA","TN","PY"], "LA": ["JK","HP"],
+  "MP": ["RJ","UP","CG","MH","GJ"], "MH": ["GJ","MP","CG","TS","KA","GA","DN"], "MN": ["NL","AS","MZ"], "ML": ["AS"],
+  "MZ": ["AS","MN","TR"], "NL": ["AR","AS","MN"], "OD": ["WB","JH","CG","AP"], "PB": ["JK","HP","HR","RJ","CH"],
+  "RJ": ["PB","HR","UP","MP","GJ"], "SK": ["WB"], "TN": ["KL","KA","AP","PY"], "TS": ["MH","CG","AP","KA"],
+  "TR": ["AS","MZ"], "UK": ["HP","UP","HR"], "UP": ["UK","HP","HR","DL","RJ","MP","CG","JH","BR"],
+  "WB": ["SK","AS","BR","JH","OD"], "CH": ["PB","HR"], "PY": ["TN","KL","AP"], "DN": ["GJ","MH"]
+}

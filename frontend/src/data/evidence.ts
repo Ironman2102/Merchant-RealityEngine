@@ -11,6 +11,7 @@ export const FAMILIES: { id: Family; name: string; short: string; patterns: numb
   { id: 'G', name: 'Catalogue, website and payment-link provenance', short: 'Provenance', patterns: 14 },
   { id: 'H', name: 'Drift, blending and rotation', short: 'Drift', patterns: 12 },
   { id: 'I', name: 'Other abuse', short: 'Other', patterns: 10 },
+  { id: 'K', name: 'Declared profile vs category norm', short: 'Declared', patterns: 1 },
 ];
 export const TOTAL_PATTERNS = FAMILIES.reduce((s, f) => s + f.patterns, 0); // 112
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, Download, FileJson, FileUp, Play, ShieldAlert, ShieldCheck, X } from 'lucide-react';
 import { useInvestigation } from '../hooks/useInvestigation';
 import { usePortfolio } from '../hooks/usePortfolio';
@@ -26,6 +26,7 @@ const TEST_DATASETS = [
   { file: '02-merchant-rotation.json', title: 'Nova Gift Emporium · merchant rotation' },
   { file: '03-fabricated-online-store.json', title: 'Aarav Home Decor Online · fabricated commercial activity' },
   { file: '04-anand-sweets-diwali-genuine.json', title: 'Anand Sweets & Bakes · genuine Diwali growth' },
+  { file: '09-telegram-betting-no-website.json', title: 'Kaveri Mithai Stores · Telegram betting link, no website' },
 ];
 
 export function UploadPage() {
@@ -77,6 +78,7 @@ export function UploadPage() {
       setLoadingSample(false);
     }
   };
+  const navigate = useNavigate();
   const analyse = async () => {
     if (!parsed?.scenario || !raw) return;
     setPosting(true); setServerError('');
@@ -84,24 +86,9 @@ export function UploadPage() {
       const response = await fetch('/api/investigations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: raw });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || `The investigation API rejected the file (${response.status}).`);
-      setServerCase(body);
-      setDetailsOpen(false); loadCustom(parsed.scenario, true); setCaseKey(addUploaded(parsed.scenario)); setAnalysed(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-      setServerError(e instanceof Error ? e.message : 'The investigation API is not reachable.');
-    } finally { setPosting(false); }
-  };
-  const sendStep = async (action: 'response' | 'label', extra: object) => {
-    if (!serverCase || !raw) return;
-    setPosting(true); setServerError('');
-    try {
-      const response = await fetch('/api/investigations', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action, id: serverCase.id, ...extra, dataset: JSON.parse(raw), user: serverCase.user }),
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || `The investigation API rejected that step (${response.status}).`);
-      setServerCase(body);
+      setServerCase(body); setCaseKey(addUploaded(parsed.scenario)); setAnalysed(true);
+      // Open the persistent case: same seven-layer run as the demo, saved on the server, survives reload.
+      navigate(`/ai-engine/cases/${encodeURIComponent(body.id)}?run=1`);
     } catch (e) {
       setServerError(e instanceof Error ? e.message : 'The investigation API is not reachable.');
     } finally { setPosting(false); }
@@ -178,40 +165,6 @@ export function UploadPage() {
       </>}
 
       {!analysed && datasetPanel}
-
-      {serverCase && (
-        <Panel title={`Server case ${serverCase.id}`} subtitle="Layers 1–5 already ran on the API. Response and label are the human steps.">
-          <ol className="space-y-2 text-sm">
-            {serverCase.workflow.map(step => (
-              <li key={step.layer} className="grid gap-1 sm:grid-cols-[9rem_6rem_1fr] sm:gap-3">
-                <span className="font-medium">{step.code} {step.name}</span>
-                <Badge tone={step.state === 'done' ? 'ok' : step.state === 'blocked' ? 'bad' : 'mute'}>{step.state}</Badge>
-                <span className="text-mute">{step.summary}</span>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-4 border-t border-line pt-3"><Link to={`/ai-engine/cases/${encodeURIComponent(serverCase.id)}`} className="text-sm text-zinc-300 hover:text-white">Open persistent case workspace →</Link></div>
-          {serverError && <div className="mt-3 flex gap-2 text-sm text-neutral-300"><X size={15} className="mt-0.5 shrink-0" />{serverError}</div>}
-          {serverCase.workflow[5]?.state !== 'done' && (
-            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4 text-sm">
-              {(serverCase.result.recommended === 'L4' || serverCase.result.recommended === 'L5' || serverCase.workflow[5]?.state === 'blocked') && (
-                <>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={legalVerified} onChange={e => setLegalVerified(e.target.checked)} />Legal authority verified</label>
-                  {serverCase.result.recommended === 'L4' && <label className="flex items-center gap-2"><input type="checkbox" checked={escrowConfirmed} onChange={e => setEscrowConfirmed(e.target.checked)} />Escrow clause confirmed</label>}
-                </>
-              )}
-              <Btn variant="primary" disabled={posting} onClick={() => sendStep('response', { chosenLevel: serverCase.result.recommended, legalVerified, escrowConfirmed })}>Record {serverCase.result.recommended} response</Btn>
-            </div>
-          )}
-          {serverCase.workflow[5]?.state === 'done' && serverCase.workflow[6]?.state !== 'done' && (
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
-              <Btn disabled={posting} onClick={() => sendStep('label', { label: 'CONFIRMED_ILLICIT' })}>Label confirmed illicit</Btn>
-              <Btn disabled={posting} onClick={() => sendStep('label', { label: 'ADJUDICATED_BENIGN' })}>Label benign</Btn>
-              <Btn disabled={posting} onClick={() => sendStep('label', { label: 'UNRESOLVED' })}>Leave unresolved</Btn>
-            </div>
-          )}
-        </Panel>
-      )}
 
       {showSimulation && <InvestigationPage progressOnly />}
 

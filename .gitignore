@@ -4,3 +4,8 @@ dist
 .DS_Store
 backend/src/data/*.json
 backend/bundle.js
+backend/data/
+.venv/
+ml/data/
+ml/models/*/candidates/
+__pycache__/
