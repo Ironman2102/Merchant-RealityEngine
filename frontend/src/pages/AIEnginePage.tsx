@@ -36,15 +36,15 @@ export function AIEnginePage() {
         <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The limit</div><p className="mt-2 text-sm">A second person approves anything that restricts funds. The trained model is a second opinion and does not decide.</p></div>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Link to="/ai-engine/analyze?sample=01-sweet-crumbs-betting-front.json" className="rounded-lg border border-line bg-panel p-4 hover:border-line2">
-          <div className="text-xs text-mute">Worked example · case expected</div>
-          <div className="mt-2 font-medium">Sweet Crumbs Bakery</div>
-          <p className="mt-1 text-sm text-mute">Declared as a local bakery. Payments look like betting deposits. The tool should open a case.</p>
+        <Link to="/ai-engine/analyze?sample=01-sweet-crumbs-betting-front.json" className="rounded-xl border border-rose-200 bg-panel p-4 shadow-xs transition hover:border-rose-300 hover:bg-rose-50/30">
+          <div className="flex items-center justify-between"><span className="text-xs font-medium text-mute">Worked example · case expected</span><Badge tone="bad">Suspicious</Badge></div>
+          <div className="mt-2 font-semibold text-ink">Sweet Crumbs Bakery</div>
+          <p className="mt-1 text-sm text-mute">Declared as a local bakery. Payments look like betting deposits. The tool opens a case.</p>
         </Link>
-        <Link to="/ai-engine/analyze?sample=04-anand-sweets-diwali-genuine.json" className="rounded-lg border border-line bg-panel p-4 hover:border-line2">
-          <div className="text-xs text-mute">Worked example · no case expected</div>
-          <div className="mt-2 font-medium">Anand Sweets &amp; Bakes</div>
-          <p className="mt-1 text-sm text-mute">Sales jump in the Diwali fortnight and still look like a sweet shop. The tool should not open a case.</p>
+        <Link to="/ai-engine/analyze?sample=04-anand-sweets-diwali-genuine.json" className="rounded-xl border border-emerald-200 bg-panel p-4 shadow-xs transition hover:border-emerald-300 hover:bg-emerald-50/30">
+          <div className="flex items-center justify-between"><span className="text-xs font-medium text-mute">Worked example · no case expected</span><Badge tone="ok">Legitimate</Badge></div>
+          <div className="mt-2 font-semibold text-ink">Anand Sweets &amp; Bakes</div>
+          <p className="mt-1 text-sm text-mute">Sales jump in the Diwali fortnight and still look like a sweet shop. Spared from a false freeze.</p>
         </Link>
       </div>
       <div className="rounded-lg border border-line bg-panel px-4 py-3">

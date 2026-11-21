@@ -29,24 +29,26 @@ export function EngineShell() {
   const caseNav = caseId ? RESULT_NAV.map(n => ({ ...n, to: n.to.replace('/ai-engine/', `/ai-engine/cases/${caseId}/`), end: true })) : RESULT_NAV;
   const nav = hasRun && detailsOpen ? [...BASE_NAV, ...caseNav] : BASE_NAV;
   return (
-    <SignInGate>{(me, logout) => (
-    <>
-      {import.meta.env.VITE_CONSOLE === '1' ? null : <PublicNav landing />}
-      <div className="flex min-h-screen bg-bg">
-        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel/60 lg:flex">
-          <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="AI Engine">{nav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex items-center gap-2.5 rounded px-3 py-2 text-sm transition-colors', isActive ? 'bg-zinc-400/10 text-zinc-200' : 'text-mute hover:bg-panel2 hover:text-ink')}><n.icon size={16} />{n.label}</NavLink>)}</nav>
-          <SignedInAs user={me} logout={logout} />
-          <div className="border-t border-line p-4 text-xs text-dim">Uploads are analyzed by the local backend. No partner data connectors are configured.</div>
-        </aside>
-        <div className="min-w-0 flex-1">
-          <main className="mx-auto max-w-[1280px] space-y-6 px-5 py-6">
-            <nav className="flex w-full gap-1 overflow-x-auto pb-1 lg:hidden" aria-label="AI Engine mobile">{nav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded px-2.5 py-1 text-xs', isActive ? 'bg-zinc-400/10 text-zinc-200' : 'text-mute')}>{n.label}</NavLink>)}</nav>
-            <div className="rounded border border-line lg:hidden"><SignedInAs user={me} logout={logout} /></div>
-            <Outlet />
-          </main>
+    <div className="mre-light min-h-screen bg-bg text-ink">
+      <SignInGate>{(me, logout) => (
+      <>
+        {import.meta.env.VITE_CONSOLE === '1' ? null : <PublicNav />}
+        <div className="flex min-h-[calc(100vh-3.5rem)] bg-bg">
+          <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 flex-col border-r border-line bg-panel lg:flex">
+            <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="AI Engine">{nav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors', isActive ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-mute hover:bg-panel2 hover:text-ink')}><n.icon size={16} />{n.label}</NavLink>)}</nav>
+            <SignedInAs user={me} logout={logout} />
+            <div className="border-t border-line p-4 text-[11px] text-dim">Uploads are analyzed by the local backend. No partner data connectors are configured.</div>
+          </aside>
+          <div className="min-w-0 flex-1">
+            <main className="mx-auto max-w-[1280px] space-y-6 px-5 py-6">
+              <nav className="flex w-full gap-1 overflow-x-auto pb-1 lg:hidden" aria-label="AI Engine mobile">{nav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium', isActive ? 'bg-indigo-50 text-indigo-700' : 'text-mute')}>{n.label}</NavLink>)}</nav>
+              <div className="rounded-lg border border-line bg-panel lg:hidden"><SignedInAs user={me} logout={logout} /></div>
+              <Outlet />
+            </main>
+          </div>
         </div>
-      </div>
-    </>
-    )}</SignInGate>
+      </>
+      )}</SignInGate>
+    </div>
   );
 }
