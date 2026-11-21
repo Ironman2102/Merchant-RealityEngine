@@ -27,6 +27,7 @@ export interface Ctx {
 interface Def { id: string; run: (c: Ctx) => Obs }
 
 const ids = (xs: PaymentEvent[]) => xs.map(e => e.id);
+const embedIds = (xs: { id?: string }[]) => xs.map(x => x.id).filter((id): id is string => typeof id === 'string' && id.length > 0);
 const share = (x: number, n: number) => (n ? x / n : 0);
 const ci90 = (x: number, n: number) => (n ? wilson(x, n, 0.9) : null);
 const unknown = (why: string, expected = '—', expectedSource = '—'): Obs => ({ p: null, effect: null, n: 0, effectLabel: '—', observed: 'Not assessable', expected, explanation: why, expectedSource, force: 'UNKNOWN' });
@@ -149,7 +150,7 @@ export const DETECTORS: Def[] = [
     const peers = new Set(c.sc.web.embeds.filter(e => e.merchantId !== c.p.id && mine.some(m => m.host === e.host)).map(e => e.merchantId));
     if (!peers.size) return unknown('Third-party embed found but not shared with other merchants.');
     return { p: null, effect: peers.size, n: 1, effectLabel: 'other merchants on the same host', observed: `${peers.size} other merchant(s) have links on ${mine[0].host}`, expected: 'Links on declared domains only', force: 'ILLICIT',
-      explanation: 'Unrelated merchants\' payment links on the same third-party page. A lead, not proof of common ownership.', expectedSource: 'Crawler snapshot', records: mine.map(m => m.id), metrics: { peers: peers.size, host: mine[0].host } };
+      explanation: 'Unrelated merchants\' payment links on the same third-party page. A lead, not proof of common ownership.', expectedSource: 'Crawler snapshot', records: embedIds(mine), metrics: { peers: peers.size, host: mine[0].host } };
   } },
   { id: 'E3', run: c => {
     if (!c.cohort.length) return unknown('No cohort peers monitored for this merchant.');
@@ -201,8 +202,9 @@ export const DETECTORS: Def[] = [
   { id: 'G6', run: c => {
     const mine = c.sc.web.embeds.filter(e => e.merchantId === c.p.id); if (!mine.length) return unknown('No embeds captured for this merchant\'s links.');
     const known = new Set(RULES.hosts.known.map(h => h.host)), ext = mine.filter(e => !c.p.declaredDomains.includes(e.host)), bet = ext.filter(e => e.category === 'gambling' || known.has(e.host));
-    if (bet.length) return { p: null, effect: 1.25, n: mine.length, effectLabel: 'betting-host embed', force: 'ILLICIT', observed: `Link ${bet[0].linkId} embedded on ${bet[0].host}${bet[0].path} (${bet[0].pageType})`, expected: 'Links only on declared domains', explanation: 'A merchant payment link on an undeclared betting deposit page.', expectedSource: 'Crawler snapshot + rules/hosts.json', records: bet.map(g => g.id), metrics: { host: bet[0].host } };
-    if (ext.length) return { p: null, effect: 0.6, n: mine.length, effectLabel: 'undeclared embed', force: 'ILLICIT', observed: `Link ${ext[0].linkId} embedded on undeclared ${ext[0].host}`, expected: 'Links only on declared domains', explanation: 'A payment link used on a page unrelated to the declared business.', expectedSource: 'Crawler snapshot', records: ext.map(g => g.id) };
+    const place = (e: { host: string; path?: string; pageType?: string }) => `${e.host ?? ''}${e.path ?? ''}${e.pageType ? ` (${e.pageType})` : ''}`;
+    if (bet.length) return { p: null, effect: 1.25, n: mine.length, effectLabel: 'betting-host embed', force: 'ILLICIT', observed: `Link ${bet[0].linkId} embedded on ${place(bet[0])}`, expected: 'Links only on declared domains', explanation: 'A merchant payment link on an undeclared betting deposit page.', expectedSource: 'Crawler snapshot + rules/hosts.json', records: embedIds(bet), metrics: { host: bet[0].host } };
+    if (ext.length) return { p: null, effect: 0.6, n: mine.length, effectLabel: 'undeclared embed', force: 'ILLICIT', observed: `Link ${ext[0].linkId} embedded on undeclared ${place(ext[0])}`, expected: 'Links only on declared domains', explanation: 'A payment link used on a page unrelated to the declared business.', expectedSource: 'Crawler snapshot', records: embedIds(ext) };
     return { p: null, effect: 0, n: mine.length, effectLabel: 'undeclared embed', force: 'BENIGN', observed: `All ${mine.length} embed(s) on declared domains`, expected: 'Links only on declared domains', explanation: 'Checkout provenance matches the declared website.', expectedSource: 'Crawler snapshot' };
   } },
   { id: 'H1', run: c => {

@@ -15,7 +15,7 @@ const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
 const H = 3600000;
 
 /** Rename a dataset to a different merchant and home state. */
-function rebrand(ds: MreDataset, o: { id: string; name: string; city: string; domain: string; linkPrefix: [string, string]; homeFrom: string; homeTo: string; peers?: [string, string][] }) {
+export function rebrand(ds: MreDataset, o: { id: string; name: string; city: string; domain: string; linkPrefix: [string, string]; homeFrom: string; homeTo: string; peers?: [string, string][] }) {
   const d = clone(ds), oldId = d.merchant.id;
   const swap = (st?: string) => st === o.homeFrom ? o.homeTo : st === o.homeTo ? o.homeFrom : st;
   const link = (l?: string) => l?.replace(o.linkPrefix[0], o.linkPrefix[1]);

@@ -1,0 +1,23 @@
+{
+  "name": "alt-pa-example",
+  "files": { "transactions": "transactions.csv", "merchants": "merchants.csv", "weekly": "weekly.csv" },
+  "delimiter": ";",
+  "amountUnit": "paise",
+  "timezone": "+05:30",
+  "transactions": {
+    "id": "col_txn_id", "merchantId": "col_merchant_id",
+    "type": { "column": "col_txn_type", "map": { "P": "SALE", "R": "REFUND", "S": "SETTLEMENT", "O": "TRANSFER", "C": "CHARGEBACK" } },
+    "amount": "col_amount", "time": "col_txn_time", "settledAt": "col_settled_at",
+    "payerId": "col_payer_vpa", "payerState": "col_payer_state", "payerMobile": "col_payer_mobile",
+    "channel": { "column": "col_channel", "map": { "UI": "UPI_LINK", "UC": "UPI_COLLECT", "PS": "POS", "ON": "ONLINE", "PO": "PAYOUT", "BK": "BANK" } },
+    "paymentLinkId": "col_link_id", "orderId": "col_order_id", "refundOfTransactionId": "col_original_txn_id",
+    "paidTo": "col_refund_to", "destHolder": "col_refund_to_holder", "beneficiaryAccount": "col_beneficiary_account"
+  },
+  "merchants": {
+    "id": "col_merchant_id", "name": "col_legal_name", "city": "col_city", "mcc": "col_mcc", "category": "col_category",
+    "ticketMin": "col_declared_min_ticket", "ticketMax": "col_declared_max_ticket", "openHour": "col_open_hour", "closeHour": "col_close_hour",
+    "homeState": "col_state", "catchment": "col_catchment", "baselineWeekly": "col_declared_weekly_volume",
+    "onboardedOn": "col_onboarded_on", "declaredDomains": { "column": "col_domains", "split": "|" }
+  },
+  "weekly": { "merchantId": "col_merchant_id", "weekEnd": "col_week_end", "sales": "col_sales_value" }
+}

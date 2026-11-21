@@ -26,13 +26,38 @@ const { _note: _m, default: mccDefault, ...mccRows } = mcc as unknown as { _note
 const { _note: _s, ...adjacency } = states as unknown as Record<string, string[]>;
 const { _note: _d, ...detectorRows } = detectors as unknown as Record<string, DetectorCfg | string>;
 
+/** Synchronous only. Do not await inside `fn`: the override is a process-wide map. */
+let detectorOverrides: Record<string, Partial<DetectorCfg>> | null = null;
+let livePatch: Record<string, Partial<DetectorCfg>> | null = null;
+let liveVersion: string | null = null;
+
+export function withDetectorOverrides<T>(patch: Record<string, Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN'>>>, fn: () => T): T {
+  const prev = detectorOverrides;
+  detectorOverrides = patch;
+  try { return fn(); } finally { detectorOverrides = prev; }
+}
+
+export function setLiveDetectorPatch(patch: Record<string, Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN'>>> | null, version: string | null = null): void {
+  livePatch = patch;
+  liveVersion = version;
+}
+
+export function getLiveDetectorPatch(): { patch: Record<string, Partial<DetectorCfg>> | null; version: string } {
+  return { patch: livePatch, version: liveVersion ?? engine.version };
+}
+
 export const RULES = {
-  version: engine.version,
+  get version(): string { return liveVersion ?? engine.version; },
   engine,
   mcc: (code: string): MccNorm => mccRows[code] ?? mccDefault,
   neighbours: (state: string): string[] => adjacency[state] ?? [],
   calendar, amounts, hosts, overrides,
   costs: costs as { missCost: number; actions: Record<ResponseKey, { falseAlarmCost: number; missFactor: number; label: string }>; autoRecommendMax: ResponseKey },
   priors: priors as { default: { rate: number; strength: number }; byMcc: Record<string, { rate: number; strength: number }>; ageOdds: { maxDays: number; odds: number }[] },
-  detector: (id: string): DetectorCfg => { const d = detectorRows[id]; if (!d || typeof d === 'string') throw new Error(`rules/detectors.json has no entry for ${id}`); return d; },
+  detector: (id: string): DetectorCfg => {
+    const d = detectorRows[id];
+    if (!d || typeof d === 'string') throw new Error(`rules/detectors.json has no entry for ${id}`);
+    const p = detectorOverrides?.[id] ?? livePatch?.[id];
+    return p ? { ...d, ...p } : d;
+  },
 };

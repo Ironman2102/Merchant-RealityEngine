@@ -6,6 +6,7 @@ import { Badge, Btn, Callout, Mono, Panel, StatusBadge, Tabs, Td, Th, rowCls, ta
 import { MECHANISMS, RESPONSE_LEVELS } from '../data/evidence';
 import { cx, fmtInterval, fmtProb, inr, probEq } from '../utils/format';
 import { getPilotJson } from '../services/pilotApi';
+import { MlPanel } from '../components/trace/MlPanel';
 
 type Filter = 'fired' | 'calm' | 'unknown' | 'all';
 const pv = (p: number | null) => (p === null ? 'rule' : p < 1e-4 ? p.toExponential(1) : p.toFixed(4));
@@ -50,6 +51,8 @@ export function TracePage() {
           <div><div className="text-xs text-mute">Leading mechanism</div><div className="mt-1 text-sm font-medium">{mech?.name ?? t.caseSummary.mechanism}</div><div className="text-[11px] text-dim">{fmtProb(t.caseSummary.mechanismP)} of the "front" probability</div></div>
         </div>
       </Panel>
+
+      <MlPanel caseId={caseId} posterior={t.caseSummary.posterior} />
 
       <Panel title="How the probability was reached" subtitle="Bayes' rule in log-odds: start from the base rate, add each evidence family's weight (nats). Positive moves towards 'front', negative towards 'genuine'." bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Step</Th><Th>Weight</Th><Th>Running P(front)</Th></tr></thead><tbody>

@@ -5,13 +5,13 @@ import { Btn } from '../components/ui/ui';
 import { LAYERS } from '../data/evidence';
 
 const IMPL: [string, string, string][] = [
-  ['L1 Ingest & Lineage', 'Synthetic event generators, normalisation, refund linkage, hashing, coverage map', 'Kafka or batch connectors, schema registry, real hashing keys'],
-  ['L2 Merchant Profile', 'Three baselines, residuals, CUSUM', 'Profile store, learned seasonality, per-MCC priors'],
-  ['L3 Detection', '21 live detectors across nine families, cohort continuity', 'Remaining catalogue patterns, trained models, scheduled jobs'],
-  ['L4 Evidence Fusion', 'Deduplication, UNKNOWN exclusion, weighting, independence gate, four hypotheses', 'Calibrated probabilistic fusion with held-out labels'],
-  ['L5 Analyst Review', 'Competing chains, record inspection, findings, recommendation', 'Case management, assignment, SLAs, merchant portal'],
-  ['L6 Governed Response', 'Six levels, authority gate, simulated HoldRecord, action audit', 'Integration with payment rails, legal workflow, maker-checker'],
-  ['L7 Audit & Learning', 'Labels, indicators, reliability updates, hash-chained audit', 'Immutable store, backtesting, model governance'],
+  ['L1 Ingest & Lineage', 'Event normalisation, refund linkage, HMAC-SHA256 pseudonymisation, coverage map, PA CSV adapter', 'Kafka or streaming connectors, schema registry, HSM-managed keys'],
+  ['L2 Merchant Profile', 'Log-normal weekly volume model with festival calendar offsets, ARL-calibrated CUSUM (h = 2.35), Bayesian online changepoint', 'Live portfolio peer cohort calibration across all active merchants'],
+  ['L3 Detection', '25 live statistical detectors across 10 families (A–I, K), cohort continuity, plus 10 solution/betting patterns (S1–S7, N1–N3)', 'Remaining catalogue patterns, cross-PA consortium signals'],
+  ['L4 Evidence Fusion', 'Bayesian log-odds fusion with within-family shrinkage (ρ = 0.3), Monte-Carlo 90% interval, 2-source / 3-family governance gate, 4 mechanisms', 'Isotonic/conformal recalibration on 1,000+ real shadow-pilot labels'],
+  ['L5 Analyst Review', 'Competing explanations, reasoning trace waterfall, counterfactual minimal flip sets, Value of Information (₹), LightGBM + MLP second opinion', 'Enterprise case assignment, SLA queues, merchant document portal'],
+  ['L6 Governed Response', 'Expected-loss decision theory (L0–L5), maker/checker role separation, surgical L3 link disablement', 'Direct payment-rail webhooks, escrow ledger integration'],
+  ['L7 Audit & Learning', 'SHA-256 hash-chained SQLite audit, RBI/FIU-IND evidence pack, Bayesian label learning (T14), red-team + backtested rule evolution (T15–T16)', 'External daily signed audit digest anchoring, FINnet portal XML export'],
 ];
 export function ArchitecturePage() {
   return (

@@ -45,14 +45,14 @@ export function ServerCasePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (error) return <div className="space-y-4 py-8"><p className="text-sm text-neutral-300" role="alert">{error}</p><Link to="/ai-engine"><Btn><ArrowLeft size={14} />Back to workspace</Btn></Link></div>;
+  if (error) return <div className="space-y-4 py-8"><p className="text-sm text-rose-700" role="alert">{error}</p><Link to="/ai-engine"><Btn><ArrowLeft size={14} />Back to workspace</Btn></Link></div>;
   if (!item || caseId !== id) return <div className="py-12 text-center text-sm text-mute" role="status">Loading case…</div>;
   const View = VIEWS[view] ?? VIEWS.investigations;
   const res = item.result as { decision: string; priority: string } | undefined;
 
   return <div className="space-y-6">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <Link to="/ai-engine" className="inline-flex items-center gap-2 text-sm text-mute hover:text-ink"><ArrowLeft size={14} />All investigations</Link>
+    <div className="no-print flex flex-wrap items-center justify-between gap-3">
+      <Link to="/ai-engine" className="inline-flex items-center gap-2 text-sm font-medium text-mute hover:text-ink"><ArrowLeft size={14} />All investigations</Link>
       <div className="flex items-center gap-2">
         <span className="font-mono text-xs text-mute">{item.id} · saved {new Date(item.createdAt).toLocaleString()}</span>
         {res && <Badge tone={res.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{res.decision === 'OPEN_CASE' ? `${res.priority} review` : 'No case opened'}</Badge>}
@@ -60,7 +60,7 @@ export function ServerCasePage() {
       </div>
     </div>
     {syncError && <Callout tone="warn" title="Not saved">{syncError}</Callout>}
-    <div className="rounded border border-stone-400/30 bg-stone-400/5 px-4 py-3 text-xs leading-relaxed text-stone-200">Saved case: notes, responses and labels you record below are written to the case record and its audit history. Nothing here acts on payment rails.</div>
+    <div className="no-print rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs leading-relaxed text-amber-900">Saved case: notes, responses and labels you record below are written to the case record and its audit history. Nothing here acts on payment rails.</div>
     <View />
   </div>;
 }

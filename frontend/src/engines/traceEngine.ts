@@ -60,12 +60,30 @@ export function buildTrace(r: InvestigationResult): Trace {
   });
   f.logOdds.overrides.forEach(o => { cum += o.llr; steps.push({ label: `Override ${o.id}: ${o.when}`, delta: o.llr, cumulative: cum, probability: sigmoid(cum) }); });
 
-  // Counterfactuals: remove each of the strongest fired signals in turn.
-  const fired = ev.filter(e => e.llr > 0).sort((a, b) => b.llr - a.llr).slice(0, 5);
+  // Counterfactuals: remove each of the strongest fired signals in turn, plus the smallest top-signal set that flips OPEN_CASE -> NO_CASE.
+  const allPositive = ev.filter(e => e.llr > 0).sort((a, b) => b.llr - a.llr);
+  const fired = allPositive.slice(0, 5);
   const counterfactuals: Counterfactual[] = fired.map(e => {
     const g = fuse(ev.map(x => (x.id === e.id ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, { draws: 0 });
     return { what: `Without ${e.id} (${e.name})`, posterior: g.posterior, action: g.decisionAnalysis.recommended, decision: g.decision };
   });
+  if (f.decision === 'OPEN_CASE' && counterfactuals.every(c => c.decision === 'OPEN_CASE') && allPositive.length > 1) {
+    const dropIds = new Set<string>();
+    for (const e of allPositive) {
+      dropIds.add(e.id);
+      if (dropIds.size <= 1) continue;
+      const g = fuse(ev.map(x => (dropIds.has(x.id) ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, { draws: 0 });
+      if (g.decision === 'NO_CASE') {
+        counterfactuals.push({
+          what: `Minimal flip set: without ${[...dropIds].join(' + ')} (${dropIds.size} signals)`,
+          posterior: g.posterior,
+          action: g.decisionAnalysis.recommended,
+          decision: g.decision,
+        });
+        break;
+      }
+    }
+  }
 
   // Value of information for each missing feed (its strongest-weighted detector stands in for the feed).
   const missing = (Object.entries(r.scenario.coverage) as [CoverageKey, string][]).filter(([, s]) => s === 'MISSING').map(([k]) => k);

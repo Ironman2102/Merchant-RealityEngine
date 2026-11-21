@@ -23,7 +23,20 @@ export function L7View() {
   const chain = useMemo(() => { let prev = 'genesis'; return audit.map(a => { const h = hashId(prev + a.action + a.at + a.detail, 'audit'); prev = h; return { ...a, hash: h }; }); }, [audit]);
   const top = rel.slice().sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before)).slice(0, 8);
   return (
-    <LayerFrame n={7} evidenceCount={audit.length} evidenceLabel="audit entries" summary={label ? <>Case labelled <b className="text-ink">{LABELS.find(l => l.id === label)!.name}</b>. Learning updates are staged below.</> : 'Choose a label to see how this outcome feeds back into detectors and profiles.'}>
+    <LayerFrame
+      n={7}
+      brief={{
+        checks: 'Records the final human outcome (Confirmed Front, Genuine Business, or Unresolved), feeds confirmed outcomes back into detector trust weights (T14), and seals every action in a tamper-proof SHA-256 hash chain.',
+        happened: (
+          <>
+            Current outcome: <b>{label ? LABELS.find(l => l.id === label)!.name : 'Awaiting human label'}</b>.{' '}
+            Audit trail has <b>{audit.length} entry/entries</b>
+            {auditIntact !== null ? (auditIntact ? ' (SHA-256 hash chain verified intact).' : ' (TAMPERING DETECTED).') : '.'}
+          </>
+        ),
+        whyItMatters: 'Regulators (RBI / FIU-IND) require an unalterable paper trail of who decided what and why. Confirmed labels update future detector sensitivity (while Unresolved cases are kept out of training so uncertainty is never faked as a win).',
+      }}
+    >
       <Panel title="Adjudicated label" subtitle="Simulated adjudication. In production a human or a legal process decides.">
         <div className="grid gap-3 md:grid-cols-3">{LABELS.map(l => <button key={l.id} onClick={() => setLabel(label === l.id ? null : l.id)} aria-pressed={label === l.id} className={cx('rounded border p-3 text-left transition-colors', label === l.id ? 'border-zinc-400 bg-zinc-400/5' : 'border-line bg-panel2 hover:border-line2')}><div className="flex items-center justify-between"><span className="font-mono text-[12px]">{l.id}</span>{!custom && l.id === r.scenario.scriptedLabel && <Badge tone="info">Scripted outcome</Badge>}</div><div className="mt-1 text-[13px] text-mute">{l.blurb}</div></button>)}</div>
         {pending?.label && <p className="mt-3 rounded border border-stone-400/30 bg-stone-400/5 px-3 py-2 text-xs text-stone-200" role="status">CONFIRMED_ILLICIT proposed by <b>{pending.label.by.username}</b>. A different reviewer, admin or legal user confirms it by choosing CONFIRMED_ILLICIT too.</p>}

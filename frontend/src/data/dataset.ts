@@ -251,7 +251,10 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (coverage.calendar === 'AVAILABLE' && !fixtures.length) warnings.push('The match calendar is marked AVAILABLE but has no fixtures; calendar checks will be UNKNOWN.');
   if (errors.length) return { ok: false, errors, warnings };
 
-  const web = { embeds: d.website?.embeds ?? [], catalogue: d.website?.catalogue ?? [] };
+  const web = {
+    embeds: (d.website?.embeds ?? []).map((e, i) => ({ ...e, id: e.id || `EMB-${String(i + 1).padStart(3, '0')}` })),
+    catalogue: d.website?.catalogue ?? [],
+  };
   const peers = d.peers ?? [];
   const sc: Scenario = {
     id: 'custom',

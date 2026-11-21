@@ -1,0 +1,8 @@
+[
+  { "id": "L0", "label": "Watch and log", "auto": true, "restrictsFunds": false, "needsLegal": false },
+  { "id": "L1", "label": "Enhanced monitoring", "auto": true, "restrictsFunds": false, "needsLegal": false },
+  { "id": "L2", "label": "Ask the merchant for clarification", "auto": true, "restrictsFunds": false, "needsLegal": false },
+  { "id": "L3", "label": "Restrict one defined flow", "auto": false, "restrictsFunds": true, "needsLegal": false },
+  { "id": "L4", "label": "Hold attributable unsettled funds (legal approval)", "auto": false, "restrictsFunds": true, "needsLegal": true },
+  { "id": "L5", "label": "Terminate (legal approval + confirmed label)", "auto": false, "restrictsFunds": true, "needsLegal": true }
+]

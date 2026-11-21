@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Fingerprint, Link2Off } from 'lucide-react';
 import { useInvestigation } from '../../hooks/useInvestigation';
+import { useQuantMode } from '../../hooks/useQuantMode';
 import { LayerFrame } from '../../components/common/LayerFrame';
 import { Badge, Bar, Callout, Panel, Stat, Td, Th, rowCls, tableCls, Tabs, Btn, Mono, type Tone } from '../../components/ui/ui';
 import { fmtDateTime, inr, pct } from '../../utils/format';
@@ -12,6 +13,7 @@ const typeTone: Record<EventType, Tone> = { SALE: 'info', REFUND: 'warn', TRANSF
 
 export function L1View() {
   const { result: r } = useInvestigation();
+  const { quant } = useQuantMode();
   const l1 = r.l1, ev = [...r.events].reverse();
   const [f, setF] = useState<'ALL' | EventType>('ALL');
   const [shown, setShown] = useState(0), [limit, setLimit] = useState(14);
@@ -20,7 +22,22 @@ export function L1View() {
   const missing = Object.entries(l1.coverage).filter(([, v]) => v === 'MISSING').map(([k]) => k);
   const sample = r.events.find(e => e.type === 'SETTLEMENT' && e.settleTime) ?? r.events[0];
   return (
-    <LayerFrame n={1} evidenceCount={r.events.length} evidenceLabel="records in the event store" summary={<>Event store holds <b className="text-ink">{r.events.length}</b> normalised events for {r.scenario.profile.name}. {missing.length ? `${missing.length} source(s) missing, kept as UNKNOWN.` : 'All sources connected.'}</>}>
+    <LayerFrame
+      n={1}
+      brief={{
+        checks: 'Cleans raw payment, refund, settlement, and website logs into one timeline, hashes customer UPI IDs for privacy, links refunds back to their original sales, and records which data feeds exist.',
+        happened: (
+          <>
+            Ingested <b>{r.events.length} records</b> ({l1.counts.SALE.n} sales totalling {inr(l1.counts.SALE.value)}, {l1.counts.REFUND.n} refunds, {l1.counts.SETTLEMENT.n} settlements).
+            {l1.refundLinkage.orphan > 0 ? <> Found <b>{l1.refundLinkage.orphan} orphan refund(s)</b> with no matching sale.</> : ' Every refund matched an original sale.'}
+            {missing.length > 0 ? ` Missing feeds: ${missing.join(', ')}.` : ' All 7 data feeds are available.'}
+          </>
+        ),
+        whyItMatters: missing.length > 0
+          ? `Any missing feed (${missing.join(', ')}) is marked UNKNOWN—it will NEVER be guessed or held against the merchant in L3/L4. Next, L2 builds what normal sales should look like for this business.`
+          : 'Clean timestamps and hashed IDs ensure timing and geography checks in L3 measure real customer behaviour without storing PII.',
+      }}
+    >
       <Panel title="Incoming data sources" subtitle="Each source reports its own coverage and record count.">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {l1.sources.map(s => (
@@ -70,7 +87,9 @@ export function L1View() {
         <div className="flex items-center justify-between border-t border-line px-4 py-2.5 text-xs text-mute"><span>Showing {Math.min(shown, limit, rows.length)} of {rows.length}{shown < limit && <span className="blink ml-2 text-zinc-300">streaming…</span>}</span>
           {limit < rows.length && <Btn size="sm" onClick={() => setLimit(l => l + 20)}>Show 20 more</Btn>}</div>
       </Panel>
-      <div className="text-xs text-dim">Lineage: {Array.from(new Set(r.events.map(e => e.source))).join(' · ')}. {pct(r.events.filter(e => e.type === 'SALE').length / r.events.length)} of stored events are sales.</div>
+      {quant && (
+        <div className="text-xs text-dim">Technical lineage: {Array.from(new Set(r.events.map(e => e.source))).join(' · ')}. {pct(r.events.filter(e => e.type === 'SALE').length / r.events.length)} of stored events are sales.</div>
+      )}
     </LayerFrame>
   );
 }

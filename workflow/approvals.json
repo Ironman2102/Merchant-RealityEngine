@@ -1,0 +1,14 @@
+{
+  "actions": {
+    "open": ["analyst", "reviewer", "admin"],
+    "review": ["analyst", "reviewer", "admin"],
+    "propose": ["analyst", "reviewer", "admin"],
+    "labelBenign": ["analyst", "reviewer", "admin"]
+  },
+  "levels": {
+    "L3": { "approvers": 1, "approverRoles": ["reviewer", "admin"] },
+    "L4": { "approvers": 1, "approverRoles": ["legal"] },
+    "L5": { "approvers": 1, "approverRoles": ["legal"] }
+  },
+  "confirmedIllicit": { "people": 2, "confirmRoles": ["reviewer", "admin", "legal"] }
+}

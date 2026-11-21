@@ -1,8 +1,14 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, switchDemoRole, userCount, type Actor, type Role } from './auth';
+import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
+import { v1FromNode } from './v1';
+import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
+import { scoreWithHost } from './ml';
+import { getCase, putCase } from './store';
+import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
 const LIMIT = 2_000_000;
 
@@ -44,7 +50,7 @@ function send(res: ServerResponse, reply: ApiReply, headers: Record<string, stri
 export async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const ip = req.socket.remoteAddress ?? 'local';
-    if (!allowed(ip)) return send(res, { status: 429, body: { error: 'Too many requests. Try again in a minute.' } });
+    if (!allowed(`all:${ip}`, 300)) return send(res, { status: 429, body: { error: 'Too many requests. Try again in a minute.' } });
     const url = new URL(req.url || '/', 'http://localhost');
     const path = (url.pathname.replace(/\/+$/, '') || '/').replace(/^\/api/, '') || '/';
     const method = req.method || 'GET';
@@ -56,14 +62,64 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
 
     const token = readCookie(req), actor: Actor | null = actorFromToken(token);
     if (path === '/auth/login' && method === 'POST') {
-      if (!allowed(`login:${ip}`, 10)) return send(res, { status: 429, body: { error: 'Too many sign-in attempts. Wait a minute.' } });
-      const b = await readBody(req) as { username?: unknown; password?: unknown };
-      const s = typeof b.username === 'string' && typeof b.password === 'string' ? login(b.username, b.password) : null;
-      if (!s) return send(res, { status: 401, body: { error: 'Wrong username or password.' } });
+      const b = await readBody(req) as { username?: unknown; password?: unknown; idToken?: unknown };
+      const who = typeof b.username === 'string' ? b.username.trim().toLowerCase() : '';
+      if (!allowed(`login:${ip}:${who}`, 30)) return send(res, { status: 429, body: { error: 'Too many sign-in attempts. Wait a minute.' } });
+      const check = typeof b.idToken === 'string' ? oidcCheckFromEnv() : null;
+      const s = typeof b.idToken === 'string'
+        ? (check ? loginWithIdToken(b.idToken, check) : null)
+        : typeof b.username === 'string' && typeof b.password === 'string' ? login(b.username, b.password) : null;
+      if (!s) return send(res, { status: 401, body: { error: typeof b.idToken === 'string' ? 'The identity token was not accepted.' : 'Wrong username or password.' } });
       return send(res, { status: 200, body: { user: s.actor } }, { 'set-cookie': sessionCookie(s.token) });
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
-    if (path === '/auth/me' && method === 'GET') return actor ? send(res, { status: 200, body: { user: actor } }) : send(res, { status: 401, body: { error: 'Not signed in.' } });
+    if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
+    if (path === '/auth/demo-switch' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in first before switching demo roles.' } });
+      const b = await readBody(req) as { role?: unknown };
+      const switched = typeof b.role === 'string' ? switchDemoRole(b.role as Role) : null;
+      if (!switched) return send(res, { status: 400, body: { error: 'Role must be analyst, reviewer, legal, or admin.' } });
+      return send(res, { status: 200, body: { user: switched.actor } }, { 'set-cookie': sessionCookie(switched.token) });
+    }
+    if (path === '/rules/status' && method === 'GET') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to view self-improvement status.' } });
+      return send(res, getRulesStatus());
+    }
+    if (path === '/rules/proposals/run' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to run the red-team improver.' } });
+      const b = await readBody(req) as { mode?: string };
+      return send(res, runImproverProposal(actor, b.mode === 'self' ? 'self' : 'mre-improver'));
+    }
+    if (path === '/rules/rollback' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to roll back rules.' } });
+      return send(res, rollbackRulesLive(actor));
+    }
+    const rulesMatch = path.match(/^\/rules\/proposals\/([^/]+)\/(approve|promote)$/);
+    if (rulesMatch && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to approve or promote rule proposals.' } });
+      const [, propId, propAction] = rulesMatch;
+      return send(res, propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor));
+    }
+    if (path === '/model' && method === 'GET') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to see the model sandbox.' } });
+      const online = await modelOnline();
+      return send(res, { status: 200, body: { online, configured: modelHostConfigured(), detail: online ? 'The model is answering.' : 'The model sandbox is not answering.' } });
+    }
+    if (path === '/model/start' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to start the model sandbox.' } });
+      const started = await startModelSandbox();
+      return send(res, { status: started.state === 'unconfigured' ? 503 : 200, body: { ...started, configured: modelHostConfigured() } });
+    }
+    if (path === '/model/stop' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to stop the model sandbox.' } });
+      await stopModelSandbox();
+      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model sandbox stopped.' } });
+    }
+
+    if (path.startsWith('/v1')) {
+      const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
+      if (v1) return send(res, v1);
+    }
 
     const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit))?)?$/);
     if (!match) return send(res, { status: 404, body: { error: 'Unknown route.' } });
@@ -73,11 +129,20 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (!id) {
       if (method === 'GET') { const caseId = url.searchParams.get('id'); return send(res, caseId ? getInvestigation(caseId) : listInvestigations()); }
       if (method !== 'POST') return send(res, { status: 405, body: { error: 'POST a dataset to open a case.' } });
-      return send(res, openInvestigation(await readBody(req), actor));
+      const opened = openInvestigation(await readBody(req), actor);
+      const caseId = typeof opened.body.id === 'string' ? opened.body.id : '';
+      if (opened.status === 200 && caseId) {
+        const rec = getCase(caseId);
+        if (rec && !rec.ml) {
+          const ml = await scoreWithHost(rec.result);
+          if (ml) { rec.ml = ml; putCase(rec); }
+        }
+      }
+      return send(res, opened);
     }
     if (method === 'GET') {
       if (!action) return send(res, getInvestigation(id));
-      if (action === 'trace') return send(res, caseTrace(id));
+      if (action === 'trace') return send(res, await caseTrace(id));
       if (action === 'pack') return send(res, evidencePack(id, actor));
       if (action === 'audit') return send(res, auditStatus(id));
       return send(res, { status: 405, body: { error: 'Use POST for this step.' } });

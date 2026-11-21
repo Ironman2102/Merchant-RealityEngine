@@ -9,7 +9,7 @@ import type { EvidenceItem } from '../../frontend/src/types/evidence';
 
 export default function (): number {
   let bad = 0;
-  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } };
+  const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const load = (f: string) => JSON.parse(readFileSync(`frontend/public/samples/${f}`, 'utf8'));
   const run = (d: unknown) => { const r = analyzeDataset(d); if (!r.ok) throw new Error(r.errors.join(' ')); return r.result; };
 

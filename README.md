@@ -1,5 +1,7 @@
 # Merchant Reality Engine (MRE)
 
+https://merchant-reality-engine.netlify.app
+
 An interactive prototype of a merchant-intelligence platform for Payment Aggregators and payment-risk teams.
 It asks one question: **does this merchant behave like the business it claims to be?**
 
@@ -11,6 +13,22 @@ The project has three connected experiences:
 - **AI Engine** (`/ai-engine/*`): upload a dataset, run server-side analysis, review evidence, record a proposed response and label, and return to saved case summaries.
 - **Offline Python prototype** (`./start.sh prototype`): a separate synthetic-data experiment; its multi-merchant report is not part of the web app.
 > **Everything is synthetic.** Merchants, transactions, websites, crawler snapshots and portfolio figures are fabricated and deterministic. Nothing is verified real-world evidence. There are no customers, partners or performance claims. The response design is a product proposal, not a statement of legal or regulatory requirements, and nothing freezes real money.
+
+## Measured on the synthetic portfolio
+
+These figures are copied from the report files. They are synthetic. They are not real-world accuracy.
+
+| Figure | Value | Source |
+|---|---|---|
+| Recall | 0.903 (65/72), Wilson 0.813–0.952 | `reports/benchmark.md` |
+| Precision | 1.000 (65/65), Wilson 0.944–1.000 | `reports/benchmark.md` |
+| Genuine-merchant false-positive rate | 0.000 (0/928), Wilson 0.000–0.004 | `reports/benchmark.md` |
+| Telegram (no-website) recall | 0.857 (12/14), Wilson 0.601–0.960 | `reports/benchmark.md` |
+| M1 AUC-PR | 1.000, bootstrap 1.000–1.000 | `reports/model-comparison.md` |
+| Bayesian AUC-PR | 0.996, bootstrap 0.982–1.000 | `reports/model-comparison.md` |
+| Opened queue | 65 cases, expected false alarms 1.68 | `reports/benchmark.md` |
+
+The trained model is a second opinion. It does not choose the action. Throughput on this machine is in `reports/perf.md`. The red-team rate is in `reports/redteam.md`.
 
 ## Run it
 
@@ -99,12 +117,9 @@ Stack: React 18, TypeScript, Vite, Tailwind CSS v4, Recharts, React Flow (`@xyfl
 
 ## Known limitations
 
-- 20 of the 112 catalogued detection patterns run as live detectors; the rest appear in the catalogue only.
-- Fusion weights and thresholds are transparent heuristics, not calibrated models. No ML is trained.
-- Website, domain-category and purchaser-verification data are fixtures. No external site is contacted.
-- Graph layout is a simple radial layout from the merchant node.
-- Portfolio indicators on the overview and audit pages are synthetic constants adjusted by the current run.
-- In the rotation scenario, rotation leads transaction laundering by a small margin. That is deliberate: shared link hosting is genuinely ambiguous.
-- The production bundle is a single chunk (~930 kB). Code-splitting is a straightforward later improvement.
-- Case storage is local JSON for development, not shared database storage. Authentication, role-based access, tenant isolation and live partner connectors are not configured.
-- The AI Engine currently accepts the canonical JSON dataset format. It does not connect to a payment provider, bank or merchant system.
+- 25 of the 112 catalogued detection patterns run as live statistical detectors in the Bayesian engine, alongside 10 solution and betting patterns (`S1–S7`, `N1–N3`); the remaining catalogue slots are design counts.
+- Category norms (`rules/mcc.json`) and initial detector sensitivities/false-positive rates (`rules/detectors.json`) are expert priors until calibrated on real labelled merchants in a shadow pilot.
+- Trained ML models (`M1` LightGBM with TreeSHAP and `nn-v0` Neural Network) are trained on the 1,000-merchant synthetic portfolio and serve strictly as a second opinion; they never override the governed Bayesian decision.
+- Website, domain-category and purchaser-verification data are synthetic fixtures. No external site is contacted.
+- Controlled self-improvement (`T14` Bayesian label learning and `T15–T16` red-team rule proposals with Wilson CIs and McNemar backtests) requires explicit maker/checker approval by a distinct reviewer/admin; the engine never modifies its own rules autonomously.
+- The evidence pack produces draft FIU-IND STR facts and RBI PA Master Direction mappings for the Principal Officer to review; it is not an automatic portal filing.
