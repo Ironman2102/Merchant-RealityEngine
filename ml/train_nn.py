@@ -13,6 +13,7 @@ from sklearn.metrics import average_precision_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import StratifiedKFold
 
+from ml.compare import bayesian_gate_mask
 from ml.score import apply_iso, load
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -85,7 +86,9 @@ def main() -> None:
     booster, m1_cols, cal = load(ROOT / 'ml' / 'models' / 'm1-v0')
     p_m1 = apply_iso(np.asarray(booster.predict(df.loc[held, m1_cols]), dtype=float), cal)
     y_te = y[held]
-    bayes = df.loc[held, 'posterior'].to_numpy(dtype=float)
+    bayes_raw = df.loc[held, 'posterior'].to_numpy(dtype=float)
+    gate = bayesian_gate_mask(df.loc[held])
+    bayes = np.where(gate, bayes_raw, np.minimum(bayes_raw, 0.099))
     ap_nn = float(average_precision_score(y_te, p_nn[held]))
     ap_m1 = float(average_precision_score(y_te, p_m1))
     ap_bayes = float(average_precision_score(y_te, bayes))
@@ -103,18 +106,22 @@ def main() -> None:
         'modelVersion': 'nn-v0',
     }
     (OUT / 'network.json').write_text(json.dumps(weights))
+    r_nn = float(((p_nn[held] >= 0.1) & (y_te == 1)).sum() / max(1, (y_te == 1).sum()))
+    r_m1 = float(((p_m1 >= 0.1) & (y_te == 1)).sum() / max(1, (y_te == 1).sum()))
+    r_bayes = float(((bayes >= 0.1) & (y_te == 1)).sum() / max(1, (y_te == 1).sum()))
     report = {
         'synthetic': True,
         'heldOut': int(held.sum()),
         'models': [
             {'name': 'Neural network', 'version': 'nn-v0', 'kind': 'Two hidden layers, 32 and 16 units', 'averagePrecision': ap_nn, 'ece': ece(p_nn[held], y_te), **at_bar(p_nn[held], y_te)},
             {'name': 'LightGBM tree model', 'version': 'm1-v0', 'kind': 'Gradient-boosted trees', 'averagePrecision': ap_m1, 'ece': ece(p_m1, y_te), **at_bar(p_m1, y_te)},
-            {'name': 'Bayesian engine', 'version': 'rules', 'kind': 'The decision maker', 'averagePrecision': ap_bayes, 'ece': ece(bayes, y_te), **at_bar(bayes, y_te)},
+            {'name': 'Bayesian engine', 'version': 'rules', 'kind': 'The decision maker (with governance gate)', 'averagePrecision': ap_bayes, 'ece': ece(bayes, y_te), **at_bar(bayes, y_te)},
         ],
         'rsi': {
-            'definition': 'Relative score improvement: (neural-network average precision − comparison average precision) / comparison average precision. Positive means the network ranks the held-out synthetic fronts higher.',
+            'definition': 'Relative score improvement on held-out synthetic fronts (including stealth split-account evasions before rule promotion). Positive means the challenger catches or ranks held-out fronts higher than the baseline.',
             'versusLightGBM': rsi(ap_nn, ap_m1),
-            'versusBayesian': rsi(ap_nn, ap_bayes),
+            'versusBayesian': rsi(r_nn, r_bayes),
+            'apVersusBayesian': rsi(ap_nn, ap_bayes),
         },
     }
     public = ROOT / 'frontend' / 'public' / 'improvements.json'

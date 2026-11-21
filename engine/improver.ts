@@ -7,11 +7,11 @@ export interface Metrics { recall: number; recallCi: [number, number]; fp: numbe
 export interface Proposal {
   id: string;
   createdAt: string;
-  createdBy: 'mre-improver';
+  createdBy: 'mre-improver' | string;
   patch: Record<string, Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN'>>>;
   rationale: string;
   backtest: { champion: Metrics; challenger: Metrics; mcnemarP: number };
-  status: 'proposed';
+  status: 'proposed' | 'approved' | 'rejected' | 'shadow' | 'live' | 'rolled_back';
 }
 
 export function bandOf(id: string): { minEffect: [number, number]; alpha: [number, number]; minN: [number, number] } {

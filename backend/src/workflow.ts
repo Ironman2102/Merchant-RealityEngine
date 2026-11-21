@@ -9,6 +9,8 @@ import { analyzeDataset, ENGINE_VERSION } from './algorithms/analyze';
 import { sha256 } from './adapters/canonicalDataset';
 import type { Actor, Role } from './auth';
 import { emit } from './events';
+import { getAllLabelEvents, recordLabelEvents } from './improverApi';
+import { effectiveRates } from '../../engine/learnedRates';
 import { engineLevelOf, loadWorkflow } from '../../engine/workflowConfig';
 
 export interface ApiReply { status: number; body: Record<string, unknown> }
@@ -224,12 +226,30 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
 export function labelInvestigation(id: string, body: unknown, actor: Actor): ApiReply {
   const rec = ensure(id);
   if ('status' in rec) return rec;
-  const rawLabel = ((body ?? {}) as { label?: string }).label ?? '';
+  const input = (body ?? {}) as { label?: string; origin?: string };
+  const rawLabel = input.label ?? '';
   const label = (wf().labels[rawLabel] ?? rawLabel) as Label;
   if (!LABELS.includes(label)) return fail(400, 'label must be CONFIRMED_ILLICIT, ADJUDICATED_BENIGN, or UNRESOLVED.');
   const finalize = () => {
     rec.user.label = label; delete rec.pending.label;
-    rec.learning = { updates: reliabilityUpdates(rec.result.evidence, label), profile: profileUpdates(rec.result, label) };
+    const mcc = rec.result.scenario.profile.mcc;
+    recordLabelEvents(id, mcc, rec.result.evidence, label, actor.id, input.origin);
+    const events = getAllLabelEvents();
+    const bayesianUpdates = rec.result.evidence
+      .filter(e => e.status !== 'UNKNOWN')
+      .map(e => {
+        const rate = effectiveRates(e.id, events, mcc);
+        return {
+          id: e.id,
+          name: e.name,
+          before: rate.priorSensitivity,
+          after: rate.sensitivity,
+        };
+      });
+    rec.learning = {
+      updates: bayesianUpdates.length ? bayesianUpdates : reliabilityUpdates(rec.result.evidence, label),
+      profile: profileUpdates(rec.result, label),
+    };
   };
   if (label !== 'CONFIRMED_ILLICIT') {
     if (!can(actor, wf().approvals.actions.labelBenign ?? [])) return fail(403, 'Your role cannot label cases.');

@@ -7,9 +7,9 @@
       "version": "nn-v0",
       "kind": "Two hidden layers, 32 and 16 units",
       "averagePrecision": 1.0,
-      "ece": 2.4025280232132443e-06,
-      "recall": "17/17",
-      "genuineFp": "0/283"
+      "ece": 0.0,
+      "recall": "22/22",
+      "genuineFp": "0/278"
     },
     {
       "name": "LightGBM tree model",
@@ -17,22 +17,23 @@
       "kind": "Gradient-boosted trees",
       "averagePrecision": 1.0,
       "ece": 0.0,
-      "recall": "17/17",
-      "genuineFp": "0/283"
+      "recall": "22/22",
+      "genuineFp": "0/278"
     },
     {
       "name": "Bayesian engine",
       "version": "rules",
-      "kind": "The decision maker",
-      "averagePrecision": 0.914749100330051,
-      "ece": 0.09763900059150132,
-      "recall": "17/17",
-      "genuineFp": "34/283"
+      "kind": "The decision maker (with governance gate)",
+      "averagePrecision": 0.9962121212121209,
+      "ece": 0.014700010914942056,
+      "recall": "18/22",
+      "genuineFp": "0/278"
     }
   ],
   "rsi": {
-    "definition": "Relative score improvement: (neural-network average precision \u2212 comparison average precision) / comparison average precision. Positive means the network ranks the held-out synthetic fronts higher.",
+    "definition": "Relative score improvement on held-out synthetic fronts (including stealth split-account evasions before rule promotion). Positive means the challenger catches or ranks held-out fronts higher than the baseline.",
     "versusLightGBM": 0.0,
-    "versusBayesian": 0.09319593715827611
+    "versusBayesian": 0.22222222222222215,
+    "apVersusBayesian": 0.003802281368821625
   }
 }

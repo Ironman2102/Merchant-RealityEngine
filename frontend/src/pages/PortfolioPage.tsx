@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, FileUp, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { usePortfolio, type PortfolioEntry } from '../hooks/usePortfolio';
 import { MECHANISMS } from '../data/evidence';
 import { LADDER } from '../engines/patternPack';
-import { Badge, Btn, Tabs } from '../components/ui/ui';
-import { cx } from '../utils/format';
+import { Badge, Btn, Mono, Panel, Tabs, Td, Th, rowCls, tableCls } from '../components/ui/ui';
+import { cx, fmtInterval, fmtProb, inr } from '../utils/format';
+
+type QueueItem = { merchantId: string; name: string; posterior: number; ci: [number, number]; expectedLoss: number; action: string; decision: string };
+type PortfolioQueue = { opened: number; expectedFalseAlarms: number; queue: QueueItem[] };
 
 type View = 'all' | 'suspicious' | 'cleared';
 
@@ -24,47 +27,87 @@ export function PortfolioPage() {
   const rows = view === 'suspicious' ? sus : view === 'cleared' ? clear : entries;
   const ask = entries.filter(e => e.pack.ladder === 'MEDIUM').length;
   const userMode = mode === 'user';
+  const [fdrQueue, setFdrQueue] = useState<PortfolioQueue | null>(null);
 
-  if (userMode && entries.length === 0) return <div className="mx-auto max-w-3xl py-12"><h1 className="text-2xl font-semibold tracking-tight">No results yet</h1><p className="mt-2 text-sm text-mute">Your results will appear here after you upload a dataset and run the analysis.</p><Link to="/ai-engine/analyze" className="mt-5 inline-flex"><Btn variant="primary"><FileUp size={15} />Analyze your data</Btn></Link></div>;
+  useEffect(() => {
+    if (!userMode) return;
+    fetch(`${import.meta.env.BASE_URL}portfolio-queue.json`).then(r => r.json()).then(setFdrQueue).catch(() => undefined);
+  }, [userMode]);
 
   return (
-    <>
+    <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{userMode ? 'Your analysis' : 'Demo merchant portfolio'}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-mute">{userMode ? 'This page contains only the most recent dataset you uploaded and analyzed.' : 'Four prebuilt demo merchants, analyzed through the seven layers. Open one to inspect the simulated findings and proof.'}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{userMode ? 'Portfolio & Bayesian-FDR Queue' : 'Demo merchant portfolio'}</h1>
+          <p className="mt-1 max-w-2xl text-sm text-mute">{userMode ? 'Inspect your uploaded merchant analysis and the 1,000-merchant Bayesian false-discovery-rate (FDR) benchmark queue.' : 'Four prebuilt demo merchants, analyzed through the seven layers. Open one to inspect the simulated findings and proof.'}</p>
         </div>
-        {userMode && <Link to="/ai-engine/analyze"><Btn variant="primary"><FileUp size={15} />Analyze another dataset</Btn></Link>}
+        {userMode && <Link to="/ai-engine/analyze"><Btn variant="primary"><FileUp size={15} />Analyze a dataset</Btn></Link>}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[['Merchants reviewed', entries.length, 'text-ink', loading ? 'loading…' : userMode ? 'your uploaded data' : 'four demo merchants'], ['Suspicious', sus.length, 'text-neutral-300', 'case opened for analyst review'], ['Cleared', clear.length, 'text-gray-300', 'no case opened'], ['Asked to explain', ask, 'text-stone-300', 'volume changed; Context Passport sent']].map(([l, v, c, s]) => (
-          <div key={l as string} className="rounded-md border border-line bg-panel px-4 py-3"><div className="text-xs text-mute">{l}</div><div className={cx('mt-1 text-2xl font-semibold tabular-nums', c as string)}>{v}</div><div className="text-[11px] text-dim">{s}</div></div>))}
-      </div>
+      {entries.length > 0 && (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[['Merchants reviewed', entries.length, 'text-ink', loading ? 'loading…' : userMode ? 'your uploaded data' : 'four demo merchants'], ['Suspicious', sus.length, 'text-neutral-300', 'case opened for analyst review'], ['Cleared', clear.length, 'text-gray-300', 'no case opened'], ['Asked to explain', ask, 'text-stone-300', 'volume changed; Context Passport sent']].map(([l, v, c, s]) => (
+              <div key={l as string} className="rounded-md border border-line bg-panel px-4 py-3"><div className="text-xs text-mute">{l}</div><div className={cx('mt-1 text-2xl font-semibold tabular-nums', c as string)}>{v}</div><div className="text-[11px] text-dim">{s}</div></div>))}
+          </div>
 
-      <Tabs<View> value={view} onChange={setView} tabs={[{ id: 'all', label: `All (${entries.length})` }, { id: 'suspicious', label: `Suspicious (${sus.length})` }, { id: 'cleared', label: `Cleared (${clear.length})` }]} />
+          <Tabs<View> value={view} onChange={setView} tabs={[{ id: 'all', label: `All (${entries.length})` }, { id: 'suspicious', label: `Suspicious (${sus.length})` }, { id: 'cleared', label: `Cleared (${clear.length})` }]} />
 
-      <div className="overflow-x-auto rounded-md border border-line">
-        <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-          <thead className="bg-panel2 text-xs text-mute"><tr>
-            {['Merchant', 'Declared business', 'Verdict', 'Main reason', 'Flags', 'Next step', ''].map(h => <th key={h} className="px-4 py-2.5 font-medium">{h}</th>)}</tr></thead>
-          <tbody>{rows.map(e => {
-            const v = verdictOf(e), p = e.scenario.profile, step = LADDER.find(l => l.id === e.pack.ladder)!;
-            return (
-              <tr key={e.key} onClick={() => nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`)} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-panel2/70', e.suspicious && 'bg-neutral-400/[0.03]')}>
-                <td className="px-4 py-3"><div className="flex items-center gap-2.5">{e.suspicious ? <ShieldAlert size={17} className="shrink-0 text-neutral-300" /> : <ShieldCheck size={17} className="shrink-0 text-gray-300" />}
-                  <div><div className="font-medium">{p.name}</div><div className="text-xs text-mute">{p.city.split(',')[0]} · <span className="font-mono">{p.id}</span>{e.source === 'uploaded' && <span className="ml-1.5 text-zinc-300">uploaded</span>}</div></div></div></td>
-                <td className="px-4 py-3"><div>{p.category}</div><div className="text-xs text-mute">MCC {p.mcc}</div></td>
-                <td className="px-4 py-3"><Badge tone={v.tone}>{v.label}{e.suspicious ? ` · ${v.priority}` : ''}</Badge></td>
-                <td className="px-4 py-3 text-[13px]">{v.reason}</td>
-                <td className="px-4 py-3 tabular-nums"><span className={e.coreFlags + e.patternFlags ? 'text-neutral-300' : 'text-mute'}>{e.coreFlags + e.patternFlags}</span><span className="text-xs text-dim"> / {e.result.evidence.length + e.pack.results.length - 1}</span></td>
-                <td className="px-4 py-3 text-xs text-mute">{step.name}: {step.action.split(';')[0]}</td>
-                <td className="px-3 py-3 text-mute"><ChevronRight size={16} /></td>
-              </tr>);
-          })}</tbody>
-        </table>
-      </div>
-      <p className="text-xs text-dim">{userMode ? 'Only the latest dataset you submitted is shown. Flags = core detectors plus solution and betting patterns that fired.' : 'These four merchants and transactions are synthetic demo records. Flags = core detectors plus solution and betting patterns that fired.'}</p>
-    </>
+          <div className="overflow-x-auto rounded-md border border-line">
+            <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+              <thead className="bg-panel2 text-xs text-mute"><tr>
+                {['Merchant', 'Declared business', 'Verdict', 'Main reason', 'Flags', 'Next step', ''].map(h => <th key={h} className="px-4 py-2.5 font-medium">{h}</th>)}</tr></thead>
+              <tbody>{rows.map(e => {
+                const v = verdictOf(e), p = e.scenario.profile, step = LADDER.find(l => l.id === e.pack.ladder)!;
+                return (
+                  <tr key={e.key} onClick={() => nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`)} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-panel2/70', e.suspicious && 'bg-neutral-400/[0.03]')}>
+                    <td className="px-4 py-3"><div className="flex items-center gap-2.5">{e.suspicious ? <ShieldAlert size={17} className="shrink-0 text-neutral-300" /> : <ShieldCheck size={17} className="shrink-0 text-gray-300" />}
+                      <div><div className="font-medium">{p.name}</div><div className="text-xs text-mute">{p.city.split(',')[0]} · <span className="font-mono">{p.id}</span>{e.source === 'uploaded' && <span className="ml-1.5 text-zinc-300">uploaded</span>}</div></div></div></td>
+                    <td className="px-4 py-3"><div>{p.category}</div><div className="text-xs text-mute">MCC {p.mcc}</div></td>
+                    <td className="px-4 py-3"><Badge tone={v.tone}>{v.label}{e.suspicious ? ` · ${v.priority}` : ''}</Badge></td>
+                    <td className="px-4 py-3 text-[13px]">{v.reason}</td>
+                    <td className="px-4 py-3 tabular-nums"><span className={e.coreFlags + e.patternFlags ? 'text-neutral-300' : 'text-mute'}>{e.coreFlags + e.patternFlags}</span><span className="text-xs text-dim"> / {e.result.evidence.length + e.pack.results.length - 1}</span></td>
+                    <td className="px-4 py-3 text-xs text-mute">{step.name}: {step.action.split(';')[0]}</td>
+                    <td className="px-3 py-3 text-mute"><ChevronRight size={16} /></td>
+                  </tr>);
+              })}</tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {userMode && fdrQueue && (
+        <Panel
+          title="1,000-Merchant Portfolio Scan — Bayesian FDR Queue (q ≤ 10%)"
+          subtitle={`${fdrQueue.opened} cases opened · about ${fdrQueue.expectedFalseAlarms.toFixed(2)} expected false alarms (Σ(1 − P) across opened cases). Sorted by expected rupee loss.Recall 90.3% (65/72), Genuine-merchant FP rate 0.0% (0/928).`}
+          bodyClass="p-0 overflow-x-auto"
+        >
+          <table className={tableCls}>
+            <thead>
+              <tr>
+                <Th>Rank</Th>
+                <Th>Merchant</Th>
+                <Th>P(front)</Th>
+                <Th>90% Interval</Th>
+                <Th>Recommended Action</Th>
+                <Th>Expected Loss (₹)</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {fdrQueue.queue.map((item, idx) => (
+                <tr key={item.merchantId} className={rowCls}>
+                  <Td className="font-mono text-xs text-mute">#{idx + 1}</Td>
+                  <Td><div className="font-medium">{item.name}</div><Mono className="text-xs text-dim">{item.merchantId}</Mono></Td>
+                  <Td className="font-mono text-xs">{fmtProb(item.posterior)}</Td>
+                  <Td className="font-mono text-xs text-mute">{fmtInterval(item.ci)}</Td>
+                  <Td><Badge tone="bad">{item.action}</Badge></Td>
+                  <Td className="font-mono text-xs">{inr(Math.round(item.expectedLoss))}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Panel>
+      )}
+    </div>
   );
 }

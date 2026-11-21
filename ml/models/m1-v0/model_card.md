@@ -2,7 +2,7 @@
 
 Purpose: second opinion on P(front). It does not choose the action.
 
-Data: synthetic portfolio (`ml/data/features.csv`), SHA-256 cbaf3f8a81f842c20f07358f9a697285924e873382fefe7dd41ebc5fc5700d5b.
+Data: synthetic portfolio (`ml/data/features.csv`), SHA-256 e72a157e63317e6c5f00ecc425004871f4284701762c1b12860876a92717aef1.
 
 Features: 112 columns from the TypeScript engine. Monotone +1 on llr_* and fired_*.
 

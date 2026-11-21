@@ -51,6 +51,12 @@ export default function (): number {
   const dir = mkdtempSync(join(tmpdir(), 'mre-csv-'));
   writeFileSync(join(dir, 'note.csv'), toCsv([['a', 'b,c'], ['1', '2']]));
   check('temp wrote', parseCsv(readFileSync(join(dir, 'note.csv'), 'utf8'))[0][1] === 'b,c');
+  writeFileSync(join(dir, 'merchants.csv'), readFileSync('examples/alt-pa/merchants.csv', 'utf8'));
+  writeFileSync(join(dir, 'transactions.csv'), readFileSync('examples/alt-pa/transactions.csv', 'utf8'));
+  writeFileSync(join(dir, 'weekly.csv'), readFileSync('examples/alt-pa/weekly.csv', 'utf8'));
+  const noCtx = mapExport(dir, 'adapters/mappings/alt-pa-example.json', KEY);
+  const sweetNoCtx = noCtx.datasets.find(d => d.merchant.id === 'M-SCB-001');
+  check('alt-pa scales merchant paise amounts without context.json', !!sweetNoCtx && sweetNoCtx.merchant.ticketMin === 150 && sweetNoCtx.merchant.ticketMax === 1200 && sweetNoCtx.merchant.baselineWeekly === 180000);
   if (prev === undefined) delete process.env.MRE_HASH_KEY;
   else process.env.MRE_HASH_KEY = prev;
   return bad;

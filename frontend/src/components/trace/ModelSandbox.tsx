@@ -25,11 +25,19 @@ export function ModelSandbox({ onReady }: { onReady?: () => void }) {
       if (body.online) onReady?.();
     } finally { setBusy(false); }
   };
+  const stop = async () => {
+    setBusy(true);
+    try {
+      await fetch('/api/model/stop', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+      await load();
+    } finally { setBusy(false); }
+  };
   if (!host) return <p className="text-sm text-mute">Checking the model sandbox…</p>;
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
       <span className={host.online ? 'text-gray-300' : 'text-mute'}>{host.online ? 'Model sandbox is running. Starting or stopping it does not change the case decision.' : (host.detail || 'Model sandbox is stopped.')}</span>
       {!host.online && host.configured !== false && <Btn size="sm" variant="primary" onClick={() => void start()} disabled={busy}>{busy ? 'Starting…' : 'Start model sandbox'}</Btn>}
+      {host.online && host.configured && <Btn size="sm" onClick={() => void stop()} disabled={busy}>{busy ? 'Stopping…' : 'Stop sandbox'}</Btn>}
     </div>
   );
 }

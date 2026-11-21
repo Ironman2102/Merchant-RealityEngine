@@ -19,12 +19,13 @@ These figures are copied from the report files. They are synthetic. They are not
 
 | Figure | Value | Source |
 |---|---|---|
-| Recall | 0.684 (39/57), Wilson 0.555–0.790 | `reports/benchmark.md` |
-| Precision | 0.975 (39/40), Wilson 0.871–0.996 | `reports/benchmark.md` |
-| Genuine-merchant false-positive rate | 0.001 (1/943), Wilson 0.000–0.006 | `reports/benchmark.md` |
+| Recall | 0.903 (65/72), Wilson 0.813–0.952 | `reports/benchmark.md` |
+| Precision | 1.000 (65/65), Wilson 0.944–1.000 | `reports/benchmark.md` |
+| Genuine-merchant false-positive rate | 0.000 (0/928), Wilson 0.000–0.004 | `reports/benchmark.md` |
+| Telegram (no-website) recall | 0.857 (12/14), Wilson 0.601–0.960 | `reports/benchmark.md` |
 | M1 AUC-PR | 1.000, bootstrap 1.000–1.000 | `reports/model-comparison.md` |
-| Bayesian AUC-PR | 0.915, bootstrap 0.805–1.000 | `reports/model-comparison.md` |
-| Opened queue | 40 cases, expected false alarms 0.02 | `reports/benchmark.md` |
+| Bayesian AUC-PR | 0.996, bootstrap 0.982–1.000 | `reports/model-comparison.md` |
+| Opened queue | 65 cases, expected false alarms 1.68 | `reports/benchmark.md` |
 
 The trained model is a second opinion. It does not choose the action. Throughput on this machine is in `reports/perf.md`. The red-team rate is in `reports/redteam.md`.
 
@@ -115,12 +116,9 @@ Stack: React 18, TypeScript, Vite, Tailwind CSS v4, Recharts, React Flow (`@xyfl
 
 ## Known limitations
 
-- 20 of the 112 catalogued detection patterns run as live detectors; the rest appear in the catalogue only.
-- Fusion weights and thresholds are transparent heuristics, not calibrated models. No ML is trained.
-- Website, domain-category and purchaser-verification data are fixtures. No external site is contacted.
-- Graph layout is a simple radial layout from the merchant node.
-- Portfolio indicators on the overview and audit pages are synthetic constants adjusted by the current run.
-- In the rotation scenario, rotation leads transaction laundering by a small margin. That is deliberate: shared link hosting is genuinely ambiguous.
-- The production bundle is a single chunk (~930 kB). Code-splitting is a straightforward later improvement.
-- Case storage is local JSON for development, not shared database storage. Authentication, role-based access, tenant isolation and live partner connectors are not configured.
-- The AI Engine currently accepts the canonical JSON dataset format. It does not connect to a payment provider, bank or merchant system.
+- 25 of the 112 catalogued detection patterns run as live statistical detectors in the Bayesian engine, alongside 10 solution and betting patterns (`S1–S7`, `N1–N3`); the remaining catalogue slots are design counts.
+- Category norms (`rules/mcc.json`) and initial detector sensitivities/false-positive rates (`rules/detectors.json`) are expert priors until calibrated on real labelled merchants in a shadow pilot.
+- Trained ML models (`M1` LightGBM with TreeSHAP and `nn-v0` Neural Network) are trained on the 1,000-merchant synthetic portfolio and serve strictly as a second opinion; they never override the governed Bayesian decision.
+- Website, domain-category and purchaser-verification data are synthetic fixtures. No external site is contacted.
+- Controlled self-improvement (`T14` Bayesian label learning and `T15–T16` red-team rule proposals with Wilson CIs and McNemar backtests) requires explicit maker/checker approval by a distinct reviewer/admin; the engine never modifies its own rules autonomously.
+- The evidence pack produces draft FIU-IND STR facts and RBI PA Master Direction mappings for the Principal Officer to review; it is not an automatic portal filing.

@@ -52,6 +52,7 @@ function merchantFromRow(header: string[], row: string[], mapping: Mapping, late
   const warnings: string[] = [];
   const m = mapping.merchants;
   const get = (key: string) => col(header, row, specOf(m[key]).column);
+  const scale = mapping.amountUnit === 'paise' ? 0.01 : 1;
   const open = num(get('openHour'));
   const close = num(get('closeHour'));
   const onboarded = get('onboardedOn');
@@ -63,6 +64,9 @@ function merchantFromRow(header: string[], row: string[], mapping: Mapping, late
   const domains = specOf(m.declaredDomains);
   const declaredDomains = col(header, row, domains.column).split(domains.split ?? '|').map(s => s.trim()).filter(Boolean);
   const home = get('homeState');
+  const ticketMinRaw = num(get('ticketMin'));
+  const ticketMaxRaw = num(get('ticketMax'));
+  const baselineWeeklyRaw = num(get('baselineWeekly'));
   const merchant = {
     id: get('id'),
     name: get('name'),
@@ -70,14 +74,14 @@ function merchantFromRow(header: string[], row: string[], mapping: Mapping, late
     mcc: get('mcc'),
     category: get('category'),
     products: [],
-    ticketMin: num(get('ticketMin')) ?? 0,
-    ticketMax: num(get('ticketMax')) ?? 0,
+    ticketMin: ticketMinRaw !== undefined ? ticketMinRaw * scale : 0,
+    ticketMax: ticketMaxRaw !== undefined ? ticketMaxRaw * scale : 0,
     hours: [open ?? 0, close ?? 24] as [number, number],
     catchment: (get('catchment') === 'NATIONAL' ? 'NATIONAL' : 'LOCAL') as 'LOCAL' | 'NATIONAL',
     localStates: home ? [home] : [],
     expectedRoundShare: 0.06,
     seasonalPeak: 1,
-    baselineWeekly: num(get('baselineWeekly')) ?? 0,
+    baselineWeekly: baselineWeeklyRaw !== undefined ? baselineWeeklyRaw * scale : 0,
     accountAgeDays,
     declaredDomains,
     declaredChannels: [],
@@ -193,7 +197,20 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
     if (!built.merchant.id) continue;
     const extra = context.byMerchant?.[built.merchant.id] ?? {};
     const { peerTransactions, ...restExtra } = extra as Partial<MreDataset> & { peerTransactions?: DatasetTransaction[] };
-    const merchant = (restExtra.merchant as MerchantProfile | undefined) ?? built.merchant;
+    const extraMerchant = restExtra.merchant as MerchantProfile | undefined;
+    const merchant: MerchantProfile = extraMerchant
+      ? {
+          ...extraMerchant,
+          ...built.merchant,
+          products: extraMerchant.products ?? built.merchant.products,
+          localStates: extraMerchant.localStates?.length ? extraMerchant.localStates : built.merchant.localStates,
+          expectedRoundShare: extraMerchant.expectedRoundShare ?? built.merchant.expectedRoundShare,
+          seasonalPeak: extraMerchant.seasonalPeak ?? built.merchant.seasonalPeak,
+          accountAgeDays: extraMerchant.accountAgeDays ?? built.merchant.accountAgeDays,
+          declaredChannels: extraMerchant.declaredChannels ?? built.merchant.declaredChannels,
+          declaredActivity: extraMerchant.declaredActivity ?? built.merchant.declaredActivity,
+        }
+      : built.merchant;
     const peers = (peerTransactions ?? []).map(t => {
       const copy = { ...t };
       for (const f of ID_FIELDS) {

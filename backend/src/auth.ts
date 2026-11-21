@@ -134,6 +134,23 @@ export function loginWithIdToken(idToken: string, check: OidcCheck): { token: st
 
 export function logout(token: string): void { getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(tokenHash(token)); }
 
+/** Switch active session to a demo role persona (for demonstrating two-person maker/checker approval). Requires an already signed-in user. */
+export function switchDemoRole(role: Role): { token: string; actor: Actor } | null {
+  if (!ROLES.includes(role)) return null;
+  const username = `demo-${role}`;
+  const db = getDb();
+  const existing = db.prepare('SELECT id, username, role, disabled FROM users WHERE username = ?').get(username) as { id: number; username: string; role: Role; disabled: number } | undefined;
+  let actor: Actor;
+  if (!existing) {
+    actor = createUser(username, `demo-role-secret-${role}-2026`, role);
+  } else if (existing.disabled) {
+    return null;
+  } else {
+    actor = { id: existing.id, username: existing.username, role };
+  }
+  return { token: issueSession(actor), actor };
+}
+
 export function actorFromToken(token: string | undefined): Actor | null {
   if (!token) return null;
   const signed = actorFromSigned(token);

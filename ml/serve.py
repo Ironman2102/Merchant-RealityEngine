@@ -19,17 +19,13 @@ _net: dict | None = None
 
 def ready() -> bool:
     global _booster, _cols, _cal, _net
-    if NET.exists():
-        if _net is None:
-            _net = json.loads(NET.read_text())
-        return True
-    if not (MODEL / 'model.txt').exists():
-        return False
-    if _booster is None:
+    if NET.exists() and _net is None:
+        _net = json.loads(NET.read_text())
+    if (MODEL / 'model.txt').exists() and _booster is None:
         _booster = lgb.Booster(model_file=str(MODEL / 'model.txt'))
         _cols = json.loads((MODEL / 'features.json').read_text())
         _cal = json.loads((MODEL / 'calibrator.json').read_text())
-    return True
+    return _booster is not None or _net is not None
 
 def _nn_forward(row: np.ndarray) -> tuple[float, list[dict]]:
     assert _net is not None
@@ -65,16 +61,20 @@ class ScoreIn(BaseModel):
 
 @app.get('/health')
 def health():
-    return {'status': 'ok' if ready() else 'no-model', 'model': 'nn-v0' if _net is not None else 'm1-v0'}
+    ok = ready()
+    return {'status': 'ok' if ok else 'no-model', 'model': 'm1-v0' if _booster is not None else ('nn-v0' if _net is not None else None), 'nn': _net is not None}
 
 @app.post('/score')
 def score(body: ScoreIn):
     if not ready():
         return {'p_raw': None, 'p': None, 'drivers': [], 'modelVersion': None}
+    nn_out = None
     if _net is not None:
-        row = np.array([float(body.features.get(c, 0)) for c in _net['features']])
-        p, drivers = _nn_forward(row)
-        return {'p_raw': p, 'p': p, 'drivers': drivers, 'modelVersion': 'nn-v0'}
+        nn_row = np.array([float(body.features.get(c, 0)) for c in _net['features']])
+        nn_p, nn_drivers = _nn_forward(nn_row)
+        nn_out = {'p': nn_p, 'drivers': nn_drivers, 'modelVersion': 'nn-v0'}
+    if _booster is None and nn_out is not None:
+        return {'p_raw': nn_out['p'], 'p': nn_out['p'], 'drivers': nn_out['drivers'], 'modelVersion': 'nn-v0'}
     row = np.array([[float(body.features.get(c, 0)) for c in _cols]])
     raw = float(_booster.predict(row)[0])
     xs = np.asarray(_cal['X_thresholds_'], dtype=float)
@@ -83,4 +83,4 @@ def score(body: ScoreIn):
     contrib = _booster.predict(row, pred_contrib=True)[0][:-1]
     order = np.argsort(-np.abs(contrib))[:5]
     drivers = [{'feature': _cols[i], 'shap': float(contrib[i])} for i in order]
-    return {'p_raw': raw, 'p': p, 'drivers': drivers, 'modelVersion': 'm1-v0'}
+    return {'p_raw': raw, 'p': p, 'drivers': drivers, 'modelVersion': 'm1-v0', **({'nn': nn_out} if nn_out else {})}

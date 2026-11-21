@@ -39,6 +39,39 @@ def mcnemar(a: np.ndarray, b: np.ndarray) -> float:
     tail = sum(comb(n, k) for k in range(0, min(b01, b10) + 1))
     return min(1.0, 2 * tail / (2 ** n))
 
+def bayesian_gate_mask(df: pd.DataFrame) -> np.ndarray:
+    """Reconstruct the Bayesian governance gate (>=2 provenances or >=3 families with family LLR >= 0.5)."""
+    detectors = json.loads((ROOT / 'rules' / 'detectors.json').read_text())
+    engine = json.loads((ROOT / 'rules' / 'engine.json').read_text())
+    rho = float(engine.get('familyRho', 0.3))
+    min_nats = float(engine['gate']['minNats'])
+    min_prov = int(engine['gate']['minProvenances'])
+    min_fam = int(engine['gate']['minFamiliesSingleProvenance'])
+    by_fam: dict[str, list[tuple[str, str]]] = {}
+    for det_id, cfg in detectors.items():
+        if det_id.startswith('_') or not isinstance(cfg, dict):
+            continue
+        col = f'llr_{det_id}'
+        if col in df.columns:
+            by_fam.setdefault(cfg['family'], []).append((col, cfg['provenance']))
+    passed = []
+    for _, row in df.iterrows():
+        fam_llrs = {}
+        prov_nats: dict[str, float] = {}
+        for fam, items in by_fam.items():
+            pos = sorted([float(row[c]) for c, _ in items if float(row[c]) > 0], reverse=True)
+            neg = sorted([float(row[c]) for c, _ in items if float(row[c]) < 0])
+            p_sum = (pos[0] + rho * sum(pos[1:])) if pos else 0.0
+            n_sum = (neg[0] + rho * sum(neg[1:])) if neg else 0.0
+            fam_llrs[fam] = p_sum + n_sum
+            pos_items = sorted([(float(row[c]), prov) for c, prov in items if float(row[c]) > 0], reverse=True)
+            for idx, (val, prov) in enumerate(pos_items):
+                prov_nats[prov] = prov_nats.get(prov, 0.0) + val * (rho if idx else 1.0)
+        strong_fam = sum(1 for v in fam_llrs.values() if v >= min_nats)
+        strong_prov = sum(1 for v in prov_nats.values() if v >= min_nats)
+        passed.append(strong_prov >= min_prov or strong_fam >= min_fam)
+    return np.asarray(passed, dtype=bool)
+
 def main() -> None:
     df = pd.read_csv(ROOT / 'ml' / 'data' / 'features.csv')
     test_ids = set(pd.read_csv(ROOT / 'ml' / 'data' / 'test_ids.csv')['merchant_id'].astype(str))
@@ -47,7 +80,9 @@ def main() -> None:
     raw = booster.predict(held[cols])
     p = apply_iso(np.asarray(raw, dtype=float), cal)
     y = held['label'].to_numpy()
-    bayes = held['posterior'].to_numpy()
+    bayes_raw = held['posterior'].to_numpy()
+    gate = bayesian_gate_mask(held)
+    bayes = np.where(gate, bayes_raw, np.minimum(bayes_raw, 0.099))
     rng = np.random.default_rng(7)
     def boot_ap(score: np.ndarray) -> tuple[float, float, float]:
         point = float(average_precision_score(y, score))
@@ -61,13 +96,13 @@ def main() -> None:
         return point, float(lo), float(hi)
     m_ap, m_lo, m_hi = boot_ap(p)
     b_ap, b_lo, b_hi = boot_ap(bayes)
-    def at(score: np.ndarray) -> tuple[int, int, int, int]:
-        pred = score >= 0.10
+    def at(score: np.ndarray, gated: np.ndarray | None = None) -> tuple[int, int, int, int]:
+        pred = (score >= 0.10) & (gated if gated is not None else True)
         tp = int(((pred == 1) & (y == 1)).sum()); fp = int(((pred == 1) & (y == 0)).sum())
         fn = int(((pred == 0) & (y == 1)).sum()); tn = int(((pred == 0) & (y == 0)).sum())
         return tp, fp, fn, tn
     mt, mf, mfn, mtn = at(p)
-    bt, bf, bfn, btn = at(bayes)
+    bt, bf, bfn, btn = at(bayes_raw, gate)
     better = 'M1' if m_ap > b_ap else 'the Bayesian posterior'
     text = f"""# Model comparison (synthetic)
 

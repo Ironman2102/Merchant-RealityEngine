@@ -1,13 +1,14 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, switchDemoRole, userCount, type Actor, type Role } from './auth';
 import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
-import { modelHostConfigured, modelOnline, startModelSandbox } from './modelHost';
+import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 import { scoreWithHost } from './ml';
 import { getCase, putCase } from './store';
+import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
 const LIMIT = 2_000_000;
 
@@ -73,6 +74,32 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
     if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
+    if (path === '/auth/demo-switch' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in first before switching demo roles.' } });
+      const b = await readBody(req) as { role?: unknown };
+      const switched = typeof b.role === 'string' ? switchDemoRole(b.role as Role) : null;
+      if (!switched) return send(res, { status: 400, body: { error: 'Role must be analyst, reviewer, legal, or admin.' } });
+      return send(res, { status: 200, body: { user: switched.actor } }, { 'set-cookie': sessionCookie(switched.token) });
+    }
+    if (path === '/rules/status' && method === 'GET') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to view self-improvement status.' } });
+      return send(res, getRulesStatus());
+    }
+    if (path === '/rules/proposals/run' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to run the red-team improver.' } });
+      const b = await readBody(req) as { mode?: string };
+      return send(res, runImproverProposal(actor, b.mode === 'self' ? 'self' : 'mre-improver'));
+    }
+    if (path === '/rules/rollback' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to roll back rules.' } });
+      return send(res, rollbackRulesLive(actor));
+    }
+    const rulesMatch = path.match(/^\/rules\/proposals\/([^/]+)\/(approve|promote)$/);
+    if (rulesMatch && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to approve or promote rule proposals.' } });
+      const [, propId, propAction] = rulesMatch;
+      return send(res, propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor));
+    }
     if (path === '/model' && method === 'GET') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to see the model sandbox.' } });
       const online = await modelOnline();
@@ -82,6 +109,11 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to start the model sandbox.' } });
       const started = await startModelSandbox();
       return send(res, { status: started.state === 'unconfigured' ? 503 : 200, body: { ...started, configured: modelHostConfigured() } });
+    }
+    if (path === '/model/stop' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to stop the model sandbox.' } });
+      await stopModelSandbox();
+      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model sandbox stopped.' } });
     }
 
     if (path.startsWith('/v1')) {

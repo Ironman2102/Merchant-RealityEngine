@@ -15,10 +15,14 @@ export interface PortfolioRow {
 }
 
 export function scorePortfolio(rows: PortfolioRow[], q = RULES.engine.portfolio.fdrQ): { queue: PortfolioRow[]; opened: number; expectedFalseAlarms: number } {
-  const m = rows.length;
-  const byP = [...rows].sort((a, b) => (1 - a.posterior) - (1 - b.posterior) || a.merchantId.localeCompare(b.merchantId));
+  const candidates = rows.filter(r => r.decision === 'OPEN_CASE');
+  const byP = [...candidates].sort((a, b) => (1 - a.posterior) - (1 - b.posterior) || a.merchantId.localeCompare(b.merchantId));
   let keep = 0;
-  for (let i = 0; i < m; i++) if ((1 - byP[i].posterior) <= ((i + 1) / m) * q) keep = i + 1;
+  let runningFalseAlarms = 0;
+  for (let i = 0; i < byP.length; i++) {
+    runningFalseAlarms += 1 - byP[i].posterior;
+    if (runningFalseAlarms / (i + 1) <= q) keep = i + 1;
+  }
   const opened = byP.slice(0, keep);
   const expectedFalseAlarms = opened.reduce((s, r) => s + (1 - r.posterior), 0);
   const queue = [...opened].sort((a, b) => b.expectedLoss - a.expectedLoss || a.merchantId.localeCompare(b.merchantId));

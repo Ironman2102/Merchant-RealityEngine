@@ -1,6 +1,6 @@
 [build]
   command = "npm run build && cp dist-console/console.html dist-console/index.html"
-  publish = "dist-console"
+  publish = "frontend/dist"
 
 [functions]
   directory = "netlify/functions"

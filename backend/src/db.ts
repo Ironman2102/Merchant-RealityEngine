@@ -31,6 +31,15 @@ CREATE TABLE IF NOT EXISTS idempotency (
 CREATE TABLE IF NOT EXISTS deliveries (
   id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT NOT NULL, case_id TEXT NOT NULL, url TEXT NOT NULL,
   ok INTEGER NOT NULL, attempts INTEGER NOT NULL, at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS label_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT NOT NULL, detector TEXT NOT NULL, mcc TEXT NOT NULL,
+  fired INTEGER NOT NULL, label TEXT NOT NULL, actor_id INTEGER, origin TEXT, at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS rules_proposals (
+  id TEXT PRIMARY KEY, created_at TEXT NOT NULL, created_by TEXT NOT NULL, status TEXT NOT NULL,
+  approved_by TEXT, promoted_version TEXT, proposal_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS rules_audit (
+  seq INTEGER PRIMARY KEY, at TEXT NOT NULL, actor TEXT NOT NULL, actor_id INTEGER,
+  action TEXT NOT NULL, detail TEXT NOT NULL, prev_hash TEXT NOT NULL, hash TEXT NOT NULL);
 `;
 
 export function getDb(): DatabaseSync {

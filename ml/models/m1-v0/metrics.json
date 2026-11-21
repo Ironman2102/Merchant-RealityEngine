@@ -3,5 +3,5 @@
   "auc_pr_lo": 1.0,
   "auc_pr_hi": 1.0,
   "ece": 0.0,
-  "bayes_auc_pr": 0.914749100330051
+  "bayes_auc_pr": 0.9962121212121209
 }
