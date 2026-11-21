@@ -28,29 +28,54 @@ export async function modelOnline(): Promise<boolean> {
   } catch { return false; }
 }
 
+async function modelUpToDate(): Promise<boolean> {
+  const url = process.env.MRE_ML_URL;
+  if (!url) return false;
+  try {
+    const res = await fetch(`${url.replace(/\/$/, '')}/health`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) return false;
+    const body = await res.json() as { status?: string; nn?: boolean };
+    return body.status === 'ok' && body.nn === true;
+  } catch { return false; }
+}
+
+const RAW_GH = 'https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/hackathon-impl';
+
 async function launchServer(id: string): Promise<void> {
   const info = await daytona(`/sandbox/${encodeURIComponent(id)}`);
   const realId = String(info.json.id || id);
   const base = String(info.json.toolboxProxyUrl || '');
   if (!base) return;
+  const cmd = [
+    'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 &&',
+    `curl -sf http://127.0.0.1:8790/health | grep -q '"nn":true' || (`,
+    `curl -fsSL ${RAW_GH}/ml/serve.py -o /tmp/mre/ml/serve.py &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/m1-v0/model.txt -o /tmp/mre/ml/models/m1-v0/model.txt &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/m1-v0/calibrator.json -o /tmp/mre/ml/models/m1-v0/calibrator.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/m1-v0/features.json -o /tmp/mre/ml/models/m1-v0/features.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/nn-v0/network.json -o /tmp/mre/ml/models/nn-v0/network.json &&`,
+    `(pkill -f "uvicorn ml.serve:app" || true) &&`,
+    `cd /tmp/mre && nohup python3 -m uvicorn ml.serve:app --host 0.0.0.0 --port 8790 >/tmp/m1.log 2>&1 &`,
+    ')',
+  ].join(' ');
   await fetch(`${base.replace(/\/$/, '')}/${realId}/process/execute`, {
     method: 'POST',
     headers: { authorization: `Bearer ${key()}`, 'content-type': 'application/json' },
     body: JSON.stringify({
-      command: 'curl -sf http://127.0.0.1:8790/health >/dev/null || (cd /tmp/mre && nohup python3 -m uvicorn ml.serve:app --host 0.0.0.0 --port 8790 >/tmp/m1.log 2>&1 &)',
+      command: cmd,
       cwd: '/tmp/mre',
-      timeout: 20,
+      timeout: 25,
     }),
-    signal: AbortSignal.timeout(25000),
+    signal: AbortSignal.timeout(30000),
   });
 }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-/** Start the named sandbox if it is stopped, then make sure the model process is listening. */
+/** Start the named sandbox if it is stopped, sync the latest dual-model files from GitHub, and ensure the server is listening. */
 export async function startModelSandbox(): Promise<{ online: boolean; state: string; detail: string }> {
   if (!modelHostConfigured()) return { online: false, state: 'unconfigured', detail: 'The server has no Daytona key, so this site cannot start the sandbox.' };
-  if (await modelOnline()) return { online: true, state: 'started', detail: 'The model is already answering.' };
+  if (await modelUpToDate()) return { online: true, state: 'started', detail: 'The model is already answering (LightGBM M1 + Neural Network).' };
   const id = encodeURIComponent(sandboxName());
   const started = await daytona(`/sandbox/${id}/start`, 'POST');
   if (started.status >= 400 && started.status !== 400) {
@@ -59,7 +84,6 @@ export async function startModelSandbox(): Promise<{ online: boolean; state: str
   let state = String(started.json.state || '');
   const until = Date.now() + 20000;
   while (Date.now() < until) {
-    if (await modelOnline()) return { online: true, state: state || 'started', detail: 'The model is answering.' };
     const got = await daytona(`/sandbox/${id}`);
     state = String(got.json.state || state);
     if (state.toLowerCase() === 'started') break;
@@ -68,7 +92,7 @@ export async function startModelSandbox(): Promise<{ online: boolean; state: str
   await launchServer(sandboxName());
   const readyBy = Date.now() + 20000;
   while (Date.now() < readyBy) {
-    if (await modelOnline()) return { online: true, state: 'started', detail: 'The model is answering.' };
+    if (await modelOnline()) return { online: true, state: 'started', detail: 'The model is answering (synced latest LightGBM M1 + Neural Network).' };
     await sleep(2000);
   }
   return { online: false, state: state || 'starting', detail: 'The sandbox was asked to start. Press the button again in a moment if the model is still offline.' };
