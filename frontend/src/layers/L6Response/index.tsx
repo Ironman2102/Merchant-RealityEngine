@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, Lock, Power, Store } from 'lucide-react';
 import { useInvestigation } from '../../hooks/useInvestigation';
+import { useQuantMode } from '../../hooks/useQuantMode';
 import { LayerFrame } from '../../components/common/LayerFrame';
 import { Badge, Btn, Callout, Panel, Mono, Td, Th, rowCls, tableCls } from '../../components/ui/ui';
 import { LEVEL_ORDER, RESPONSE_LEVELS } from '../../data/evidence';
@@ -10,6 +11,7 @@ import { useState } from 'react';
 
 export function L6View() {
   const { result: r, user, patch, setLevel, execute, audit, caseId, pending, approve, syncError } = useInvestigation();
+  const { quant } = useQuantMode();
   const [escrow, setEscrow] = useState(false);
   const [selfRefusal, setSelfRefusal] = useState('');
   const onApprove = async (ok: boolean) => {
@@ -28,7 +30,39 @@ export function L6View() {
   const log = caseId ? audit.filter(a => /^L\d/.test(a.action)) : audit.filter(a => a.actor === 'MRE response engine');
   const isFlow = plan.level === 'L3' || plan.level === 'L4';
   return (
-    <LayerFrame n={6} evidenceCount={plan.actions.length} evidenceLabel="actions proposed (none executed)" summary={<>Selected level <b className="text-ink">{plan.level} {meta.name}</b>{plan.level === plan.recommended ? ' (matches the analyst recommendation)' : ` (analyst recommended ${plan.recommended})`}. Nothing runs until you execute it.</>}>
+    <LayerFrame
+      n={6}
+      brief={{
+        checks: 'Picks the narrowest action that stops the harm without hurting honest sales (L0–L5), and enforces two-person maker/checker approval before any payment link or fund restriction takes effect.',
+        happened: (
+          <>
+            Selected action: <b>{plan.level} — {meta.name}</b>.{' '}
+            {isFlow && plan.keepsRunning.length > 0
+              ? <>Targets only <b>{plan.suspectLinks.join(', ')}</b> while keeping <b>{plan.keepsRunning.join(', ')}</b> live.</>
+              : meta.blurb}
+            {proposal ? <> Waiting for a second person to approve {proposal.by.username}’s proposal.</> : user.executed ? ' Action recorded.' : ' Not executed yet.'}
+          </>
+        ),
+        whyItMatters: 'No single person can freeze a merchant alone—use the sidebar persona switcher (analyst → reviewer/legal) to test two-person approval live. Every action is written to the tamper-proof audit trail in L7.',
+      }}
+    >
+      {quant && (
+        <Panel title="Quant working: expected rupee loss by action level (rules/costs.json)" subtitle={r.fusion.decisionAnalysis.reason} bodyClass="p-0 overflow-x-auto">
+          <table className={tableCls}>
+            <thead><tr><Th>Level</Th><Th>Expected Loss (₹)</Th><Th>At 90% Interval</Th><Th>Auto-recommendable</Th></tr></thead>
+            <tbody>
+              {r.fusion.decisionAnalysis.actions.map(a => (
+                <tr key={a.level} className={cx(rowCls, a.level === plan.recommended && 'bg-zinc-400/5')}>
+                  <Td><Mono>{a.level}</Mono> {a.label}</Td>
+                  <Td className="font-mono text-xs">{inr(Math.round(a.expectedLoss))}</Td>
+                  <Td className="font-mono text-xs text-mute">{inr(Math.round(Math.min(a.expectedLossLow, a.expectedLossHigh)))} – {inr(Math.round(Math.max(a.expectedLossLow, a.expectedLossHigh)))}</Td>
+                  <Td className="text-xs text-mute">{a.autoAllowed ? 'Yes' : 'Human / Legal only'}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Panel>
+      )}
       <Panel title="Six response levels" subtitle="The smallest action that addresses the evidence. Higher levels need more.">
         <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
           {LEVEL_ORDER.map(id => { const l = RESPONSE_LEVELS.find(x => x.id === id)!, on = plan.level === id; return (

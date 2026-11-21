@@ -5,7 +5,6 @@ import { LayerFrame } from '../../components/common/LayerFrame';
 import { RecordPeek } from '../../components/common/RecordPeek';
 import { Badge, Btn, Callout, Panel, StatusBadge, Tabs, Td, Th, rowCls, tableCls, Mono, type Tone } from '../../components/ui/ui';
 import { RESPONSE_LEVELS } from '../../data/evidence';
-import { AnswerBanner } from '../../components/common/AnswerBanner';
 import type { ChainItem, ChainVerdict } from '../../types/investigation';
 import { cx } from '../../utils/format';
 
@@ -43,9 +42,23 @@ export function L5View() {
   const sc = r.scenario, byId = new Map(r.events.map(e => [e.id, e]));
   const refunds = r.events.filter(e => e.type === 'REFUND'), gaps = Object.entries(sc.coverage).filter(([k, v]) => v === 'MISSING' && GAPS[k]);
   const level = user.chosenLevel ?? rv.recommended;
+  const failedLegit = rv.legit.filter(x => x.verdict === 'FAILED').length;
+  const supportedFront = rv.front.filter(x => x.verdict === 'SUPPORTED').length;
   return (
-    <LayerFrame n={5} evidenceCount={rv.legit.length + rv.front.length} evidenceLabel="chain links tested" summary={<>{r.fusion.decision === 'OPEN_CASE' ? 'Open a case' : 'No case'}. Recommended action: <b className="text-ink">{level} {RESPONSE_LEVELS.find(l => l.id === level)!.name}</b></>}>
-      <AnswerBanner result={r} />
+    <LayerFrame
+      n={5}
+      brief={{
+        checks: 'Tests the merchant’s own "we are a normal business" story side-by-side against the "this is a front" story, and lets a human analyst inspect raw transactions, payment links, refunds, and missing feeds.',
+        happened: (
+          <>
+            Legitimate-business story: <b>{rv.legitStatus}</b> ({failedLegit} of {rv.legit.length} checks failed).
+            Front story: <b>{supportedFront} of {rv.front.length}</b> links supported.
+            Suggested action: <b>{level} — {RESPONSE_LEVELS.find(l => l.id === level)!.name}</b>.
+          </>
+        ),
+        whyItMatters: 'The system never freezes an account automatically. An analyst verifies the concrete proof here, records notes or a merchant explanation, and passes their recommendation to L6.',
+      }}
+    >
       <div className="grid gap-4 lg:grid-cols-2">
         <Chain title="Legitimate business chain" tone="ok" items={rv.legit} mode="legit" sel={sel} onSel={setSel} />
         <Chain title="Potential front chain" tone="bad" items={rv.front} mode="front" sel={sel} onSel={setSel} />

@@ -1,6 +1,6 @@
-import { Check, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Loader2, SlidersHorizontal } from 'lucide-react';
 import { useInvestigation } from '../hooks/useInvestigation';
+import { QuantModeProvider, useQuantMode } from '../hooks/useQuantMode';
 import { AnswerBanner } from '../components/common/AnswerBanner';
 import { LAYERS } from '../data/evidence';
 import { L1View } from '../layers/L1Ingestion';
@@ -16,11 +16,12 @@ import type { LayerId } from '../types/investigation';
 
 const VIEWS: Record<LayerId, () => JSX.Element> = { 1: L1View, 2: L2View, 3: L3View, 4: L4View, 5: L5View, 6: L6View, 7: L7View };
 
-export function InvestigationPage({ progressOnly = false }: { progressOnly?: boolean }) {
+function InvestigationBody({ progressOnly = false }: { progressOnly?: boolean }) {
   const { status, selectedLayer, selectLayer, scenario, result, run, started, running, allDone } = useInvestigation();
-  const [working, setWorking] = useState(false);
+  const { quant, setQuant } = useQuantMode();
   const View = VIEWS[selectedLayer];
   const active = LAYERS[selectedLayer - 1];
+
   if (progressOnly) return (
     <>
       <div><h2 className="text-lg font-semibold">Seven-layer simulation</h2><p className="mt-1 text-sm text-mute">Each layer runs in sequence. The final finding appears when the full investigation is complete.</p></div>
@@ -41,24 +42,69 @@ export function InvestigationPage({ progressOnly = false }: { progressOnly?: boo
       </div>
     </>
   );
+
   return (
-    <>
-      <div className="flex flex-wrap items-end justify-between gap-3"><div><h1 className="text-2xl font-semibold tracking-tight">Investigations</h1><p className="mt-1 text-sm text-mute">{scenario.profile.name} · {scenario.subtitle}</p></div>
-        {!started && <Btn variant="primary" onClick={() => run()} disabled={running}>Run investigation</Btn>}</div>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Seven-Layer Investigation</h1>
+          <p className="mt-1 text-sm text-mute">{scenario.profile.name} · {scenario.profile.category} ({scenario.profile.city})</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center rounded-md border border-line bg-panel p-0.5 text-xs" role="group" aria-label="Detail level">
+            <button
+              type="button"
+              onClick={() => setQuant(false)}
+              className={cx('rounded px-2.5 py-1.5 transition-colors', !quant ? 'bg-zinc-400/15 font-medium text-ink' : 'text-mute hover:text-ink')}
+            >
+              Plain English
+            </button>
+            <button
+              type="button"
+              onClick={() => setQuant(true)}
+              className={cx('inline-flex items-center gap-1 rounded px-2.5 py-1.5 transition-colors', quant ? 'bg-zinc-400/15 font-medium text-ink' : 'text-mute hover:text-ink')}
+            >
+              <SlidersHorizontal size={12} />Quant &amp; Technical Proof
+            </button>
+          </div>
+          {!started && <Btn variant="primary" onClick={() => run()} disabled={running}>Run investigation</Btn>}
+        </div>
+      </div>
+
       {!started && <Callout tone="info" title="Ready">{scenario.blurb}</Callout>}
-      {started && allDone && <AnswerBanner result={result} />}
-      {started && allDone && <Btn onClick={() => setWorking(v => !v)}>{working ? 'Hide the working' : 'Show the working'}</Btn>}
-      {(!allDone || working) && <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
+      {started && allDone && <AnswerBanner result={result} quant={quant} />}
+
+      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
         <ol className="space-y-1.5 lg:sticky lg:top-24 lg:self-start" aria-label="Layer progress">
           {LAYERS.map(l => { const st = status[l.n], sel = selectedLayer === l.n; return (
-            <li key={l.n}><button onClick={() => selectLayer(l.n)} aria-current={sel} className={cx('flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors', sel ? 'border-zinc-400/60 bg-zinc-400/5' : 'border-line bg-panel hover:border-line2')}>
-              <span className={cx('flex h-7 w-9 shrink-0 items-center justify-center rounded font-mono text-xs font-semibold', st === 'done' ? 'bg-gray-400/15 text-gray-300' : st === 'running' ? 'bg-zinc-400/15 text-zinc-300' : 'bg-panel2 text-dim')}>{l.code}</span>
-              <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium">{l.name}</span>{st === 'running' ? <span className="scanbar mt-1.5 block h-1 rounded-full bg-line" /> : <span className="block text-[11px] text-dim">{st === 'done' ? 'Complete' : 'Pending'}</span>}</span>
-              {st === 'done' ? <Check size={14} className="text-gray-300" /> : st === 'running' ? <Loader2 size={14} className="animate-spin text-zinc-300" /> : null}</button></li>); })}
-          <li className="pt-2 text-[11px] text-dim">Select a completed layer to inspect its inputs, processing, output and results.</li>
+            <li key={l.n}>
+              <button
+                onClick={() => selectLayer(l.n)}
+                aria-current={sel ? 'step' : undefined}
+                className={cx('flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors', sel ? 'border-zinc-400/60 bg-zinc-400/5' : 'border-line bg-panel hover:border-line2')}
+              >
+                <span className={cx('flex h-7 w-9 shrink-0 items-center justify-center rounded font-mono text-xs font-semibold', st === 'done' ? 'bg-gray-400/15 text-gray-300' : st === 'running' ? 'bg-zinc-400/15 text-zinc-300' : 'bg-panel2 text-dim')}>{l.code}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] font-medium">{l.name}</span>
+                  {st === 'running'
+                    ? <span className="scanbar mt-1.5 block h-1 rounded-full bg-line" />
+                    : <span className="block text-[11px] text-dim">{st === 'done' ? 'Complete' : 'Pending'}</span>}
+                </span>
+                {st === 'done' ? <Check size={14} className="text-gray-300" /> : st === 'running' ? <Loader2 size={14} className="animate-spin text-zinc-300" /> : null}
+              </button>
+            </li>); })}
+          <li className="pt-2 text-[11px] text-dim">Click any layer (L1–L7) to see what it checked, what happened, and why.</li>
         </ol>
         <div className="min-w-0"><View /></div>
-      </div>}
-    </>
+      </div>
+    </div>
+  );
+}
+
+export function InvestigationPage({ progressOnly = false }: { progressOnly?: boolean }) {
+  return (
+    <QuantModeProvider>
+      <InvestigationBody progressOnly={progressOnly} />
+    </QuantModeProvider>
   );
 }
