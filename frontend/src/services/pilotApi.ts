@@ -4,6 +4,7 @@ export interface PilotCaseSummary {
   merchant: { id: string; name: string; category: string; city: string };
   result: { decision: string; priority: string; recommended: string; legitStatus: string; posterior?: number };
   user: { executed: boolean; label: string | null };
+  auditIntact?: boolean;
   workflow: { layer: number; code: string; name: string; state: 'done' | 'waiting' | 'blocked'; summary: string }[];
 }
 
@@ -24,7 +25,7 @@ export interface ServerUser {
   inForce?: { id: string; level: string; actions: string[]; restricts: boolean } | null;
   /** Every restriction in force on this merchant, from any of its cases. */
   restrictions?: { caseId: string; id: string; level: string; actions: string[] }[];
-  history?: { id: string; createdAt: string; decision: string; label: string | null }[];
+  history?: { id: string; createdAt: string; decision: string; followUp?: string; label: string | null }[];
   pending?: { response?: { level: string; by: { id: number; username: string }; at: string }; label?: { label: string; by: { id: number; username: string }; at: string } };
 }
 export type PilotCase = ServerUser & { id: string; createdAt: string; scenario: Scenario; [k: string]: unknown };
@@ -66,7 +67,7 @@ export async function signIn(username: string, password: string): Promise<Sessio
 }
 export const signOut = () => fetch('/api/auth/logout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
 
-export async function approvePilotCase(id: string, approve: boolean, extra: { escrowConfirmed?: boolean; reason?: string } = {}) {
+export async function approvePilotCase(id: string, approve: boolean, extra: { escrowConfirmed?: boolean; reason?: string; proposedAt?: string; level?: string } = {}) {
   return updatePilotCase(id, 'approve', { approve, ...extra });
 }
 export async function getPilotJson(id: string, what: 'trace' | 'pack' | 'audit'): Promise<Record<string, any>> {

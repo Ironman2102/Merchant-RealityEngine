@@ -61,7 +61,7 @@ paths:
       security: [{ bearer: [] }]
       parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
       responses:
-        '200': { description: Saved case }
+        '200': { description: 'Saved case. References to other cases are removed, and `redacted` then says so.' }
         '404': { description: No such case for this client. A client is a key name. }
   /v1/cases/{id}/trace:
     get:

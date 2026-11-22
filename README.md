@@ -2,12 +2,12 @@
 
 https://merchant-reality-engine.netlify.app
 
-**Does this merchant behave like the business it claims to be, on every QR it owns?**
+**Does this merchant behave like the business it claims to be, QR by QR?**
 
 A bakery can pass KYC with genuine papers and then collect betting deposits. MRE is a prototype for payment-aggregator risk teams
 that finds that mismatch without punishing a bakery that has simply changed.
 
-1. **Every QR is scored on its own.** A side business disappears in a shop's average. On its own link it stands out,
+1. **Busy QRs are scored on their own.** A side business disappears in a shop's average. On its own link it stands out,
    once that link has enough payments (30 at the very least) and returning payers.
 2. **A change is a question. Misconduct is a case.** Unusual hours, prices or places get a Context Passport request. A case needs
    independent evidence that includes conduct a change cannot explain.
@@ -15,7 +15,7 @@ that finds that mismatch without punishing a bakery that has simply changed.
    the expectation for that QR changes. If any conduct signal fires, passports are set aside and the score is the one without them.
    Only one applies to a QR at a time, an answered question stays on the record, and a reviewer can revoke it.
 4. **The response is narrow.** Only an identified link can be recommended for restriction, and never the main QR by default.
-   A second person approves. The restriction follows the merchant to every case, and lifting it takes a second person too.
+   A second person approves, as they must for doing less than recommended. The restriction follows the merchant to every case, and lifting it takes a second person too.
 
 > **Everything is synthetic.** Merchants, transactions, pages and portfolio figures are fabricated. There are no customers,
 > partners or real-world accuracy figures. The response design is a proposal, not legal advice, and nothing freezes real money.
@@ -41,6 +41,13 @@ withdrawn. See `docs/AUDIT_FIX_REPORT.md`.
   sightings, complaints.
 - Open a case on every small, thin or mixed-in front. A side business with few payments or few returning payers, or mixed into
   the main QR, often becomes a question where a cruder rule would have opened a case. Many become a question only (`reports/benchmark.md`, `reports/redteam.md`).
+- Beat a simple rule everywhere. "On any QR with 30+ payments, over 25% are round amounts from people who paid that way 4+
+  times" caught 601 of 1,000 fronts in the locked exam with no false alarms. The engine caught 653 with payer location and
+  only 328 without it. (Measured 22 Nov 2026. The rule is not in the engine.)
+- Resist easy evasion. In a synthetic test, adding ₹7 to each round payment cut caught fronts from 1,056 to 141 of 2,400.
+  Splitting a side business across QRs loses the link-only restriction, and rotating payer ids turns many cases into questions.
+- Act. It records "notify", "ask" and "disable". It does not message a merchant, take a reply, or touch a payment rail.
+- See a network. The evidence graph is drawn for the analyst and is not scored.
 - Locate a payer from a UPI ID. Without payer location several camouflage categories become a question, not a case.
 - Claim calibrated probabilities. Category norms and detector rates are expert priors until a shadow pilot supplies labels.
 

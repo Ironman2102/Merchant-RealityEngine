@@ -8,6 +8,7 @@ payment systems from carrying it, and [RBI already requires](https://www.rbi.org
 The hard part is doing it without hurting honest shops.
 
 **0:20 Our two ideas.** "We don't score the shop. We score every QR." and "A change is a question. Misconduct is a case."
+(If asked: a QR needs 30+ payments to be scored alone. Never say "cannot hide", "tamper-proof" or "better than rules".)
 
 **0:35 Golden Oven.** A busy, real bakery. On average it looks fine. On its own, the second link is round top-ups from the same few
 distant people. A case on that link only. The counter keeps selling.

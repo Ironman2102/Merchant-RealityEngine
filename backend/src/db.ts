@@ -7,7 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { chmodSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { seal } from './seal';
+import { sealEmptyDatabase } from './integrity';
 
 let db: DatabaseSync | null = null;
 
@@ -43,25 +43,27 @@ CREATE TABLE IF NOT EXISTS label_events (
 CREATE TABLE IF NOT EXISTS rules_proposals (
   id TEXT PRIMARY KEY, created_at TEXT NOT NULL, created_by TEXT NOT NULL, status TEXT NOT NULL,
   approved_by TEXT, promoted_version TEXT, proposal_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS row_seals (tbl TEXT NOT NULL, key TEXT NOT NULL, grp TEXT NOT NULL, mac TEXT NOT NULL, PRIMARY KEY (tbl, key)) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS row_seals_by_group ON row_seals (tbl, grp);
+CREATE TABLE IF NOT EXISTS manifests (tbl TEXT PRIMARY KEY, mac TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS rules_rollback (id INTEGER PRIMARY KEY CHECK (id = 1), request_json TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS rules_audit (
   seq INTEGER PRIMARY KEY, at TEXT NOT NULL, actor TEXT NOT NULL, actor_id INTEGER,
   action TEXT NOT NULL, detail TEXT NOT NULL, prev_hash TEXT NOT NULL, hash TEXT NOT NULL);
 `;
 
-/** Runs once, on a database from before heads were sealed. Such a chain is trusted as it stands on that day. */
-function sealExistingChains(d: DatabaseSync): void {
-  const ins = d.prepare('INSERT INTO audit_heads (case_id, seq, hash, mac) VALUES (?, ?, ?, ?)');
-  const heads = [
-    ...d.prepare('SELECT case_id, seq, hash FROM audit a WHERE seq = (SELECT MAX(seq) FROM audit b WHERE b.case_id = a.case_id)').all(),
-    ...d.prepare("SELECT '__rules__' AS case_id, seq, hash FROM rules_audit WHERE seq = (SELECT MAX(seq) FROM rules_audit)").all(),
-  ] as { case_id: string; seq: number; hash: string }[];
-  for (const h of heads) ins.run(h.case_id, h.seq, h.hash, seal(h.case_id, h.seq, h.hash));
-}
-
 /** Databases from before a column existed get it on first open. */
 function addColumn(d: DatabaseSync, table: string, column: string): void {
   if (!(d.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some(c => c.name === column)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} TEXT`);
+}
+
+/**
+ * A database from before seals that holds nothing has nothing to vouch for. (Wiping every table is the same as deleting
+ * the file, which only a checkpoint kept elsewhere can show.)
+ */
+function holdsNothing(d: DatabaseSync): boolean {
+  return ['manifests', 'row_seals', 'users', 'sessions', 'cases', 'audit', 'audit_heads', 'passports', 'rules_state', 'rules_rollback', 'rules_proposals', 'rules_audit', 'label_events', 'service_keys', 'idempotency']
+    .every(t => !d.prepare(`SELECT 1 FROM ${t} LIMIT 1`).get());
 }
 
 export function getDb(): DatabaseSync {
@@ -75,14 +77,15 @@ export function getDb(): DatabaseSync {
     if (fresh) chmodSync(file, 0o600);
   }
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
-  const sealed = !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'audit_heads'").get();
+  const brandNew = !db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table'").get();
   db.exec(SCHEMA);
   addColumn(db, 'users', 'oidc_identity');
-  for (const c of ['merchant_key', 'in_force_json', 'decision', 'label']) addColumn(db, 'cases', c);
-  db.exec('CREATE INDEX IF NOT EXISTS cases_by_merchant ON cases (merchant_key); CREATE UNIQUE INDEX IF NOT EXISTS users_by_identity ON users (oidc_identity)');
-  if (!sealed) sealExistingChains(db);
+  for (const c of ['merchant_key', 'in_force_json', 'decision', 'label', 'follow_up', 'record_sha']) addColumn(db, 'cases', c);
+  db.exec('CREATE INDEX IF NOT EXISTS label_events_by_key ON label_events (case_id); CREATE INDEX IF NOT EXISTS cases_by_merchant ON cases (merchant_key); CREATE UNIQUE INDEX IF NOT EXISTS users_by_identity ON users (oidc_identity)');
+  // Seals are created for a new database only. An existing one is never vouched for here.
+  if (brandNew || holdsNothing(db)) sealEmptyDatabase();
   // Accounts left by the removed persona feature are retired.
-  db.exec(`UPDATE users SET disabled = 1 WHERE username IN ('demo-analyst', 'demo-reviewer', 'demo-legal', 'demo-admin')`);
+  db.exec(`UPDATE users SET disabled = 1 WHERE disabled = 0 AND username IN ('demo-analyst', 'demo-reviewer', 'demo-legal', 'demo-admin')`);
   return db;
 }
 

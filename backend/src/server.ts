@@ -3,9 +3,11 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, normalize, extname } from 'node:path';
 import { handle } from './http';
 import { assertSecrets } from './auth';
+import { assertSealed } from './integrity';
 
 try {
   assertSecrets();
+  assertSealed();
 } catch (err) {
   console.error(err instanceof Error ? err.message : err);
   process.exit(1);

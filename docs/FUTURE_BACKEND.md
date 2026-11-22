@@ -5,7 +5,7 @@
 | Storage | SQLite, one process (ephemeral on the serverless host) | Postgres, backups, tenant isolation |
 | Sessions | Database sessions; 30-minute signed cookies on serverless | PA single sign-on, shared revocation |
 | Keys | Environment variable | KMS or HSM, rotation |
-| Audit | Sealed hash chain in the same database | Head anchored externally every day |
+| Audit | Hash chain and keyed row seals; a checkpoint printed on demand | Checkpoint anchored externally every day |
 | Ingestion | Daily files, 6 MB uploads | Streaming or bulk load, data-quality monitoring |
 | Category norms | Expert priors for about 40 MCCs | Peer norms from the PA's own portfolio |
 | Network view | Peers supplied with the file | Portfolio-wide beneficiary and payer graph |

@@ -20,6 +20,7 @@ import { bocpdRecentChange } from '../stats/changepoint';
 import { rng, seedOf, shuffle } from '../stats/rng';
 import { passportCover, type Axis } from './passport';
 import { hasBetween } from '../utils/num';
+import { instant } from '../utils/time';
 
 export interface Ctx {
   sc: Scenario; p: MerchantProfile; norm: MccNorm; all: PaymentEvent[];
@@ -66,7 +67,7 @@ function rateTest(x: number, n: number, normRate: number, strength = 200) {
 
 const PRE = RULES.engine.preMatchMinutes;
 function matchWindows(c: Ctx) {
-  const fx = [...c.sc.fixtures, ...RULES.calendar.cricketFixtures.map(f => Date.parse(String(f)))].filter(Number.isFinite);
+  const fx = [...c.sc.fixtures, ...RULES.calendar.cricketFixtures.map(f => instant(String(f)))].filter(Number.isFinite);
   const fixDays = new Set(fx.map(istDayKey));
   const wins = [...new Set(fx.map(istMinuteOfDay))].map(m => [m - PRE, m] as const);
   return { fx, fixDays, inWin: (m: number) => wins.some(([a, b]) => m >= a && m < b) };

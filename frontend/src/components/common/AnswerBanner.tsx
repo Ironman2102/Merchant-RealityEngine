@@ -121,7 +121,7 @@ export function AnswerBanner({ result, quant = false }: { result: InvestigationR
             <p className="mt-1.5 text-[13px] text-ink">
               <b>{result.review.recommended} — {level?.name ?? result.review.recommended}:</b> {level?.blurb}
             </p>
-            <p className="mt-1 text-[11px] text-dim">{result.suspectLinks.length ? `Scope: ${result.suspectLinks.join(', ')} only. ` : ''}A second person approves any restriction.</p>
+            <p className="mt-1 text-[11px] text-dim">{result.suspectLinks.length ? `Scope: ${result.suspectLinks.join(', ')} only. ` : ''}A second person approves any restriction, and anything less than this recommendation.</p>
           </div>
         </div>
       </div>

@@ -33,7 +33,7 @@ All numbers are synthetic. None is real-world accuracy.
 
 ### The two ideas the fix is built on
 
-1. **Score every QR, not the shop.** Betting hidden on one link no longer averages away, and only that link gets restricted.
+1. **Score busy QRs, not just the shop.** Betting on a link with 30+ payments stands out from the average, and only that link is recommended for restriction.
 2. **A change is a question. Misconduct is a case.** Unusual hours or prices lead to a Context Passport request. A case needs
    behaviour that a change of business cannot explain, such as the same distant people topping up again and again.
 
@@ -46,11 +46,11 @@ All numbers are synthetic. None is real-world accuracy.
 - **The limit of that exam.** The same assistant wrote the exam and the fix, knew what the exam contained, and all of it is
   synthetic. It shows regressions and direction. It is not an accuracy claim.
 - **After the exam**, the engine got a speed option for backtests. The exam was re-run and the result was byte-identical.
-- **Automated checks:** `npm test` passes (606 engine assertions, 35 security probes, 34 adversarial cases), as do the type
+- **Automated checks:** `npm test` passes (708 engine assertions, 35 security probes, 34 adversarial cases), as do the type
   check and the build.
 - **By hand, in a browser:** the demo, the Context Passport, sign-in, a blocked single-person check followed by a second-person
   check, CSV mapping, the portfolio screen and a phone-width layout.
-- **Security fixes** were re-tested. A database written by the old code opens under the new code.
+- **Security fixes** were re-tested. A database written by older code needs `mre seal-db` once before the new code will start on it.
 - **The Netlify function** was bundled and called locally, across two simulated instances.
 
 ---
@@ -85,7 +85,7 @@ added here once the fixed version is deployed.
 | C1 | Only the whole account was scored | Each QR or link with 30+ sales, and the repeat-payer group, is scored separately | A side business vanishes in an average | Fixed |
 | C2 | A front could register as "furniture" and escape (0 of 50 caught) | Three category-free conduct tests (B8, B10, C6). Caught 50 of 50 with location | The declaration must not buy innocence | Partly: without location, a question |
 | C3 | Looking normal for a self-chosen category earned full credit | A quarter of the credit | Same | Fixed |
-| C4 | "Disable one link" had no real scope | Only identified links, and the rest keeps running | Proportionate response | Fixed |
+| C4 | "Disable one link" had no real scope | Only identified links are recommended. The action is recorded, not sent to a payment rail | Proportionate response | Partly: no payment-rail connection |
 | C5 | Small or mixed-in side businesses were missed | Many now become questions | Too few payments or repeat payers to prove conduct | Partly |
 | C6 | A perfect mimic was invisible | Still invisible, and now stated | It needs test purchases, crawls or complaints | Partly |
 
@@ -192,6 +192,23 @@ Limits that remain:
 - 5 of 10,800 honest merchants opened a case on fresh seeds. Counting people instead of payments removed 3 but lost 80 of
   3,112 caught fronts, so it was not adopted. Two people can clear such a case.
 - Merchant history follows the merchant id, so a merchant re-onboarded under a new id starts clean.
+
+### K. Claims re-tested, and corrected
+
+A third review tested what the product says about itself and found claims, some in sections I and J, that were not true.
+They are now tests (`tests/engine/claims.test.ts`). `docs/CLAIMS.md` maps each claim to its test and its limit.
+
+| Claim | What holds now | Status |
+|---|---|---|
+| Two people | Also to close a case or question, and an approval names the proposal it saw | Fixed |
+| Tamper-evident | Security-relevant rows and deletions are checked against keyed seals | Fixed, with stated limits |
+| Pseudonymised | Only the format's fields are stored, with identifier patterns masked | Fixed, names in free text excepted |
+| Client isolation | No other case id in a client's view | Fixed |
+| Deterministic | A time without an offset is Indian time on every host | Fixed |
+| Evidence pack | Suspicion is drafted only for an open or confirmed case | Fixed |
+| Batch | A bad row, field or context entry no longer leaves a merchant unscored | Fixed |
+| Dependencies | react-router upgraded past its advisories | Fixed |
+| Wording | "Every QR", "cannot hide", "minimal flip set", graph, appeal and notify claims corrected | Fixed |
 
 ---
 

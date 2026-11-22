@@ -13,6 +13,7 @@ import type { Label } from '../../frontend/src/types/merchant';
 import type { ResponsePlan } from '../../frontend/src/engines/responseEngine';
 import type { ReliabilityUpdate } from '../../frontend/src/engines/learningEngine';
 import { getDb } from './db';
+import { assertRows, assertTable, digest, IntegrityError, rowValid, sealedWrite } from './integrity';
 import type { Actor } from './auth';
 
 export interface Pending {
@@ -50,19 +51,33 @@ const canonical = (e: { seq: number; at: string; actor: string; actorId: number 
   JSON.stringify([e.seq, e.at, e.actor, e.actorId, e.action, e.detail]);
 const chain = (prev: string, e: Parameters<typeof canonical>[0]) => createHash('sha256').update(prev).update(canonical(e)).digest('hex');
 
+/** The record and its columns are as the server last wrote them. */
+export function caseIntact(id: string): boolean {
+  const row = getDb().prepare('SELECT record_json, record_sha FROM cases WHERE id = ?').get(id) as { record_json: string; record_sha: string | null } | undefined;
+  return rowValid('cases', id) && (!row || digest(row.record_json) === row.record_sha);
+}
+
+/** Before acting on a case, or handing it out as evidence: it and its audit trail are as they were written. */
+export function assertCase(id: string): void {
+  if (!verifyAudit(id).ok) throw new IntegrityError(`case ${id} or its audit trail is not as it was written`);
+}
+
 export function putCase(rec: CaseRecord): void {
   if (!isCaseId(rec.id)) throw Object.assign(new Error('Invalid case id.'), { status: 400 });
   const { audit: _a, ...user } = rec.user;
   const json = JSON.stringify({ ...rec, user: { ...user, audit: [] } });
   const f = rec.inForce, held = f ? JSON.stringify({ id: f.id, level: f.plan.level, actions: f.plan.actions, at: f.at ?? '' }) : null;
-  getDb().prepare(`INSERT INTO cases (id, created_at, created_by, engine_version, rules_version, dataset_sha256, record_json, merchant_key, in_force_json, decision, label) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET record_json = excluded.record_json, merchant_key = excluded.merchant_key, in_force_json = excluded.in_force_json, decision = excluded.decision, label = excluded.label`)
-    .run(rec.id, rec.createdAt, rec.createdBy ?? null, rec.engineVersion ?? null, rec.result.fusion.rulesVersion, rec.datasetSha256, json,
-      rec.result.scenario.primaryMerchantId, held, rec.result.fusion.decision, rec.user.label);
+  sealedWrite('cases', rec.id, () => {
+    if (!caseIntact(rec.id)) throw new IntegrityError(`the record of ${rec.id} is not as it was written`);
+    getDb().prepare(`INSERT INTO cases (id, created_at, created_by, engine_version, rules_version, dataset_sha256, record_json, record_sha, merchant_key, in_force_json, decision, label, follow_up) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET record_json = excluded.record_json, record_sha = excluded.record_sha, merchant_key = excluded.merchant_key, in_force_json = excluded.in_force_json, decision = excluded.decision, label = excluded.label, follow_up = excluded.follow_up`)
+      .run(rec.id, rec.createdAt, rec.createdBy ?? null, rec.engineVersion ?? null, rec.result.fusion.rulesVersion, rec.datasetSha256, json, digest(json),
+        rec.result.scenario.primaryMerchantId, held, rec.result.fusion.decision, rec.user.label, rec.result.fusion.followUp ?? 'NONE');
+  });
 }
 
 export interface MerchantCase {
-  id: string; createdAt: string; decision: string; label: Label | null;
+  id: string; createdAt: string; decision: string; followUp: string; label: Label | null;
   inForce: { id: string; level: ResponseLevel; actions: string[]; at: string } | null;
 }
 
@@ -73,9 +88,10 @@ export interface MerchantCase {
 export function merchantCases(merchantId: string): MerchantCase[] {
   const db = getDb();
   // Saved before the columns existed.
-  for (const r of db.prepare('SELECT id FROM cases WHERE merchant_key IS NULL').all() as { id: string }[]) { const old = getCase(r.id); if (old) putCase(old); }
-  return (db.prepare('SELECT id, created_at, decision, label, in_force_json FROM cases WHERE merchant_key = ? ORDER BY created_at, id').all(merchantId) as { id: string; created_at: string; decision: string; label: Label | null; in_force_json: string | null }[])
-    .map(r => ({ id: r.id, createdAt: r.created_at, decision: r.decision, label: r.label, inForce: r.in_force_json ? JSON.parse(r.in_force_json) : null }));
+  for (const r of db.prepare('SELECT id FROM cases WHERE merchant_key IS NULL OR follow_up IS NULL').all() as { id: string }[]) { const old = getCase(r.id); if (old) putCase(old); }
+  assertRows('cases', merchantId);
+  return (db.prepare('SELECT id, created_at, decision, follow_up, label, in_force_json FROM cases WHERE merchant_key = ? ORDER BY created_at, id').all(merchantId) as { id: string; created_at: string; decision: string; follow_up: string; label: Label | null; in_force_json: string | null }[])
+    .map(r => ({ id: r.id, createdAt: r.created_at, decision: r.decision, followUp: r.follow_up, label: r.label, inForce: r.in_force_json ? JSON.parse(r.in_force_json) : null }));
 }
 
 export function readAudit(caseId: string): AuditRow[] {
@@ -85,8 +101,10 @@ export function readAudit(caseId: string): AuditRow[] {
 /** Append entries to the case's audit chain (inside one transaction) and return the full trail. */
 export function appendAudit(caseId: string, entries: { action: string; detail: string }[], actor: Actor | { id: null; username: string }): AuditRow[] {
   const db = getDb();
-  db.exec('BEGIN IMMEDIATE');
-  try {
+  sealedWrite('audit_heads', caseId, () => {
+    // Appending re-seals the head, so it must never do that over a trail that was changed. An empty one is a new case.
+    const checked = verifyChain(caseId);
+    if (!checked.ok) throw new IntegrityError(`the audit trail of ${caseId} is broken at entry ${checked.brokenAt}`);
     const last = db.prepare('SELECT seq, hash FROM audit WHERE case_id = ? ORDER BY seq DESC LIMIT 1').get(caseId) as { seq: number; hash: string } | undefined;
     let seq = last?.seq ?? 0, prev = last?.hash ?? GENESIS;
     const ins = db.prepare('INSERT INTO audit (case_id, seq, at, actor, actor_id, action, detail, prev_hash, hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
@@ -98,13 +116,28 @@ export function appendAudit(caseId: string, entries: { action: string; detail: s
     }
     db.prepare('INSERT INTO audit_heads (case_id, seq, hash, mac) VALUES (?, ?, ?, ?) ON CONFLICT(case_id) DO UPDATE SET seq = excluded.seq, hash = excluded.hash, mac = excluded.mac')
       .run(caseId, seq, prev, seal(caseId, seq, prev));
-    db.exec('COMMIT');
-  } catch (e) { db.exec('ROLLBACK'); throw e; }
+  });
   return readAudit(caseId);
 }
 
-/** Recompute the chain. Returns the first broken sequence number, or null if intact. */
+/** The trail, the case it belongs to, and that nothing was deleted around them. */
 export function verifyAudit(caseId: string): { ok: boolean; brokenAt: number | null; entries: number } {
+  const chained = verifyChain(caseId);
+  if (!chained.ok) return chained;
+  const broken = { ok: false, brokenAt: chained.entries + 1, entries: chained.entries };
+  if (!chained.entries || !caseIntact(caseId) || !rowValid('audit_heads', caseId)) return broken;
+  try {
+    assertTable('cases');
+    assertTable('audit_heads');
+  } catch (e) {
+    if (e instanceof IntegrityError) return broken;
+    throw e;
+  }
+  return chained;
+}
+
+/** Recompute the chain. Returns the first broken sequence number, or null if intact. */
+function verifyChain(caseId: string): { ok: boolean; brokenAt: number | null; entries: number } {
   const rows = readAudit(caseId);
   let prev = GENESIS;
   for (const r of rows) {
@@ -132,7 +165,7 @@ export function forClient(rec: CaseRecord): InvestigationResult {
 /** A proposal has ended without taking effect: the case goes back to showing the action still in force. */
 export function restoreInForce(rec: CaseRecord): void {
   delete rec.pending.response;
-  if (!rec.inForce) return;
+  if (!rec.inForce) { rec.user.chosenLevel = null; rec.user.executed = false; return; }
   rec.user.chosenLevel = rec.inForce.plan.level;
   rec.user.executed = true;
   rec.response = rec.inForce.plan;

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { mapExport } from '../adapters/mapExport';
+import { scrub } from '../adapters/privacy';
 import { toCsv } from '../adapters/csv';
 import { analyseCanonical } from '../backend/src/algorithms/analyze';
 import { syncLiveRules } from '../backend/src/rulesState';
@@ -16,9 +17,9 @@ export interface BatchOptions { /** Set when a service client runs it: only that
 export function runBatch(opts: BatchOptions): { merchants: number; opened: number; failed: number } {
   const started = Date.now();
   syncLiveRules();
-  const { datasets, warnings } = mapExport(opts.inDir, opts.mappingPath, opts.key);
+  const { datasets, warnings, skipped, core } = mapExport(opts.inDir, opts.mappingPath, opts.key);
   const header = [
-    'merchant_id', 'name', 'mcc', 'decision', 'p_front', 'p_lo', 'p_hi', 'priority', 'recommended', 'mechanism', 'top_reasons', 'rules_version', 'follow_up', 'scope', 'passport_answered',
+    'merchant_id', 'name', 'mcc', 'decision', 'p_front', 'p_lo', 'p_hi', 'priority', 'recommended', 'mechanism', 'top_reasons', 'rules_version', 'follow_up', 'scope', 'passport_answered', 'rows_skipped', 'context_ignored',
     ...(opts.ml ? ['ml_p', 'ml_top_drivers'] : []),
   ];
   const scoreRows: (string | number | null)[][] = [header];
@@ -27,11 +28,20 @@ export function runBatch(opts: BatchOptions): { merchants: number; opened: numbe
   const cases: string[] = [];
   mkdirSync(join(opts.outDir, 'packs'), { recursive: true });
   let opened = 0;
-  for (const dataset of datasets) {
-    const ran = analyseCanonical(dataset, opts.client);
+  for (const mapped of datasets) {
+    let dataset = mapped, contextIgnored = false;
+    let ran = analyseCanonical(dataset, opts.client);
+    if (!ran.ok && core.has(mapped)) {
+      const plain = core.get(mapped)!(), again = analyseCanonical(plain, opts.client);
+      if (again.ok) {
+        warnings.push(`merchant ${mapped.merchant.id}: its context.json entry could not be used (${scrub(ran.errors.join(' '), () => opts.key)}). Scored from the CSVs alone.`);
+        dataset = plain; ran = again; contextIgnored = true;
+      }
+    }
+    const rowsSkipped = skipped.get(mapped.merchant.id) ?? 0;
     if (!ran.ok) {
       failed++;
-      scoreRows.push([dataset.merchant.id, dataset.merchant.name, dataset.merchant.mcc, 'ERROR', '', '', '', '', '', '', ran.errors.join(' | '), RULES.version, '', '', '', ...(opts.ml ? ['', ''] : [])]);
+      scoreRows.push([dataset.merchant.id, dataset.merchant.name, dataset.merchant.mcc, 'ERROR', '', '', '', '', '', '', scrub(ran.errors.join(' | '), () => opts.key), RULES.version, '', '', '', rowsSkipped, '', ...(opts.ml ? ['', ''] : [])]);
       continue;
     }
     const ml = opts.ml ? secondOpinion(ran.result) : null;
@@ -42,7 +52,7 @@ export function runBatch(opts: BatchOptions): { merchants: number; opened: numbe
     scoreRows.push([
       dataset.merchant.id, dataset.merchant.name, dataset.merchant.mcc, f.decision,
       num(f.posterior), num(f.posteriorCi[0]), num(f.posteriorCi[1]), f.priority, ran.result.review.recommended,
-      mechanism, top, f.rulesVersion, f.followUp, ran.result.scope.id, (ran.result.passportAnswered ?? []).join('|'),
+      mechanism, top, f.rulesVersion, f.followUp, ran.result.scope.id, (ran.result.passportAnswered ?? []).join('|'), rowsSkipped, contextIgnored ? 'yes' : '',
       ...(ml ? [num(ml.p), ml.drivers.map(d => `${d.feature}:+${d.weight.toFixed(2)}`).join('|')] : []),
     ]);
     let safe = dataset.merchant.id.replace(/[^A-Za-z0-9._-]/g, '_');

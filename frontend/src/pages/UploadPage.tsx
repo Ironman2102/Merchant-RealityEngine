@@ -219,7 +219,7 @@ export function UploadPage() {
           <ul className="space-y-3 text-sm text-mute">
             <li><span className="font-semibold text-ink">Raw CSV or JSON</span><br />Drop any gateway CSV export — check the suggested columns before running. Dates are read day first, failed payments are left out, and no history is invented.</li>
             <li><span className="font-semibold text-ink">No missing-data penalty</span><br />Missing context feeds (website crawl, GST, orders) are marked <span className="font-mono text-xs">MISSING</span> and carry zero weight in either direction.</li>
-            <li><span className="font-semibold text-ink">Executive Case Dossier</span><br />Claimed vs. Reality, a score for every QR, a neutral merchant letter and internal draft facts for the Principal Officer.</li>
+            <li><span className="font-semibold text-ink">Executive Case Dossier</span><br />Claimed vs. Reality, a score for each QR with 30+ payments, a neutral merchant letter and internal draft facts for the Principal Officer.</li>
           </ul>
         </Panel>
       </div>

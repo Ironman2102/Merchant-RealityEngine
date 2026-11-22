@@ -7,7 +7,7 @@ export function StreamsPanel() {
   const { result: r } = useInvestigation();
   if (!r.streams.length) return null;
   return (
-    <Panel title="Scored QR by QR" subtitle="A shop that takes bets on the side looks normal on average, so every QR, link and group of repeat payers is also scored on its own." bodyClass="p-0 overflow-x-auto">
+    <Panel title="Scored QR by QR" subtitle="A shop that takes bets on the side looks normal on average, so each QR or link with 30+ payments, and the repeat payers as a group, is also scored on its own." bodyClass="p-0 overflow-x-auto">
       <table className={tableCls}>
         <thead><tr><Th>Stream</Th><Th>Share of sales</Th><Th>P(front)</Th><Th>Result</Th><Th>Signals</Th></tr></thead>
         <tbody>{r.streams.map(s => (

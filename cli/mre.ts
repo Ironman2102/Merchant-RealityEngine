@@ -17,12 +17,14 @@ import { demoLearn } from '../scripts/demo-learn';
 import { rollbackRulesEmergency } from '../backend/src/improverApi';
 import { analyseCanonical } from '../backend/src/algorithms/analyze';
 import { syncLiveRules } from '../backend/src/rulesState';
+import { sealExistingDatabase, verifyDatabase } from '../backend/src/integrity';
+import { appendRulesAudit } from '../backend/src/improverApi';
 import { runBatch } from './batch';
 
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd || cmd === '--help') {
-  console.log('mre batch | features | serve | demo | demo:learn | rollback | validate-config | verify-audit | user:add | user:link-sso | key:create');
+  console.log('mre batch | features | serve | demo | demo:learn | rollback | validate-config | verify-audit | verify-db | seal-db | user:add | user:link-sso | key:create');
   process.exit(cmd ? 0 : 2);
 }
 
@@ -128,6 +130,18 @@ if (cmd === 'batch') {
   const status = verifyAudit(values.case);
   console.log(JSON.stringify(status));
   process.exit(status.ok ? 0 : 1);
+} else if (cmd === 'verify-db') {
+  const { problems, checkpoint } = verifyDatabase();
+  console.log(JSON.stringify({ ok: !problems.length, problems, checkpoint }, null, 2));
+  process.exit(problems.length ? 1 : 0);
+} else if (cmd === 'seal-db') {
+  const { values } = parseArgs({ args: rest, options: { reason: { type: 'string' } }, strict: true });
+  if (!values.reason?.trim()) { console.error('mre seal-db --reason "<why>"   (once, to upgrade a database from before seals; it vouches for the rows as found)'); process.exit(2); }
+  try {
+    const rows = sealExistingDatabase();
+    appendRulesAudit('Database sealed as found', `${rows} rows vouched for by an operator at the server: ${values.reason.trim()}`, { id: 0, username: 'cli-operator' });
+    console.log(`sealed ${rows} rows as found`);
+  } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
 } else if (cmd === 'user:add') {
   const username = rest[0], role = rest[1] as Role;
   if (!username || !ROLES.includes(role)) { console.error(`mre user:add <username> <${ROLES.join('|')}>`); process.exit(2); }

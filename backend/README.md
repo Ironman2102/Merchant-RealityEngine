@@ -8,7 +8,7 @@ The API used by the AI Engine. `./start.sh` runs it on `127.0.0.1:8787`.
 | `GET`, `POST /investigations` | signed in | List, or analyse and open a case |
 | `GET /investigations/{id}` + `/trace`, `/pack`, `/audit`, `/passport` | signed in | Read |
 | `POST /investigations/{id}/review`, `/response`, `/label` | by role | Record. Restrictions, any change to one in force, and two-person labels wait. `{reject:true}` rejects or withdraws a label |
-| `POST /investigations/{id}/approve` | a different person, by role; the proposer may only withdraw | Approve or reject |
+| `POST /investigations/{id}/approve` | a different person, by role; the proposer may only withdraw | Approve or reject. An approval sends the proposal's `proposedAt` and `level` |
 | `POST /investigations/{id}/passport` | analyst, reviewer, admin | Record a declared change |
 | `POST /investigations/{id}/passport-review` | a different reviewer or admin | Verify and re-score |
 | `GET /rules/status`, `POST /rules/proposals/run` | signed in | Status; request a change |
@@ -28,6 +28,12 @@ documents, and is never shown other cases.
 Single sign-on accounts belong to one issuer and subject, and never attach to a local username by themselves. An operator links
 one with `npm run mre -- user:link-sso <username> <issuer> <subject>`. Emergency rules stop, at the server only and audited:
 `npm run mre -- rollback --reason "<why>"`.
+
+Doing less than the engine recommends, and any label on an open case or question, takes two people.
+
+Security-relevant rows are sealed with `MRE_HASH_KEY` (`src/integrity.ts` lists them and what is not covered). A failed check
+refuses writes, exports and scoring with 409. `npm run mre -- verify-db` checks everything and prints a checkpoint to keep elsewhere.
+A database from before seals needs `npm run mre -- seal-db --reason "<why>"` once, which vouches for its rows as found.
 
 There is no persona switch. Each person has an account. Limits before a pilot: `docs/FUTURE_BACKEND.md`.
 Do not send real payment data to this prototype.

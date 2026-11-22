@@ -7,8 +7,8 @@
 | L3 Detection | Statistical tests on the account, each QR and the repeat-payer group | `engines/detectors.ts`, `engines/streams.ts` |
 | L4 Evidence Fusion | Log-odds, shrinkage, gate, ASK | `engines/evidenceFusion.ts` |
 | L5 Analyst Review | Honest story against front story | `engines/analystEngine.ts` |
-| L6 Governed Response | Six levels, narrow scope, two people | `engines/responseEngine.ts`, `backend/src/workflow.ts` |
-| L7 Audit & Learning | Sealed hash chain, labels, approved calibration | `backend/src/store.ts`, `backend/src/improverApi.ts` |
+| L6 Governed Response | Six levels, narrow scope, two people to restrict or to stand down | `engines/responseEngine.ts`, `backend/src/workflow.ts` |
+| L7 Audit & Learning | Hash chain, keyed row seals, labels, approved calibration | `backend/src/integrity.ts`, `backend/src/store.ts`, `backend/src/improverApi.ts` |
 
 ## Rules that hold everywhere
 

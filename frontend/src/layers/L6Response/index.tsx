@@ -23,10 +23,12 @@ export function L6View() {
         return;
       }
     }
-    approve(ok, { escrowConfirmed: escrow });
+    approve(ok, { escrowConfirmed: escrow, proposedAt: proposal?.at, level: proposal?.level });
   };
   const plan = planResponse(r, user), meta = RESPONSE_LEVELS.find(l => l.id === plan.level)!;
-  const proposal = pending?.response, held = caseId ? restrictions : [], lifting = ['L0', 'L1', 'L2'].includes(proposal?.level ?? ''), needsTwo = held.length > 0 || ['L3', 'L4', 'L5'].includes(plan.level);
+  const least = Math.max(Number(r.review.recommended.slice(1)), r.fusion.decision === 'OPEN_CASE' ? 2 : 0, r.fusion.followUp === 'ASK' ? 1 : 0, user.label === 'CONFIRMED_ILLICIT' ? 2 : 0);
+  const standsDown = user.label !== 'ADJUDICATED_BENIGN' && Number(plan.level.slice(1)) < least;
+  const proposal = pending?.response, held = caseId ? restrictions : [], lifting = ['L0', 'L1', 'L2'].includes(proposal?.level ?? ''), needsTwo = held.length > 0 || standsDown || ['L3', 'L4', 'L5'].includes(plan.level);
   const log = caseId ? audit.filter(a => /^L\d/.test(a.action)) : audit.filter(a => a.actor === 'MRE response engine');
   const isFlow = plan.level === 'L3' || plan.level === 'L4';
   return (
@@ -44,7 +46,7 @@ export function L6View() {
             {proposal ? <> Waiting for a second person to approve {proposal.by.username}’s proposal.</> : user.executed ? ' Action recorded.' : ' Not executed yet.'}
           </>
         ),
-        whyItMatters: 'No single person can freeze a merchant alone: a different person signs in with their own account to approve. Every action is written to the tamper-evident audit trail in L7.',
+        whyItMatters: 'No single person can freeze a merchant alone: a different person signs in with their own account to approve. On a saved case every action is written to the audit trail in L7, which shows later edits made without the server key. MRE records actions. It does not message merchants, disable links or move money.',
       }}
     >
       {quant && (
@@ -77,7 +79,7 @@ export function L6View() {
         <Panel title={caseId ? 'Approval (maker / checker)' : 'Legal-authority verification'} subtitle={caseId ? 'Nobody approves their own proposal.' : 'A separate step from the risk decision.'}>
           {caseId ? (
             <div className="space-y-3 text-sm">
-              <p className="text-xs text-mute">L0–L2 apply at once, unless this merchant has a restriction in force on any case: lifting or changing one needs the approval that the more severe level needs. L3 needs approval by a different reviewer. L4 and L5 need approval by a different user with the legal role; L5 also needs a confirmed-illicit label from two people.</p>
+              <p className="text-xs text-mute">L0–L2 apply at once only at or above what the engine recommends. Anything lower closes a case or question, so a different reviewer, admin or legal user approves it, until two people have cleared the case. While the merchant has a restriction in force on any case, changing it needs the approval of the more severe level. L3 needs approval by a different reviewer. L4 and L5 need approval by a different user with the legal role; L5 also needs a confirmed-illicit label from two people.</p>
               {held.map(h => <p key={h.caseId} role="status" className="rounded border border-line2 bg-panel2 px-3 py-2 text-xs"><b>{h.level} in force</b>{h.caseId !== caseId && <> (from case <Mono>{h.caseId}</Mono>)</>}<b>:</b> {h.actions.join('; ')}. It follows the merchant to every case and stays until a different person approves a change.</p>)}
               {proposal ? (<div className="rounded border border-stone-400/30 bg-stone-400/5 p-3">
                 <div className="text-sm"><b>{proposal.level}</b> proposed by <b>{proposal.by.username}</b> · {new Date(proposal.at).toLocaleString()}</div>

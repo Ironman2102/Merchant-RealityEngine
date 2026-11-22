@@ -4,12 +4,14 @@ import { profileUpdates } from '../../frontend/src/engines/learningEngine';
 import { planResponse } from '../../frontend/src/engines/responseEngine';
 import type { ResponseLevel } from '../../frontend/src/types/investigation';
 import type { Label } from '../../frontend/src/types/merchant';
-import { appendAudit, emptyUser, forClient, getCase, isCaseId, listCases, merchantCases, putCase, readAudit, restoreInForce, verifyAudit, type CaseRecord, type MerchantCase } from './store';
+import { appendAudit, assertCase, emptyUser, forClient, getCase, isCaseId, listCases, merchantCases, putCase, readAudit, restoreInForce, verifyAudit, type CaseRecord, type MerchantCase } from './store';
 import { analyzeDataset } from './algorithms/analyze';
 import { own, RULES } from '../../rules/index';
 import { sha256 } from './adapters/canonicalDataset';
+import { scrubText } from '../../adapters/privacy';
 import { samePerson, type Actor } from './auth';
 import { emit } from './events';
+import { atomic, IntegrityError } from './integrity';
 import { clearLabelEvents, getAllLabelEvents, merchantLabel, recordLabelEvents } from './improverApi';
 import { effectiveRates } from '../../engine/learnedRates';
 import { engineLevelOf, loadWorkflow, RESTRICTING } from '../../engine/workflowConfig';
@@ -44,15 +46,29 @@ export function restrictionsOn(rec: CaseRecord, cases: MerchantCase[] = merchant
 
 const fingerprint = (held: Restriction[]) => held.map(r => `${r.caseId}:${r.id}:${r.at}`).sort().join('|');
 
-/** `auto` in a config file can never skip approval of a restriction, nor of any change while one is in force. */
-const needsApproval = (held: Restriction[], l: string) => !responseOf(l)?.auto || restricts(l) || held.length > 0;
+const rankOf = (level: string) => Number(level.slice(1));
+
+/**
+ * Doing less than the engine recommends closes a case or a question, so it takes a second person until two people have
+ * cleared it. A confirmed merchant cannot be stood down below due diligence by one person either.
+ */
+function standsDown(rec: CaseRecord, id: string): boolean {
+  if (rec.user.label === 'ADJUDICATED_BENIGN') return false;
+  const f = rec.result.fusion;
+  const least = Math.max(rankOf(rec.result.review.recommended), f.decision === 'OPEN_CASE' ? 2 : 0, f.followUp === 'ASK' ? 1 : 0, rec.user.label === 'CONFIRMED_ILLICIT' ? 2 : 0);
+  return rankOf(engineLevelOf(wf(), id)) < least;
+}
+
+/** `auto` in a config file can never skip approval of a restriction, of standing down, or of any change while a restriction is in force. */
+const needsApproval = (rec: CaseRecord, held: Restriction[], l: string) => !responseOf(l)?.auto || restricts(l) || held.length > 0 || standsDown(rec, l);
 
 /** Who approves a move to `target`: the rule of the most severe of what is in force and where it would go. */
 function approvalRule(held: Restriction[], target: string): { roles: string[]; approvers: number; legal: boolean; rank: number } {
   const cfg = wf();
   const ruleOf = (id: string) => {
     const rule = own(cfg.approvals.levels, id), legal = needsLegal(id), level = engineLevelOf(cfg, id);
-    return { roles: rule?.approverRoles ?? [], approvers: rule?.approvers ?? 1, legal, rank: (legal ? 10 : 0) + Number(level.slice(1)) };
+    // An action that restricts nothing has no rule of its own. A reviewer, admin or legal user approves it.
+    return { roles: rule?.approverRoles ?? cfg.approvals.confirmedIllicit.confirmRoles, approvers: rule?.approvers ?? 1, legal, rank: (legal ? 10 : 0) + Number(level.slice(1)) };
   };
   return held.reduce((strictest, r) => {
     // A restriction from an older config keeps the rule of the same engine level. If there is none, only legal can move it.
@@ -80,11 +96,14 @@ function view(rec: CaseRecord, staff = true): ApiReply {
   const mechanism = top ? (MECHANISMS.find(m => m.id === top.id)?.name ?? top.id) : 'none';
   const l6 = rec.pending.response ? 'waiting' : user.executed ? 'done' : rec.response?.blocked.length ? 'blocked' : 'waiting';
   const l7 = user.label ? 'done' : 'waiting';
-  const mine = ownRestriction(rec), cases = staff ? merchantCases(result.scenario.primaryMerchantId) : [];
+  const mine = ownRestriction(rec);
+  let intact = verifyAudit(rec.id).ok, cases: MerchantCase[] = [];
+  // A tampered case is still shown, marked as tampered. It is only writes and exports that are refused.
+  if (staff) try { cases = merchantCases(result.scenario.primaryMerchantId); } catch (e) { if (!(e instanceof IntegrityError)) throw e; intact = false; }
   const held = staff ? restrictionsOn(rec, cases) : mine ? [mine] : [];
   const stillOn = held.length ? ` ${held.map(r => (r.caseId === rec.id ? r.level : `${r.level} from ${r.caseId}`)).join(', ')} stays in force until a change is approved.` : '';
   const others = cases.filter(c => c.id !== rec.id).reverse();
-  const history = others.filter((c, i) => c.label || i < 5).map(({ id, createdAt, decision, label }) => ({ id, createdAt, decision, label }));
+  const history = others.filter((c, i) => c.label || c.decision === 'OPEN_CASE' || c.followUp === 'ASK' || i < 5).map(({ id, createdAt, decision, followUp, label }) => ({ id, createdAt, decision, followUp, label }));
   const steps = [
     `Read ${counts.SALE?.n ?? 0} sales, ${counts.REFUND?.n ?? 0} refunds, ${counts.SETTLEMENT?.n ?? 0} settlements, ${counts.TRANSFER?.n ?? 0} payouts. ${missing.length ? `Missing feeds stay UNKNOWN: ${missing.join(', ')}.` : 'No feed is marked missing.'}`,
     `${result.l2.profile.name}, ${result.l2.profile.category}. ${alarms} CUSUM alarm week${alarms === 1 ? '' : 's'}.${peak?.rSeasonal != null ? ` Latest seasonal residual ${peak.rSeasonal.toFixed(2)}.` : ''}`,
@@ -143,8 +162,9 @@ function view(rec: CaseRecord, staff = true): ApiReply {
       history,
       learning: rec.learning,
       audit: readAudit(rec.id).map(({ seq, at, actor, action, detail, prevHash, hash }) => ({ seq, at, actor, action, detail, prevHash, hash })),
-      auditIntact: verifyAudit(rec.id).ok,
-      pending: rec.pending,
+      auditIntact: intact,
+      // `over` fingerprints the restrictions on the merchant's other cases.
+      pending: staff || !rec.pending.response ? rec.pending : { ...rec.pending, response: { ...rec.pending.response, over: undefined } },
       status: user.label ? wf().statuses.labelled : rec.pending.response ? wf().statuses.proposed : user.executed || held.length ? wf().statuses.approved : wf().statuses.opened,
       rulesVersion: result.fusion.rulesVersion,
       posterior: { p: result.fusion.posterior, ci: result.fusion.posteriorCi, prior: result.fusion.prior },
@@ -155,7 +175,10 @@ function view(rec: CaseRecord, staff = true): ApiReply {
 /** Load an existing case. Cases are never created here, and client-supplied user state is never trusted. */
 function ensure(id: string): CaseRecord | ApiReply {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
-  return getCase(id) ?? fail(404, 'No case with that id.');
+  const rec = getCase(id);
+  if (!rec) return fail(404, 'No case with that id.');
+  assertCase(id);
+  return rec;
 }
 
 export function openInvestigation(raw: unknown, actor: Actor, client?: string): ApiReply {
@@ -169,9 +192,11 @@ export function openInvestigation(raw: unknown, actor: Actor, client?: string): 
     id, createdAt: new Date().toISOString(), createdBy: actor.id > 0 ? actor.id : null, client, engineVersion: analysis.engineVersion, datasetSha256: sha256(JSON.stringify(raw)),
     result: analysis.result, user: emptyUser(), response: null, inForce: null, learning: null, pending: {},
   };
-  putCase(rec);
   const f = analysis.result.fusion;
+  atomic(() => {
+  putCase(rec);
   appendAudit(id, [{ action: 'Case analysed', detail: `${f.decision} · P(front) ${f.posterior.toFixed(4)} [${f.posteriorCi.map(x => x.toFixed(4)).join(', ')}] · rules ${f.rulesVersion} · dataset ${rec.datasetSha256.slice(0, 16)}` }], actor);
+  });
   void emit('case.opened', id, { decision: f.decision, posterior: f.posterior });
   return view(getCase(id)!);
 }
@@ -192,7 +217,7 @@ export function listInvestigations(): ApiReply {
         merchant: { id: rec.result.scenario.profile.id, name: rec.result.scenario.profile.name, category: rec.result.scenario.profile.category, city: rec.result.scenario.profile.city },
         result: { decision: rec.result.fusion.decision, priority: rec.result.fusion.priority, recommended: rec.result.review.recommended, legitStatus: rec.result.review.legitStatus, posterior: rec.result.fusion.posterior },
         user: { executed: rec.user.executed, label: rec.user.label },
-        workflow: view(rec).body.workflow,
+        ...(({ workflow, auditIntact }) => ({ workflow, auditIntact }))(view(rec).body),
       })),
     },
   };
@@ -203,8 +228,8 @@ export function reviewInvestigation(id: string, body: unknown, actor: Actor): Ap
   if ('status' in rec) return rec;
   if (!can(actor, wf().approvals.actions.review ?? [])) return fail(403, 'Your role cannot record reviews.');
   const input = (body ?? {}) as { notes?: unknown; clarification?: unknown };
-  if (typeof input.notes === 'string') rec.user.notes = input.notes.slice(0, 2000);
-  if (typeof input.clarification === 'string') rec.user.clarification = input.clarification.slice(0, 2000);
+  if (typeof input.notes === 'string') rec.user.notes = scrubText(input.notes.slice(0, 2000));
+  if (typeof input.clarification === 'string') rec.user.clarification = scrubText(input.clarification.slice(0, 2000));
   putCase(rec);
   appendAudit(id, [{ action: 'Recorded review', detail: rec.user.notes }], actor);
   return view(getCase(id)!);
@@ -239,8 +264,8 @@ function execute(rec: CaseRecord, id: string, actor: Actor, approvedBy: string |
 }
 
 /**
- * Propose a response. An action that restricts nothing takes effect at once, unless this merchant has a restriction in
- * force on any of its cases. A restriction, and any change while one is in force, waits for a second person (see
+ * Propose a response. An action that restricts nothing takes effect at once, unless it does less than the engine recommends
+ * or this merchant has a restriction in force on any of its cases. Those, and every restriction, wait for a second person (see
  * approveInvestigation) and changes nothing until then.
  */
 export function respondInvestigation(id: string, body: unknown, actor: Actor): ApiReply {
@@ -253,7 +278,7 @@ export function respondInvestigation(id: string, body: unknown, actor: Actor): A
   if (rec.pending.response && !samePerson(rec.pending.response.by, actor))
     return fail(409, 'Another person\'s proposal is waiting. It must be approved or rejected before a new response is recorded.');
   const held = restrictionsOn(rec);
-  if (needsApproval(held, level)) {
+  if (needsApproval(rec, held, level)) {
     rec.pending.response = { level, by: { id: actor.id, username: actor.username }, at: new Date().toISOString(), over: fingerprint(held) };
     rec.user.chosenLevel = engineLevelOf(wf(), level); rec.user.executed = false;
     putCase(rec);
@@ -266,13 +291,14 @@ export function respondInvestigation(id: string, body: unknown, actor: Actor): A
   return view(getCase(id)!);
 }
 
-export function approveInvestigation(id: string, body: unknown, actor: Actor): ApiReply {
+/** `mustName`: over HTTP an approval names the proposal it saw, so the proposer cannot swap it just before the click. */
+export function approveInvestigation(id: string, body: unknown, actor: Actor, mustName = false): ApiReply {
   const rec = ensure(id);
   if ('status' in rec) return rec;
   const p = rec.pending.response;
   if (!p) return fail(409, 'There is no proposed response waiting for approval.');
   const input = (body ?? {}) as { approve?: unknown; escrowConfirmed?: unknown; reason?: unknown };
-  const reason = typeof input.reason === 'string' ? input.reason.slice(0, 500) : '';
+  const reason = typeof input.reason === 'string' ? scrubText(input.reason.slice(0, 500)) : '';
   const self = samePerson(p.by, actor), held = restrictionsOn(rec), rule = approvalRule(held, p.level);
   // The proposer may withdraw, never approve.
   if (self && input.approve !== false) return fail(403, 'You cannot approve your own proposal. A different person must approve it.');
@@ -283,6 +309,9 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
     appendAudit(id, [{ action: `${p.level} ${self ? 'withdrawn' : 'rejected'}`, detail: reason || `Proposal by ${p.by.username} ${self ? 'withdrawn' : 'rejected'}.` }], actor);
     return view(getCase(id)!);
   }
+  const seen = input as { proposedAt?: unknown; level?: unknown };
+  if ((mustName || seen.proposedAt !== undefined) && (seen.proposedAt !== p.at || seen.level !== p.level))
+    return fail(409, 'The approval must name the proposal that is waiting. It may have changed: refresh and look again.');
   // The config may have changed since the proposal.
   if ((p.over ?? '') !== fingerprint(held)) return fail(409, 'The restrictions on this merchant changed after this was proposed. Reject it and propose again.');
   if (!responseOf(p.level)) return fail(409, `${p.level} is no longer a response in the workflow config. Reject it and propose again.`);
@@ -314,7 +343,7 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
     if (!self && !can(actor, wf().approvals.confirmedIllicit.confirmRoles)) return fail(403, 'Only the proposer, or a reviewer, admin or legal user, can reject a proposed label.');
     delete rec.pending.label;
     putCase(rec);
-    const why = typeof input.reason === 'string' ? input.reason.slice(0, 500) : '';
+    const why = typeof input.reason === 'string' ? scrubText(input.reason.slice(0, 500)) : '';
     appendAudit(id, [{ action: `${p.label} ${self ? 'withdrawn' : 'rejected'}`, detail: `Proposed by ${p.by.username}.${why ? ` ${why}` : ''}` }], actor);
     return view(getCase(id)!);
   }
@@ -348,13 +377,14 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
       profile: profileUpdates(rec.result, label),
     };
   };
-  // Two people: confirming a front, changing a final label, finishing anything that two people started, and clearing
-  // a merchant that has an opened case, a confirmation or a restriction on any of its cases. This reads the cases
-  // themselves, because a label recorded as a dispute never becomes a calibration event.
-  const cases = merchantCases(merchant);
+  // Two people: confirming a front, changing a final label, finishing anything that two people started, closing a case
+  // or question, and clearing a merchant that has a case, question, confirmation or restriction on any of its cases. This
+  // reads the cases themselves, because a label recorded as a dispute never becomes a calibration event.
+  const cases = merchantCases(merchant), f = rec.result.fusion;
   const twoPeople = !!rec.pending.label || label === 'CONFIRMED_ILLICIT' || was === 'CONFIRMED_ILLICIT' || was === 'ADJUDICATED_BENIGN'
-    || (label === 'ADJUDICATED_BENIGN' && (rec.result.fusion.decision === 'OPEN_CASE' || merchantLabel(merchant) === 'CONFIRMED_ILLICIT'
-      || cases.some(c => c.decision === 'OPEN_CASE' || c.label === 'CONFIRMED_ILLICIT') || restrictionsOn(rec, cases).length > 0));
+    || f.decision === 'OPEN_CASE' || f.followUp === 'ASK'
+    || (label === 'ADJUDICATED_BENIGN' && (merchantLabel(merchant) === 'CONFIRMED_ILLICIT'
+      || cases.some(c => c.decision === 'OPEN_CASE' || c.followUp === 'ASK' || c.label === 'CONFIRMED_ILLICIT') || restrictionsOn(rec, cases).length > 0));
   if (!twoPeople) {
     if (!can(actor, wf().approvals.actions.labelBenign ?? [])) return fail(403, 'Your role cannot label cases.');
     finalize(); putCase(rec);

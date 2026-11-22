@@ -115,4 +115,9 @@ Edit any sample and re-upload it to see how the flags change, e.g. set the betti
 - `merchant.undeclared`: any of `ticketMax`, `hours`, `catchment`, `expectedRoundShare`. Those fields are then not tested.
 - `weeklySales` must agree with the last 14 days of the ledger within 25%, or volume evidence is UNKNOWN.
 - Payments may be up to ₹2 crore; settlements and payouts up to ₹1,000 crore.
+- Times are ISO 8601. One with no offset is read as Indian time on every host.
+- On the server, fields outside this format are dropped, and phone, PAN, card, e-mail and UPI patterns in the rest are masked.
+  Merchant ids and QR / link ids are kept as they are.
+- A batch export is more forgiving than this JSON format: bad rows are skipped and counted in `rows_skipped`, a bad merchant field
+  is treated as not declared, and an unusable `context.json` entry is ignored (`context_ignored`).
 - `orderId: null` means "checked, none found". Leave it out when it was never checked.

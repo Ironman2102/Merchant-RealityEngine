@@ -27,14 +27,14 @@ export function L3View() {
     <LayerFrame
       n={3}
       brief={{
-        checks: `Runs ${r.evidence.length} behavioural checks across ${FAMILIES.length} areas (ticket amounts, customer states, payment hours, refunds, links, settlements, and drift) on the account and on every QR. A check only flags when the gap is both statistically real and large enough to matter in practice.`,
+        checks: `Runs ${r.evidence.length} behavioural checks across ${FAMILIES.length} areas (ticket amounts, customer states, payment hours, refunds, links, settlements, and drift) on the account and on each QR with 30+ payments. A check only flags when the gap is both statistically real and large enough to matter in practice.`,
         happened: (
           <>
             <b>{cnt('ILLICIT')} red flag(s)</b>, <b>{cnt('BENIGN')} normal check(s)</b>, and <b>{cnt('UNKNOWN')} skipped (no data)</b>.
             {fired.length > 0 ? <> Top red flags: <b>{fired.slice(0, 2).map(e => e.name).join(' & ')}</b>.</> : ' Every available check looked normal for this business.'}
           </>
         ),
-        whyItMatters: 'Individual checks only report observations—not guilt. Next, L4 combines these signals, removes double-counting within the same category, and tests whether independent proof agrees.',
+        whyItMatters: 'Individual checks only report observations—not guilt. Next, L4 combines these signals, reduces double-counting within the same category, and tests whether independent proof agrees.',
       }}
     >
       {quant && (
@@ -105,7 +105,7 @@ export function L3View() {
               </div>)}
           </div>))}
       </Panel>
-      <Callout tone="info" title="Why L3 does not open a case on its own">Checks here only gather facts. Combining them safely—without double-counting related signals or punishing missing feeds—happens next in L4.</Callout>
+      <Callout tone="info" title="Why L3 does not open a case on its own">Checks here only gather facts. Combining them safely—with less weight for related signals or punishing missing feeds—happens next in L4.</Callout>
     </LayerFrame>
   );
 }

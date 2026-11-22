@@ -7,11 +7,11 @@ import { LAYERS } from '../data/evidence';
 const IMPL: [string, string, string][] = [
   ['L1 Ingest & Lineage', 'Event normalisation, refund linkage, HMAC-SHA256 pseudonymisation, coverage map, PA CSV adapter', 'Kafka or streaming connectors, schema registry, HSM-managed keys'],
   ['L2 Merchant Profile', 'Log-normal weekly volume model with festival calendar offsets, ARL-calibrated CUSUM (h = 2.35), Bayesian online changepoint', 'Live portfolio peer cohort calibration across all active merchants'],
-  ['L3 Detection', '28 live detectors across 10 families, run on the account, every QR and the repeat-payer group; 10 advisory patterns (S1–S7, N1–N3)', 'Portfolio-wide linking, cross-PA consortium signals'],
+  ['L3 Detection', '28 live detectors across 10 families, run on the account, each QR with 30+ sales (up to 50) and the repeat-payer group; 10 advisory patterns (S1–S7, N1–N3)', 'Portfolio-wide linking, cross-PA consortium signals'],
   ['L4 Evidence Fusion', 'Bayesian log-odds fusion with within-family shrinkage (ρ = 0.3), Monte-Carlo 90% interval, conduct + independence gate, question-before-case, 4 mechanisms', 'Isotonic/conformal recalibration on 1,000+ real shadow-pilot labels'],
-  ['L5 Analyst Review', 'Competing explanations, reasoning trace waterfall, counterfactual minimal flip sets, Value of Information (₹), constrained logistic second opinion', 'Enterprise case assignment, SLA queues, merchant document portal'],
-  ['L6 Governed Response', 'Expected-loss decision theory (L0–L5), maker/checker role separation, surgical L3 link disablement', 'Direct payment-rail webhooks, escrow ledger integration'],
-  ['L7 Audit & Learning', 'SHA-256 hash-chained SQLite audit, RBI/FIU-IND evidence pack, approved label calibration, red team, holdout-tested rule changes', 'External daily signed audit digest anchoring, FINnet portal XML export'],
+  ['L5 Analyst Review', 'Competing explanations, reasoning trace waterfall, single-signal and greedy flip-set counterfactuals, Value of Information (₹), constrained logistic second opinion', 'Enterprise case assignment, SLA queues, merchant document portal'],
+  ['L6 Governed Response', 'Expected-loss decision theory (L0–L5), maker/checker role separation, link-scoped L3 restriction (recorded, not sent to a payment rail)', 'Direct payment-rail webhooks, escrow ledger integration'],
+  ['L7 Audit & Learning', 'SHA-256 hash-chained SQLite audit with keyed row seals, RBI/FIU-IND evidence pack, approved label calibration, red team, holdout-tested rule changes', 'External daily signed audit digest anchoring, FINnet portal XML export'],
 ];
 export function ArchitecturePage() {
   return (

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { asSubmitted, datasetToScenario } from '../../../frontend/src/data/dataset';
 import type { Scenario } from '../../../frontend/src/types/merchant';
+import { minimise } from '../../../adapters/privacy';
 import { loadHashKey, maskIds, pseudonym as hmacPseudonym } from '../../../adapters/pseudonym';
 
 export interface DatasetAdapterResult {
@@ -22,7 +23,7 @@ export function pseudonymize(raw: unknown): unknown {
   if (Array.isArray(d.bankCredits)) for (const b of d.bankCredits) if (b && typeof b === 'object') maskIds(b, loadHashKey, ['beneficiaryAccount']);
   // An upload cannot verify its own Context Passport, nor name someone else as its maker.
   if (Array.isArray(d.contextPassports)) d.contextPassports = d.contextPassports.map(asSubmitted);
-  return d;
+  return minimise(d, loadHashKey);
 }
 
 /** First pilot adapter: uploaded mre-dataset/v1 JSON. Provider adapters should map into the same canonical shape. */

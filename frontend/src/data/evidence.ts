@@ -36,7 +36,7 @@ export const LAYERS: LayerMeta[] = [
     inputs: ['Declared category, products and MCC', 'Expected ticket band and hours', 'Catchment geography', 'Seasonal expectations', 'Event history from L1'],
     processes: ['Anchored baseline', 'Seasonal expectation', 'Rolling challenger', 'Residual calculation', 'CUSUM drift tracking'],
     outputs: ['Approved merchant profile', 'Behavioural expectations'], next: 'L3 detectors compare observed behaviour with these expectations.' },
-  { n: 3, code: 'L3', name: 'Detection', tagline: 'Tests on the account, and on every QR on its own.',
+  { n: 3, code: 'L3', name: 'Detection', tagline: 'Tests on the account, and on each busy QR on its own.',
     does: 'Runs transparent detectors for each evidence family. Every detector reports what it observed, what it expected, and why it produced a signal. Missing data produces UNKNOWN, never a guess.',
     inputs: ['Event store and coverage map', 'Merchant profile and baselines', 'Website and order data', 'Cohort peers'],
     processes: ['Run detectors per family', 'Compute residuals and CUSUM', 'Check cohort continuity', 'Emit EvidenceItems with status'],

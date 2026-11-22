@@ -27,7 +27,7 @@ interface Ctx {
   verifyPassport: (id: string, ok: boolean) => void; endorsePassport: (id: string) => void; revokePassport: (id: string, reason: string) => void; submitPassport: (body: Record<string, unknown>) => void;
   caseId: string | null; loadCase: (id: string, sc: Scenario, server: ServerUser, animate?: boolean) => void; syncError: string;
   /** Server-side governance state for a saved case: proposals waiting for a second person, and audit-chain status. */
-  pending: ServerUser['pending']; inForce: ServerUser['inForce']; restrictions: NonNullable<ServerUser['restrictions']>; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
+  pending: ServerUser['pending']; inForce: ServerUser['inForce']; restrictions: NonNullable<ServerUser['restrictions']>; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string; proposedAt?: string; level?: string }) => void;
 }
 const C = createContext<Ctx | null>(null);
 export const useInvestigation = () => { const c = useContext(C); if (!c) throw new Error('InvestigationProvider missing'); return c; };
@@ -107,7 +107,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     try { adopt(await updatePilotCase(caseId, action, payload) as ServerUser); }
     catch (e) { setSyncError(e instanceof Error ? e.message : 'Could not save to the case record.'); }
   }, [caseId, adopt]);
-  const approve = useCallback((ok: boolean, extra: { escrowConfirmed?: boolean; reason?: string } = {}) => {
+  const approve = useCallback((ok: boolean, extra: { escrowConfirmed?: boolean; reason?: string; proposedAt?: string; level?: string } = {}) => {
     if (!caseId) return;
     setSyncError('');
     approvePilotCase(caseId, ok, extra).then(r => adopt(r as ServerUser)).catch(e => setSyncError(e instanceof Error ? e.message : 'Could not save the approval.'));

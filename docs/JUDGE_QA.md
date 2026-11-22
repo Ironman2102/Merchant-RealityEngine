@@ -28,6 +28,17 @@ Yes. On fresh synthetic seeds, 5 of 10,800 honest merchants opened a case, all b
 regulars. A fix that counted people instead of payments removed 3 of them and lost 80 of 3,112 caught fronts, so we did not adopt
 it. Two people can clear such a case, and later cases show that decision. A passport cannot clear it.
 
+**Why not just use a rule?**
+Fair challenge. A one-line rule (over 25% of a busy QR is round payments from people who paid that way 4+ times) caught 601 of
+1,000 synthetic fronts with no false alarm. We caught 653 with payer location and 328 without it, so without location that rule
+is better at opening cases. What we add: a question before a penalty, side betting mixed into the same QR when location is known,
+evidence other than round amounts, and an explanation for each decision. Both are easy to evade by avoiding round amounts.
+
+**Is the audit tamper-proof?**
+No. It is tamper-evident: rows are sealed with a server key, so an edit or deletion made in the database without that key is
+detected, and writes and exports then stop. A trigger planted in the database, and one old row put back with its old seal, are detected too. Someone with the key can forge it. An old copy of the whole database can only be
+noticed against a checkpoint kept elsewhere (`mre verify-db`).
+
 **Can't they pick a looser category?**
 The category picks what is normal, so looking normal earns little credit, and conduct tests ignore the category. Without payer
 location a camouflaged front gets a question, not a case. That is a real gap.
@@ -40,10 +51,10 @@ Amount, time, payer token, QR or link id, refunds, settlements, MCC, onboarding 
 not assume you can see post-settlement payouts.
 
 **What happens if the merchant ignores the question?**
-A person follows up after 7 days and may open due diligence. Silence never restricts money automatically.
+The proposed process is a follow-up after 7 days. The prototype has no timer, message or reply channel. Silence never restricts money automatically.
 
 **What if you are wrong about an honest shop?**
-We ask before we restrict, only an identified link can be restricted, a different person approves, and the letter has an appeal route.
+We ask before we restrict, only an identified link can be restricted, a different person approves, and the draft letter names an appeal route (there is no appeal workflow yet).
 
 **Do you tip off the fraudster?**
 The letter is identical for every merchant and names no signal. [RBI's KYC Direction](https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=11566) requires the reasons to stay confidential.

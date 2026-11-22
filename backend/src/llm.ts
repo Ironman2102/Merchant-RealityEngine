@@ -9,7 +9,7 @@
 import type { Trace } from '../../frontend/src/engines/traceEngine';
 import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { templateSummary } from '../../engine/summary';
-import { getCase, isCaseId } from './store';
+import { assertCase, getCase, isCaseId } from './store';
 import type { ApiReply } from './workflow';
 import type { Actor } from './auth';
 
@@ -36,6 +36,7 @@ export async function summarise(id: string, _actor: Actor): Promise<ApiReply> {
   if (!isCaseId(id)) return { status: 400, body: { error: 'Invalid case id.' } };
   const rec = getCase(id);
   if (!rec) return { status: 404, body: { error: 'No case with that id.' } };
+  assertCase(id);
   const t = buildTrace(rec.result), text = templateSummary(t);
   return { status: 200, body: { source: 'template', text, verified: verifySummary(text, t) } };
 }

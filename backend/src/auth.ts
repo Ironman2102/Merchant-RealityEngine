@@ -6,6 +6,7 @@
 import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 import { getDb } from './db';
+import { rowTrusted, rowValid, sealedInsert, sealedWrite } from './integrity';
 import { verifyIdToken, type OidcCheck } from './oidc';
 import { loadHashKey, weakSecret } from '../../adapters/pseudonym';
 
@@ -72,7 +73,7 @@ function bootActor(boot: { username: string; password: string; role: Role }): Ac
   const row = getDb().prepare('SELECT id, disabled, oidc_identity FROM users WHERE username = ?').get(boot.username) as { id: number; disabled: number; oidc_identity: string | null } | undefined;
   if (!row) return createUser(boot.username, boot.password, boot.role);
   // A configured account never takes over a single sign-on identity's row.
-  return row.disabled || row.oidc_identity ? null : { id: row.id, username: boot.username, role: boot.role };
+  return row.disabled || row.oidc_identity || !rowTrusted('users', row.id) ? null : { id: row.id, username: boot.username, role: boot.role };
 }
 
 /** Maker/checker compares people by id and by name, because ids are not stable across serverless instances. */
@@ -109,7 +110,8 @@ function sameSecret(a: string, b: string): boolean {
 function issueSession(actor: Actor, configured = false): string {
   const signed = configured ? signActor(actor) : null;
   const token = signed ?? randomBytes(32).toString('base64url');
-  getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), actor.id, Date.now() + SESSION_MS);
+  const hash = tokenHash(token);
+  sealedWrite('sessions', hash, () => getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(hash, actor.id, Date.now() + SESSION_MS));
   return token;
 }
 const scrypt = (pw: string, salt: string) => scryptSync(pw, salt, 64, { N: 16384, r: 8, p: 1 }).toString('hex');
@@ -122,8 +124,8 @@ export function createUser(username: string, password: string, role: Role): Acto
   if (!ROLES.includes(role)) throw Object.assign(new Error('Unknown role.'), { status: 400 });
   if (nameTaken(username)) throw Object.assign(new Error('That username is taken. Usernames ignore case.'), { status: 400 });
   const salt = randomBytes(16).toString('hex');
-  const r = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at) VALUES (?, ?, ?, ?, ?)').run(username, role, salt, scrypt(password, salt), new Date().toISOString());
-  return { id: Number(r.lastInsertRowid), username, role };
+  const id = sealedInsert('users', () => Number(getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at, disabled, oidc_identity) VALUES (?, ?, ?, ?, ?, 0, NULL)').run(username, role, salt, scrypt(password, salt), new Date().toISOString()).lastInsertRowid));
+  return { id, username, role };
 }
 
 /** Returns a session token, or null. Same work whether or not the user exists (no username probing by timing). */
@@ -140,7 +142,7 @@ export function login(username: string, password: string): { token: string; acto
     { id: number; username: string; role: Role; pw_salt: string; pw_hash: string; disabled: number } | undefined;
   const got = Buffer.from(scrypt(pw, row?.pw_salt ?? 'no-such-user-salt'), 'hex');
   const want = Buffer.from(row?.pw_hash ?? '00'.repeat(64), 'hex');
-  if (!row || row.disabled || !timingSafeEqual(got, want)) return null;
+  if (!row || row.disabled || !timingSafeEqual(got, want) || !rowTrusted('users', row.id)) return null;
   const actor = { id: row.id, username: row.username, role: row.role };
   return { token: issueSession(actor), actor };
 }
@@ -164,9 +166,9 @@ export function loginWithIdToken(idToken: string, check: OidcCheck): { token: st
   const known = getDb().prepare('SELECT id, username, disabled FROM users WHERE oidc_identity = ?').get(identity) as { id: number; username: string; disabled: number } | undefined;
   let id: number, username: string;
   if (known) {
-    if (known.disabled) return null;
+    if (known.disabled || !rowTrusted('users', known.id)) return null;
     ({ id, username } = known);
-    getDb().prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
+    sealedWrite('users', known.id, () => getDb().prepare('UPDATE users SET role = ? WHERE id = ?').run(role, known.id));
   } else {
     username = usernameFromSub(verified.sub);
     if (bootAccounts().some(u => u.username.toLowerCase() === username.toLowerCase())) return null;
@@ -175,8 +177,8 @@ export function loginWithIdToken(idToken: string, check: OidcCheck): { token: st
     if (taken) username = `oidc-${identity.slice(0, 16)}`;
     if (taken && nameTaken(username)) return null;
     const salt = randomBytes(16).toString('hex');
-    const made = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at, oidc_identity) VALUES (?, ?, ?, ?, ?, ?)').run(username, role, salt, scrypt(randomBytes(24).toString('base64url'), salt), new Date().toISOString(), identity);
-    id = Number(made.lastInsertRowid);
+    const name = username, pw = scrypt(randomBytes(24).toString('base64url'), salt);
+    id = sealedInsert('users', () => Number(getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at, disabled, oidc_identity) VALUES (?, ?, ?, ?, ?, 0, ?)').run(name, role, salt, pw, new Date().toISOString(), identity).lastInsertRowid));
   }
   const actor = { id, username, role };
   return { token: issueSession(actor), actor };
@@ -190,12 +192,12 @@ export function linkSsoIdentity(username: string, issuer: string, sub: string): 
   if (row.oidc_identity) throw new Error('That account is already linked.');
   if (bootAccounts().some(u => u.username === username)) throw new Error('A configured account cannot be linked.');
   if (db.prepare('SELECT 1 FROM users WHERE oidc_identity = ?').get(identity)) throw new Error('That identity already has an account.');
-  db.prepare('UPDATE users SET oidc_identity = ? WHERE id = ?').run(identity, row.id);
+  sealedWrite('users', row.id, () => db.prepare('UPDATE users SET oidc_identity = ? WHERE id = ?').run(identity, row.id));
 }
 
 export function logout(token: string): void {
   const hash = tokenHash(token);
-  getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(hash);
+  if (rowValid('sessions', hash)) sealedWrite('sessions', hash, () => getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(hash));
   getDb().prepare('INSERT OR IGNORE INTO revoked_tokens (token_hash, at) VALUES (?, ?)').run(hash, Date.now());
 }
 
@@ -204,7 +206,7 @@ export function actorFromToken(token: string | undefined): Actor | null {
   if (token.startsWith(`${TOKEN_VERSION}.`)) return actorFromSigned(token);
   const row = getDb().prepare('SELECT u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND u.disabled = 0')
     .get(tokenHash(token), Date.now()) as Actor | undefined;
-  return row ?? null;
+  return row && rowTrusted('sessions', tokenHash(token)) && rowTrusted('users', row.id) ? row : null;
 }
 
 export function readCookie(req: IncomingMessage, name = COOKIE): string | undefined {

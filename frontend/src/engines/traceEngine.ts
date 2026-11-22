@@ -76,7 +76,7 @@ export function buildTrace(r: InvestigationResult): Trace {
       const g = fuse(ev.map(x => (dropIds.has(x.id) ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, opts);
       if (g.decision === 'NO_CASE') {
         counterfactuals.push({
-          what: `Minimal flip set: without ${[...dropIds].join(' + ')} (${dropIds.size} signals)`,
+          what: `Flip set (greedy): without ${[...dropIds].join(' + ')} (${dropIds.size} signals)`,
           posterior: g.posterior,
           action: g.decisionAnalysis.recommended,
           decision: g.decision,

@@ -23,7 +23,7 @@ export function L4View() {
     <LayerFrame
       n={4}
       brief={{
-        checks: 'Combines all L3 checks into a single probability, shrinks correlated red flags inside the same family so they cannot be double-counted, ignores missing feeds (UNKNOWN = 0), and opens a case only when independent evidence includes conduct that a change of business cannot explain.',
+        checks: 'Combines all L3 checks into a single probability, shrinks correlated red flags inside the same family so they count for less, ignores missing feeds (UNKNOWN = 0), and opens a case only when independent evidence includes conduct that a change of business cannot explain.',
         happened: (
           <>
             Started from a <b>{P(f.prior)}</b> category base rate → moved to <b>{P(f.posterior)} front likelihood</b> across <b>{f.independentFamilies.length} evidence families</b> ({f.systems.length} independent data source{f.systems.length === 1 ? '' : 's'}).{' '}
@@ -35,7 +35,7 @@ export function L4View() {
           : 'Without independent corroboration across multiple families, the safety gate protects this merchant from a false alarm.',
       }}
     >
-      <Panel title="How the engine reached this verdict (step by step)" subtitle="Why correlated alerts aren't double-counted and how the safety gate works.">
+      <Panel title="How the engine reached this verdict (step by step)" subtitle="How correlated alerts count for less and how the safety gate works.">
         <div className="grid gap-3 md:grid-cols-3">
           <div className="rounded border border-line bg-panel2 p-3.5 text-sm">
             <div className="text-xs font-medium text-mute">Step 1 · Starting guess (Base rate)</div>

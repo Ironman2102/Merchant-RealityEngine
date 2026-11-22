@@ -60,7 +60,7 @@ export function runInvestigation(sc: Scenario, opts: { draws?: number } = {}): I
   if (bare.result.fusion.followUp === 'ASK' && result.fusion.followUp === 'NONE') {
     // The question is answered, not erased: whoever reads the case sees that it was raised and what answered it.
     result.passportAnswered = passportsInForce(sc).map(p => p.id);
-    result.fusion.gateReason += ` A question about this change was answered by passport ${result.passportAnswered.join(', ')}. It returns if the passport is revoked or expires.`;
+    result.fusion.gateReason += ` A question about this change was answered by passport ${result.passportAnswered.join(', ')}. Revoking it reopens the question. Once it expires, a later file asks again.`;
   }
   return result;
 }

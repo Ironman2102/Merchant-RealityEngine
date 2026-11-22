@@ -27,11 +27,11 @@ export function PassportPanel() {
   };
 
   return (
-    <Panel title="Context Passport" subtitle="How an honest merchant explains a change. It covers one QR for a set period, counts only after a second person checks the document, and can never excuse misconduct signals.">
+    <Panel title="Context Passport" subtitle="How an honest merchant explains a change. It covers one QR for a set period, counts only after a second person checks the document, and is switched off whenever a misconduct signal fires. It cannot stop a forged document explaining a change where none fires.">
       <div className="space-y-3 text-sm">
         {!list.length && <p className="text-xs text-mute">No change has been recorded for this merchant.{!caseId && ' Passports are recorded on a saved case in the AI Engine.'}</p>}
         {result.passportsSuspended && <p role="status" className="rounded-lg border border-line bg-panel2 p-2 text-xs">Verified passports are not applied to this case: a conduct signal fired, and a passport cannot explain conduct. The score is the same as with no passport.</p>}
-        {!!result.passportAnswered?.length && <p role="status" className="rounded-lg border border-line bg-panel2 p-2 text-xs">This change raised a question, and passport {result.passportAnswered.join(', ')} answered it. The question returns if the passport is revoked or expires.</p>}
+        {!!result.passportAnswered?.length && <p role="status" className="rounded-lg border border-line bg-panel2 p-2 text-xs">This change raised a question, and passport {result.passportAnswered.join(', ')} answered it. Revoking it reopens the question. Once it expires, a later file asks again.</p>}
         {list.map(p => (
           <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-panel2 p-3">
             <div className="min-w-0">

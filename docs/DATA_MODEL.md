@@ -8,4 +8,5 @@ Types live in `frontend/src/types`.
 - **EvidenceItem** (`evidence.ts`): one detector's result: status, log-likelihood, `signal` (profile or conduct), test, p, effect, n.
 - **InvestigationResult** (`investigation.ts`): evidence and fusion for the headline `scope`, every stream's result, and `suspectLinks`.
 
-The server stores pseudonymised events, never the raw upload.
+The server stores only the format's fields: identifiers as keyed pseudonyms, and phone, PAN, GSTIN, Aadhaar, card, e-mail and UPI
+patterns in text masked (`adapters/privacy.ts`). The raw upload is not stored. Names in free text are not detected.

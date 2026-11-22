@@ -13,6 +13,7 @@ import type { CoverageKey, CoverageState, EmbedRecord, CatalogueItem, GraphSpec,
 import { RULES } from '../../../rules/index';
 import { passportErrors } from '../engines/passport';
 import { hashId } from '../utils/hash';
+import { instant } from '../utils/time';
 
 export const DATASET_FORMAT = 'mre-dataset/v1';
 
@@ -119,11 +120,11 @@ export interface DatasetSummary {
   available: CoverageKey[]; missing: CoverageKey[];
 }
 
-const TYPES: EventType[] = ['SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT', 'CHARGEBACK'];
+export const TYPES: EventType[] = ['SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT', 'CHARGEBACK'];
 const CHANNELS: Channel[] = ['POS', 'UPI_LINK', 'UPI_COLLECT', 'ONLINE', 'PAYOUT', 'BANK'];
 /** Accept common input formatting and the legacy generic UPI value, but keep the
  * internal event channel restricted to the canonical Channel enum. */
-function normalizeChannel(value: unknown): Channel | undefined {
+export function normalizeChannel(value: unknown): Channel | undefined {
   if (typeof value !== 'string') return undefined;
   const key = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
   const canonical = key === 'UPI' ? 'UPI_LINK' : key;
@@ -259,11 +260,11 @@ function readDataset(raw: unknown, trustPassports: boolean): ParseResult {
     const channel = normalizeChannel(t.channel);
     if (!channel) errors.push(`${at}: "channel" must be one of ${CHANNELS.join(', ')} (UPI is also accepted as UPI_LINK).`);
     if (!isStr(t.merchantId)) errors.push(`${at}: "merchantId" is required.`);
-    const time = Date.parse(t.time);
+    const time = instant(t.time);
     if (!isStr(t.time) || Number.isNaN(time)) errors.push(`${at}: "time" must be an ISO date-time, e.g. 2026-10-18T19:42:10+05:30.`);
     for (const f of TEXT_FIELDS) if (t[f] !== undefined && t[f] !== null && typeof t[f] !== 'string') errors.push(`${at}: "${f}" must be text.`);
     if (errors.length > 25) return;
-    const settle = t.settledAt ? Date.parse(t.settledAt) : undefined;
+    const settle = t.settledAt ? instant(t.settledAt) : undefined;
     const payerRef = t.payerId ?? '—', payerHash = t.payerId ? hashId(t.payerId) : '—';
     const ev: PaymentEvent = {
       id: t.id, merchantId: t.merchantId, type: t.type, amount: t.amount, eventTime: time,
@@ -303,7 +304,7 @@ function readDataset(raw: unknown, trustPassports: boolean): ParseResult {
   });
   if (weekly.length < 6) warnings.push('Fewer than 6 weeks of history: baselines and CUSUM will be less reliable.');
 
-  const fixtures = (d.matchFixtures ?? []).map(Date.parse).filter(x => !Number.isNaN(x));
+  const fixtures = (d.matchFixtures ?? []).map(instant).filter(x => !Number.isNaN(x));
   if ((d.matchFixtures ?? []).length !== fixtures.length) warnings.push('Some matchFixtures could not be read as dates and were skipped.');
 
   

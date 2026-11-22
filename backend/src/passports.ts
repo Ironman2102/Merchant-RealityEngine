@@ -8,11 +8,14 @@ import type { ContextPassport } from '../../frontend/src/types/merchant';
 import { passportErrors, passportPeriod, passportsInForce, passportsOverlap } from '../../frontend/src/engines/passport';
 import { runInvestigation } from '../../frontend/src/engines/investigationEngine';
 import { mlScore } from './ml';
+import { scrubText } from '../../adapters/privacy';
 import { getDb } from './db';
-import { appendAudit, getCase, isCaseId, merchantCases, putCase, restoreInForce, type CaseRecord } from './store';
+import { assertRows, atomic, sealedWrite } from './integrity';
+import { appendAudit, assertCase, getCase, isCaseId, merchantCases, putCase, restoreInForce, type CaseRecord } from './store';
 import { getInvestigation, type ApiReply } from './workflow';
 import { samePerson, type Actor } from './auth';
 import { syncLiveRules } from './rulesState';
+import { clearLabelEvents, merchantLabel } from './improverApi';
 
 const fail = (status: number, error: string): ApiReply => ({ status, body: { error } });
 
@@ -21,6 +24,7 @@ const fail = (status: number, error: string): ApiReply => ({ status, body: { err
  * client's. With no client (staff, and the operator's command line) every one applies.
  */
 export function verifiedPassports(merchantId: string, client?: string): ContextPassport[] {
+  assertRows('passports', merchantId);
   return (getDb().prepare('SELECT id, case_id, passport_json FROM passports WHERE merchant_id = ? ORDER BY id').all(merchantId) as { id: string; case_id: string; passport_json: string }[])
     .map(r => {
       const p = JSON.parse(r.passport_json) as ContextPassport;
@@ -61,12 +65,13 @@ export function proposePassport(caseId: string, body: unknown, actor: Actor): Ap
   if (!isCaseId(caseId)) return fail(400, 'Invalid case id.');
   const rec = getCase(caseId);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(caseId);
   if (!['analyst', 'reviewer', 'admin'].includes(actor.role)) return fail(403, 'Your role cannot record a Context Passport.');
   if ((body as { endorse?: unknown } | null)?.endorse !== undefined) return endorsePassport(rec, (body as { endorse: unknown }).endorse, actor);
   const b = (body ?? {}) as Record<string, unknown>, text = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 300) : v);
   const passport = {
-    id: `CP-${randomBytes(4).toString('hex')}`, reason: text(b.reason), linkId: text(b.linkId), from: text(b.from), until: text(b.until) || undefined,
-    document: text(b.document), hours: b.hours, states: b.states, ticketBand: b.ticketBand, volumeUplift: b.volumeUplift,
+    id: `CP-${randomBytes(4).toString('hex')}`, reason: typeof b.reason === 'string' ? scrubText(b.reason.trim().slice(0, 300)) : b.reason, linkId: text(b.linkId), from: text(b.from), until: text(b.until) || undefined,
+    document: typeof b.document === 'string' ? scrubText(b.document.trim().slice(0, 300)) : b.document, hours: b.hours, states: b.states, ticketBand: b.ticketBand, volumeUplift: b.volumeUplift,
     status: 'SUBMITTED', submittedBy: actor.username,
   } as ContextPassport;
   const errors = passportErrors(passport);
@@ -81,9 +86,14 @@ export function proposePassport(caseId: string, body: unknown, actor: Actor): Ap
 }
 
 export function reviewPassport(caseId: string, body: unknown, actor: Actor): ApiReply {
+  return atomic(() => review(caseId, body, actor));
+}
+
+function review(caseId: string, body: unknown, actor: Actor): ApiReply {
   if (!isCaseId(caseId)) return fail(400, 'Invalid case id.');
   const rec = getCase(caseId);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(caseId);
   if (actor.role !== 'reviewer' && actor.role !== 'admin') return fail(403, 'Only a reviewer or admin can verify a Context Passport.');
   const b = (body ?? {}) as { passportId?: unknown; verify?: unknown };
   const p = rec.result.scenario.passports?.find(x => x.id === b.passportId && x.status === 'SUBMITTED');
@@ -112,8 +122,8 @@ export function reviewPassport(caseId: string, body: unknown, actor: Actor): Api
   const before = rec.result.fusion;
   let dropped: string[] = [];
   if (b.verify) {
-    getDb().prepare('INSERT INTO passports (id, case_id, merchant_id, passport_json) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET passport_json = excluded.passport_json')
-      .run(ref, caseId, rec.result.scenario.primaryMerchantId, JSON.stringify(p));
+    sealedWrite('passports', ref, () => getDb().prepare('INSERT INTO passports (id, case_id, merchant_id, passport_json) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET passport_json = excluded.passport_json')
+      .run(ref, caseId, rec.result.scenario.primaryMerchantId, JSON.stringify(p)));
     dropped = rescore(rec);
   }
   putCase(rec);
@@ -138,19 +148,25 @@ function endorsePassport(rec: CaseRecord, passportId: unknown, actor: Actor): Ap
  * restrict anything. Every case that used the passport is scored again. Reinstating it takes two people.
  */
 export function revokePassport(caseId: string, body: unknown, actor: Actor): ApiReply {
+  return atomic(() => revoke(caseId, body, actor));
+}
+
+function revoke(caseId: string, body: unknown, actor: Actor): ApiReply {
   if (!isCaseId(caseId)) return fail(400, 'Invalid case id.');
   const rec = getCase(caseId);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(caseId);
   if (actor.role !== 'reviewer' && actor.role !== 'admin') return fail(403, 'Only a reviewer or admin can revoke a Context Passport.');
   const b = (body ?? {}) as { passportId?: unknown; reason?: unknown };
   const found = rec.result.scenario.passports?.find(x => x.id === b.passportId && x.status === 'VERIFIED');
   if (!found) return fail(404, 'No verified passport has that id.');
-  const reason = typeof b.reason === 'string' ? b.reason.trim().slice(0, 500) : '';
+  const reason = typeof b.reason === 'string' ? scrubText(b.reason.trim().slice(0, 500)) : '';
   if (!reason) return fail(400, 'A reason is required to revoke a passport.');
 
+  assertRows('passports', rec.result.scenario.primaryMerchantId);
   const target = { ...found }, ref = target.ref ?? `${caseId}:${target.id}`, db = getDb();
   const row = db.prepare('SELECT passport_json FROM passports WHERE id = ?').get(ref) as { passport_json: string } | undefined;
-  if (row) db.prepare('UPDATE passports SET passport_json = ? WHERE id = ?').run(JSON.stringify({ ...JSON.parse(row.passport_json), status: 'REVOKED', revokedBy: actor.username }), ref);
+  if (row) sealedWrite('passports', ref, () => db.prepare('UPDATE passports SET passport_json = ? WHERE id = ?').run(JSON.stringify({ ...JSON.parse(row.passport_json), status: 'REVOKED', revokedBy: actor.username }), ref));
   for (const { id } of merchantCases(rec.result.scenario.primaryMerchantId)) {
     const c = getCase(id)!;
     const hit = (c.result.scenario.passports ?? []).filter(x => x.status === 'VERIFIED' && (x.ref ? x.ref === ref : sameTerms(x, target)));
@@ -161,7 +177,24 @@ export function revokePassport(caseId: string, body: unknown, actor: Actor): Api
       c.result.passportsSuspended = passportsInForce(c.result.scenario).length > 0;
       detail = 'It was not being applied, so the score is unchanged.';
     } else {
-      const before = c.result.fusion, dropped = rescore(c), f = c.result.fusion;
+      const old = c.result, before = old.fusion, dropped = rescore(c);
+      const weight = (x: typeof before) => (x.decision === 'OPEN_CASE' ? 2 : x.followUp === 'ASK' ? 1 : 0);
+      // One person revokes, so revoking may raise scrutiny and never lower it, even if the rules changed since.
+      if (weight(c.result.fusion) < weight(before)) c.result = { ...old, scenario: c.result.scenario };
+      const f = c.result.fusion;
+      if (weight(f) > weight(before)) {
+        // The question is back, so whatever closed it while it was answered no longer does.
+        if (c.user.label && c.user.label !== 'CONFIRMED_ILLICIT') {
+          if (merchantLabel(c.result.scenario.primaryMerchantId) === c.user.label) clearLabelEvents(c.result.scenario.primaryMerchantId);
+          c.user.label = null;
+        }
+        if (c.inForce && ['L0', 'L1', 'L2'].includes(c.inForce.plan.level)) {
+          c.inForce = null;
+          c.response = null;
+          c.user.executed = false;
+          c.user.chosenLevel = null;
+        }
+      }
       detail = `Re-scored: ${before.decision}/${before.followUp} → ${f.decision}/${f.followUp}.${dropped.length ? ` Proposals withdrawn by the re-score: ${dropped.join(', ')}.` : ''}`;
     }
     putCase(c);

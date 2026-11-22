@@ -57,6 +57,15 @@ function allow(p: ServicePrincipal, scope: Scope): ApiReply | null {
  */
 const ownsCase = (p: ServicePrincipal, id: string) => getCase(id)?.client === p.name;
 
+/** A client's view of its case never names another case: other case ids are replaced wherever they appear. */
+function ownIdsOnly(reply: ApiReply, id: string): ApiReply {
+  if (reply.status !== 200) return reply;
+  let redacted = false;
+  const text = JSON.stringify(reply.body).replace(/INV-[0-9a-f]{8}/g, found => (found === id ? found : ((redacted = true), 'another case')));
+  // The server checked the chain on the full text. A client cannot recompute it over redacted entries.
+  return redacted ? { status: 200, body: { ...JSON.parse(text), redacted: 'References to other cases were removed, so audit hashes do not recompute from this copy.' } } : reply;
+}
+
 function serviceActor(p: ServicePrincipal): Actor {
   return { id: 0, username: `key:${p.name}`, role: 'analyst' };
 }
@@ -90,9 +99,9 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
     if (!principal.scopes.includes('read') && !principal.scopes.includes('cases')) return { status: 403, body: { error: 'This key cannot read cases.' } };
     const id = caseMatch[1];
     if (!ownsCase(principal, id)) return { status: 404, body: { error: 'No case with that id.' } };
-    if (caseMatch[2] === 'trace') return await caseTrace(id);
-    if (caseMatch[2] === 'pack') return evidencePack(id, serviceActor(principal), false);
-    return getInvestigation(id, false);
+    if (caseMatch[2] === 'trace') return ownIdsOnly(await caseTrace(id), id);
+    if (caseMatch[2] === 'pack') return ownIdsOnly(evidencePack(id, serviceActor(principal), false), id);
+    return ownIdsOnly(getInvestigation(id, false), id);
   }
 
   if (req.path === '/v1/batches' && req.method === 'POST') {

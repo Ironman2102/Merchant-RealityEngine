@@ -15,6 +15,7 @@ import type { EvidenceItem } from '../../frontend/src/types/evidence';
 import type { Label } from '../../frontend/src/types/merchant';
 import { samePerson, type Actor } from './auth';
 import { getDb } from './db';
+import { assertRow, assertRows, assertTable, IntegrityError, rowValid, sealedWrite } from './integrity';
 import { saveLiveRules, syncLiveRules } from './rulesState';
 import { seal } from './seal';
 import type { ApiReply } from './workflow';
@@ -57,8 +58,8 @@ export function readRulesAudit(): RulesAuditRow[] {
 
 export function appendRulesAudit(action: string, detail: string, actor: Actor | { id: number | null; username: string }): RulesAuditRow[] {
   const db = getDb();
-  db.exec('BEGIN IMMEDIATE');
-  try {
+  sealedWrite('audit_heads', RULES_CHAIN, () => {
+    if (!verifyRulesChain().ok) throw new IntegrityError('the rules audit is broken');
     const last = db.prepare('SELECT seq, hash FROM rules_audit ORDER BY seq DESC LIMIT 1').get() as { seq: number; hash: string } | undefined;
     const seq = (last?.seq ?? 0) + 1;
     const prev = last?.hash ?? GENESIS;
@@ -68,15 +69,27 @@ export function appendRulesAudit(action: string, detail: string, actor: Actor | 
       .run(row.seq, row.at, row.actor, row.actorId, row.action, row.detail, prev, hash);
     db.prepare('INSERT INTO audit_heads (case_id, seq, hash, mac) VALUES (?, ?, ?, ?) ON CONFLICT(case_id) DO UPDATE SET seq = excluded.seq, hash = excluded.hash, mac = excluded.mac')
       .run(RULES_CHAIN, seq, hash, seal(RULES_CHAIN, seq, hash));
-    db.exec('COMMIT');
-  } catch (e) {
-    db.exec('ROLLBACK');
-    throw e;
-  }
+  });
   return readRulesAudit();
 }
 
+/** The rules chain, and that live rules and proposals are as they were written. */
 export function verifyRulesAudit(): { ok: boolean; brokenAt: number | null; entries: number } {
+  const chained = verifyRulesChain();
+  if (!chained.ok) return chained;
+  try {
+    assertTable('audit_heads');
+    assertRows('rules_state');
+    assertRows('rules_proposals');
+    if (!rowValid('audit_heads', RULES_CHAIN)) throw new IntegrityError('the rules audit head');
+  } catch (e) {
+    if (e instanceof IntegrityError) return { ok: false, brokenAt: chained.entries + 1, entries: chained.entries };
+    throw e;
+  }
+  return chained;
+}
+
+function verifyRulesChain(): { ok: boolean; brokenAt: number | null; entries: number } {
   const rows = readRulesAudit();
   let prev = GENESIS;
   for (const r of rows) {
@@ -99,25 +112,30 @@ export function recordLabelEvents(merchantId: string, mcc: string, evidence: Evi
   const now = new Date().toISOString();
   // One merchant is one observation, however many times its file is uploaded: the latest label replaces the last.
   const key = `m:${merchantId}`;
+  sealedWrite('label_events', key, () => {
   db.prepare('DELETE FROM label_events WHERE case_id = ?').run(key);
   const ins = db.prepare('INSERT INTO label_events (case_id, detector, mcc, fired, label, actor_id, origin, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
   for (const e of evidence) {
     if (e.status === 'UNKNOWN') continue;
-    ins.run(key, e.id, mcc, e.status === 'ILLICIT' ? 1 : 0, label, actorId, origin ?? 'analyst', now);
+    // Only one origin means anything. Free text from a request is not kept.
+    ins.run(key, e.id, mcc, e.status === 'ILLICIT' ? 1 : 0, label, actorId, 'analyst', now);
   }
+  });
 }
 
 /** The label that currently stands for a merchant across all its cases. */
 export function merchantLabel(merchantId: string): Label | null {
+  assertRow('label_events', `m:${merchantId}`);
   const row = getDb().prepare('SELECT label FROM label_events WHERE case_id = ? ORDER BY id DESC LIMIT 1').get(`m:${merchantId}`) as { label: Label } | undefined;
   return row?.label ?? null;
 }
 
 export function clearLabelEvents(merchantId: string): void {
-  getDb().prepare('DELETE FROM label_events WHERE case_id = ?').run(`m:${merchantId}`);
+  sealedWrite('label_events', `m:${merchantId}`, () => getDb().prepare('DELETE FROM label_events WHERE case_id = ?').run(`m:${merchantId}`));
 }
 
 export function getAllLabelEvents(): LabelEvent[] {
+  assertRows('label_events');
   const rows = getDb()
     .prepare('SELECT detector, mcc, fired, label, actor_id AS actorId, origin FROM label_events ORDER BY id')
     .all() as { detector: string; mcc: string; fired: number; label: Label; actorId: number | null; origin: string | null }[];
@@ -136,18 +154,19 @@ export function listLearnedRates(mcc?: string): LearnedRate[] {
   return DETECTORS.map(d => effectiveRates(d.id, events, mcc));
 }
 
-function saveProposal(p: StoredProposal): void {
-  getDb()
+export function saveProposal(p: StoredProposal): void {
+  sealedWrite('rules_proposals', p.id, () => getDb()
     .prepare(
       `INSERT INTO rules_proposals (id, created_at, created_by, status, approved_by, promoted_version, proposal_json)
        VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET status = excluded.status, approved_by = excluded.approved_by, promoted_version = excluded.promoted_version, proposal_json = excluded.proposal_json`,
     )
-    .run(p.id, p.createdAt, p.requestedBy.username, p.status, p.approvedBy ?? null, p.promotedVersion ?? null, JSON.stringify(p));
+    .run(p.id, p.createdAt, p.requestedBy.username, p.status, p.approvedBy ?? null, p.promotedVersion ?? null, JSON.stringify(p)));
 }
 
-export function listProposals(): StoredProposal[] {
-  const rows = getDb().prepare('SELECT proposal_json FROM rules_proposals ORDER BY created_at DESC LIMIT 20').all() as { proposal_json: string }[];
+export function listProposals(limit = 20): StoredProposal[] {
+  assertRows('rules_proposals');
+  const rows = getDb().prepare('SELECT proposal_json FROM rules_proposals ORDER BY created_at DESC LIMIT ?').all(limit) as { proposal_json: string }[];
   // Proposals from before requesters were recorded cannot be approved safely, so they are not offered.
   return rows.map(r => JSON.parse(r.proposal_json) as StoredProposal).filter(p => p.requestedBy);
 }
@@ -205,7 +224,8 @@ export function runImproverProposal(actor: Actor, kind: Proposal['kind'] = 'thre
 }
 
 function checker(id: string, actor: Actor, verb: string): StoredProposal | ApiReply {
-  const prop = listProposals().find(p => p.id === id);
+  // Every proposal, not the recent ones: twenty new requests must not bury the one being decided.
+  const prop = listProposals(-1).find(p => p.id === id);
   if (!prop) return { status: 404, body: { error: 'No rule proposal with that id.' } };
   if (samePerson(prop.requestedBy, actor)) return { status: 403, body: { error: `You cannot ${verb} a rule change you requested. A different person must.` } };
   if (actor.role !== 'admin' && actor.role !== 'reviewer') return { status: 403, body: { error: `Only an admin or reviewer can ${verb} rule changes.` } };
@@ -242,6 +262,7 @@ interface RollbackRequest { by: { id: number; username: string }; at: string; ve
 
 /** A rollback waiting for its second person. It lapses when the live rules change. */
 function rollbackRequest(): RollbackRequest | null {
+  assertRows('rules_rollback');
   const row = getDb().prepare('SELECT request_json FROM rules_rollback WHERE id = 1').get() as { request_json: string } | undefined;
   if (!row) return null;
   const request = JSON.parse(row.request_json) as RollbackRequest, live = getLiveDetectorPatch();
@@ -255,7 +276,7 @@ export function rollbackRulesLive(actor: Actor, body?: unknown): ApiReply {
   const waiting = rollbackRequest(), db = getDb();
   if ((body as { reject?: unknown } | null)?.reject === true) {
     if (!waiting) return { status: 409, body: { error: 'No rollback is waiting.' } };
-    db.prepare('DELETE FROM rules_rollback').run();
+    sealedWrite('rules_rollback', 1, () => db.prepare('DELETE FROM rules_rollback').run());
     appendRulesAudit(`Rollback ${samePerson(waiting.by, actor) ? 'withdrawn' : 'rejected'}`, `Requested by ${waiting.by.username}`, actor);
     return getRulesStatus();
   }
@@ -263,7 +284,7 @@ export function rollbackRulesLive(actor: Actor, body?: unknown): ApiReply {
   if (!live.patch) return { status: 409, body: { error: 'The committed base rules are already live.' } };
   if (!waiting) {
     const request: RollbackRequest = { by: { id: actor.id, username: actor.username }, at: new Date().toISOString(), version: live.version };
-    db.prepare('INSERT INTO rules_rollback (id, request_json) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET request_json = excluded.request_json').run(JSON.stringify(request));
+    sealedWrite('rules_rollback', 1, () => db.prepare('INSERT INTO rules_rollback (id, request_json) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET request_json = excluded.request_json').run(JSON.stringify(request)));
     appendRulesAudit('Rollback requested', `From ${live.version}. Waiting for a different reviewer or admin.`, actor);
     return getRulesStatus();
   }
@@ -284,8 +305,8 @@ export function rollbackRulesEmergency(reason: string): ApiReply {
 function restoreBase(action: string, why: string, actor: { id: number; username: string }): void {
   const from = getLiveDetectorPatch().version;
   saveLiveRules(null, null);
-  getDb().prepare('DELETE FROM rules_rollback').run();
-  for (const p of listProposals()) {
+  sealedWrite('rules_rollback', 1, () => getDb().prepare('DELETE FROM rules_rollback').run());
+  for (const p of listProposals(-1)) {
     if (p.status === 'live') {
       p.status = 'rolled_back';
       saveProposal(p);

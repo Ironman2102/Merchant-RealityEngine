@@ -3,13 +3,14 @@ import type { ContextPassport, Scenario } from '../types/merchant';
 import type { PaymentEvent } from '../types/payment';
 import { RULES } from '../../../rules/index';
 import { istHour } from '../utils/format';
+import { instant } from '../utils/time';
 
 const DAY = 86400000;
 export type Axis = 'hours' | 'area' | 'amount';
 
 export function passportPeriod(p: ContextPassport): [number, number] {
-  const from = Date.parse(p.from.length === 10 ? `${p.from}T00:00:00+05:30` : p.from), cap = from + RULES.engine.passport.maxDays * DAY;
-  const until = p.until ? Date.parse(p.until.length === 10 ? `${p.until}T23:59:59+05:30` : p.until) : cap;
+  const from = instant(p.from), cap = from + RULES.engine.passport.maxDays * DAY;
+  const until = p.until ? instant(p.until.length === 10 ? `${p.until}T23:59:59+05:30` : p.until) : cap;
   return [from, Math.min(cap, until)];
 }
 
@@ -18,8 +19,8 @@ export function passportErrors(raw: unknown): string[] {
   if (!raw || typeof raw !== 'object') return ['A Context Passport must be an object.'];
   const p = raw as Partial<ContextPassport>, out: string[] = [];
   for (const k of ['id', 'reason', 'linkId', 'from', 'document'] as const) if (typeof p[k] !== 'string' || !p[k]!.trim()) out.push(`passport.${k} is required.`);
-  if (typeof p.from === 'string' && Number.isNaN(Date.parse(p.from))) out.push('passport.from must be an ISO date.');
-  if (p.until !== undefined && (typeof p.until !== 'string' || Number.isNaN(Date.parse(p.until)))) out.push('passport.until must be an ISO date.');
+  if (typeof p.from === 'string' && Number.isNaN(instant(p.from))) out.push('passport.from must be an ISO date.');
+  if (p.until !== undefined && (typeof p.until !== 'string' || Number.isNaN(instant(p.until)))) out.push('passport.until must be an ISO date.');
   if (!out.length) {
     const [from, until] = passportPeriod(p as ContextPassport);
     if (!(Number.isFinite(from) && until > from)) out.push('passport.until must be after passport.from.');

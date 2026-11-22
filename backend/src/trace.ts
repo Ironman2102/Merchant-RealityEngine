@@ -6,7 +6,7 @@
  */
 import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { buildPack } from '../../engine/pack';
-import { appendAudit, forClient, getCase, isCaseId, putCase, readAudit, verifyAudit } from './store';
+import { appendAudit, assertCase, forClient, getCase, isCaseId, putCase, readAudit, verifyAudit } from './store';
 import { restrictionsOn } from './workflow';
 import { mlScore } from './ml';
 import { syncLiveRules } from './rulesState';
@@ -19,6 +19,7 @@ export async function caseTrace(id: string): Promise<ApiReply> {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(id);
   syncLiveRules();
   // Opinions saved by the withdrawn models are never shown again.
   const ml = rec.ml?.modelVersion === mlScore(rec.result).modelVersion ? rec.ml : mlScore(rec.result);
@@ -30,6 +31,7 @@ export function evidencePack(id: string, actor: Actor, staff = true): ApiReply {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(id);
   appendAudit(id, [{ action: 'Evidence pack exported', detail: `By ${actor.username} (${actor.role})` }], actor);
   const audit = readAudit(id);
   syncLiveRules();

@@ -40,6 +40,10 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
   const times = extent(result.events, e => e.eventTime);
   const fired = t.detectors.filter(d => d.status === 'ILLICIT').sort((a, b) => b.llr - a.llr);
   const author = who(meta.generatedBy);
+  const cleared = meta.label === 'ADJUDICATED_BENIGN';
+  // Only an open case, or a merchant two people confirmed, is drafted as a suspicion.
+  const suspected = !cleared && (result.fusion.decision === 'OPEN_CASE' || meta.label === 'CONFIRMED_ILLICIT');
+  const notForFiling = cleared ? 'NOT FOR FILING: two people cleared this merchant on review' : 'NOT FOR FILING: no case is open';
   return {
     packVersion: 'mre-evidence-pack/1',
     generatedAt: new Date().toISOString(),
@@ -52,7 +56,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
       rulesVersion: result.fusion.rulesVersion,
       engineVersion: meta.engineVersion ?? null,
     },
-    summary: templateSummary(t),
+    summary: suspected ? templateSummary(t) : `${notForFiling}. ${templateSummary(t)}`,
     regulatoryMapping: [
       {
         requirement: 'RBI Master Direction on Regulation of Payment Aggregators: monitor transactions subsequently undertaken by merchants to ensure they are in line with the merchant\'s business profile.',
@@ -61,13 +65,13 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
       },
       {
         requirement: 'Human oversight of automated decisions (maker/checker).',
-        howMet: 'Restricting a flow needs a second reviewer; holding funds or terminating needs a different user with the legal role; a confirmed-illicit label needs two people. Every step is in the hash-chained audit trail below.',
+        howMet: 'Restricting a flow, or doing less than the engine recommends, needs a second person; holding funds or terminating needs a different user with the legal role; a confirmed-illicit label needs two people. Every step is in the hash-chained audit trail below.',
         evidence: meta.oversightEvidence ?? [],
       },
       {
         requirement: 'PMLA / FIU-IND: report suspicious transactions.',
-        howMet: 'Draft STR facts below, for the Principal Officer to review and file on FIU-IND\'s portal.',
-        evidence: fired.map(d => d.id),
+        howMet: suspected ? 'Draft STR facts below, for the Principal Officer to review and file on FIU-IND\'s portal.' : `No report is drafted. ${notForFiling}.`,
+        evidence: suspected ? fired.map(d => d.id) : [],
       },
     ],
     scope: result.scope,
@@ -77,7 +81,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
     contextPassportsSuspended: result.passportsSuspended ?? false,
     confidentiality: 'Internal. Do not share this pack, its reasons or the fact of any report with the merchant.',
     strDraft: {
-      status: 'DRAFT: review by the Principal Officer before filing on FIU-IND\'s portal',
+      status: suspected ? 'DRAFT: review by the Principal Officer before filing on FIU-IND\'s portal' : notForFiling,
       reportingEntity: meta.reportingEntity ?? '(set MRE_ENTITY_NAME)',
       subject: { merchantId: p.id, name: p.name, category: `${p.category} (MCC ${p.mcc})`, city: p.city, accountAgeDays: p.accountAgeDays },
       period: {
@@ -88,7 +92,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
         sales: sum('SALE'), refunds: sum('REFUND'), settlements: sum('SETTLEMENT'), payouts: sum('TRANSFER'),
         distinctPayers: new Set(sales.map(s => s.payerHash)).size,
       },
-      groundsOfSuspicion: [
+      groundsOfSuspicion: !suspected ? [] : [
         t.gate.reason,
         ...fired.slice(0, 6).map(d => `${d.id} ${d.name}: ${d.observed} (expected ${d.expected}; ${d.test}${d.p !== null ? `; p = ${d.p.toExponential(2)}` : ''}).`),
       ],
@@ -101,7 +105,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
     limits: [
       'Category norms and detector sensitivities are expert priors until calibrated on labelled cases.',
       'Probabilities assume evidence families are independent given the truth; correlated families are shrunk but not removed.',
-      'Payer and beneficiary identifiers are keyed pseudonyms; the PA holds the key to re-identify.',
+      'Payer and beneficiary identifiers are keyed pseudonyms; the PA holds the key to re-identify. Phone, PAN, card, e-mail and UPI patterns in other fields are masked; names in free text are not detected.',
       'Betting that copies a shop\'s amounts, hours, locations and payer mix cannot be found from payment data alone.',
     ],
   };

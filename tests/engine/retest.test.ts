@@ -9,6 +9,7 @@ import { mapExport } from '../../adapters/mapExport';
 import * as auth from '../../backend/src/auth';
 import { analyzeDataset } from '../../backend/src/algorithms/analyze';
 import { getDb, resetDb } from '../../backend/src/db';
+import { sealedWrite, sealExistingDatabase } from '../../backend/src/integrity';
 import { proposePassport, reviewPassport } from '../../backend/src/passports';
 import { saveLiveRules } from '../../backend/src/rulesState';
 import { setLiveDetectorPatch } from '../../rules/index';
@@ -35,6 +36,17 @@ const moonlight = () => load('11-moonlight-bakes-honest-change.json');
 const analyze = engine.analyze as (d: unknown, o?: { trustPassports?: boolean }) => any;
 const toScenario = engine.datasetToScenario as (d: unknown, o?: { trustPassports?: boolean }) => any;
 const user = { notes: '', clarification: '', chosenLevel: null, legalVerified: false, escrowConfirmed: false, executed: false, label: null, audit: [] };
+
+/** A clean registry, through the sealed write path: a plain DELETE is tampering. */
+function clearPassports(): void {
+  for (const { id } of getDb().prepare('SELECT id FROM passports').all() as { id: string }[]) sealedWrite('passports', id, () => getDb().prepare('DELETE FROM passports WHERE id = ?').run(id));
+}
+
+/** A database written before seals, upgraded by an operator. */
+function asUpgraded(): void {
+  getDb().exec('DELETE FROM row_seals; DELETE FROM manifests');
+  sealExistingDatabase();
+}
 
 export default async function (): Promise<number> {
   let bad = 0;
@@ -176,7 +188,7 @@ export default async function (): Promise<number> {
     setLiveDetectorPatch(null, null); // a process that has not scored anything since the promotion
     try { check('R5 batch uses promoted rules', batchRows('examples/generic-pa').run.rulesVersion === 'retest-live'); }
     finally { saveLiveRules(null, null); }
-    getDb().prepare('DELETE FROM passports').run();
+    clearPassports();
   });
 
   await section('R6', () => {
@@ -231,9 +243,10 @@ export default async function (): Promise<number> {
     const row = getDb().prepare('SELECT record_json FROM cases WHERE id = ?').get(id) as { record_json: string };
     const legacy = JSON.parse(row.record_json); delete legacy.inForce;
     getDb().prepare('UPDATE cases SET record_json = ? WHERE id = ?').run(JSON.stringify(legacy), id);
+    asUpgraded();
     go(id, 'L0');
     check('R7 a case saved earlier keeps its restriction', !!now(id).pending.response);
-    getDb().prepare('DELETE FROM passports').run();
+    clearPassports();
 
     const wfDir = dir(); cpSync('workflow', wfDir, { recursive: true });
     const responses = loadWorkflow('workflow').responses;

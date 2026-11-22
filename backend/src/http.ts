@@ -8,6 +8,7 @@ import { v1FromNode } from './v1';
 import { mlScore } from './ml';
 import { listPassports, proposePassport, reviewPassport, revokePassport } from './passports';
 import { getCase, putCase } from './store';
+import { atomic } from './integrity';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
 const LIMIT = 6_000_000;
@@ -85,13 +86,14 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/rules/rollback' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to roll back rules.' } });
-      return send(res, rollbackRulesLive(actor, await readBody(req)));
+      const b = await readBody(req);
+      return send(res, atomic(() => rollbackRulesLive(actor, b)));
     }
     const rulesMatch = path.match(/^\/rules\/proposals\/([^/]+)\/(approve|promote)$/);
     if (rulesMatch && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to approve or promote rule proposals.' } });
       const [, propId, propAction] = rulesMatch;
-      return send(res, propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor));
+      return send(res, atomic(() => (propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor))));
     }
     if (path.startsWith('/v1')) {
       const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
@@ -127,15 +129,15 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (method !== 'POST' || !action) return send(res, { status: 405, body: { error: 'Use GET for the case, or POST review, response, approve, label or summary.' } });
     const body = await readBody(req);
-    const reply = action === 'review' ? reviewInvestigation(id, body, actor)
+    // One transaction: a decision and its audit entry are written together or not at all.
+    const reply = action === 'summary' ? await summarise(id, actor) : atomic(() => action === 'review' ? reviewInvestigation(id, body, actor)
       : action === 'response' ? respondInvestigation(id, body, actor)
-      : action === 'approve' ? approveInvestigation(id, body, actor)
+      : action === 'approve' ? approveInvestigation(id, body, actor, true)
       : action === 'label' ? labelInvestigation(id, body, actor)
       : action === 'passport' ? proposePassport(id, body, actor)
       : action === 'passport-review' ? reviewPassport(id, body, actor)
       : action === 'passport-revoke' ? revokePassport(id, body, actor)
-      : action === 'summary' ? await summarise(id, actor)
-      : { status: 405, body: { error: 'Unknown step.' } };
+      : { status: 405, body: { error: 'Unknown step.' } });
     send(res, reply);
   } catch (err) {
     const status = (err as { status?: number }).status ?? 500;

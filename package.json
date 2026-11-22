@@ -14,7 +14,7 @@
     "samples": "tsx scripts/export-samples.ts",
     "test": "npm run -s test:stats && npm run -s selftest >/dev/null && npm run -s check:api && npm run -s test:dataset && npm run -s security && npm run -s adversarial && npm run -s lint:noscript",
     "test:stats": "MRE_CASE_STORE=memory tsx tests/run.ts",
-    "adversarial": "tsx scripts/adversarial.ts",
+    "adversarial": "MRE_CASE_STORE=memory tsx scripts/adversarial.ts",
     "security": "tsx scripts/security.ts",
     "lint:noscript": "! grep -rnE \"(scenario|sc)\\.id ===\" frontend/src",
     "user:add": "tsx scripts/user-add.ts",
@@ -38,7 +38,7 @@
     "lucide-react": "^1.67.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.6",
+    "react-router-dom": "^7.18.6",
     "recharts": "^2.15.4",
     "three": "^0.187.0"
   },

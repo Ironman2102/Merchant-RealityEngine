@@ -9,6 +9,7 @@ import { loadHashKey, weakSecret } from '../../adapters/pseudonym';
 import * as auth from '../../backend/src/auth';
 import { analyzeDataset } from '../../backend/src/algorithms/analyze';
 import { getDb, resetDb } from '../../backend/src/db';
+import { sealExistingDatabase } from '../../backend/src/integrity';
 import * as improverApi from '../../backend/src/improverApi';
 import { verifyIdToken } from '../../backend/src/oidc';
 import * as passportApi from '../../backend/src/passports';
@@ -182,8 +183,8 @@ export default async function (): Promise<number> {
     W.approveInvestigation(y, { approve: true }, rev);
     check('an approved lift reaches the first case', !now(x).inForce.restricts && !now(x).restrictions.length && now(x).auditIntact);
 
-    const z = open(front()); W.respondInvestigation(z, { chosenLevel: 'L0' }, ana);
-    check('once lifted, L0 applies at once', !now(z).pending.response);
+    const z = open(front());
+    check('once lifted, a new case starts unrestricted', !now(z).restrictions.length);
     restrict(x); const q = open(front()); restrict(q);
     check('restrictions add up across cases', now(y).restrictions.length === 2);
 
@@ -195,6 +196,8 @@ export default async function (): Promise<number> {
 
     restrict(x);
     getDb().prepare('UPDATE cases SET merchant_key = NULL, in_force_json = NULL').run();
+    getDb().exec('DELETE FROM row_seals; DELETE FROM manifests');
+    sealExistingDatabase();
     check('cases saved earlier are found too', now(open(front())).restrictions.length === 1);
     const key = createServiceKey('client-b', ['cases']).key, theirs = (await v1(key, 'POST', '/v1/cases', front())).body.id;
     check('a client is not shown other cases', !JSON.stringify((await v1(key, 'GET', `/v1/cases/${theirs}`)).body).includes(x) && !JSON.stringify((await v1(key, 'GET', `/v1/cases/${theirs}/pack`)).body).includes(x));
@@ -253,6 +256,8 @@ export default async function (): Promise<number> {
       if (now(y).user.label !== 'CONFIRMED_ILLICIT') broken.add('changed a final label');
       if (getLiveDetectorPatch().version !== 'walk-live') broken.add('rolled rules back');
       for (const c of cases.map(now)) {
+        const least = c.result.decision === 'OPEN_CASE' ? 2 : c.result.followUp === 'ASK' ? 1 : 0;
+        if (c.id !== y && least && (c.user.label || (c.id !== x && c.user.executed && Number(c.user.chosenLevel?.slice(1)) < least))) broken.add('closed a case or question');
         if (c.id !== x && c.inForce?.restricts) broken.add('imposed a restriction');
         if (c.id !== y && ['CONFIRMED_ILLICIT', ...(c.merchant.id === now(y).merchant.id || c.merchant.id === now(x).merchant.id ? ['ADJUDICATED_BENIGN'] : [])].includes(c.user.label)) broken.add('decided a label');
         if (c.scenario.passports?.some((p: any) => p.status === 'VERIFIED')) broken.add('verified a passport');
