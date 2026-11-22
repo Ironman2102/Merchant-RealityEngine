@@ -14,10 +14,11 @@ import { getInvestigation } from './workflow';
 import { authenticateServiceKey, idempotent, type Scope, type ServicePrincipal } from './serviceKeys';
 import type { Actor } from './auth';
 import { mlScore } from './ml';
+import { getCase } from './store';
 
 export interface V1Req { method: string; path: string; header: (name: string) => string | undefined; body: unknown }
 
-interface BatchState { status: 'queued' | 'running' | 'done' | 'error'; result?: unknown; error?: string }
+interface BatchState { client: string; status: 'queued' | 'running' | 'done' | 'error'; result?: unknown; error?: string }
 const batches = new Map<string, BatchState>();
 let batchLock: Promise<void> = Promise.resolve();
 
@@ -50,6 +51,12 @@ function allow(p: ServicePrincipal, scope: Scope): ApiReply | null {
   return p.scopes.includes(scope) ? null : { status: 403, body: { error: `This key does not have the ${scope} scope.` } };
 }
 
+/**
+ * A client is a key name, which only the operator sets, so a replacement key of the same name keeps access.
+ * Anything else answers 404: a client cannot learn that another client's case or batch exists.
+ */
+const ownsCase = (p: ServicePrincipal, id: string) => getCase(id)?.client === p.name;
+
 function serviceActor(p: ServicePrincipal): Actor {
   return { id: 0, username: `key:${p.name}`, role: 'analyst' };
 }
@@ -73,7 +80,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
     const raw = JSON.stringify(req.body);
     const idem = scopedKey(principal, req.header('idempotency-key'));
     return idempotent(idem, createHash('sha256').update(raw).digest('hex'), () => {
-      const opened = openInvestigation(req.body, serviceActor(principal));
+      const opened = openInvestigation(req.body, serviceActor(principal), principal.name);
       if (opened.status !== 200) return opened;
       const id = (opened.body as { id?: string }).id;
       return { status: 200, body: { id, ...score.body } };
@@ -82,6 +89,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
   if (caseMatch && req.method === 'GET' && caseMatch[1]) {
     if (!principal.scopes.includes('read') && !principal.scopes.includes('cases')) return { status: 403, body: { error: 'This key cannot read cases.' } };
     const id = caseMatch[1];
+    if (!ownsCase(principal, id)) return { status: 404, body: { error: 'No case with that id.' } };
     if (caseMatch[2] === 'trace') return await caseTrace(id);
     if (caseMatch[2] === 'pack') return evidencePack(id, serviceActor(principal));
     return getInvestigation(id);
@@ -93,13 +101,13 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
     const idem = scopedKey(principal, req.header('idempotency-key'));
     return idempotent(idem, createHash('sha256').update(JSON.stringify(body)).digest('hex'), () => {
       const id = `bat_${randomBytes(6).toString('hex')}`;
-      batches.set(id, { status: 'queued' });
+      batches.set(id, { client: principal.name, status: 'queued' });
       const run = async () => {
         const state = batches.get(id)!;
         state.status = 'running';
+        const dir = join(tmpdir(), id);
         try {
           if (!body.mapping || !body.files) throw new Error('Body needs mapping and files.');
-          const dir = join(tmpdir(), id);
           mkdirSync(dir, { recursive: true });
           for (const [name, b64] of Object.entries(body.files)) {
             if (name !== basename(name) || name === '.' || name === '..' || name.includes('/') || name.includes('\\')) throw new Error('Batch file name must be a single basename.');
@@ -110,11 +118,12 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
           const out = join(dir, 'out');
           const ran = runBatch({ inDir: dir, mappingPath: `adapters/mappings/${name}.json`, outDir: out, key: loadHashKey() });
           state.result = { ...ran, scoresCsv: readFileSync(join(out, 'scores.csv'), 'utf8') };
-          rmSync(dir, { recursive: true, force: true });
           state.status = 'done';
         } catch (e) {
           state.status = 'error';
           state.error = e instanceof Error ? e.message : 'Batch failed.';
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
         }
       };
       const start = batchLock.then(run, run);
@@ -126,7 +135,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
   if (batchGet && req.method === 'GET') {
     if (!principal.scopes.includes('read') && !principal.scopes.includes('batch')) return { status: 403, body: { error: 'This key cannot read batches.' } };
     const state = batches.get(batchGet[1]);
-    if (!state) return { status: 404, body: { error: 'No batch with that id.' } };
+    if (!state || state.client !== principal.name) return { status: 404, body: { error: 'No batch with that id.' } };
     return { status: 200, body: { batchId: batchGet[1], status: state.status, ...(state.error ? { error: state.error } : {}), ...(state.result ? { result: state.result } : {}) } };
   }
   return { status: 404, body: { error: 'Unknown /v1 route.' } };

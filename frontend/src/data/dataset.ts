@@ -67,10 +67,14 @@ export function toIst(ms: number): string {
 /* ---------- export ---------- */
 export function scenarioToDataset(sc: Scenario, extra?: { title?: string; description?: string }): MreDataset {
   // Destination and beneficiary identifiers are stored hashed; give each a stable readable alias.
-  const alias = new Map<string, string>();
+  const alias = new Map<string, string>(), issued = new Map<string, number>();
   const name = (h: string | undefined, prefix: string) => {
     if (!h || h === '—') return undefined;
-    if (!alias.has(h)) alias.set(h, `${prefix}-${String([...alias.values()].filter(v => v.startsWith(prefix)).length + 1).padStart(3, '0')}`);
+    if (!alias.has(h)) {
+      const n = (issued.get(prefix) ?? 0) + 1;
+      issued.set(prefix, n);
+      alias.set(h, `${prefix}-${String(n).padStart(3, '0')}`);
+    }
     return alias.get(h)!;
   };
   const transactions: DatasetTransaction[] = sc.events.map(e => {
@@ -136,12 +140,26 @@ function defaultSource(t: DatasetTransaction): string {
   return t.type === 'SETTLEMENT' ? 'settlement.ledger' : t.type === 'TRANSFER' ? 'payout.ledger' : t.type === 'REFUND' || t.type === 'CHARGEBACK' ? 'acquirer.refund' : 'acquirer.upi';
 }
 
+const GRAPH_LINKS = 60;
+const NODE_TYPES = ['merchant', 'payer', 'account', 'link', 'website', 'device', 'beneficiary', 'peer'];
+const EDGE_TYPES = ['ENTITY_RESOLUTION', 'BEHAVIOURAL_SIMILARITY', 'PAYMENT_FLOW', 'SHARED_INFRASTRUCTURE', 'WEBSITE_LINK', 'SETTLEMENT_RELATIONSHIP'];
+/** A supplied graph is drawn as it is, so it must be drawable. */
+function drawable(g: unknown): g is GraphSpec {
+  const { nodes, edges } = (g ?? {}) as Partial<GraphSpec>;
+  if (!Array.isArray(nodes) || !Array.isArray(edges) || !nodes.some(n => n?.type === 'merchant')) return false;
+  const ids = new Set(nodes.map(n => n?.id));
+  return nodes.every(n => isStr(n?.id) && isStr(n.label) && NODE_TYPES.includes(n.type) && (n.sub === undefined || typeof n.sub === 'string'))
+    && edges.every(e => isStr(e?.id) && ids.has(e.source) && ids.has(e.target) && EDGE_TYPES.includes(e.type) && Array.isArray(e.evidence));
+}
+
 /** Minimal evidence graph for datasets that do not supply one. */
 export function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedRecord[], peers: PeerInfo[]): GraphSpec {
   const nodes: GraphSpec['nodes'] = [{ id: 'm1', type: 'merchant', label: p.name, sub: `MCC ${p.mcc} · ${p.city.split(',')[0]}` }];
   const edges: GraphSpec['edges'] = [];
   let k = 0; const edge = (source: string, target: string, type: GraphSpec['edges'][number]['type'], label: string, evidence: string[] = []) => edges.push({ id: `a${++k}`, source, target, type, label, evidence });
-  const links = [...new Set(events.filter(e => e.merchantId === p.id && e.linkId).map(e => e.linkId!))];
+  // Dynamic QRs mean one link per payment. The picture keeps the links that were seen on pages, then the first others.
+  const seen = new Set(embeds.map(e => e.linkId)), every = [...new Set(events.filter(e => e.merchantId === p.id && e.linkId).map(e => e.linkId!))];
+  const links = every.length > GRAPH_LINKS ? [...every.filter(l => seen.has(l)), ...every.filter(l => !seen.has(l))].slice(0, GRAPH_LINKS) : every;
   links.forEach((l, i) => { nodes.push({ id: `l${i}`, type: l.startsWith('TERM') ? 'device' : 'link', label: l }); edge('m1', `l${i}`, 'ENTITY_RESOLUTION', 'issued to merchant'); });
   [...new Set(embeds.map(e => e.host))].forEach((h, i) => {
     const em = embeds.filter(e => e.host === h), own = p.declaredDomains.includes(h);
@@ -168,7 +186,21 @@ function reconcile(own: PaymentEvent[], weekly: WeeklyPoint[]): boolean | undefi
   return Math.abs(ledger - stated) <= tolerance * Math.max(ledger, stated);
 }
 
-export function datasetToScenario(raw: unknown): ParseResult {
+const MERCHANT_LISTS = ['undeclared', 'declaredDomains', 'declaredChannels', 'declaredActivity', 'products'] as const;
+const TEXT_FIELDS = ['payerId', 'payerState', 'paymentLinkId', 'paidTo', 'beneficiaryAccount', 'payerMobile', 'destHolder'] as const;
+/** What a passport from a file is allowed to say about itself. */
+export const asSubmitted = (p: ContextPassport): ContextPassport => (p && typeof p === 'object' ? { ...p, status: 'SUBMITTED', submittedBy: undefined, reviewedBy: undefined } : p);
+
+/**
+ * A file cannot vouch for itself: Context Passports arrive unverified, with no maker or checker, unless the caller says
+ * `trustPassports` (only code that got them from the server's registry may).
+ */
+export function datasetToScenario(raw: unknown, opts: { trustPassports?: boolean } = {}): ParseResult {
+  try { return readDataset(raw, !!opts.trustPassports); }
+  catch (e) { return { ok: false, errors: [`A field in this file has the wrong shape (${e instanceof Error ? e.message : String(e)}).`], warnings: [] }; }
+}
+
+function readDataset(raw: unknown, trustPassports: boolean): ParseResult {
   const errors: string[] = [], warnings: string[] = [];
   const fail = (m: string) => { errors.push(m); return { ok: false, errors, warnings }; };
   if (!raw || typeof raw !== 'object') return fail('The file is not a JSON object.');
@@ -187,6 +219,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (!Array.isArray(m.hours) || m.hours.length !== 2 || !m.hours.every(isNum)) errors.push('merchant.hours is required as [open, close] in 24h, e.g. [7, 22].');
   else if (!m.hours.every(h => Number.isInteger(h) && h >= 0 && h <= 24) || m.hours[0] === m.hours[1]) errors.push('merchant.hours must be two different whole hours between 0 and 24. Overnight businesses may close before they open, e.g. [22, 6].');
   if (isNum(m.ticketMin) && isNum(m.ticketMax) && !(m.ticketMin >= 0 && m.ticketMin < m.ticketMax)) errors.push('merchant.ticketMin must be at least 0 and below merchant.ticketMax.');
+  if (isStr(m.mcc) && !/^(\d{4}|UNKNOWN)$/.test(m.mcc)) errors.push('merchant.mcc must be four digits, or UNKNOWN.');
   if (isNum(m.accountAgeDays) && m.accountAgeDays < 0) errors.push('merchant.accountAgeDays cannot be negative.');
   if (isNum(m.baselineWeekly) && m.baselineWeekly <= 0) errors.push('merchant.baselineWeekly must be above 0.');
   const undeclared = new Set(Array.isArray(m.undeclared) ? m.undeclared : []);
@@ -194,6 +227,12 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (m.expectedRoundShare === undefined) undeclared.add('expectedRoundShare');
   const defaults = { products: [], catchment: 'LOCAL', expectedRoundShare: 0.06, seasonalPeak: 1, declaredDomains: [], declaredChannels: [], declaredActivity: [] } as Partial<MerchantProfile>;
   const profile = { ...defaults, ...m, ...(undeclared.size ? { undeclared: [...undeclared] } : {}) } as MerchantProfile;
+
+  // Optional fields: wrong shapes are refused here, because the browser runs the engine straight after this parser.
+  for (const k of MERCHANT_LISTS) if (m[k] !== undefined && !strArr(m[k])) errors.push(`merchant.${k} must be a list of text values.`);
+  const site = d.website as { embeds?: unknown; catalogue?: unknown } | null | undefined;
+  const rows: Record<string, unknown> = { peers: d.peers, orders: d.orders, bankCredits: d.bankCredits, externalSightings: d.externalSightings, 'website.embeds': site?.embeds, 'website.catalogue': site?.catalogue };
+  for (const [k, v] of Object.entries(rows)) if (v !== undefined && v !== null && !(Array.isArray(v) && v.every(x => !!x && typeof x === 'object'))) errors.push(`${k} must be a list of objects.`);
 
   // transactions
   if (!Array.isArray(d.transactions) || !d.transactions.length) errors.push('"transactions" must be a non-empty list.');
@@ -220,6 +259,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
     if (!isStr(t.merchantId)) errors.push(`${at}: "merchantId" is required.`);
     const time = Date.parse(t.time);
     if (!isStr(t.time) || Number.isNaN(time)) errors.push(`${at}: "time" must be an ISO date-time, e.g. 2026-10-18T19:42:10+05:30.`);
+    for (const f of TEXT_FIELDS) if (t[f] !== undefined && t[f] !== null && typeof t[f] !== 'string') errors.push(`${at}: "${f}" must be text.`);
     if (errors.length > 25) return;
     const settle = t.settledAt ? Date.parse(t.settledAt) : undefined;
     const payerRef = t.payerId ?? '—', payerHash = t.payerId ? hashId(t.payerId) : '—';
@@ -275,8 +315,10 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (pv && !(isNum(pv.contacted) && isNum(pv.confirmed) && Number.isInteger(pv.contacted) && Number.isInteger(pv.confirmed) && pv.contacted > 0 && pv.confirmed >= 0 && pv.confirmed <= pv.contacted))
     errors.push('purchaserVerification needs whole numbers with 0 ≤ confirmed ≤ contacted and contacted > 0.');
   if (coverage.calendar === 'AVAILABLE' && !fixtures.length) warnings.push('The match calendar is marked AVAILABLE but has no fixtures; calendar checks will be UNKNOWN.');
-  const passports = Array.isArray(d.contextPassports) ? d.contextPassports : [];
-  passports.forEach((p, i) => passportErrors(p).forEach(e => errors.push(`contextPassports[${i}]: ${e}`)));
+  const filed = Array.isArray(d.contextPassports) ? d.contextPassports : [];
+  filed.forEach((p, i) => passportErrors(p).forEach(e => errors.push(`contextPassports[${i}]: ${e}`)));
+  if (new Set(filed.map(p => p?.id)).size !== filed.length) errors.push('contextPassports: each passport needs its own id.');
+  const passports = trustPassports ? filed : filed.map(asSubmitted);
   if (d.contextPassports !== undefined && !Array.isArray(d.contextPassports)) errors.push('contextPassports must be a list.');
   if (errors.length) return { ok: false, errors, warnings };
   if (!RULES.knowsCategory(profile.mcc)) warnings.push(`MCC ${profile.mcc} has no category norm: category tests will abstain rather than guess. Only category-free tests run.`);
@@ -288,6 +330,8 @@ export function datasetToScenario(raw: unknown): ParseResult {
     catalogue: d.website?.catalogue ?? [],
   };
   const peers = d.peers ?? [];
+  const supplied = drawable(d.graph) ? d.graph : undefined;
+  if (d.graph && !supplied) warnings.push('The supplied graph could not be drawn, so one was built from the ledger.');
   const sc: Scenario = {
     id: 'custom',
     passports, weeklyReconciled,
@@ -302,7 +346,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
     orders: d.orders ?? [],
     verification: d.purchaserVerification ?? null,
     bankCredits: (d.bankCredits ?? []).map(b => ({ amount: b.amount, beneficiaryHash: hashId(b.beneficiaryAccount) })),
-    graph: d.graph ?? autoGraph(profile, events, web.embeds, peers),
+    graph: supplied ?? autoGraph(profile, events, web.embeds, peers),
     synthetic: d.description ?? 'Uploaded dataset',
     footprint: d.businessFootprint ?? null,
     sightings: d.externalSightings ?? [],

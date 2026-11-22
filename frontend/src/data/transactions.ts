@@ -7,6 +7,7 @@ import type { OrderRecord, WeeklyPoint } from '../types/merchant';
 import { mulberry32, pick, weighted, type Rng } from '../utils/prng';
 import { hashId } from '../utils/hash';
 import { istMs, istDayKey } from '../utils/format';
+import { extent } from '../utils/num';
 
 export const DAY = 86400000;
 const HOUR = 3600000;
@@ -193,7 +194,7 @@ export function genDiwali(seed = 4421): Built {
  */
 export function weeklyTotals(events: { merchantId: string; type: EventType; amount: number; eventTime: number }[], merchantId: string, seed: number, baseline: number, earlier: (number | null)[], covered: number): (number | null)[] {
   const sales = events.filter(e => e.merchantId === merchantId && e.type === 'SALE');
-  const end = Math.max(...sales.map(e => e.eventTime)), r = mulberry32(seed), ledger = Array<number>(covered).fill(0);
+  const end = extent(sales, e => e.eventTime)![1], r = mulberry32(seed), ledger = Array<number>(covered).fill(0);
   for (const e of sales) { const back = Math.floor((end - e.eventTime) / (7 * DAY)); if (back < covered) ledger[covered - 1 - back] += e.amount; }
   return [...earlier.map(m => (m === null ? null : Math.round(baseline * m * (1 + (r() - 0.5) * 0.08)))), ...ledger];
 }

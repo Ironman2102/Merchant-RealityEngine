@@ -73,7 +73,11 @@
  },
  "passport": {
   "maxDays": 180,
-  "maxUplift": 3
+  "maxUplift": 3,
+  "maxHoursSpan": 12,
+  "maxTicketRatio": 10,
+  "maxStates": 10,
+  "_why": "A passport explains one change. These limits stop one document covering the whole day, every price or most of the country. They are not what protects against misconduct: passports are set aside entirely when any conduct signal fires."
  },
  "reconcile": {
   "days": 14,

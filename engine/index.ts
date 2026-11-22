@@ -14,11 +14,16 @@ export { DETECTORS } from '../frontend/src/engines/detectors';
 export { buildPack } from './pack';
 export { features, FEATURE_COLUMNS } from './features';
 
-export function analyze(dataset: unknown):
+/** An engine error is an error the caller sees. It is never a NO_CASE. */
+export const scoringFailed = (e: unknown) => `This file could not be scored (${e instanceof Error ? e.message : String(e)}).`;
+
+export function analyze(dataset: unknown, opts: { trustPassports?: boolean } = {}):
   | { ok: true; result: InvestigationResult; trace: Trace; warnings: string[] }
   | { ok: false; errors: string[]; warnings: string[] } {
-  const parsed = datasetToScenario(dataset);
+  const parsed = datasetToScenario(dataset, opts);
   if (!parsed.ok || !parsed.scenario) return { ok: false, errors: parsed.errors, warnings: parsed.warnings };
-  const result = runInvestigation(parsed.scenario);
-  return { ok: true, result, trace: buildTrace(result), warnings: parsed.warnings };
+  try {
+    const result = runInvestigation(parsed.scenario);
+    return { ok: true, result, trace: buildTrace(result), warnings: parsed.warnings };
+  } catch (e) { return { ok: false, errors: [scoringFailed(e)], warnings: parsed.warnings }; }
 }

@@ -4,6 +4,7 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AddressInfo } from 'node:net';
 process.env.MRE_CASE_STORE = 'memory';
+process.env.MRE_HASH_KEY = 'security-probe-hash-key-only';
 const { handle } = await import('../backend/src/http');
 const { createUser } = await import('../backend/src/auth');
 const { getDb } = await import('../backend/src/db');
@@ -83,12 +84,12 @@ const hook = createHook((q, s) => {
   });
 }).listen(0, '127.0.0.1');
 await new Promise(r => hook.once('listening', r));
-process.env.MRE_WEBHOOK_SECRET = 'hook-secret';
+process.env.MRE_WEBHOOK_SECRET = 'webhook-probe-signing-key';
 setSinks([{ type: 'webhook', url: `http://127.0.0.1:${(hook.address() as AddressInfo).port}/hook`, secretEnv: 'MRE_WEBHOOK_SECRET', events: ['case.opened'] }]);
 const openedV1 = await v1('/v1/cases', { method: 'POST', body: ds, key: caseKey.key });
 await whenIdle();
-probe('webhook signed', openedV1.status === 200 && signatureMatches(hooked, hookedSig, 'hook-secret'));
-probe('altered webhook body fails verification', hooked.length > 0 && !signatureMatches(hooked.replace('OPEN_CASE', 'NO_CASE'), hookedSig, 'hook-secret') && signBody(hooked, 'hook-secret') === hookedSig);
+probe('webhook signed', openedV1.status === 200 && signatureMatches(hooked, hookedSig, 'webhook-probe-signing-key'));
+probe('altered webhook body fails verification', hooked.length > 0 && !signatureMatches(hooked.replace('OPEN_CASE', 'NO_CASE'), hookedSig, 'webhook-probe-signing-key') && signBody(hooked, 'webhook-probe-signing-key') === hookedSig);
 hook.close();
 setSinks([]);
 

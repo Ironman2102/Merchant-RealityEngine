@@ -29,6 +29,9 @@ const { _note: _m, default: mccDefault, ...mccRows } = mcc as unknown as { _note
 const { _note: _s, ...adjacency } = states as unknown as Record<string, string[]>;
 const { _note: _d, ...detectorRows } = detectors as unknown as Record<string, DetectorCfg | string>;
 
+/** Keys come from uploads and exports, so inherited ones such as "constructor" must never resolve. */
+export const own = <T>(row: Record<string, T> | null | undefined, key: string): T | undefined => (row && Object.hasOwn(row, key) ? row[key] : undefined);
+
 /** Synchronous only. Do not await inside `fn`: the override is a process-wide map. */
 let detectorOverrides: Record<string, Partial<DetectorCfg>> | null = null;
 let livePatch: RulePatch | null = null;
@@ -52,24 +55,24 @@ export function getLiveDetectorPatch(): { patch: RulePatch | null; version: stri
 export const RULES = {
   get version(): string { return liveVersion ?? engine.version; },
   engine,
-  mcc: (code: string): MccNorm => mccRows[code] ?? mccDefault,
+  mcc: (code: string): MccNorm => own(mccRows, code) ?? mccDefault,
   /** False = we have no idea what is normal here. Callers abstain instead of borrowing the default shop. */
   knowsCategory: (code: string): boolean => Object.hasOwn(mccRows, code),
   categories: (): [string, MccNorm][] => Object.entries(mccRows),
-  neighbours: (state: string): string[] => adjacency[state] ?? [],
+  neighbours: (state: string): string[] => own(adjacency, state) ?? [],
   calendar, amounts, hosts, overrides,
   costs: costs as { missCost: number; actions: Record<ResponseKey, { falseAlarmCost: number; missFactor: number; label: string }>; autoRecommendMax: ResponseKey },
   priors: priors as { default: { rate: number; strength: number }; byMcc: Record<string, { rate: number; strength: number }>; ageOdds: { maxDays: number; odds: number }[] },
   /** The committed prior. Learning starts here, so re-calibrating never counts the same labels twice. */
   baseDetector: (id: string): DetectorCfg => {
-    const d = detectorRows[id];
+    const d = own(detectorRows, id);
     if (!d || typeof d === 'string') throw new Error(`rules/detectors.json has no entry for ${id}`);
     return d;
   },
   detector: (id: string): DetectorCfg => {
-    const d = detectorRows[id];
+    const d = own(detectorRows, id);
     if (!d || typeof d === 'string') throw new Error(`rules/detectors.json has no entry for ${id}`);
-    const live = livePatch?.[id], trial = detectorOverrides?.[id];
+    const live = own(livePatch, id), trial = own(detectorOverrides, id);
     return live || trial ? { ...d, ...live, ...trial } : d;
   },
 };

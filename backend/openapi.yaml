@@ -61,6 +61,7 @@ paths:
       parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
       responses:
         '200': { description: Saved case }
+        '404': { description: No such case for this client. A client is a key name. }
   /v1/cases/{id}/trace:
     get:
       security: [{ bearer: [] }]
@@ -85,6 +86,7 @@ paths:
       parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
       responses:
         '200': { description: Batch status }
+        '404': { description: No such batch for this client. A client is a key name. }
 components:
   securitySchemes:
     bearer:

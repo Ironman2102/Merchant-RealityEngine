@@ -6,7 +6,7 @@ import { RULES } from '../../../rules/index';
 import { cusum } from './cusumEngine';
 import { cohortContinuity } from './cohortContinuity';
 import { runDetectors } from './detectors';
-import { passportCover } from './passport';
+import { passportCover, passportsInForce } from './passport';
 import { narrowSuspects, splitStreams } from './streams';
 import { fuse } from './evidenceFusion';
 import { buildReview } from './analystEngine';
@@ -40,9 +40,25 @@ const TL: Record<LayerId, Timeline[]> = {
   7: [{ op: 'Prepare label options', ms: 50 }, { op: 'Compute indicators', ms: 80 }, { op: 'Stage calibration inputs', ms: 90 }, { op: 'Hash-chain audit entries', ms: 40 }],
 };
 
-/** Pure, deterministic. Same scenario in → same result out. */
-/** `draws: 0` skips the Monte-Carlo interval, for backtests that only need the decision (the gate never reads the interval). */
+/**
+ * Pure, deterministic. Same scenario in → same result out.
+ * `draws: 0` skips the Monte-Carlo interval, for backtests that only need the decision (the gate never reads the interval).
+ *
+ * A Context Passport explains a change and never conduct. So the merchant is scored without passports first: if a conduct
+ * signal fires in any scope, that score stands and the passports are suspended. Covering payments axis by axis is not
+ * enough, because it also removes what conduct signals are combined with.
+ */
 export function runInvestigation(sc: Scenario, opts: { draws?: number } = {}): InvestigationResult {
+  if (!passportsInForce(sc).length) return investigate(sc, opts).result;
+  const bare = investigate({ ...sc, passports: [] }, opts);
+  const asScored: InvestigationResult = { ...bare.result, scenario: sc, passportsSuspended: true };
+  if (bare.conduct) return asScored;
+  const explained = investigate(sc, opts);
+  // Setting payments aside shifts the shares of the rest. An explanation must not create a conduct signal either.
+  return explained.conduct ? asScored : explained.result;
+}
+
+function investigate(sc: Scenario, opts: { draws?: number }): { result: InvestigationResult; conduct: boolean } {
   const events = sc.events.filter(e => e.merchantId === sc.primaryMerchantId);
   const vol = volumeModel(sc), rows = vol.rows, cs = cusum(rows, vol.z), cohort = cohortContinuity(sc);
   const norm = RULES.mcc(sc.profile.mcc), covered = passportCover(sc);
@@ -57,6 +73,7 @@ export function runInvestigation(sc: Scenario, opts: { draws?: number } = {}): I
   const salesN = events.filter(e => e.type === 'SALE').length;
   const account: Scope = { kind: 'account', id: 'account', label: 'Whole account', sales: salesN, share: 1 };
   let scope = account, evidence = detect(events, account), fusion = fuse(evidence, sc.profile, opts);
+  const wholeAccount = evidence;
 
   const parts = splitStreams(events);
   // k streams are k chances to be wrong, so each starts ln(k) lower.
@@ -77,5 +94,6 @@ export function runInvestigation(sc: Scenario, opts: { draws?: number } = {}): I
   const suspectLinks = fusion.gatePassed ? narrowSuspects(sc, events, scored.filter(x => x.fusion.gatePassed && x.scope.kind === 'link').map(x => x.scope.id)) : [];
   const streams = scored.map(x => ({ scope: x.scope, posterior: x.fusion.posterior, decision: x.fusion.decision, followUp: x.fusion.followUp, fired: x.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id) }));
   const review = buildReview(evidence, fusion, suspectLinks), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
-  return { scenario: sc, events, l1: layer1(sc, events), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, scope, streams, suspectLinks, timelines: TL };
+  const conduct = [wholeAccount, ...scored.map(x => x.evidence)].some(items => items.some(e => e.status === 'ILLICIT' && e.signal === 'conduct'));
+  return { conduct, result: { scenario: sc, events, l1: layer1(sc, events), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, scope, streams, suspectLinks, timelines: TL } };
 }

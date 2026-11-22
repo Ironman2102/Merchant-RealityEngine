@@ -8,7 +8,7 @@ import { passportErrors, passportPeriod } from '../../frontend/src/engines/passp
 import { runInvestigation } from '../../frontend/src/engines/investigationEngine';
 import { mlScore } from './ml';
 import { getDb } from './db';
-import { appendAudit, getCase, isCaseId, putCase } from './store';
+import { appendAudit, getCase, isCaseId, putCase, restoreInForce } from './store';
 import { getInvestigation, type ApiReply } from './workflow';
 import { samePerson, type Actor } from './auth';
 import { syncLiveRules } from './rulesState';
@@ -60,9 +60,12 @@ export function reviewPassport(caseId: string, body: unknown, actor: Actor): Api
   const maker = { id: p.submittedBy ? 0 : rec.createdBy ?? 0, username: p.submittedBy ?? '' };
   if (samePerson(maker, actor)) return fail(403, 'A different person must verify this passport.');
   if (typeof b.verify !== 'boolean') return fail(400, 'verify must be true or false.');
+  // Submitted under wider limits, or edited since: what is verified must be valid now.
+  const invalid = b.verify ? passportErrors(p) : [];
+  if (invalid.length) return fail(400, invalid.join(' '));
   p.status = b.verify ? 'VERIFIED' : 'REJECTED';
   p.reviewedBy = actor.username;
-  const before = rec.result.fusion;
+  const before = rec.result.fusion, dropped: string[] = [];
   if (b.verify) {
     getDb().prepare('INSERT INTO passports (id, case_id, merchant_id, passport_json) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET passport_json = excluded.passport_json')
       .run(`${caseId}:${p.id}`, caseId, rec.result.scenario.primaryMerchantId, JSON.stringify(p));
@@ -70,11 +73,12 @@ export function reviewPassport(caseId: string, body: unknown, actor: Actor): Api
     rec.result = runInvestigation(rec.result.scenario);
     rec.ml = mlScore(rec.result);
     // A proposal made on the old evidence cannot be approved on the new one.
-    delete rec.pending.response;
+    if (rec.pending.response) { dropped.push(rec.pending.response.level); restoreInForce(rec); }
+    if (rec.pending.label) dropped.push(rec.pending.label.label);
     delete rec.pending.label;
   }
   putCase(rec);
   const f = rec.result.fusion;
-  appendAudit(caseId, [{ action: `Context Passport ${p.id} ${p.status.toLowerCase()}`, detail: b.verify ? `Re-scored: ${before.decision}/${before.followUp} P ${before.posterior.toFixed(4)} → ${f.decision}/${f.followUp} P ${f.posterior.toFixed(4)}` : 'No change to the score.' }], actor);
+  appendAudit(caseId, [{ action: `Context Passport ${p.id} ${p.status.toLowerCase()}`, detail: b.verify ? `Re-scored: ${before.decision}/${before.followUp} P ${before.posterior.toFixed(4)} → ${f.decision}/${f.followUp} P ${f.posterior.toFixed(4)}${rec.result.passportsSuspended ? ' · not applied: a conduct signal fired' : ''}${dropped.length ? ` · proposals withdrawn by the re-score: ${dropped.join(', ')}` : ''}` : 'No change to the score.' }], actor);
   return getInvestigation(caseId);
 }

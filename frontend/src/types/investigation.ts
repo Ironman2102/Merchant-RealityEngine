@@ -105,6 +105,8 @@ export interface InvestigationResult {
   streams: StreamResult[];
   /** Flows narrow enough to disable on their own. Empty means no flow may be auto-recommended for restriction. */
   suspectLinks: string[];
+  /** Verified passports exist but were not applied, because a conduct signal fired. */
+  passportsSuspended?: boolean;
   timelines: Record<LayerId, Timeline[]>;
 }
 export type { Mechanism };

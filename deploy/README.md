@@ -15,5 +15,7 @@ docker compose -f deploy/docker-compose.yml up --build
 ```
 
 Netlify needs `MRE_HASH_KEY`, `MRE_SESSION_SECRET` (16+ characters) and `MRE_BOOT_USERS` as `name:password:role,...` with one
-account per person. The Daytona and `MRE_ML_URL` variables are no longer used and should be removed. Cases on that host live in
+account per person. The server refuses to start, and the function refuses to serve, with a missing key on a host, a short or
+placeholder secret, or a placeholder password. Webhook secrets need 16+ characters too, or nothing is sent. Changing `MRE_HASH_KEY`
+changes every pseudonym and invalidates existing audit seals, so set it before there is data to keep. The Daytona and `MRE_ML_URL` variables are no longer used and should be removed. Cases on that host live in
 a temporary database and can vanish between requests: demo from a laptop.

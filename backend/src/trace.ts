@@ -8,6 +8,7 @@ import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { buildPack } from '../../engine/pack';
 import { appendAudit, getCase, isCaseId, putCase, readAudit, verifyAudit } from './store';
 import { mlScore } from './ml';
+import { syncLiveRules } from './rulesState';
 import type { ApiReply } from './workflow';
 import type { Actor } from './auth';
 
@@ -17,6 +18,7 @@ export async function caseTrace(id: string): Promise<ApiReply> {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
+  syncLiveRules();
   // Opinions saved by the withdrawn models are never shown again.
   const ml = rec.ml?.modelVersion === mlScore(rec.result).modelVersion ? rec.ml : mlScore(rec.result);
   if (rec.ml !== ml) { rec.ml = ml; putCase(rec); }
@@ -29,6 +31,7 @@ export function evidencePack(id: string, actor: Actor): ApiReply {
   if (!rec) return fail(404, 'No case with that id.');
   appendAudit(id, [{ action: 'Evidence pack exported', detail: `By ${actor.username} (${actor.role})` }], actor);
   const audit = readAudit(id);
+  syncLiveRules();
   const body = buildPack(rec.result, {
     caseId: rec.id,
     createdAt: rec.createdAt,
@@ -36,8 +39,8 @@ export function evidencePack(id: string, actor: Actor): ApiReply {
     generatedBy: { username: actor.username, role: actor.role },
     reportingEntity: process.env.MRE_ENTITY_NAME,
     engineVersion: rec.engineVersion ?? null,
-    oversightEvidence: audit.filter(a => /proposed|approved|Approved by|Label/.test(a.action + a.detail)).map(a => `#${a.seq}`),
-    actionTaken: rec.user.executed && rec.response ? rec.response.actions : [],
+    oversightEvidence: audit.filter(a => /proposed|approved|Approved by|Label|rejected|withdrawn/.test(a.action + a.detail)).map(a => `#${a.seq}`),
+    actionTaken: rec.inForce?.plan.actions ?? [],
     label: rec.user.label,
     analystNotes: rec.user.notes,
   });

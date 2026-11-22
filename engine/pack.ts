@@ -5,6 +5,7 @@
 import type { InvestigationResult } from '../frontend/src/types/investigation';
 import { buildTrace } from '../frontend/src/engines/traceEngine';
 import { templateSummary } from './summary';
+import { extent } from '../frontend/src/utils/num';
 
 export interface PackMeta {
   caseId: string | null;
@@ -36,7 +37,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
     const xs = result.events.filter(e => e.type === type);
     return { count: xs.length, value: xs.reduce((s, e) => s + e.amount, 0) };
   };
-  const times = result.events.map(e => e.eventTime);
+  const times = extent(result.events, e => e.eventTime);
   const fired = t.detectors.filter(d => d.status === 'ILLICIT').sort((a, b) => b.llr - a.llr);
   const author = who(meta.generatedBy);
   return {
@@ -72,14 +73,15 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
     scope: result.scope,
     streams: result.streams,
     contextPassports: result.scenario.passports ?? [],
+    contextPassportsSuspended: result.passportsSuspended ?? false,
     confidentiality: 'Internal. Do not share this pack, its reasons or the fact of any report with the merchant.',
     strDraft: {
       status: 'DRAFT: review by the Principal Officer before filing on FIU-IND\'s portal',
       reportingEntity: meta.reportingEntity ?? '(set MRE_ENTITY_NAME)',
       subject: { merchantId: p.id, name: p.name, category: `${p.category} (MCC ${p.mcc})`, city: p.city, accountAgeDays: p.accountAgeDays },
       period: {
-        from: times.length ? new Date(Math.min(...times)).toISOString() : null,
-        to: times.length ? new Date(Math.max(...times)).toISOString() : null,
+        from: times ? new Date(times[0]).toISOString() : null,
+        to: times ? new Date(times[1]).toISOString() : null,
       },
       transactionSummary: {
         sales: sum('SALE'), refunds: sum('REFUND'), settlements: sum('SETTLEMENT'), payouts: sum('TRANSFER'),

@@ -5,6 +5,7 @@ import { getScenario } from '../data/scenarios';
 import { runInvestigation } from '../engines/investigationEngine';
 import { actionLog, planResponse } from '../engines/responseEngine';
 import { fmtDateTime } from '../utils/format';
+import { extent } from '../utils/num';
 import { LAYERS } from '../data/evidence';
 import { approvePilotCase, updatePilotCase, type ServerInvestigation, type ServerUser } from '../services/pilotApi';
 
@@ -20,13 +21,13 @@ interface Ctx {
   setScenario: (id: ActiveId) => void; run: (id?: ActiveId) => void; reset: () => void;
   done: (n: LayerId) => boolean;
   user: UserState; patch: (p: Partial<UserState>) => void; note: (action: string, detail?: string, actor?: string) => void;
-  setLevel: (l: ResponseLevel | null) => void; execute: () => void; setLabel: (l: Label | null) => void;
+  setLevel: (l: ResponseLevel | null) => void; execute: () => void; setLabel: (l: Label | null) => void; rejectLabel: () => void;
   audit: ActionRecord[];
   /** Saved-case mode: analyst actions are written to the server and the server's reply replaces local state. */
   verifyPassport: (id: string, ok: boolean) => void; submitPassport: (body: Record<string, unknown>) => void;
   caseId: string | null; loadCase: (id: string, sc: Scenario, server: ServerUser, animate?: boolean) => void; syncError: string;
   /** Server-side governance state for a saved case: proposals waiting for a second person, and audit-chain status. */
-  pending: ServerUser['pending']; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
+  pending: ServerUser['pending']; inForce: ServerUser['inForce']; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
 }
 const C = createContext<Ctx | null>(null);
 export const useInvestigation = () => { const c = useContext(C); if (!c) throw new Error('InvestigationProvider missing'); return c; };
@@ -43,6 +44,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   const [caseId, setCaseId] = useState<string | null>(null);
   const [syncError, setSyncError] = useState('');
   const [pending, setPending] = useState<ServerUser['pending']>({});
+  const [inForce, setInForce] = useState<ServerUser['inForce']>(null);
   const [auditIntact, setAuditIntact] = useState<boolean | null>(null);
   const userRef = useRef(user);
   userRef.current = user;
@@ -87,7 +89,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => () => { token.current++; }, []);
 
-  const adopt = useCallback((s: ServerUser) => { if (s.investigation && s.scenario) setSaved({ scenario: s.scenario, investigation: s.investigation }); setPending(s.pending ?? {}); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
+  const adopt = useCallback((s: ServerUser) => { if (s.investigation && s.scenario) setSaved({ scenario: s.scenario, investigation: s.investigation }); setPending(s.pending ?? {}); setInForce(s.inForce ?? null); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
     ...u, notes: s.user.notes, clarification: s.user.clarification, chosenLevel: (s.user.chosenLevel as ResponseLevel | null), legalVerified: s.user.legalVerified,
     escrowConfirmed: s.user.escrowConfirmed, executed: s.user.executed, label: (s.user.label as Label | null),
     audit: s.audit.map((a, i) => ({ seq: a.seq ?? i + 1, at: fmtDateTime(Date.parse(a.at)), actor: a.actor, action: a.action, detail: a.detail, hash: a.hash })),
@@ -117,10 +119,11 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   }, [caseId, sync]);
 
   const patch = useCallback((p: Partial<UserState>) => setUser(u => ({ ...u, ...p })), []);
-  const t0 = useMemo(() => Math.max(...scenario.events.map(e => e.eventTime)) + 3600000, [scenario]);
+  const t0 = useMemo(() => (extent(scenario.events, e => e.eventTime)?.[1] ?? 0) + 3600000, [scenario]);
   const note = useCallback((action: string, detail = '', actor = 'Analyst (demo user)') => caseId ? void sync('review', { notes: userRef.current.notes, clarification: userRef.current.clarification }) : setUser(u => ({ ...u, audit: [...u.audit, { seq: u.audit.length + 1, at: fmtDateTime(t0 + (30 + u.audit.length * 4) * 60000), actor, action, detail }] })), [t0, caseId, sync]);
   const setLevel = useCallback((l: ResponseLevel | null) => setUser(u => ({ ...u, chosenLevel: l, executed: false })), []);
   const setLabel = useCallback((l: Label | null) => { if (caseId) { if (l) void sync('label', { label: l }); return; } setUser(u => ({ ...u, label: l })); }, [caseId, sync]);
+  const rejectLabel = useCallback(() => void sync('label', { reject: true }), [sync]);
   const execute = useCallback(() => caseId ? void sync('response', { chosenLevel: userRef.current.chosenLevel ?? result.review.recommended, legalVerified: userRef.current.legalVerified, escrowConfirmed: userRef.current.escrowConfirmed }) : setUser(u => {
     const plan = planResponse(result, u);
     if (plan.blocked.length) return u;
@@ -132,6 +135,6 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     return [...sys, ...user.audit].map((a, i) => ({ ...a, seq: i + 1 }));
   }, [status, user.audit, t0]);
 
-  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit, caseId, loadCase, syncError, pending, auditIntact, approve, verifyPassport, submitPassport };
+  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, rejectLabel, audit, caseId, loadCase, syncError, pending, inForce, auditIntact, approve, verifyPassport, submitPassport };
   return <C.Provider value={v}>{children}</C.Provider>;
 }

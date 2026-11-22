@@ -14,7 +14,7 @@ const META: CsvMerchantMeta = { id: 'M', name: 'Steady Bakery', category: 'Baker
 export default function (): number {
   let bad = 0;
   const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
-  const run = (d: unknown): InvestigationResult => { const r = analyze(d); if (!r.ok) throw new Error(r.errors.join(' ')); return r.result; };
+  const run = (d: unknown, trustPassports = false): InvestigationResult => { const r = analyze(d, { trustPassports }); if (!r.ok) throw new Error(r.errors.join(' ')); return r.result; };
 
   // CSV
   const amounts = [420, 515, 380, 650, 555, 610, 470, 720, 340, 590, 810, 530, 445, 495];
@@ -58,15 +58,16 @@ export default function (): number {
   const changed = load('11-moonlight-bakes-honest-change.json'), asked = run(changed);
   check('honest change: a question, not a case', asked.fusion.decision === 'NO_CASE' && asked.fusion.followUp === 'ASK' && asked.review.recommended === 'L1');
   changed.contextPassports![0].status = 'VERIFIED';
-  const cleared = run(changed);
+  const cleared = run(changed, true);
   check('verified passport clears the change', cleared.fusion.followUp === 'NONE' && cleared.review.recommended === 'L0');
 
   // Per QR
   const side = load('10-golden-oven-betting-on-the-side.json'), found = run(side);
   check('side business found on its own link', found.fusion.decision === 'OPEN_CASE' && found.scope.id === 'PL-GOB-03');
   check('only that link is restricted', found.suspectLinks.join() === 'PL-GOB-03' && found.review.recommended === 'L3');
-  side.contextPassports = [{ id: 'CP-X', reason: 'new product', linkId: 'PL-GOB-03', from: '2026-10-01', document: 'x', hours: [0, 24], states: ['*'], ticketBand: [1, 99999], volumeUplift: 3, status: 'VERIFIED' }];
-  check('a passport cannot excuse conduct', run(side).evidence.some(e => e.status === 'ILLICIT' && e.signal === 'conduct') || run(side).streams.some(s => s.followUp === 'ASK' || s.decision === 'OPEN_CASE'));
+  side.contextPassports = [{ id: 'CP-X', reason: 'new product', linkId: 'PL-GOB-03', from: '2026-10-01', document: 'x', hours: [18, 6], states: ['*'], ticketBand: [400, 4000], volumeUplift: 3, status: 'VERIFIED' }];
+  const excused = run(side, true);
+  check('a passport cannot excuse conduct', excused.passportsSuspended === true && excused.fusion.posterior === found.fusion.posterior && excused.review.recommended === found.review.recommended && excused.suspectLinks.join() === found.suspectLinks.join());
   const oneQr = load('09-telegram-betting-no-website.json');
   oneQr.transactions.forEach(t => { if (t.paymentLinkId) t.paymentLinkId = 'QR-ONLY'; });
   const whole = run(oneQr);

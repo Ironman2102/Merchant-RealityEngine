@@ -19,6 +19,7 @@ import { wilson } from '../stats/intervals';
 import { bocpdRecentChange } from '../stats/changepoint';
 import { rng, seedOf, shuffle } from '../stats/rng';
 import { passportCover, type Axis } from './passport';
+import { hasBetween } from '../utils/num';
 
 export interface Ctx {
   sc: Scenario; p: MerchantProfile; norm: MccNorm; all: PaymentEvent[];
@@ -256,7 +257,10 @@ export const DETECTORS: Def[] = [
   { id: 'F8', run: c => {
     if (!c.settlements.length) return unknown('No settlements.');
     if (!c.sc.bankCredits.length) return unknown('No bank credits to reconcile against.');
-    const bc = c.sc.bankCredits, un = c.settlements.filter(s => !bc.some(b => Math.abs(b.amount - s.amount) <= 1 && b.beneficiaryHash === s.beneficiaryHash)), n = c.settlements.length, p = binomSf(un.length, n, 0.02);
+    const credits = new Map<string | undefined, number[]>();
+    for (const b of c.sc.bankCredits) if (Number.isFinite(b.amount)) { const list = credits.get(b.beneficiaryHash); if (list) list.push(b.amount); else credits.set(b.beneficiaryHash, [b.amount]); }
+    credits.forEach(list => list.sort((x, y) => x - y));
+    const un = c.settlements.filter(s => !hasBetween(credits.get(s.beneficiaryHash) ?? [], s.amount - 1, s.amount + 1)), n = c.settlements.length, p = binomSf(un.length, n, 0.02);
     return { p, effect: share(un.length, n) - 0.02, n, effectLabel: 'excess unmatched share', ci: ci90(un.length, n), expectedSource: 'Norm: ≤ 2% of settlements missing from bank credits', records: ids(un),
       observed: `${pct(1 - share(un.length, n))} of settlements match a bank credit`, expected: '≥ 98% match', explanation: 'Settlements that do not reconcile with the bank\'s credits.', metrics: { unmatched: un.length, p: p.toExponential(2) } };
   } },
@@ -320,7 +324,8 @@ export const DETECTORS: Def[] = [
   { id: 'I3', run: c => {
     if (c.settlements.length < 3) return unknown('Too few settlements.');
     if (!c.transfers.length) return unknown('No payout records, so sweeping cannot be seen either way.');
-    const W = RULES.engine.sweepHours * 3600000, swept = c.settlements.filter(s => c.transfers.some(t => t.eventTime >= s.eventTime && t.eventTime - s.eventTime <= W)), n = c.settlements.length, p = binomSf(swept.length, n, 0.1);
+    const W = RULES.engine.sweepHours * 3600000, paidOut = c.transfers.map(t => t.eventTime).sort((x, y) => x - y);
+    const swept = c.settlements.filter(s => hasBetween(paidOut, s.eventTime, s.eventTime + W)), n = c.settlements.length, p = binomSf(swept.length, n, 0.1);
     return { p, effect: share(swept.length, n) - 0.1, n, effectLabel: 'excess share swept within 24 h', ci: ci90(swept.length, n), expectedSource: 'Norm: ≤ 10% of settlements followed by an onward payout within 24 h', records: ids(swept),
       observed: `${swept.length} of ${n} settlements followed by an onward payout within ${RULES.engine.sweepHours} h`, expected: 'About 10%', explanation: 'Money passing straight through the merchant account.', metrics: { swept: swept.length, p: p.toExponential(2) } };
   } },

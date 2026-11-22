@@ -18,7 +18,8 @@
 4. Every detector is `profile` (a change could explain it) or `conduct` (it could not). Match timing becomes conduct only with distant payers.
 5. A signal built from others (H3) measures only their co-occurrence, is shrunk when they fire and is not an independent family.
 6. k streams tested lowers each stream's prior log-odds by ln(k).
-7. A passport sets covered payments aside from profile tests. It does not count them as innocent and does not reach conduct tests.
+7. The merchant is scored without passports first. If a conduct signal fires in any scope, that score stands and the passports are suspended.
+   Otherwise a passport sets covered payments aside from profile tests, without counting them as innocent.
 8. Restriction needs an identified link. Otherwise the recommendation stops at due diligence.
 
 ## Case gate

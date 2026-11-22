@@ -7,6 +7,7 @@ import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from
 import type { IncomingMessage } from 'node:http';
 import { getDb } from './db';
 import { verifyIdToken, type OidcCheck } from './oidc';
+import { loadHashKey, weakSecret } from '../../adapters/pseudonym';
 
 export type Role = 'analyst' | 'reviewer' | 'legal' | 'admin';
 export const ROLES: Role[] = ['analyst', 'reviewer', 'legal', 'admin'];
@@ -25,8 +26,18 @@ const tokenHash = (t: string) => createHash('sha256').update(t).digest('hex');
 const stateless = () => envValue('MRE_STATELESS_SESSIONS') === '1';
 const sessionSecret = () => {
   const secret = envValue('MRE_SESSION_SECRET') || envValue('MRE_HASH_KEY');
-  return secret.length >= 16 ? secret : '';
+  return weakSecret(secret) ? '' : secret;
 };
+/** Run before serving. A weak secret stops the server instead of quietly running with it. */
+export function assertSecrets(): void {
+  loadHashKey();
+  const session = envValue('MRE_SESSION_SECRET');
+  if (session && weakSecret(session)) throw new Error('MRE_SESSION_SECRET must be a random secret of at least 16 characters, not a placeholder.');
+  const listed = envValue('MRE_BOOT_USERS').split(',').filter(x => x.trim()).map(x => x.split(':')[1] ?? '');
+  const single = envValue('MRE_BOOT_PASSWORD');
+  if ([...listed, ...(single ? [single] : [])].some(x => weakSecret(x, 12))) throw new Error('Every boot password must have at least 12 characters and must not be a placeholder.');
+}
+
 const hmac = (secret: string, text: string) => createHmac('sha256', secret).update(text).digest('base64url');
 
 /** The cookie names a boot account and carries a fingerprint of its current password and role. Changing either revokes it. */
@@ -77,12 +88,12 @@ export function bootAccounts(): { username: string; password: string; role: Role
   const many = envValue('MRE_BOOT_USERS');
   for (const part of many.split(',')) {
     const [username, password, role] = part.split(':');
-    if (!username || !password || password.length < 12 || !ROLES.includes(role as Role)) continue;
+    if (!username || !password || weakSecret(password, 12) || !ROLES.includes(role as Role)) continue;
     out.push({ username, password, role: role as Role });
   }
   const password = envValue('MRE_BOOT_PASSWORD');
   const username = envValue('MRE_BOOT_USER') || 'admin';
-  if (password.length >= 12 && !out.some(u => u.username === username)) out.push({ username, password, role: 'admin' });
+  if (!weakSecret(password, 12) && !out.some(u => u.username === username)) out.push({ username, password, role: 'admin' });
   return out;
 }
 
@@ -103,7 +114,7 @@ const scrypt = (pw: string, salt: string) => scryptSync(pw, salt, 64, { N: 16384
 
 export function createUser(username: string, password: string, role: Role): Actor {
   if (!/^[a-z0-9._-]{3,40}$/i.test(username)) throw Object.assign(new Error('Username: 3–40 letters, digits, dot, dash or underscore.'), { status: 400 });
-  if (password.length < 12) throw Object.assign(new Error('Password must be at least 12 characters.'), { status: 400 });
+  if (weakSecret(password, 12)) throw Object.assign(new Error('Password must be at least 12 characters and not a placeholder.'), { status: 400 });
   if (!ROLES.includes(role)) throw Object.assign(new Error('Unknown role.'), { status: 400 });
   const salt = randomBytes(16).toString('hex');
   const r = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at) VALUES (?, ?, ?, ?, ?)').run(username, role, salt, scrypt(password, salt), new Date().toISOString());

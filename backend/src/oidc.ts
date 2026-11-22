@@ -1,5 +1,6 @@
 /** OIDC id_token checks using node:crypto. Group names map to roles through workflow/roles.json. */
 import { createPublicKey, createVerify } from 'node:crypto';
+import { own } from '../../rules/index';
 
 export interface OidcCheck {
   issuer: string;
@@ -16,7 +17,7 @@ function b64url(input: string): Buffer {
 }
 
 export function roleFromGroups(groups: string[], map: Record<string, string>): string | null {
-  for (const g of groups) if (map[g]) return map[g];
+  for (const g of groups) { const role = own(map, g); if (role) return role; }
   return null;
 }
 

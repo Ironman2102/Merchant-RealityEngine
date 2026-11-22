@@ -1,6 +1,7 @@
 import type { InvestigationResult, ResponseLevel, UserState, HoldRecord, ActionRecord } from '../types/investigation';
 import { fmtDateTime, inr } from '../utils/format';
 import { RESPONSE_LEVELS } from '../data/evidence';
+import { extent } from '../utils/num';
 
 export interface ResponsePlan {
   level: ResponseLevel; recommended: ResponseLevel; actions: string[]; keepsRunning: string[];
@@ -18,7 +19,7 @@ export function planResponse(res: InvestigationResult, user: UserState): Respons
   const keepsRunning = [...count.keys()].filter(k => !suspectLinks.includes(k));
   const unsettled = sales.filter(s => !s.settleTime && s.linkId && suspectLinks.includes(s.linkId));
   const holdCandidate = unsettled.reduce((s, e) => s + e.amount, 0);
-  const end = sc.events.length ? Math.max(...sc.events.map(e => e.eventTime)) : 0;
+  const end = extent(sc.events, e => e.eventTime)?.[1] ?? 0;
   const authorityRequired = RESPONSE_LEVELS.find(l => l.id === level)!.needsAuthority;
   const blocked: string[] = [];
   let hold: HoldRecord | null = null;
@@ -42,6 +43,6 @@ export function planResponse(res: InvestigationResult, user: UserState): Respons
 }
 
 export function actionLog(res: InvestigationResult, plan: ResponsePlan, start: number): ActionRecord[] {
-  const t0 = Math.max(...res.scenario.events.map(e => e.eventTime)) + 2 * H;
+  const t0 = (extent(res.scenario.events, e => e.eventTime)?.[1] ?? 0) + 2 * H;
   return plan.actions.map((a, i) => ({ seq: start + i + 1, at: fmtDateTime(t0 + i * 600000), actor: 'MRE response engine', action: `${plan.level}: ${a}`, detail: plan.keepsRunning.length && /Disable payment flow/.test(a) ? `Left running: ${plan.keepsRunning.join(', ')}` : '' }));
 }

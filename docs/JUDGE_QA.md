@@ -16,8 +16,11 @@ is usually a question and 20% is usually a case. In a small shop, where that lin
 even 20-30% is usually a question. Mixed into the same QR at 10% we often miss it. We say so.
 
 **Can a fraudster get a fake passport?**
-It covers one QR, for at most 180 days, needs a document and a second person, and cannot cover conduct signals such as repeat
-top-ups, distant regulars, refund abuse or a betting-page sighting. A forged document can still hide a pure change of hours or prices.
+It covers one QR, for at most 180 days, 12 hours a day, a 10x price band and 10 states (or a declared national business), and
+needs a document and a second person. If any conduct signal fires (repeat top-ups, distant regulars, refund abuse, a betting-page
+sighting), passports are switched off for that merchant and the score is exactly the one without them. The limit: a front that shows
+only changed hours, prices or places, with no conduct signal, can be quietened by a forged document that a second person accepts.
+In a synthetic stress test with the widest passports on every QR, that silenced the question for 240 of 2,400 fronts. No case moved.
 
 **Can't they pick a looser category?**
 The category picks what is normal, so looking normal earns little credit, and conduct tests ignore the category. Without payer

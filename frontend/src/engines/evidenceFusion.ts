@@ -13,7 +13,7 @@ import type { EvidenceItem, Family, Mechanism } from '../types/evidence';
 import type { FusionResult, FusedItem, FamilySummary, MechanismScore } from '../types/investigation';
 import type { MerchantProfile } from '../types/merchant';
 import { FAMILIES } from '../data/evidence';
-import { RULES } from '../../../rules/index';
+import { own, RULES } from '../../../rules/index';
 import { calmLlr, fireLlr } from './judge';
 import { beta, rng, seedOf } from '../stats/rng';
 import { quantile } from '../stats/intervals';
@@ -28,7 +28,7 @@ const logit = (p: number) => Math.log(p / (1 - p)), sigmoid = (x: number) => 1 /
 export const effWeight = (e: EvidenceItem) => (e.status === 'UNKNOWN' ? 0 : Math.min(1, Math.abs(e.llr) / 4));
 
 export function priorFor(p: MerchantProfile): { rate: number; strength: number; odds: number } {
-  const base = RULES.priors.byMcc[p.mcc] ?? RULES.priors.default;
+  const base = own(RULES.priors.byMcc, p.mcc) ?? RULES.priors.default;
   const odds = RULES.priors.ageOdds.find(a => p.accountAgeDays <= a.maxDays)?.odds ?? 1;
   return { ...base, odds };
 }
@@ -42,6 +42,8 @@ function familyLlr(items: EvidenceItem[], llrOf: (e: EvidenceItem) => number, rh
 
 export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: { draws?: number; priorShift?: number } = {}): FusionResult {
   const E = RULES.engine, rho = E.familyRho, pr = priorFor(profile);
+  // Checked item by item: the family sums keep only values above or below zero, so a NaN would just vanish from them.
+  if (!evidence.every(e => Number.isFinite(e.llr))) throw new Error('An evidence weight is not a finite number, so no decision can be made.');
   const shift = opts.priorShift ?? 0, priorLogOdds = logit(pr.rate) + Math.log(pr.odds) + shift;
   const byFam = new Map<Family, EvidenceItem[]>();
   evidence.filter(e => e.status !== 'UNKNOWN').forEach(e => byFam.set(e.family, [...(byFam.get(e.family) ?? []), e]));
@@ -68,7 +70,10 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: {
     draws.push(sigmoid(lo));
   }
   draws.sort((a, b) => a - b);
-  const posterior = sigmoid(total), posteriorCi: [number, number] = draws.length ? [quantile(draws, 0.05), quantile(draws, 0.95)] : [posterior, posterior];
+  const posterior = sigmoid(total);
+  // A score that is not a number is an error. It must never compare false against the threshold and read as NO_CASE.
+  if (!Number.isFinite(posterior) || !draws.every(Number.isFinite)) throw new Error('The score is not a finite number, so no decision can be made.');
+  const posteriorCi: [number, number] = draws.length ? [quantile(draws, 0.05), quantile(draws, 0.95)] : [posterior, posterior];
 
   // Provenance and family contributions (positive side only: what supports "front").
   const items: FusedItem[] = evidence.map(e => ({ evidence: e, counted: e.status !== 'UNKNOWN', weight: e.llr,

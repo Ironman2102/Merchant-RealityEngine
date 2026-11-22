@@ -5,10 +5,11 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { DATASET_FORMAT, toIst, type DatasetTransaction, type MreDataset } from '../frontend/src/data/dataset';
+import { asSubmitted, DATASET_FORMAT, toIst, type DatasetTransaction, type MreDataset } from '../frontend/src/data/dataset';
 import type { MerchantProfile } from '../frontend/src/types/merchant';
 import { parseCsv } from './csv';
-import { pseudonym } from './pseudonym';
+import { own } from '../rules/index';
+import { maskIds } from './pseudonym';
 import { parseTime, stateCode, succeeded, weeklyFromLedger } from '../frontend/src/utils/ingest';
 
 type FieldSpec = string | { column: string; map?: Record<string, string>; split?: string };
@@ -23,7 +24,6 @@ interface Mapping {
   weekly: { merchantId: string; weekEnd: string; sales: string };
 }
 
-const ID_FIELDS = ['payerId', 'paidTo', 'beneficiaryAccount', 'payerMobile', 'destHolder'] as const;
 const specOf = (v: FieldSpec) => (typeof v === 'string' ? { column: v } : v);
 
 function table(dir: string, file: string, delimiter: string): { header: string[]; rows: string[][] } | null {
@@ -117,15 +117,15 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
     const cell = (keyName: string) => col(txHeader, row, specOf(tspec[keyName]).column);
     const typeRaw = cell('type');
     const typeSpec = specOf(tspec.type);
-    const type = typeSpec.map ? typeSpec.map[typeRaw] : typeRaw;
-    if (!type || (typeSpec.map && !(typeRaw in typeSpec.map))) {
+    const type = typeSpec.map ? own(typeSpec.map, typeRaw) : typeRaw;
+    if (!type) {
       if (typeRaw) warnings.push(`transactions row ${i + 2}: unknown type "${typeRaw}" skipped`);
       return;
     }
     const channelRaw = cell('channel');
     const channelSpec = specOf(tspec.channel);
-    const channel = channelSpec.map ? channelSpec.map[channelRaw] : channelRaw;
-    if (!channel || (channelSpec.map && !(channelRaw in channelSpec.map))) {
+    const channel = channelSpec.map ? own(channelSpec.map, channelRaw) : channelRaw;
+    if (!channel) {
       warnings.push(`transactions row ${i + 2}: unknown channel "${channelRaw}" skipped`);
       return;
     }
@@ -156,10 +156,7 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
     opt('paidTo', cell('paidTo'));
     opt('destHolder', cell('destHolder'));
     opt('beneficiaryAccount', cell('beneficiaryAccount'));
-    for (const f of ID_FIELDS) {
-      const v = txn[f];
-      if (typeof v === 'string' && v) (txn as unknown as Record<string, string>)[f] = pseudonym(v, key);
-    }
+    maskIds(txn, () => key);
     parsedTx.push({ row: txn, merchantId });
   });
 
@@ -187,9 +184,9 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
     const txns = [...(byMerchant.get(idCell) ?? [])];
     const latest = txns.reduce((m, t) => Math.max(m, Date.parse(t.time) || 0), 0);
     const built = merchantFromRow(merchants.header, row, mapping, latest || undefined);
-    warnings.push(...built.warnings);
+    for (const w of built.warnings) warnings.push(w);
     if (!built.merchant.id) continue;
-    const extra = context.byMerchant?.[built.merchant.id] ?? {};
+    const extra = own(context.byMerchant, built.merchant.id) ?? {};
     const { peerTransactions, ...restExtra } = extra as Partial<MreDataset> & { peerTransactions?: DatasetTransaction[] };
     const extraMerchant = restExtra.merchant as MerchantProfile | undefined;
     const merchant: MerchantProfile = extraMerchant
@@ -206,20 +203,19 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
         }
       : built.merchant;
     if (!extraMerchant) merchant.undeclared = [...new Set([...(merchant.undeclared ?? []), 'expectedRoundShare' as const])];
-    const peers = (peerTransactions ?? []).map(t => {
+    // context.json is hand-written: one merchant's bad entry must not abort everybody's batch.
+    const peers = (Array.isArray(peerTransactions) ? peerTransactions : []).filter(t => t && typeof t === 'object').map(t => {
       const copy = { ...t };
-      for (const f of ID_FIELDS) {
-        const v = copy[f];
-        if (typeof v === 'string' && v) (copy as unknown as Record<string, string>)[f] = pseudonym(v, key);
-      }
+      maskIds(copy, () => key);
       return copy;
     });
     const ledgerWeeks = () => weeklyFromLedger(txns.filter(t => t.type === 'SALE' && t.merchantId === built.merchant.id));
     for (const peer of peers) txns.push(peer);
-    const bankCredits = (restExtra.bankCredits ?? []).map(b => ({
-      ...b,
-      beneficiaryAccount: b.beneficiaryAccount ? pseudonym(b.beneficiaryAccount, key) : b.beneficiaryAccount,
-    }));
+    const bankCredits = (Array.isArray(restExtra.bankCredits) ? restExtra.bankCredits : []).filter(b => b && typeof b === 'object').map(b => {
+      const copy = { ...b };
+      maskIds(copy, () => key, ['beneficiaryAccount']);
+      return copy;
+    });
     const weeklySales = weeklyBy.get(built.merchant.id) ?? ledgerWeeks();
     const dataset: MreDataset = {
       format: DATASET_FORMAT,
@@ -228,6 +224,7 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
       transactions: txns,
       weeklySales,
       ...(restExtra.bankCredits ? { bankCredits } : {}),
+      ...(Array.isArray(restExtra.contextPassports) ? { contextPassports: restExtra.contextPassports.map(asSubmitted) } : {}),
     };
     datasets.push(dataset);
   }

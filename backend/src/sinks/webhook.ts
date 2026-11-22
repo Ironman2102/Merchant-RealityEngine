@@ -1,6 +1,7 @@
 /** Signed webhook delivery. Retries: 1s, 2s, 4s, 8s, 16s. */
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getDb } from '../db';
+import { weakSecret } from '../../../adapters/pseudonym';
 
 export interface WebhookEvent { event: string; caseId: string; at: string; data: Record<string, unknown> }
 export interface WebhookSink { type: 'webhook'; url: string; secretEnv: string; events: string[] }
@@ -20,6 +21,12 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export async function postWebhook(sink: WebhookSink, ev: WebhookEvent): Promise<void> {
   if (sink.events.length && !sink.events.includes(ev.event)) return;
   const secret = process.env[sink.secretEnv] ?? '';
+  if (weakSecret(secret)) {
+    // A signature made with an empty or guessable secret can be forged, so nothing is sent.
+    getDb().prepare('INSERT INTO deliveries (event, case_id, url, ok, attempts, at) VALUES (?, ?, ?, 0, 0, ?)').run(ev.event, ev.caseId, sink.url, new Date().toISOString());
+    console.error(`Webhook not sent: ${sink.secretEnv} must be a random secret of at least 16 characters.`);
+    return;
+  }
   const body = JSON.stringify(ev);
   const delays = [0, 1000, 2000, 4000, 8000, 16000];
   let ok = 0;

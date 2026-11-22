@@ -46,7 +46,7 @@ All numbers are synthetic. None is real-world accuracy.
 - **The limit of that exam.** The same assistant wrote the exam and the fix, knew what the exam contained, and all of it is
   synthetic. It shows regressions and direction. It is not an accuracy claim.
 - **After the exam**, the engine got a speed option for backtests. The exam was re-run and the result was byte-identical.
-- **Automated checks:** `npm test` passes (451 engine assertions, 35 security probes, 34 adversarial cases), as do the type
+- **Automated checks:** `npm test` passes (530 engine assertions, 35 security probes, 34 adversarial cases), as do the type
   check and the build.
 - **By hand, in a browser:** the demo, the Context Passport, sign-in, a blocked single-person check followed by a second-person
   check, CSV mapping, the portfolio screen and a phone-width layout.
@@ -155,6 +155,30 @@ added here once the fixed version is deployed.
 | H4 | Docs contradicted each other and the code | Rewritten | Judges read the repo | Fixed |
 | H5 | AI instruction files sat in the repo root with no disclosure | Kept in `docs/history/`, disclosed in `AI_USAGE.md` | Disclosure, not deletion | Partly: team section to complete |
 | H6 | No real case, stale law status, no business case, no Q&A | `PITCH.md`, `BUSINESS_CASE.md`, `JUDGE_QA.md`, `DEMO_GUIDE.md` | 40% of the finale is feasibility and innovation | Fixed (costs are labelled assumptions) |
+
+---
+
+### I. Found when this branch was re-tested, and fixed
+
+The re-test found nine problems. Several came from this branch's own first fix, whose tests were too loose. Each area now has a
+test of the rule itself (`tests/engine/retest.test.ts`), run first on the earlier commit to show that it failed.
+
+| Area | What holds now | Status |
+|---|---|---|
+| Context Passport | Suspended whenever a conduct signal fires, limited in breadth, never trusted from a file | Fixed |
+| Input | Malformed fields and unknown keys are refused. A score that is not a number is an error, never "no case" | Fixed |
+| Scale | 260,000-row ledgers score without overflow, in about 1.2 seconds on a laptop | Fixed |
+| Batch | Same promoted rules and verified passports as the server | Fixed |
+| Approvals and labels | Two people to lift as well as to impose. Labels can be rejected or withdrawn | Fixed |
+| Service clients and secrets | Records are scoped to the client. Weak secrets are refused | Fixed |
+
+Limits that remain:
+
+- A passport can quieten the question for a front that shows no conduct at all (240 of 2,400 synthetic fronts with the widest
+  passports on every QR). In the same test of 6,000 merchants, no case and no conduct-bearing score moved.
+- A passport cannot clear a false alarm that has a conduct signal. A person must (1 of 3,600 honest merchants in that test).
+- A verified passport cannot yet be revoked. It expires within 180 days.
+- A restriction belongs to a case, not to the merchant: a new case for the same merchant does not show it.
 
 ---
 

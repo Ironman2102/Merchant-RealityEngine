@@ -1,18 +1,21 @@
-/** Deterministic batch scoring. timings live only in run.json, which callers may ignore. */
+/** Deterministic batch scoring, under the same promoted rules and verified passports as the server. timings live only in run.json, which callers may ignore. */
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { mapExport } from '../adapters/mapExport';
 import { toCsv } from '../adapters/csv';
-import { analyze, buildPack, RULES } from '../engine/index';
+import { analyseCanonical } from '../backend/src/algorithms/analyze';
+import { syncLiveRules } from '../backend/src/rulesState';
+import { buildPack, RULES } from '../engine/index';
 import { secondOpinion } from '../engine/model';
 
 const num = (n: number) => Number.isFinite(n) ? n.toFixed(12) : '';
 
 export interface BatchOptions { inDir: string; mappingPath: string; outDir: string; key: Buffer; ml?: boolean }
 
-export function runBatch(opts: BatchOptions): { merchants: number; opened: number } {
+export function runBatch(opts: BatchOptions): { merchants: number; opened: number; failed: number } {
   const started = Date.now();
+  syncLiveRules();
   const { datasets, warnings } = mapExport(opts.inDir, opts.mappingPath, opts.key);
   const header = [
     'merchant_id', 'name', 'mcc', 'decision', 'p_front', 'p_lo', 'p_hi', 'priority', 'recommended', 'mechanism', 'top_reasons', 'rules_version', 'follow_up', 'scope',
@@ -24,7 +27,7 @@ export function runBatch(opts: BatchOptions): { merchants: number; opened: numbe
   mkdirSync(join(opts.outDir, 'packs'), { recursive: true });
   let opened = 0;
   for (const dataset of datasets) {
-    const ran = analyze(dataset);
+    const ran = analyseCanonical(dataset);
     if (!ran.ok) {
       failed++;
       scoreRows.push([dataset.merchant.id, dataset.merchant.name, dataset.merchant.mcc, 'ERROR', '', '', '', '', '', '', ran.errors.join(' | '), RULES.version, '', '', ...(opts.ml ? ['', ''] : [])]);
@@ -82,5 +85,5 @@ export function runBatch(opts: BatchOptions): { merchants: number; opened: numbe
     finishedAt: new Date(finished).toISOString(),
     msTotal: finished - started,
   }, null, 2));
-  return { merchants: datasets.length, opened };
+  return { merchants: datasets.length, opened, failed };
 }

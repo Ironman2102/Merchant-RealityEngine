@@ -20,19 +20,38 @@ export function passportErrors(raw: unknown): string[] {
   for (const k of ['id', 'reason', 'linkId', 'from', 'document'] as const) if (typeof p[k] !== 'string' || !p[k]!.trim()) out.push(`passport.${k} is required.`);
   if (typeof p.from === 'string' && Number.isNaN(Date.parse(p.from))) out.push('passport.from must be an ISO date.');
   if (p.until !== undefined && (typeof p.until !== 'string' || Number.isNaN(Date.parse(p.until)))) out.push('passport.until must be an ISO date.');
+  if (!out.length) {
+    const [from, until] = passportPeriod(p as ContextPassport);
+    if (!(Number.isFinite(from) && until > from)) out.push('passport.until must be after passport.from.');
+  }
+  const L = RULES.engine.passport;
   const pair = (x: unknown, max: number) => Array.isArray(x) && x.length === 2 && x.every(n => typeof n === 'number' && n >= 0 && n <= max);
-  if (p.hours !== undefined && !pair(p.hours, 24)) out.push('passport.hours must be [open, close].');
-  if (p.ticketBand !== undefined && !(pair(p.ticketBand, RULES.engine.limits.maxPaymentRupees) && p.ticketBand[0] <= p.ticketBand[1])) out.push('passport.ticketBand must be [min, max] in rupees.');
-  if (p.states !== undefined && !(Array.isArray(p.states) && p.states.every(s => typeof s === 'string'))) out.push('passport.states must be a list of state codes.');
+  if (p.hours !== undefined) {
+    if (!pair(p.hours, 24)) out.push('passport.hours must be [open, close].');
+    else {
+      const [open, close] = p.hours, span = open < close ? close - open : close + 24 - open;
+      if (span <= 0 || span > L.maxHoursSpan) out.push(`passport.hours can cover at most ${L.maxHoursSpan} hours a day.`);
+    }
+  }
+  if (p.ticketBand !== undefined) {
+    if (!(pair(p.ticketBand, RULES.engine.limits.maxPaymentRupees) && p.ticketBand[0] > 0 && p.ticketBand[0] <= p.ticketBand[1])) out.push('passport.ticketBand must be [min, max] in rupees, with min above 0.');
+    else if (p.ticketBand[1] > L.maxTicketRatio * p.ticketBand[0]) out.push(`passport.ticketBand: the highest price can be at most ${L.maxTicketRatio} times the lowest.`);
+  }
+  if (p.states !== undefined) {
+    if (!(Array.isArray(p.states) && p.states.length && p.states.every(s => typeof s === 'string' && s))) out.push('passport.states must be a list of state codes.');
+    else if (!p.states.includes('*') && p.states.length > L.maxStates) out.push(`passport.states can list at most ${L.maxStates} states, or * for a national business.`);
+  }
+  if (!p.hours && !p.states && !p.ticketBand && !((p.volumeUplift ?? 1) > 1)) out.push('A passport must say what changed: hours, states, ticketBand or volumeUplift.');
   if (p.volumeUplift !== undefined && !(typeof p.volumeUplift === 'number' && p.volumeUplift >= 1 && p.volumeUplift <= RULES.engine.passport.maxUplift)) out.push(`passport.volumeUplift must be between 1 and ${RULES.engine.passport.maxUplift}.`);
   return out;
 }
 
-const verified = (sc: Scenario) => (sc.passports ?? []).filter(p => p.status === 'VERIFIED');
+/** A stored passport that breaks today's limits explains nothing. */
+export const passportsInForce = (sc: Scenario) => (sc.passports ?? []).filter(p => p.status === 'VERIFIED' && !passportErrors(p).length);
 
 /** Payments a verified passport explains on one axis. They are set aside from that test: not counted as innocent either. */
 export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => boolean {
-  const active = verified(sc).map(p => ({ p, period: passportPeriod(p) }));
+  const active = passportsInForce(sc).map(p => ({ p, period: passportPeriod(p) }));
   return (e, axis) => active.some(({ p, period: [a, b] }) => {
     if (e.linkId !== p.linkId || e.eventTime < a || e.eventTime > b) return false;
     if (axis === 'hours') {
@@ -47,7 +66,7 @@ export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => bo
 
 export function passportUplift(sc: Scenario, weekEnd: number): number {
   let uplift = 1;
-  for (const p of verified(sc)) {
+  for (const p of passportsInForce(sc)) {
     const [a, b] = passportPeriod(p);
     if (p.volumeUplift && weekEnd >= a && weekEnd - 7 * DAY < b) uplift = Math.max(uplift, Math.min(RULES.engine.passport.maxUplift, p.volumeUplift));
   }

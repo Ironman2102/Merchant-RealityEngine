@@ -105,7 +105,11 @@ Edit any sample and re-upload it to see how the flags change, e.g. set the betti
 ## Context Passports, limits and honesty rules (22 Nov 2026)
 
 - `contextPassports`: `[{ id, reason, linkId, from, until?, document, hours?, states?, ticketBand?, volumeUplift?, status }]`.
-  An uploaded `VERIFIED` is reset to `SUBMITTED`: verification happens on the server, by a second person.
+  `status`, `submittedBy` and `reviewedBy` in a file are never trusted: every passport arrives `SUBMITTED`, and a second person verifies it on the server.
+  Limits: unique ids, at most 180 days, hours up to 12 a day, highest price up to 10x the lowest (above 0), up to 10 states or `*`,
+  volume up to 3x, and at least one of these set. A file with a passport outside the limits is refused.
+- `merchant.mcc`: four digits as text (keep a leading zero, as in `"0742"`), or `UNKNOWN`.
+- Identifiers (`payerId`, `paidTo`, `beneficiaryAccount`, `payerMobile`, `destHolder`) are text.
 - `merchant.undeclared`: any of `ticketMax`, `hours`, `catchment`, `expectedRoundShare`. Those fields are then not tested.
 - `weeklySales` must agree with the last 14 days of the ledger within 25%, or volume evidence is UNKNOWN.
 - Payments may be up to ₹2 crore; settlements and payouts up to ₹1,000 crore.

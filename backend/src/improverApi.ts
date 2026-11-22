@@ -107,6 +107,16 @@ export function recordLabelEvents(merchantId: string, mcc: string, evidence: Evi
   }
 }
 
+/** The label that currently stands for a merchant across all its cases. */
+export function merchantLabel(merchantId: string): Label | null {
+  const row = getDb().prepare('SELECT label FROM label_events WHERE case_id = ? ORDER BY id DESC LIMIT 1').get(`m:${merchantId}`) as { label: Label } | undefined;
+  return row?.label ?? null;
+}
+
+export function clearLabelEvents(merchantId: string): void {
+  getDb().prepare('DELETE FROM label_events WHERE case_id = ?').run(`m:${merchantId}`);
+}
+
 export function getAllLabelEvents(): LabelEvent[] {
   const rows = getDb()
     .prepare('SELECT detector, mcc, fired, label, actor_id AS actorId, origin FROM label_events ORDER BY id')

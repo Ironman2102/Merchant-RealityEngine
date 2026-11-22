@@ -12,6 +12,7 @@ import type { PaymentEvent } from '../types/payment';
 import type { Label } from '../types/merchant';
 import { RULES } from '../../../rules/index';
 import { istDayKey, istHour, inrK } from '../utils/format';
+import { extent, hasBetween } from '../utils/num';
 
 export type PatternStatus = 'FLAGGED' | 'CLEAR' | 'UNKNOWN' | 'INPUT';
 export interface PatternResult {
@@ -116,7 +117,7 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
   const last = [...res.l2.rows].reverse().find(r => r.actual !== null);
   const self = last?.rAnchored ?? 0, selfHigh = self >= 0.5;
   const activePeers = sc.peers.filter(q => q.status === 'ACTIVE');
-  const peerSales = sc.events.filter(e => e.type === 'SALE' && activePeers.some(q => q.id === e.merchantId));
+  const activeIds = new Set(activePeers.map(q => q.id)), peerSales = sc.events.filter(e => e.type === 'SALE' && activeIds.has(e.merchantId));
   const ref = peerSales.length >= 20
     ? { ...features(peerSales, 0, p.localStates), src: `${activePeers.length} active peer(s) in the same category` }
     : { round: p.expectedRoundShare, outState: p.catchment === 'LOCAL' ? 0.05 : 0.8, src: 'declared profile (no peer data in this file)' };
@@ -152,13 +153,13 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
   const open = res.evidence.filter(e => e.status === 'ILLICIT'), verified = (sc.passports ?? []).filter(x => x.status === 'VERIFIED');
   out.push({ id: 'S4', name: 'Context Passport (merchant explanation)', group: 'Solution pattern',
     status: res.fusion.followUp === 'ASK' ? 'INPUT' : 'CLEAR',
-    observed: verified.length ? `${verified.length} verified passport(s): ${verified.map(x => x.reason).join('; ')}` : open.length ? `${open.length} signal(s) fired; ${open.filter(e => e.signal === 'profile').length} could be explained by a change` : 'Nothing to explain',
+    observed: res.passportsSuspended ? 'A verified passport exists, but it is not applied: a conduct signal fired' : verified.length ? `${verified.length} verified passport(s): ${verified.map(x => x.reason).join('; ')}` : open.length ? `${open.length} signal(s) fired; ${open.filter(e => e.signal === 'profile').length} could be explained by a change` : 'Nothing to explain',
     expected: 'A verified change explains departures from normal. It never explains conduct.',
     why: 'A change is a question first. The merchant names the QR, the date and the document, and a second person checks it before the engine uses it.',
     data: 'Merchant document + detector results' });
 
   // S6 — business reality
-  const days = sales.length ? (Math.max(...own.map(e => e.eventTime)) - Math.min(...own.map(e => e.eventTime))) / (24 * H) : 0;
+  const span = extent(own, e => e.eventTime), days = sales.length && span ? (span[1] - span[0]) / (24 * H) : 0;
   const monthlyIn = days > 0 ? sales.reduce((s, e) => s + e.amount, 0) * (30 / Math.max(days, 7)) : 0;
   const fp = sc.footprint;
   if (fp) {
@@ -202,7 +203,7 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
 
   // N3 — rapid pass-through (settlement swept out to third parties)
   const st = own.filter(e => e.type === 'SETTLEMENT'), tr = own.filter(e => e.type === 'TRANSFER');
-  const fast = tr.filter(t => st.some(s => t.eventTime >= s.eventTime && t.eventTime - s.eventTime <= 24 * H));
+  const settledAt = st.map(s => s.eventTime).sort((a, b) => a - b), fast = tr.filter(t => hasBetween(settledAt, t.eventTime - 24 * H, t.eventTime));
   const bens = new Set(tr.map(t => t.beneficiaryHash)).size;
   out.push({ id: 'N3', name: 'Rapid pass-through after settlement', group: 'New pattern',
     status: !st.length ? 'UNKNOWN' : fast.length >= 3 && bens >= 3 ? 'FLAGGED' : 'CLEAR',

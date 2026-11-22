@@ -29,6 +29,7 @@ export function PassportPanel() {
     <Panel title="Context Passport" subtitle="How an honest merchant explains a change. It covers one QR for a set period, counts only after a second person checks the document, and can never excuse misconduct signals.">
       <div className="space-y-3 text-sm">
         {!list.length && <p className="text-xs text-mute">No change has been recorded for this merchant.{!caseId && ' Passports are recorded on a saved case in the AI Engine.'}</p>}
+        {result.passportsSuspended && <p role="status" className="rounded-lg border border-line bg-panel2 p-2 text-xs">Verified passports are not applied to this case: a conduct signal fired, and a passport cannot explain conduct. The score is the same as with no passport.</p>}
         {list.map(p => (
           <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-panel2 p-3">
             <div className="min-w-0">
@@ -51,11 +52,11 @@ export function PassportPanel() {
             <label>Document checked<input name="document" required maxLength={300} className={field} /></label>
             <label>From<input name="from" type="date" required className={field} /></label>
             <label>Until (max 180 days)<input name="until" type="date" className={field} /></label>
-            <label>Opens (hour)<input name="open" type="number" min={0} max={24} className={field} /></label>
+            <label>Opens (hour, up to 12 h a day)<input name="open" type="number" min={0} max={24} className={field} /></label>
             <label>Closes (hour)<input name="close" type="number" min={0} max={24} className={field} /></label>
-            <label>States, or * for all<input name="states" className={field} /></label>
+            <label>States (up to 10, or * for all)<input name="states" className={field} /></label>
             <label>Lowest price ₹<input name="min" type="number" min={0} className={field} /></label>
-            <label>Highest price ₹<input name="max" type="number" min={0} className={field} /></label>
+            <label>Highest price ₹ (up to 10× lowest)<input name="max" type="number" min={0} className={field} /></label>
             <label>Volume up to ×<input name="uplift" type="number" min={1} max={3} step={0.1} className={field} /></label>
             <div className="flex items-end gap-2"><Btn size="sm" variant="primary" type="submit">Submit for checking</Btn><Btn size="sm" type="button" onClick={() => setAdding(false)}>Cancel</Btn></div>
           </form>

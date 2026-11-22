@@ -23,12 +23,16 @@ export interface CaseRecord {
   id: string;
   createdAt: string;
   createdBy?: number | null;
+  /** The service client (key name) that opened the case. Only that client can read it over /v1. */
+  client?: string;
   engineVersion?: string;
   /** SHA-256 of the uploaded file. The raw upload is never stored (it contains payer identifiers). */
   datasetSha256: string;
   result: InvestigationResult;
   user: UserState;
   response: ResponsePlan | null;
+  /** The last action that took effect. A proposal, a rejection, a blocked step or a re-score never replaces it. */
+  inForce?: { id: string; plan: ResponsePlan } | null;
   learning: { updates: ReliabilityUpdate[]; profile: string[] } | null;
   pending: Pending;
   /** Saved second opinion from the file that opened the case. Absent on older rows. */
@@ -95,6 +99,31 @@ export function verifyAudit(caseId: string): { ok: boolean; brokenAt: number | n
   return { ok: true, brokenAt: null, entries: rows.length };
 }
 
+/** A proposal has ended without taking effect: the case goes back to showing the action still in force. */
+export function restoreInForce(rec: CaseRecord): void {
+  delete rec.pending.response;
+  if (!rec.inForce) return;
+  rec.user.chosenLevel = rec.inForce.plan.level;
+  rec.user.executed = true;
+  rec.response = rec.inForce.plan;
+}
+
+/** Older records kept only the last plan, and a blocked step overwrote it. The audit trail still has what was executed. */
+function inferInForce(rec: CaseRecord): CaseRecord['inForce'] {
+  const plan = rec.response;
+  if (!plan) return null;
+  if (!plan.blocked.length) return { id: plan.level, plan };
+  const log = rec.user.audit;
+  let last = log.length - 1;
+  while (last >= 0 && !/^L[0-5]: /.test(log[last].action)) last--;
+  if (last < 0) return null;
+  const level = log[last].action.slice(0, 2) as ResponseLevel;
+  let first = last;
+  // One executed plan is a run of entries with the same level, one per action.
+  while (first > 0 && log[first - 1].action.startsWith(`${level}: `) && log[first - 1].detail === log[last].detail) first--;
+  return { id: level, plan: { ...plan, level, blocked: [], actions: log.slice(first, last + 1).map(a => a.action.slice(4)) } };
+}
+
 const hydrate = (json: string): CaseRecord => {
   const rec = JSON.parse(json) as CaseRecord;
   rec.pending ??= {};
@@ -107,6 +136,7 @@ const hydrate = (json: string): CaseRecord => {
   r.fusion.conductSignals ??= [];
   r.fusion.priorShift ??= 0;
   rec.user.audit = readAudit(rec.id).map(({ seq, at, actor, action, detail }) => ({ seq, at, actor, action, detail }));
+  if (rec.inForce === undefined) rec.inForce = inferInForce(rec);
   return rec;
 };
 

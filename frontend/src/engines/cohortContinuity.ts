@@ -2,6 +2,7 @@ import type { Scenario } from '../types/merchant';
 import type { PaymentEvent } from '../types/payment';
 import type { CohortMatch } from '../types/investigation';
 import { istHour } from '../utils/format';
+import { extent } from '../utils/num';
 
 const BINS = [250, 500, 1000, 2000, 5000, Infinity];
 const hist = (xs: number[], f: (x: number) => number, n: number) => { const h = Array(n).fill(0); xs.forEach(x => h[f(x)]++); return h; };
@@ -19,7 +20,7 @@ const sales = (ev: PaymentEvent[], id: string) => ev.filter(e => e.merchantId ==
 export function cohortContinuity(sc: Scenario): CohortMatch[] {
   const P = sales(sc.events, sc.primaryMerchantId);
   if (!P.length) return [];
-  const pPayers = new Set(P.map(e => e.payerHash)), pStart = Math.min(...P.map(e => e.eventTime));
+  const pPayers = new Set(P.map(e => e.payerHash)), pStart = extent(P, e => e.eventTime)![0];
   const pBen = new Set(sc.events.filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SETTLEMENT').map(e => e.beneficiaryHash));
   return sc.peers.map(peer => {
     const Q = sales(sc.events, peer.id);
@@ -29,7 +30,7 @@ export function cohortContinuity(sc: Scenario): CohortMatch[] {
     const jaccard = inter / union;
     const ticketSim = cosine(hist(P.map(e => e.amount), x => BINS.findIndex(b => x <= b), 6), hist(Q.map(e => e.amount), x => BINS.findIndex(b => x <= b), 6));
     const timingSim = cosine(hist(P.map(e => istHour(e.eventTime)), x => x, 24), hist(Q.map(e => istHour(e.eventTime)), x => x, 24));
-    const qLast = Math.max(...Q.map(e => e.eventTime));
+    const qLast = extent(Q, e => e.eventTime)![1];
     const gapDays = (pStart - qLast) / 86400000;
     const handoff = gapDays >= 0 && gapDays <= 7 && peer.status === 'DORMANT';
     const beneficiaryMatch = sc.events.some(e => e.merchantId === peer.id && e.type === 'SETTLEMENT' && pBen.has(e.beneficiaryHash));

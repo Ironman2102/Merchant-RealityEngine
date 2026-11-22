@@ -2,7 +2,14 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, normalize, extname } from 'node:path';
 import { handle } from './http';
+import { assertSecrets } from './auth';
 
+try {
+  assertSecrets();
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(1);
+}
 const port = Number(process.env.PORT || 8787);
 // Loopback by default. A container must set HOST=0.0.0.0 or its published port answers nothing.
 const host = process.env.HOST || '127.0.0.1';

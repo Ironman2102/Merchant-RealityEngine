@@ -14,6 +14,8 @@ import { analyze, FEATURE_COLUMNS, features } from '../engine/index';
 import { loadWorkflow, validateWorkflow } from '../engine/workflowConfig';
 import { demoLearn } from '../scripts/demo-learn';
 import { rollbackRulesLive } from '../backend/src/improverApi';
+import { analyseCanonical } from '../backend/src/algorithms/analyze';
+import { syncLiveRules } from '../backend/src/rulesState';
 import { runBatch } from './batch';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -32,8 +34,10 @@ if (cmd === 'batch') {
   if (!values.in || !values.mapping || !values.out) { console.error('mre batch --in <dir> --mapping <file> --out <dir> [--ml]'); process.exit(2); }
   let key: Buffer;
   try { key = loadHashKey(); } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
-  const { merchants, opened } = runBatch({ inDir: values.in, mappingPath: values.mapping, outDir: values.out, key, ml: !!values.ml });
+  const { merchants, opened, failed } = runBatch({ inDir: values.in, mappingPath: values.mapping, outDir: values.out, key, ml: !!values.ml });
   console.log(`scored ${merchants} merchants, opened ${opened}${values.ml ? ' (with ML second opinion)' : ''}`);
+  // A merchant that could not be scored is not a merchant with no case.
+  if (failed) console.error(`${failed} merchants could not be scored: see the ERROR rows in scores.csv`);
 } else if (cmd === 'features') {
   const { values } = parseArgs({
     args: rest,
@@ -50,6 +54,7 @@ if (cmd === 'batch') {
     if (id) truth.set(id.trim(), Number(label));
   }
   const { datasets } = mapExport(values.in, values.mapping, loadHashKey());
+  // Training features always come from the committed rules, not from whatever is promoted on this machine.
   const lines = [`merchant_id,label,${FEATURE_COLUMNS.join(',')}`];
   for (const d of datasets) {
     const ran = analyze(d);
@@ -75,8 +80,9 @@ if (cmd === 'batch') {
     const { datasets, warnings } = mapExport(values.in, values.mapping, loadHashKey());
     const sample = datasets.slice(0, 3);
     let opened = 0;
+    syncLiveRules();
     for (const d of sample) {
-      const ran = analyze(d);
+      const ran = analyseCanonical(d);
       if (!ran.ok) { console.error(ran.errors.join(' ')); process.exit(1); }
       if (ran.result.fusion.decision === 'OPEN_CASE') opened++;
       console.log(`${d.merchant.id} ${ran.result.fusion.decision} P=${ran.result.fusion.posterior.toFixed(4)}`);

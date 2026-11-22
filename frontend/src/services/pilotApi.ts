@@ -20,6 +20,8 @@ export interface ServerUser {
   auditIntact?: boolean;
   scenario?: Scenario;
   investigation?: ServerInvestigation;
+  /** The action now in force. A proposal does not change it. */
+  inForce?: { id: string; level: string; actions: string[]; restricts: boolean } | null;
   pending?: { response?: { level: string; by: { id: number; username: string }; at: string }; label?: { label: string; by: { id: number; username: string }; at: string } };
 }
 export type PilotCase = ServerUser & { id: string; createdAt: string; scenario: Scenario; [k: string]: unknown };
