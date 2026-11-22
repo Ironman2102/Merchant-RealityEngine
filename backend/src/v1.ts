@@ -1,6 +1,6 @@
 /** Versioned API. Service keys, not browser sessions. /v1/score does not create a case. */
 import { createHash, randomBytes } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import type { IncomingMessage } from 'node:http';
@@ -13,13 +13,18 @@ import { caseTrace, evidencePack } from './trace';
 import { getInvestigation } from './workflow';
 import { authenticateServiceKey, idempotent, type Scope, type ServicePrincipal } from './serviceKeys';
 import type { Actor } from './auth';
-import { scoreWithHost } from './ml';
+import { mlScore } from './ml';
 
 export interface V1Req { method: string; path: string; header: (name: string) => string | undefined; body: unknown }
 
 interface BatchState { status: 'queued' | 'running' | 'done' | 'error'; result?: unknown; error?: string }
 const batches = new Map<string, BatchState>();
 let batchLock: Promise<void> = Promise.resolve();
+
+/** One client's idempotency key must never replay another client's response. */
+const scopedKey = (p: ServicePrincipal, key: string | undefined) => (key ? `${p.id}:${key}` : undefined);
+/** Batch callers pick a shipped mapping by name; they never supply a path to read. */
+const MAPPINGS = ['generic-pa-v1', 'alt-pa-example'];
 
 async function scoreOf(raw: unknown): Promise<ApiReply> {
   const ran = analyzeDataset(raw);
@@ -28,14 +33,15 @@ async function scoreOf(raw: unknown): Promise<ApiReply> {
   const top = [...f.mechanisms].sort((a, b) => b.score - a.score)[0];
   const topEvidence = ran.result.evidence.filter(e => e.status === 'ILLICIT').sort((a, b) => b.llr - a.llr).slice(0, 8)
     .map(e => ({ id: e.id, name: e.name, observed: e.observed, llr: e.llr }));
-  const ml = await scoreWithHost(ran.result);
+  const ml = mlScore(ran.result);
   return {
     status: 200,
     body: {
       decision: f.decision, posterior: f.posterior, ci: f.posteriorCi, prior: f.prior,
-      recommended: f.decisionAnalysis.recommended, mechanism: top?.id ?? null, topEvidence,
+      recommended: ran.result.review.recommended, mechanism: top?.id ?? null, topEvidence,
       rulesVersion: f.rulesVersion,
-      ml: ml ? { p: ml.p, pRaw: ml.pRaw, drivers: ml.drivers, modelVersion: ml.modelVersion, synthetic: true } : null,
+      ml: { p: ml.p, threshold: ml.threshold, drivers: ml.drivers, modelVersion: ml.modelVersion, synthetic: true },
+      followUp: f.followUp, scope: ran.result.scope, streams: ran.result.streams, suspectLinks: ran.result.suspectLinks,
     },
   };
 }
@@ -65,7 +71,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
     const score = await scoreOf(req.body);
     if (score.status !== 200) return score;
     const raw = JSON.stringify(req.body);
-    const idem = req.header('idempotency-key');
+    const idem = scopedKey(principal, req.header('idempotency-key'));
     return idempotent(idem, createHash('sha256').update(raw).digest('hex'), () => {
       const opened = openInvestigation(req.body, serviceActor(principal));
       if (opened.status !== 200) return opened;
@@ -84,7 +90,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
   if (req.path === '/v1/batches' && req.method === 'POST') {
     const denied = allow(principal, 'batch'); if (denied) return denied;
     const body = (req.body ?? {}) as { files?: Record<string, string>; mapping?: string };
-    const idem = req.header('idempotency-key');
+    const idem = scopedKey(principal, req.header('idempotency-key'));
     return idempotent(idem, createHash('sha256').update(JSON.stringify(body)).digest('hex'), () => {
       const id = `bat_${randomBytes(6).toString('hex')}`;
       batches.set(id, { status: 'queued' });
@@ -99,10 +105,13 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
             if (name !== basename(name) || name === '.' || name === '..' || name.includes('/') || name.includes('\\')) throw new Error('Batch file name must be a single basename.');
             writeFileSync(join(dir, name), Buffer.from(b64, 'base64'));
           }
+          const name = String(body.mapping).replace(/^adapters\/mappings\//, '').replace(/\.json$/, '');
+          if (!MAPPINGS.includes(name)) throw new Error(`mapping must be one of ${MAPPINGS.join(', ')}.`);
           const out = join(dir, 'out');
-          runBatch({ inDir: dir, mappingPath: body.mapping, outDir: out, key: loadHashKey() });
+          const ran = runBatch({ inDir: dir, mappingPath: `adapters/mappings/${name}.json`, outDir: out, key: loadHashKey() });
+          state.result = { ...ran, scoresCsv: readFileSync(join(out, 'scores.csv'), 'utf8') };
+          rmSync(dir, { recursive: true, force: true });
           state.status = 'done';
-          state.result = { out };
         } catch (e) {
           state.status = 'error';
           state.error = e instanceof Error ? e.message : 'Batch failed.';

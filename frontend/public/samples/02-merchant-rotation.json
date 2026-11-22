@@ -70,12 +70,12 @@
     },
     {
       "week": "W15",
-      "actual": 82499,
+      "actual": null,
       "seasonalMultiplier": 1
     },
     {
       "week": "W16",
-      "actual": 234000,
+      "actual": 169000,
       "seasonalMultiplier": 1
     }
   ],

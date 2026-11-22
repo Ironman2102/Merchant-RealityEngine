@@ -1,11 +1,13 @@
 import type { Scenario } from '../types/merchant';
-import type { InvestigationResult, L1Result, LayerId, Timeline } from '../types/investigation';
+import type { InvestigationResult, L1Result, LayerId, Scope, Timeline } from '../types/investigation';
 import type { PaymentEvent } from '../types/payment';
 import { volumeModel } from './residualEngine';
 import { RULES } from '../../../rules/index';
 import { cusum } from './cusumEngine';
 import { cohortContinuity } from './cohortContinuity';
 import { runDetectors } from './detectors';
+import { passportCover } from './passport';
+import { narrowSuspects, splitStreams } from './streams';
 import { fuse } from './evidenceFusion';
 import { buildReview } from './analystEngine';
 
@@ -22,7 +24,7 @@ function layer1(sc: Scenario, ev: PaymentEvent[]): L1Result {
     { name: 'Settlements', key: 'acquiring', state: c.acquiring, records: counts.SETTLEMENT.n, note: 'Settlement ledger' },
     { name: 'Merchant KYC', key: 'kyc', state: 'AVAILABLE', records: 1, note: 'Declared profile and documents' },
     { name: 'Website and checkout snapshots', key: 'website', state: c.website, records: sc.web.embeds.length, note: 'Crawler snapshots of declared and third-party pages' },
-    { name: 'Payer identifiers', key: 'payer', state: 'AVAILABLE', records: new Set(ev.map(e => e.payerHash)).size, note: 'Hashed on entry' },
+    { name: 'Payer identifiers', key: 'payer', state: ev.some(e => e.type === 'SALE' && e.payerHash !== '—') ? 'AVAILABLE' : 'MISSING', records: new Set(ev.filter(e => e.payerHash !== '—').map(e => e.payerHash)).size, note: 'Hashed on entry' },
     { name: 'Order and fulfilment feeds', key: 'orders', state: c.orders, records: sc.orders.length, note: c.orders === 'MISSING' ? 'No feed connected' : 'Merchant order system' },
     { name: 'Bank-side information', key: 'bank', state: c.bank, records: sc.bankCredits.length, note: c.bank === 'MISSING' ? 'Not shared by the bank' : 'Bank credit feed' },
   ] };
@@ -35,15 +37,45 @@ const TL: Record<LayerId, Timeline[]> = {
   4: [{ op: 'Exclude UNKNOWN evidence', ms: 40 }, { op: 'Collapse correlated signals', ms: 120 }, { op: 'Weight by reliability and fake difficulty', ms: 90 }, { op: 'Check source independence', ms: 70 }, { op: 'Score mechanism hypotheses', ms: 130 }, { op: 'Open or decline case', ms: 30 }],
   5: [{ op: 'Build competing chains', ms: 110 }, { op: 'Test each link against evidence', ms: 190 }, { op: 'Draft recommendation', ms: 70 }],
   6: [{ op: 'Map case to response level', ms: 60 }, { op: 'Scope action to defined flow', ms: 90 }, { op: 'Check legal-authority gate', ms: 120 }],
-  7: [{ op: 'Prepare label options', ms: 50 }, { op: 'Compute indicators', ms: 80 }, { op: 'Stage learning updates', ms: 90 }, { op: 'Hash-chain audit entries', ms: 40 }],
+  7: [{ op: 'Prepare label options', ms: 50 }, { op: 'Compute indicators', ms: 80 }, { op: 'Stage calibration inputs', ms: 90 }, { op: 'Hash-chain audit entries', ms: 40 }],
 };
 
 /** Pure, deterministic. Same scenario in → same result out. */
-export function runInvestigation(sc: Scenario): InvestigationResult {
+/** `draws: 0` skips the Monte-Carlo interval, for backtests that only need the decision (the gate never reads the interval). */
+export function runInvestigation(sc: Scenario, opts: { draws?: number } = {}): InvestigationResult {
   const events = sc.events.filter(e => e.merchantId === sc.primaryMerchantId);
   const vol = volumeModel(sc), rows = vol.rows, cs = cusum(rows, vol.z), cohort = cohortContinuity(sc);
-  const evidence = runDetectors({ sc, p: sc.profile, norm: RULES.mcc(sc.profile.mcc), vol, all: events, sales: events.filter(e => e.type === 'SALE'), refunds: events.filter(e => e.type === 'REFUND'),
-    settlements: events.filter(e => e.type === 'SETTLEMENT'), transfers: events.filter(e => e.type === 'TRANSFER'), rows, cusum: cs, cohort });
-  const fusion = fuse(evidence, sc.profile), review = buildReview(evidence, fusion), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
-  return { scenario: sc, events, l1: layer1(sc, events), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, timelines: TL };
+  const norm = RULES.mcc(sc.profile.mcc), covered = passportCover(sc);
+  const detect = (xs: PaymentEvent[], scope: Scope) => {
+    const of = (type: PaymentEvent['type']) => xs.filter(e => e.type === type);
+    // A stream only sees the pages its own link was found on.
+    const view = scope.kind === 'link' ? { ...sc, web: { ...sc.web, embeds: sc.web.embeds.filter(e => e.merchantId !== sc.primaryMerchantId || e.linkId === scope.id) } }
+      : scope.kind === 'repeat-payers' ? { ...sc, web: { embeds: [], catalogue: sc.web.catalogue } } : sc;
+    return runDetectors({ sc: view, p: sc.profile, norm, vol, all: xs, sales: of('SALE'), refunds: of('REFUND'), settlements: of('SETTLEMENT'), transfers: of('TRANSFER'), rows, cusum: cs, cohort, scope: scope.kind, covered });
+  };
+
+  const salesN = events.filter(e => e.type === 'SALE').length;
+  const account: Scope = { kind: 'account', id: 'account', label: 'Whole account', sales: salesN, share: 1 };
+  let scope = account, evidence = detect(events, account), fusion = fuse(evidence, sc.profile, opts);
+
+  const parts = splitStreams(events);
+  // k streams are k chances to be wrong, so each starts ln(k) lower.
+  const priorShift = parts.length > 1 ? -Math.log(parts.length) : 0;
+  const scored = parts.map(part => {
+    const ev = detect(part.events, part.scope);
+    return { ...part, evidence: ev, fusion: fuse(ev, sc.profile, { draws: 0, priorShift }) };
+  });
+  // The headline is the widest scope that opens a case. Failing that, the most probable stream that does.
+  const best = (pick: (f: typeof fusion) => boolean) => scored.filter(x => pick(x.fusion)).sort((a, b) => b.fusion.posterior - a.fusion.posterior)[0];
+  const head = fusion.gatePassed ? undefined : best(f => f.gatePassed) ?? (fusion.followUp === 'ASK' ? undefined : best(f => f.followUp === 'ASK'));
+  if (head) {
+    scope = head.scope; evidence = head.evidence;
+    fusion = fuse(evidence, sc.profile, { ...opts, priorShift });
+    fusion.gateReason = `${scope.label} (${scope.sales} of ${salesN} sales), scored on its own: ${fusion.gateReason}`;
+  }
+
+  const suspectLinks = fusion.gatePassed ? narrowSuspects(sc, events, scored.filter(x => x.fusion.gatePassed && x.scope.kind === 'link').map(x => x.scope.id)) : [];
+  const streams = scored.map(x => ({ scope: x.scope, posterior: x.fusion.posterior, decision: x.fusion.decision, followUp: x.fusion.followUp, fired: x.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id) }));
+  const review = buildReview(evidence, fusion, suspectLinks), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
+  return { scenario: sc, events, l1: layer1(sc, events), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, scope, streams, suspectLinks, timelines: TL };
 }

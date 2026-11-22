@@ -13,34 +13,59 @@ export const ROLES: Role[] = ['analyst', 'reviewer', 'legal', 'admin'];
 export interface Actor { id: number; username: string; role: Role }
 
 const SESSION_MS = 12 * 3600 * 1000;
+const STATELESS_SESSION_MS = 30 * 60 * 1000;
 export const COOKIE = 'mre_session';
+const TOKEN_VERSION = 'v2';
 const tokenHash = (t: string) => createHash('sha256').update(t).digest('hex');
-const sessionSecret = () => process.env.MRE_SESSION_SECRET || process.env.MRE_HASH_KEY || '';
 
-/** A signed cookie still names the user after the function's temporary database is gone. */
+/**
+ * Sessions live in the database, so signing out revokes them. Only a serverless host, whose instances share no
+ * database, sets MRE_STATELESS_SESSIONS=1 and gets short signed cookies for configured boot accounts.
+ */
+const stateless = () => envValue('MRE_STATELESS_SESSIONS') === '1';
+const sessionSecret = () => {
+  const secret = envValue('MRE_SESSION_SECRET') || envValue('MRE_HASH_KEY');
+  return secret.length >= 16 ? secret : '';
+};
+const hmac = (secret: string, text: string) => createHmac('sha256', secret).update(text).digest('base64url');
+
+/** The cookie names a boot account and carries a fingerprint of its current password and role. Changing either revokes it. */
 function signActor(actor: Actor): string | null {
   const secret = sessionSecret();
-  if (!secret) return null;
-  const body = Buffer.from(JSON.stringify({ id: actor.id, username: actor.username, role: actor.role, exp: Date.now() + SESSION_MS })).toString('base64url');
-  const sig = createHmac('sha256', secret).update(body).digest('base64url');
-  return `v1.${body}.${sig}`;
+  const boot = bootAccounts().find(u => u.username === actor.username);
+  if (!stateless() || !secret || !boot) return null;
+  const body = Buffer.from(JSON.stringify({
+    username: boot.username, fp: hmac(secret, `${boot.username}:${boot.role}:${boot.password}`),
+    exp: Date.now() + STATELESS_SESSION_MS, nonce: randomBytes(8).toString('hex'),
+  })).toString('base64url');
+  return `${TOKEN_VERSION}.${body}.${hmac(secret, body)}`;
 }
 
 function actorFromSigned(token: string): Actor | null {
   const secret = sessionSecret();
-  if (!secret || !token.startsWith('v1.')) return null;
+  if (!stateless() || !secret || !token.startsWith(`${TOKEN_VERSION}.`)) return null;
   const [, body, sig] = token.split('.');
-  if (!body || !sig) return null;
-  const expect = createHmac('sha256', secret).update(body).digest('base64url');
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expect);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  if (!body || !sig || !sameSecret(sig, hmac(secret, body))) return null;
   try {
-    const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as { id?: number; username?: string; role?: Role; exp?: number };
-    if (!payload.exp || payload.exp < Date.now() || typeof payload.id !== 'number' || !payload.username || !payload.role || !ROLES.includes(payload.role)) return null;
-    return { id: payload.id, username: payload.username, role: payload.role };
+    const claim = JSON.parse(Buffer.from(body, 'base64url').toString()) as { username?: string; fp?: string; exp?: number };
+    if (!claim.exp || claim.exp < Date.now() || !claim.fp) return null;
+    const boot = bootAccounts().find(u => u.username === claim.username);
+    if (!boot || !sameSecret(claim.fp, hmac(secret, `${boot.username}:${boot.role}:${boot.password}`))) return null;
+    if (getDb().prepare('SELECT 1 FROM revoked_tokens WHERE token_hash = ?').get(tokenHash(token))) return null;
+    // Row ids differ between instances, so the identity is always resolved by username.
+    return bootActor(boot);
   } catch { return null; }
 }
+
+function bootActor(boot: { username: string; password: string; role: Role }): Actor | null {
+  const row = getDb().prepare('SELECT id, disabled FROM users WHERE username = ?').get(boot.username) as { id: number; disabled: number } | undefined;
+  if (!row) return createUser(boot.username, boot.password, boot.role);
+  return row.disabled ? null : { id: row.id, username: boot.username, role: boot.role };
+}
+
+/** Maker/checker compares people by id and by name, because ids are not stable across serverless instances. */
+export const samePerson = (a: { id: number; username: string }, b: { id: number; username: string }) =>
+  a.username.toLowerCase() === b.username.toLowerCase() || (a.id > 0 && a.id === b.id);
 
 function envValue(name: string): string {
   const platform = (globalThis as { Netlify?: { env?: { get?: (key: string) => string | undefined } } }).Netlify?.env?.get?.(name);
@@ -92,10 +117,8 @@ export function login(username: string, password: string): { token: string; acto
   const boot = bootAccounts().find(u => u.username === name);
   if (boot) {
     if (!sameSecret(pw, boot.password)) return null;
-    const existing = getDb().prepare('SELECT id, username, role, disabled FROM users WHERE username = ?').get(name) as { id: number; username: string; role: Role; disabled: number } | undefined;
-    if (existing?.disabled) return null;
-    const actor = existing ? { id: existing.id, username: existing.username, role: existing.role } : createUser(boot.username, boot.password, boot.role);
-    return { token: issueSession(actor), actor };
+    const actor = bootActor(boot);
+    return actor ? { token: issueSession(actor), actor } : null;
   }
   const row = getDb().prepare('SELECT id, username, role, pw_salt, pw_hash, disabled FROM users WHERE username = ?').get(name) as
     { id: number; username: string; role: Role; pw_salt: string; pw_hash: string; disabled: number } | undefined;
@@ -132,39 +155,25 @@ export function loginWithIdToken(idToken: string, check: OidcCheck): { token: st
   return { token: issueSession(actor), actor };
 }
 
-export function logout(token: string): void { getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(tokenHash(token)); }
-
-/** Switch active session to a demo role persona (for demonstrating two-person maker/checker approval). Requires an already signed-in user. */
-export function switchDemoRole(role: Role): { token: string; actor: Actor } | null {
-  if (!ROLES.includes(role)) return null;
-  const username = `demo-${role}`;
-  const db = getDb();
-  const existing = db.prepare('SELECT id, username, role, disabled FROM users WHERE username = ?').get(username) as { id: number; username: string; role: Role; disabled: number } | undefined;
-  let actor: Actor;
-  if (!existing) {
-    actor = createUser(username, `demo-role-secret-${role}-2026`, role);
-  } else if (existing.disabled) {
-    return null;
-  } else {
-    actor = { id: existing.id, username: existing.username, role };
-  }
-  return { token: issueSession(actor), actor };
+export function logout(token: string): void {
+  const hash = tokenHash(token);
+  getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(hash);
+  getDb().prepare('INSERT OR IGNORE INTO revoked_tokens (token_hash, at) VALUES (?, ?)').run(hash, Date.now());
 }
 
 export function actorFromToken(token: string | undefined): Actor | null {
   if (!token) return null;
-  const signed = actorFromSigned(token);
-  if (signed) return signed;
+  if (token.startsWith(`${TOKEN_VERSION}.`)) return actorFromSigned(token);
   const row = getDb().prepare('SELECT u.id, u.username, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND u.disabled = 0')
     .get(tokenHash(token), Date.now()) as Actor | undefined;
   return row ?? null;
 }
 
 export function readCookie(req: IncomingMessage, name = COOKIE): string | undefined {
-  for (const part of (req.headers.cookie ?? '').split(';')) { const [k, ...v] = part.trim().split('='); if (k === name) return decodeURIComponent(v.join('=')); }
+  for (const part of (req.headers.cookie ?? '').split(';')) { const [k, ...v] = part.trim().split('='); if (k === name) { try { return decodeURIComponent(v.join('=')); } catch { return undefined; } } }
   return undefined;
 }
 
-export const sessionCookie = (token: string) => `${COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MS / 1000}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+export const sessionCookie = (token: string) => `${COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MS / 1000}${process.env.NODE_ENV === 'production' || stateless() ? '; Secure' : ''}`;
 export const clearCookie = () => `${COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`;
 export const userCount = () => (getDb().prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n;

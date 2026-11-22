@@ -1,16 +1,16 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, switchDemoRole, userCount, type Actor, type Role } from './auth';
+import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
 import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
-import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
-import { scoreWithHost } from './ml';
+import { mlScore } from './ml';
+import { listPassports, proposePassport, reviewPassport } from './passports';
 import { getCase, putCase } from './store';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
-const LIMIT = 2_000_000;
+const LIMIT = 6_000_000;
 
 /** Per-client token bucket: 60 requests per minute. ponytail: in-memory, per process; move to a shared store with >1 API process. */
 const buckets = new Map<string, { tokens: number; at: number }>();
@@ -27,7 +27,7 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
   for await (const chunk of req) {
     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     n += buf.length;
-    if (n > LIMIT) throw Object.assign(new Error('Body is larger than 2 MB.'), { status: 413 });
+    if (n > LIMIT) throw Object.assign(new Error('Body is larger than 6 MB. Use batch mode for bigger ledgers.'), { status: 413 });
     chunks.push(buf);
   }
   if (!n) return {};
@@ -74,13 +74,6 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
     if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
-    if (path === '/auth/demo-switch' && method === 'POST') {
-      if (!actor) return send(res, { status: 401, body: { error: 'Sign in first before switching demo roles.' } });
-      const b = await readBody(req) as { role?: unknown };
-      const switched = typeof b.role === 'string' ? switchDemoRole(b.role as Role) : null;
-      if (!switched) return send(res, { status: 400, body: { error: 'Role must be analyst, reviewer, legal, or admin.' } });
-      return send(res, { status: 200, body: { user: switched.actor } }, { 'set-cookie': sessionCookie(switched.token) });
-    }
     if (path === '/rules/status' && method === 'GET') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to view self-improvement status.' } });
       return send(res, getRulesStatus());
@@ -88,7 +81,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (path === '/rules/proposals/run' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to run the red-team improver.' } });
       const b = await readBody(req) as { mode?: string };
-      return send(res, runImproverProposal(actor, b.mode === 'self' ? 'self' : 'mre-improver'));
+      return send(res, runImproverProposal(actor, b.mode === 'calibration' ? 'calibration' : 'threshold'));
     }
     if (path === '/rules/rollback' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to roll back rules.' } });
@@ -100,28 +93,12 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       const [, propId, propAction] = rulesMatch;
       return send(res, propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor));
     }
-    if (path === '/model' && method === 'GET') {
-      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to see the model sandbox.' } });
-      const online = await modelOnline();
-      return send(res, { status: 200, body: { online, configured: modelHostConfigured(), detail: online ? 'The model is answering.' : 'The model sandbox is not answering.' } });
-    }
-    if (path === '/model/start' && method === 'POST') {
-      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to start the model sandbox.' } });
-      const started = await startModelSandbox();
-      return send(res, { status: started.state === 'unconfigured' ? 503 : 200, body: { ...started, configured: modelHostConfigured() } });
-    }
-    if (path === '/model/stop' && method === 'POST') {
-      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to stop the model sandbox.' } });
-      await stopModelSandbox();
-      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model sandbox stopped.' } });
-    }
-
     if (path.startsWith('/v1')) {
       const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
       if (v1) return send(res, v1);
     }
 
-    const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit))?)?$/);
+    const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit|passport|passport-review))?)?$/);
     if (!match) return send(res, { status: 404, body: { error: 'Unknown route.' } });
     if (!actor) return send(res, { status: 401, body: { error: 'Sign in to use the investigation API.' } });
     const [, id, action] = match;
@@ -134,7 +111,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (opened.status === 200 && caseId) {
         const rec = getCase(caseId);
         if (rec && !rec.ml) {
-          const ml = await scoreWithHost(rec.result);
+          const ml = mlScore(rec.result);
           if (ml) { rec.ml = ml; putCase(rec); }
         }
       }
@@ -145,6 +122,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (action === 'trace') return send(res, await caseTrace(id));
       if (action === 'pack') return send(res, evidencePack(id, actor));
       if (action === 'audit') return send(res, auditStatus(id));
+      if (action === 'passport') return send(res, listPassports(id));
       return send(res, { status: 405, body: { error: 'Use POST for this step.' } });
     }
     if (method !== 'POST' || !action) return send(res, { status: 405, body: { error: 'Use GET for the case, or POST review, response, approve, label or summary.' } });
@@ -153,6 +131,8 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       : action === 'response' ? respondInvestigation(id, body, actor)
       : action === 'approve' ? approveInvestigation(id, body, actor)
       : action === 'label' ? labelInvestigation(id, body, actor)
+      : action === 'passport' ? proposePassport(id, body, actor)
+      : action === 'passport-review' ? reviewPassport(id, body, actor)
       : action === 'summary' ? await summarise(id, actor)
       : { status: 405, body: { error: 'Unknown step.' } };
     send(res, reply);

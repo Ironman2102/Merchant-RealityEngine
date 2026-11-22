@@ -10,6 +10,8 @@ export interface PackMeta {
   caseId: string | null;
   createdAt: string;
   datasetSha256: string;
+  /** What exactly was hashed. */
+  hashBasis?: string;
   generatedBy: string | { username: string; role: string } | null;
   reportingEntity?: string;
   engineVersion?: string | null;
@@ -45,6 +47,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
       id: meta.caseId,
       createdAt: meta.createdAt,
       datasetSha256: meta.datasetSha256,
+      datasetHashBasis: meta.hashBasis ?? 'SHA-256 of the uploaded dataset as received (JSON).',
       rulesVersion: result.fusion.rulesVersion,
       engineVersion: meta.engineVersion ?? null,
     },
@@ -66,6 +69,10 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
         evidence: fired.map(d => d.id),
       },
     ],
+    scope: result.scope,
+    streams: result.streams,
+    contextPassports: result.scenario.passports ?? [],
+    confidentiality: 'Internal. Do not share this pack, its reasons or the fact of any report with the merchant.',
     strDraft: {
       status: 'DRAFT: review by the Principal Officer before filing on FIU-IND\'s portal',
       reportingEntity: meta.reportingEntity ?? '(set MRE_ENTITY_NAME)',
@@ -92,6 +99,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
       'Category norms and detector sensitivities are expert priors until calibrated on labelled cases.',
       'Probabilities assume evidence families are independent given the truth; correlated families are shrunk but not removed.',
       'Payer and beneficiary identifiers are keyed pseudonyms; the PA holds the key to re-identify.',
+      'Betting that copies a shop\'s amounts, hours, locations and payer mix cannot be found from payment data alone.',
     ],
   };
 }

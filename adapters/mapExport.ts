@@ -9,6 +9,7 @@ import { DATASET_FORMAT, toIst, type DatasetTransaction, type MreDataset } from 
 import type { MerchantProfile } from '../frontend/src/types/merchant';
 import { parseCsv } from './csv';
 import { pseudonym } from './pseudonym';
+import { parseTime, stateCode, succeeded, weeklyFromLedger } from '../frontend/src/utils/ingest';
 
 type FieldSpec = string | { column: string; map?: Record<string, string>; split?: string };
 interface Mapping {
@@ -38,10 +39,6 @@ function col(header: string[], row: string[], name: string): string {
   return i < 0 ? '' : (row[i] ?? '').trim();
 }
 
-function hasOffset(value: string): boolean {
-  return /(?:Z|[+-]\d{2}:?\d{2})$/.test(value);
-}
-
 function num(raw: string): number | undefined {
   if (raw === '') return undefined;
   const n = Number(raw);
@@ -56,10 +53,12 @@ function merchantFromRow(header: string[], row: string[], mapping: Mapping, late
   const open = num(get('openHour'));
   const close = num(get('closeHour'));
   const onboarded = get('onboardedOn');
-  let accountAgeDays = 0;
+  // An unknown age gets the neutral prior (odds 1), not the doubled prior of a brand-new account.
+  let accountAgeDays = 1000, ageKnown = false;
   if (onboarded && latestMs !== undefined) {
-    const start = Date.parse(onboarded.length <= 10 ? `${onboarded}T00:00:00${mapping.timezone}` : onboarded);
-    if (!Number.isNaN(start)) accountAgeDays = Math.max(0, Math.floor((latestMs - start) / 86_400_000));
+    const start = Date.parse(parseTime(onboarded, mapping.timezone) ?? '');
+    if (!Number.isNaN(start)) ageKnown = true;
+    if (ageKnown) accountAgeDays = Math.max(0, Math.floor((latestMs - start) / 86_400_000));
   }
   const domains = specOf(m.declaredDomains);
   const declaredDomains = col(header, row, domains.column).split(domains.split ?? '|').map(s => s.trim()).filter(Boolean);
@@ -78,7 +77,7 @@ function merchantFromRow(header: string[], row: string[], mapping: Mapping, late
     ticketMax: ticketMaxRaw !== undefined ? ticketMaxRaw * scale : 0,
     hours: [open ?? 0, close ?? 24] as [number, number],
     catchment: (get('catchment') === 'NATIONAL' ? 'NATIONAL' : 'LOCAL') as 'LOCAL' | 'NATIONAL',
-    localStates: home ? [home] : [],
+    localStates: stateCode(home) ? [stateCode(home)!] : [],
     expectedRoundShare: 0.06,
     seasonalPeak: 1,
     baselineWeekly: baselineWeeklyRaw !== undefined ? baselineWeeklyRaw * scale : 0,
@@ -87,25 +86,15 @@ function merchantFromRow(header: string[], row: string[], mapping: Mapping, late
     declaredChannels: [],
     declaredActivity: [],
   };
+  const undeclared: NonNullable<MerchantProfile['undeclared']> = [];
+  if (open === undefined || close === undefined) { undeclared.push('hours'); merchant.hours = [0, 24]; }
+  if (!get('catchment')) undeclared.push('catchment');
+  if (ticketMaxRaw === undefined) { undeclared.push('ticketMax'); merchant.ticketMax = merchant.ticketMin + 1; }
+  if (baselineWeeklyRaw === undefined) merchant.baselineWeekly = 1; // reference line only; never evidence
+  if (undeclared.length) Object.assign(merchant, { undeclared });
+  if (!ageKnown) warnings.push(`merchant ${merchant.id}: onboarding date unknown, neutral account-age prior used.`);
   if (!merchant.id) warnings.push('A merchant row has no id and was skipped.');
-  return { merchant, warnings };
-}
-
-function weekBuckets(txns: DatasetTransaction[], timezone: string): MreDataset['weeklySales'] {
-  if (!txns.length) return [];
-  const times = txns.map(t => Date.parse(t.time)).filter(n => !Number.isNaN(n));
-  const end = Math.max(...times);
-  const byEnd = new Map<number, number>();
-  for (const t of txns) {
-    if (t.type !== 'SALE') continue;
-    const ms = Date.parse(t.time);
-    const bucketEnd = end - Math.floor((end - ms) / (7 * 86_400_000)) * 7 * 86_400_000;
-    byEnd.set(bucketEnd, (byEnd.get(bucketEnd) ?? 0) + t.amount);
-  }
-  return [...byEnd.entries()].sort((a, b) => a[0] - b[0]).map(([ms, actual]) => ({
-    week: toIst(ms).slice(0, 10), actual, seasonalMultiplier: 1,
-  }));
-  void timezone;
+  return { merchant: merchant as MerchantProfile, warnings };
 }
 
 export function mapExport(dir: string, mappingPath: string, key: Buffer): { datasets: MreDataset[]; warnings: string[] } {
@@ -121,6 +110,10 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
 
   const parsedTx: { row: DatasetTransaction; merchantId: string }[] = [];
   txRows.forEach((row, i) => {
+    if (tspec.status) {
+      const status = col(txHeader, row, specOf(tspec.status).column);
+      if (!succeeded(status)) { warnings.push(`transactions row ${i + 2}: status "${status}" is not a success, skipped`); return; }
+    }
     const cell = (keyName: string) => col(txHeader, row, specOf(tspec[keyName]).column);
     const typeRaw = cell('type');
     const typeSpec = specOf(tspec.type);
@@ -140,10 +133,9 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
     if (amountRaw === undefined) { warnings.push(`transactions row ${i + 2}: amount missing, skipped`); return; }
     const scale = mapping.amountUnit === 'paise' ? 0.01 : 1;
     const amount = amountRaw * scale;
-    let time = cell('time');
-    if (time && !hasOffset(time)) time = `${time}${mapping.timezone}`;
-    let settled = cell('settledAt');
-    if (settled && !hasOffset(settled)) settled = `${settled}${mapping.timezone}`;
+    const time = parseTime(cell('time'), mapping.timezone);
+    if (!time) { warnings.push(`transactions row ${i + 2}: time unreadable, skipped`); return; }
+    const settled = cell('settledAt') ? parseTime(cell('settledAt'), mapping.timezone) ?? '' : '';
     const merchantId = cell('merchantId');
     const txn: DatasetTransaction = {
       id: cell('id'), merchantId, type: type as DatasetTransaction['type'], amount, time, channel: channel as DatasetTransaction['channel'],
@@ -154,7 +146,7 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
     };
     opt('settledAt', settled);
     opt('payerId', cell('payerId'));
-    opt('payerState', cell('payerState'));
+    opt('payerState', stateCode(cell('payerState')) ?? '');
     opt('payerMobile', cell('payerMobile'));
     opt('paymentLinkId', cell('paymentLinkId'));
     const order = cell('orderId');
@@ -187,10 +179,12 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
   const contextPath = join(dir, 'context.json');
   if (existsSync(contextPath)) context = JSON.parse(readFileSync(contextPath, 'utf8'));
 
+  const byMerchant = new Map<string, DatasetTransaction[]>();
+  for (const { row, merchantId } of parsedTx) { const list = byMerchant.get(merchantId); if (list) list.push(row); else byMerchant.set(merchantId, [row]); }
   const datasets: MreDataset[] = [];
   for (const row of merchants.rows) {
     const idCell = col(merchants.header, row, specOf(mapping.merchants.id).column);
-    const txns = parsedTx.filter(t => t.merchantId === idCell).map(t => t.row);
+    const txns = [...(byMerchant.get(idCell) ?? [])];
     const latest = txns.reduce((m, t) => Math.max(m, Date.parse(t.time) || 0), 0);
     const built = merchantFromRow(merchants.header, row, mapping, latest || undefined);
     warnings.push(...built.warnings);
@@ -211,6 +205,7 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
           declaredActivity: extraMerchant.declaredActivity ?? built.merchant.declaredActivity,
         }
       : built.merchant;
+    if (!extraMerchant) merchant.undeclared = [...new Set([...(merchant.undeclared ?? []), 'expectedRoundShare' as const])];
     const peers = (peerTransactions ?? []).map(t => {
       const copy = { ...t };
       for (const f of ID_FIELDS) {
@@ -219,12 +214,13 @@ export function mapExport(dir: string, mappingPath: string, key: Buffer): { data
       }
       return copy;
     });
-    txns.push(...peers);
+    const ledgerWeeks = () => weeklyFromLedger(txns.filter(t => t.type === 'SALE' && t.merchantId === built.merchant.id));
+    for (const peer of peers) txns.push(peer);
     const bankCredits = (restExtra.bankCredits ?? []).map(b => ({
       ...b,
       beneficiaryAccount: b.beneficiaryAccount ? pseudonym(b.beneficiaryAccount, key) : b.beneficiaryAccount,
     }));
-    const weeklySales = weeklyBy.get(built.merchant.id) ?? weekBuckets(txns, mapping.timezone);
+    const weeklySales = weeklyBy.get(built.merchant.id) ?? ledgerWeeks();
     const dataset: MreDataset = {
       format: DATASET_FORMAT,
       ...restExtra,

@@ -21,7 +21,7 @@ export function L2Body({ r }: { r: InvestigationResult }) {
     <>
       <Panel title="What the merchant declared at onboarding" subtitle="Their KYC profile—used to see what they claim to sell, NOT blindly trusted as the only rulebook."><ProfileCard r={r} /></Panel>
       <div className="grid gap-4 lg:grid-cols-3">
-        {[['Onboarding baseline', 'Their normal weekly volume when they first signed up. Catches slow, steady drift over months.', 'bg-slate-500'], ['Festival-adjusted expectation', `Raises expected sales during festivals (up to ${p.seasonalPeak.toFixed(1)}× for Diwali) so genuine holiday rushes don't look like fraud.`, 'bg-stone-400'], ['Recent 4-week trend', 'Rolling average of the last 4 weeks. Helps spot sudden jumps vs gradual organic growth.', 'bg-zinc-400']].map(([t, d, c]) => (
+        {[['Onboarding baseline', 'Their normal weekly volume when they first signed up. Catches slow, steady drift over months.', 'bg-slate-500'], ['Festival-adjusted expectation', `Raises expected sales during festivals (from the category calendar, not the merchant’s claim) so genuine holiday rushes don't look like fraud.`, 'bg-stone-400'], ['Recent 4-week trend', 'Rolling average of the last 4 weeks. Helps spot sudden jumps vs gradual organic growth.', 'bg-zinc-400']].map(([t, d, c]) => (
           <div key={t} className="rounded-md border border-line bg-panel p-4"><div className="flex items-center gap-2 text-sm font-semibold"><span className={`h-2 w-2 rounded-full ${c}`} />{t}</div><p className="mt-1.5 text-[13px] text-mute">{d}</p></div>))}
       </div>
       <Panel title="Expected versus actual weekly collections" subtitle="Comparing actual money collected each week against what is normal for this season.">
@@ -41,7 +41,7 @@ export function L2Body({ r }: { r: InvestigationResult }) {
         </Panel>
       )}
       <Callout tone="info" title="Why a busy festival week is NOT automatically suspicious">
-        A {p.category.toLowerCase()} is expected to jump roughly {p.seasonalPeak.toFixed(1)}× during festival weeks, so high volume alone never opens a case{alarm ? `. Here, sustained drift triggered the CUSUM tracker in ${alarm.week}` : '. No sustained drift alarm fired here'}. Volume must be backed up by independent red flags in L3 (such as ticket sizes, customer states, or payment-link evidence).
+        Festival weeks raise what is expected for {p.category.toLowerCase()}, and high volume alone never opens a case{alarm ? `. Here, sustained drift triggered the CUSUM tracker in ${alarm.week}` : '. No sustained drift alarm fired here'}. Volume must be backed up by independent red flags in L3 (such as ticket sizes, customer states, or payment-link evidence).
       </Callout>
       <div className="text-xs text-dim">Profile status: <Badge tone="ok">Approved</Badge> Nothing in L2 opens a case by itself.</div>
     </>
@@ -62,7 +62,7 @@ export function L2View() {
             {alarm ? <>Sustained volume drift alarmed in <b>{alarm.week}</b>.</> : 'No sustained volume drift alarm.'}
           </>
         ) : <>Loaded baseline profile for <b>{p.name}</b> ({p.category}, {inrK(p.baselineWeekly)}/week).</>,
-        whyItMatters: 'This prevents false alarms during genuine festival rushes (like Diwali). Next, L3 runs 25 specific checks comparing actual customer behaviour against what is normal for this category.',
+        whyItMatters: 'This prevents false alarms during genuine festival rushes (like Diwali). Next, L3 runs its checks, comparing actual customer behaviour against what is normal for this category.',
       }}
     >
       <L2Body r={r} />

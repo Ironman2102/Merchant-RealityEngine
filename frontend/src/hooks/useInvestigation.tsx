@@ -6,7 +6,7 @@ import { runInvestigation } from '../engines/investigationEngine';
 import { actionLog, planResponse } from '../engines/responseEngine';
 import { fmtDateTime } from '../utils/format';
 import { LAYERS } from '../data/evidence';
-import { approvePilotCase, updatePilotCase, type ServerUser } from '../services/pilotApi';
+import { approvePilotCase, updatePilotCase, type ServerInvestigation, type ServerUser } from '../services/pilotApi';
 
 const IDS: LayerId[] = [1, 2, 3, 4, 5, 6, 7];
 const idle = (): Record<LayerId, LayerStatus> => ({ 1: 'pending', 2: 'pending', 3: 'pending', 4: 'pending', 5: 'pending', 6: 'pending', 7: 'pending' });
@@ -23,6 +23,7 @@ interface Ctx {
   setLevel: (l: ResponseLevel | null) => void; execute: () => void; setLabel: (l: Label | null) => void;
   audit: ActionRecord[];
   /** Saved-case mode: analyst actions are written to the server and the server's reply replaces local state. */
+  verifyPassport: (id: string, ok: boolean) => void; submitPassport: (body: Record<string, unknown>) => void;
   caseId: string | null; loadCase: (id: string, sc: Scenario, server: ServerUser, animate?: boolean) => void; syncError: string;
   /** Server-side governance state for a saved case: proposals waiting for a second person, and audit-chain status. */
   pending: ServerUser['pending']; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
@@ -47,13 +48,21 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   userRef.current = user;
   const token = useRef(0);
   const pick = useCallback((id: ActiveId) => (id === 'custom' && custom ? custom : getScenario(id === 'custom' ? 'bakery' : id)), [custom]);
-  const scenario = useMemo(() => pick(scenarioId), [scenarioId, pick]);
-  const result = useMemo(() => runInvestigation(scenario), [scenario]);
+  // Saved cases show what the server decided (promoted rules, verified passports), never a local re-run.
+  const [saved, setSaved] = useState<{ scenario: Scenario; investigation: ServerInvestigation } | null>(null);
+  const [checked, setChecked] = useState<string[]>([]);          // passports verified inside the guided demo
+  const picked = useMemo(() => pick(scenarioId), [scenarioId, pick]);
+  const scenario = useMemo<Scenario>(() => caseId && saved ? saved.scenario
+    : !caseId && checked.length ? { ...picked, passports: picked.passports?.map(p => (checked.includes(p.id) ? { ...p, status: 'VERIFIED' as const, reviewedBy: 'demo reviewer' } : p)) }
+      : picked, [picked, caseId, saved, checked]);
+  const result = useMemo<InvestigationResult>(() => caseId && saved
+    ? { ...saved.investigation, scenario, events: scenario.events.filter(e => e.merchantId === scenario.primaryMerchantId) }
+    : runInvestigation(scenario), [scenario, caseId, saved]);
   const running = IDS.some(n => status[n] === 'running');
   const allDone = IDS.every(n => status[n] === 'done');
 
-  const reset = useCallback(() => { token.current++; setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1); }, []);
-  const setScenario = useCallback((id: ActiveId) => { token.current++; setCaseId(null); setScenarioId(id); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1); }, []);
+  const reset = useCallback(() => { token.current++; setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); setChecked([]); selectLayer(1); }, []);
+  const setScenario = useCallback((id: ActiveId) => { token.current++; setCaseId(null); setSaved(null); setChecked([]); setScenarioId(id); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1); }, []);
   const start = useCallback((res: InvestigationResult) => {
     const my = ++token.current;
     setUser(freshUser()); setStatus(idle()); setStarted(true); setDetailsOpen(false); selectLayer(1);
@@ -68,17 +77,17 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
       }
     })();
   }, [fast]);
-  const run = useCallback((id?: ActiveId) => { if (id) setScenarioId(id); start(id ? runInvestigation(pick(id)) : result); }, [result, pick, start]);
+  const run = useCallback((id?: ActiveId) => { if (id) { setCaseId(null); setSaved(null); setChecked([]); setScenarioId(id); } start(id ? runInvestigation(pick(id)) : result); }, [result, pick, start]);
   const loadCustom = useCallback((sc: Scenario, runNow = true) => {
-    token.current++; setCaseId(null); setCustom(sc); setScenarioId('custom'); setUser(freshUser()); setStatus(idle()); setStarted(false); setDetailsOpen(false); selectLayer(1);
+    token.current++; setCaseId(null); setSaved(null); setChecked([]); setCustom(sc); setScenarioId('custom'); setUser(freshUser()); setStatus(idle()); setStarted(false); setDetailsOpen(false); selectLayer(1);
     if (runNow) start(runInvestigation(sc));
   }, [start]);
   const clearCustom = useCallback(() => {
-    token.current++; setCaseId(null); setCustom(null); setScenarioId('bakery'); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1);
+    token.current++; setCaseId(null); setSaved(null); setChecked([]); setCustom(null); setScenarioId('bakery'); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1);
   }, []);
   useEffect(() => () => { token.current++; }, []);
 
-  const adopt = useCallback((s: ServerUser) => { setPending(s.pending ?? {}); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
+  const adopt = useCallback((s: ServerUser) => { if (s.investigation && s.scenario) setSaved({ scenario: s.scenario, investigation: s.investigation }); setPending(s.pending ?? {}); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
     ...u, notes: s.user.notes, clarification: s.user.clarification, chosenLevel: (s.user.chosenLevel as ResponseLevel | null), legalVerified: s.user.legalVerified,
     escrowConfirmed: s.user.escrowConfirmed, executed: s.user.executed, label: (s.user.label as Label | null),
     audit: s.audit.map((a, i) => ({ seq: a.seq ?? i + 1, at: fmtDateTime(Date.parse(a.at)), actor: a.actor, action: a.action, detail: a.detail, hash: a.hash })),
@@ -89,7 +98,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     if (animate) { setDetailsOpen(false); const my = token.current; void (async () => { setStarted(true); for (const n of IDS) { if (token.current !== my) return; setStatus(st => ({ ...st, [n]: 'running' })); selectLayer(n); await new Promise(r => setTimeout(r, 350)); if (token.current !== my) return; setStatus(st => ({ ...st, [n]: 'done' })); } setDetailsOpen(true); })(); }
     else { setStatus({ 1: 'done', 2: 'done', 3: 'done', 4: 'done', 5: 'done', 6: 'done', 7: 'done' }); setStarted(true); setDetailsOpen(true); }
   }, [adopt]);
-  const sync = useCallback(async (action: 'review' | 'response' | 'label', payload: Record<string, unknown>) => {
+  const sync = useCallback(async (action: 'review' | 'response' | 'label' | 'passport' | 'passport-review', payload: Record<string, unknown>) => {
     if (!caseId) return;
     setSyncError('');
     try { adopt(await updatePilotCase(caseId, action, payload) as ServerUser); }
@@ -100,6 +109,12 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     setSyncError('');
     approvePilotCase(caseId, ok, extra).then(r => adopt(r as ServerUser)).catch(e => setSyncError(e instanceof Error ? e.message : 'Could not save the approval.'));
   }, [caseId, adopt]);
+
+  const submitPassport = useCallback((body: Record<string, unknown>) => void sync('passport', body), [sync]);
+  const verifyPassport = useCallback((id: string, ok: boolean) => {
+    if (caseId) { void sync('passport-review', { passportId: id, verify: ok }); return; }
+    if (ok) setChecked(c => [...c, id]);
+  }, [caseId, sync]);
 
   const patch = useCallback((p: Partial<UserState>) => setUser(u => ({ ...u, ...p })), []);
   const t0 = useMemo(() => Math.max(...scenario.events.map(e => e.eventTime)) + 3600000, [scenario]);
@@ -117,6 +132,6 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     return [...sys, ...user.audit].map((a, i) => ({ ...a, seq: i + 1 }));
   }, [status, user.audit, t0]);
 
-  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit, caseId, loadCase, syncError, pending, auditIntact, approve };
+  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit, caseId, loadCase, syncError, pending, auditIntact, approve, verifyPassport, submitPassport };
   return <C.Provider value={v}>{children}</C.Provider>;
 }

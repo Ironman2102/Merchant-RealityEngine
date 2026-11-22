@@ -8,12 +8,18 @@ export interface PilotCaseSummary {
 }
 
 import type { Scenario } from '../types/merchant';
+import type { InvestigationResult } from '../types/investigation';
+
+/** The stored result, minus the scenario and events that travel beside it. */
+export type ServerInvestigation = Omit<InvestigationResult, 'scenario' | 'events'>;
 
 /** The server's view of the human side of a case. Local state is replaced by this after every write. */
 export interface ServerUser {
   user: { notes: string; clarification: string; chosenLevel: string | null; legalVerified: boolean; escrowConfirmed: boolean; executed: boolean; label: string | null };
   audit: { seq?: number; at: string; actor: string; action: string; detail: string; prevHash?: string; hash?: string }[];
   auditIntact?: boolean;
+  scenario?: Scenario;
+  investigation?: ServerInvestigation;
   pending?: { response?: { level: string; by: { id: number; username: string }; at: string }; label?: { label: string; by: { id: number; username: string }; at: string } };
 }
 export type PilotCase = ServerUser & { id: string; createdAt: string; scenario: Scenario; [k: string]: unknown };
@@ -32,7 +38,7 @@ export async function getPilotCase(id: string): Promise<PilotCase> {
   return body;
 }
 
-export async function updatePilotCase(id: string, action: 'review' | 'response' | 'label' | 'approve', payload: Record<string, unknown>): Promise<Record<string, any>> {
+export async function updatePilotCase(id: string, action: 'review' | 'response' | 'label' | 'approve' | 'passport' | 'passport-review', payload: Record<string, unknown>): Promise<Record<string, any>> {
   const response = await fetch(`/api/investigations/${encodeURIComponent(id)}/${action}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
   });

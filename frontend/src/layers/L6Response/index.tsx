@@ -43,7 +43,7 @@ export function L6View() {
             {proposal ? <> Waiting for a second person to approve {proposal.by.username}’s proposal.</> : user.executed ? ' Action recorded.' : ' Not executed yet.'}
           </>
         ),
-        whyItMatters: 'No single person can freeze a merchant alone—use the sidebar persona switcher (analyst → reviewer/legal) to test two-person approval live. Every action is written to the tamper-proof audit trail in L7.',
+        whyItMatters: 'No single person can freeze a merchant alone: a different person signs in with their own account to approve. Every action is written to the tamper-evident audit trail in L7.',
       }}
     >
       {quant && (
@@ -89,7 +89,7 @@ export function L6View() {
               <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 accent-zinc-300" checked={user.legalVerified} onChange={e => patch({ legalVerified: e.target.checked, executed: false })} /><span><span className="block">Legal authority verified (simulated)</span><span className="text-xs text-mute">In practice: confirmation from legal or compliance that the action rests on a valid order, regulation or contract term.</span></span></label>
               {plan.level === 'L4' && <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 accent-zinc-300" checked={user.escrowConfirmed} onChange={e => patch({ escrowConfirmed: e.target.checked, executed: false })} /><span><span className="block">Escrow or reserve clause confirmed (simulated)</span><span className="text-xs text-mute">The merchant agreement permits holding the identified funds.</span></span></label>}
               {plan.blocked.map(b => <div key={b} className="flex gap-2 rounded border border-stone-400/30 bg-stone-400/5 px-3 py-2 text-xs text-stone-200"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{b}</div>)}
-            </div>) : <div className="text-sm text-mute">{plan.level} does not restrict funds, so no legal-authority gate applies. L4 and L5 always require it.</div>}
+            </div>) : <div className="space-y-2 text-sm text-mute"><p>{plan.level} does not restrict funds, so no legal-authority gate applies. L4 and L5 always require it.</p>{plan.blocked.map(b => <p key={b} className="text-xs text-amber-700">{b}</p>)}</div>}
         </Panel>
         <Panel title={`Proposed response: ${plan.level}`} subtitle={meta.blurb}>
           <ul className="space-y-2 text-[13px]">{plan.actions.map(a => <li key={a} className="flex gap-2"><Power size={14} className="mt-0.5 shrink-0 text-zinc-300" />{a}</li>)}</ul>

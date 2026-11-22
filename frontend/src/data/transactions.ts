@@ -71,8 +71,8 @@ function addPeer(g: Gen, id: string, prefix: string, n: number, day0: number, da
 }
 
 /* ───────── Scenario 0: Sweet Crumbs Bakery (default) ───────── */
-export function genBakery(): Built {
-  const r = mulberry32(1103), g = new Gen(r, 'b'), M = 'M-SCB-001';
+export function genBakery(seed = 1103, fundingPool = 130): Built {
+  const r = mulberry32(seed), g = new Gen(r, 'b'), M = 'M-SCB-001';
   const day0 = istMs(2026, 10, 19), windowEnd = day0 + 14 * DAY;
   const menu = [165, 198, 245, 312, 378, 455, 520, 640, 745, 890, 1040, 1130];
   const fixtureDays = [1, 3, 5, 6, 8, 10, 11, 12, 13];
@@ -92,7 +92,7 @@ export function genBakery(): Built {
   fixtureDays.forEach(d => {
     const start = day0 + d * DAY + 19.5 * HOUR, n = 13 + Math.floor(r() * 8);
     for (let i = 0; i < n; i++) {
-      const idx = Math.floor(r() * 130), local = r() < 0.15;
+      const idx = Math.floor(r() * fundingPool), local = r() < 0.15;
       injected.push(g.add({ merchantId: M, type: 'SALE', amount: weighted(r, [[500, 0.3], [1000, 0.35], [2000, 0.35]]), eventTime: start - (2 + r() * 43) * 60000, payerRef: `fund${pad(idx)}@upi`, payerState: local ? 'KA' : OUT_STATES[idx % 9], channel: 'UPI_LINK', linkId: 'PL-SCB-07' }));
     }
   });
@@ -160,8 +160,8 @@ export function genFabricated(): Built {
 }
 
 /* ───────── Scenario C: Legitimate Diwali growth ───────── */
-export function genDiwali(): Built {
-  const r = mulberry32(4421), g = new Gen(r, 'd'), M = 'M-ANS-045';
+export function genDiwali(seed = 4421): Built {
+  const r = mulberry32(seed), g = new Gen(r, 'd'), M = 'M-ANS-045';
   const day0 = istMs(2026, 10, 19), windowEnd = day0 + 14 * DAY;
   const fixtures = [1, 3, 5, 6, 8, 10, 11, 12, 13].map(d => day0 + d * DAY + 19.5 * HOUR);
   const menu = [165, 245, 312, 378, 455, 520, 640, 745, 890, 1040, 1130, 650, 899, 1150];
@@ -187,8 +187,57 @@ export function genDiwali(): Built {
   return { events: finalize(g.events), fixtures, orders, bankCredits, windowStart: day0, windowEnd };
 }
 
-/** Weekly volume index series. Multipliers are relative to the declared weekly baseline. */
-export function weeklySeries(seed: number, baseline: number, mult: (number | null)[], seasonal: number[]): WeeklyPoint[] {
-  const r = mulberry32(seed);
-  return mult.map((m, i) => ({ week: `W${i + 1}`, actual: m === null ? null : Math.round(baseline * m * (1 + (r() - 0.5) * (m < 1.15 ? 0.06 : 0))), seasonalMult: seasonal[i] }));
+/**
+ * Weekly totals that reconcile: every week the ledger covers is summed from the ledger, and only the weeks before it
+ * are synthetic history around the baseline.
+ */
+export function weeklyTotals(events: { merchantId: string; type: EventType; amount: number; eventTime: number }[], merchantId: string, seed: number, baseline: number, earlier: (number | null)[], covered: number): (number | null)[] {
+  const sales = events.filter(e => e.merchantId === merchantId && e.type === 'SALE');
+  const end = Math.max(...sales.map(e => e.eventTime)), r = mulberry32(seed), ledger = Array<number>(covered).fill(0);
+  for (const e of sales) { const back = Math.floor((end - e.eventTime) / (7 * DAY)); if (back < covered) ledger[covered - 1 - back] += e.amount; }
+  return [...earlier.map(m => (m === null ? null : Math.round(baseline * m * (1 + (r() - 0.5) * 0.08)))), ...ledger];
+}
+export function weeklySeries(events: PaymentEvent[], merchantId: string, seed: number, baseline: number, earlier: (number | null)[], seasonal: number[], covered = 2): WeeklyPoint[] {
+  return weeklyTotals(events, merchantId, seed, baseline, earlier, covered).map((actual, i) => ({ week: `W${i + 1}`, actual, seasonalMult: seasonal[i] ?? 1 }));
+}
+
+/* ───────── Scenario: betting on the side, no crawler ───────── */
+export function genSideline(seed = 5581): Built {
+  const r = mulberry32(seed), g = new Gen(r, 's'), M = 'M-GOB-061';
+  const day0 = istMs(2026, 10, 19), windowEnd = day0 + 14 * DAY;
+  const menu = [165, 198, 245, 312, 378, 455, 520, 640, 745, 890, 1040, 1130, 285, 415];
+  for (let d = 0; d < 14; d++) {
+    const n = 22 + (d % 7 >= 5 ? 6 : 0) + Math.floor(r() * 4);
+    for (let i = 0; i < n; i++) {
+      const h = pickHour(r, [[8, 2], [9, 3], [11, 2], [13, 3], [17, 4], [18, 4], [19, 3], [20, 2]]);
+      g.add({ merchantId: M, type: 'SALE', amount: r() < 0.05 ? pick(r, [500, 1000]) : pick(r, menu), eventTime: day0 + d * DAY + (h + r()) * HOUR, payerRef: `cust${pad(1 + Math.floor(r() * 260))}@upi`, payerState: r() < 0.03 ? 'TN' : 'KA', channel: 'UPI_LINK', linkId: 'QR-COUNTER' });
+    }
+    for (let i = 0, k = 4 + Math.floor(r() * 3); i < k; i++) {
+      const who = Math.floor(r() * 10);
+      g.add({ merchantId: M, type: 'SALE', amount: pick(r, [500, 1000, 1000, 2000, 2000, 5000]), eventTime: day0 + d * DAY + (19 + r() * 4.8) * HOUR, payerRef: `dep${pad(who)}@upi`, payerState: OUT_STATES[who % 9], channel: 'UPI_LINK', linkId: 'PL-GOB-03' });
+    }
+  }
+  settleDaily(g, M, windowEnd, () => 'BEN_GOB_MAIN');
+  return { events: finalize(g.events), fixtures: [], orders: [], bankCredits: [], windowStart: day0, windowEnd };
+}
+
+/* ───────── Scenario: an honest bakery that changed ───────── */
+export function genChanged(seed = 6173): Built {
+  const r = mulberry32(seed), g = new Gen(r, 'c'), M = 'M-MOB-112';
+  const day0 = istMs(2026, 10, 19), windowEnd = day0 + 14 * DAY;
+  const menu = [165, 198, 245, 312, 378, 455, 520, 640, 745, 890, 1040, 285, 415];
+  for (let d = 0; d < 14; d++) {
+    const n = 14 + (d % 7 >= 5 ? 5 : 0) + Math.floor(r() * 3);
+    for (let i = 0; i < n; i++) {
+      const h = pickHour(r, [[8, 2], [9, 3], [11, 2], [13, 3], [17, 4], [18, 4], [20, 2]]);
+      g.add({ merchantId: M, type: 'SALE', amount: pick(r, menu), eventTime: day0 + d * DAY + (h + r()) * HOUR, payerRef: `cust${pad(1 + Math.floor(r() * 240))}@upi`, payerState: r() < 0.03 ? 'TN' : 'KA', channel: 'UPI_LINK', linkId: 'QR-COUNTER' });
+    }
+    for (let i = 0, k = 8 + Math.floor(r() * 5); i < k; i++) {
+      // 22:05 to 01:35, as printed on the new night menu
+      const at = day0 + d * DAY + (22.1 + r() * 3.5) * HOUR;
+      if (at < windowEnd) g.add({ merchantId: M, type: 'SALE', amount: pick(r, [499, 999, 649, 799, 1099]), eventTime: at, payerRef: `night${pad(1 + Math.floor(r() * 420))}@upi`, payerState: r() < 0.02 ? 'TN' : 'KA', channel: 'UPI_LINK', linkId: 'PL-MOB-NIGHT' });
+    }
+  }
+  settleDaily(g, M, windowEnd, () => 'BEN_MOB_MAIN');
+  return { events: finalize(g.events), fixtures: [], orders: [], bankCredits: [], windowStart: day0, windowEnd };
 }

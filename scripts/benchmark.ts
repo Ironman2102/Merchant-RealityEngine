@@ -1,101 +1,90 @@
 /**
- * Score the synthetic portfolio and write reports/benchmark.md.
- * The portfolio is synthetic. Intervals are Wilson 95%.
+ * Score a synthetic portfolio and write reports/benchmark.md plus the queue the console shows.
+ * Synthetic. Intervals are Wilson 95%. Shortfalls are printed, not hidden.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { mapExport } from '../adapters/mapExport';
-import { loadHashKey } from '../adapters/pseudonym';
-import { analyze, FEATURE_COLUMNS, features } from '../engine/index';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { analyze } from '../engine/index';
+import { makePortfolio, makeSuite, type SyntheticMerchant } from '../engine/synthetic';
 import { scorePortfolio, type PortfolioRow } from '../engine/portfolio';
+import { rate } from './lib';
 
-function wilson(k: number, n: number, z = 1.96): [number, number] {
-  if (!n) return [0, 1];
-  const p = k / n, den = 1 + z * z / n;
-  const centre = (p + z * z / (2 * n)) / den;
-  const margin = z * Math.sqrt((p * (1 - p) + z * z / (4 * n)) / n) / den;
-  return [Math.max(0, centre - margin), Math.min(1, centre + margin)];
+const SEED = 7, N = 1000;
+interface Scored { m: SyntheticMerchant; open: boolean; ask: boolean; l3: boolean; row: PortfolioRow }
+function score(m: SyntheticMerchant): Scored {
+  const ran = analyze(m.dataset);
+  if (!ran.ok) throw new Error(ran.errors.join(' '));
+  const r = ran.result, f = r.fusion, sales = r.events.filter(e => e.type === 'SALE'), action = r.review.recommended;
+  const inScope = r.scope.kind === 'link' ? sales.filter(e => e.linkId === r.scope.id) : sales;
+  const value = inScope.reduce((s, e) => s + e.amount, 0) * (r.scope.kind === 'repeat-payers' ? r.scope.share : 1);
+  return {
+    m, open: f.decision === 'OPEN_CASE', ask: f.followUp === 'ASK', l3: f.decision === 'OPEN_CASE' && action === 'L3',
+    row: { merchantId: m.dataset.merchant.id, name: m.dataset.merchant.name, posterior: f.posterior, ci: f.posteriorCi, decision: f.decision, action,
+      expectedLoss: f.decisionAnalysis.actions.find(a => a.level === action)!.expectedLoss, exposure: Math.round(f.posterior * value), scope: r.scope.label },
+  };
 }
-const fmt = (x: number) => x.toFixed(3);
-const ci = (pair: [number, number]) => `${fmt(pair[0])}–${fmt(pair[1])}`;
 
-const truth = readFileSync('examples/portfolio-truth/truth.csv', 'utf8').trim().split('\n').slice(1).map(line => {
-  const [id, label, typology, tier] = line.split(',');
-  return { id, label: Number(label), typology, tier: Number(tier) };
+const all = makePortfolio(N, SEED).map(score), queue = scorePortfolio(all.map(s => s.row));
+const opened = new Set(queue.queue.map(r => r.merchantId)), inQueue = (s: Scored) => opened.has(s.row.merchantId);
+const fronts = all.filter(s => s.m.label === 1), honest = all.filter(s => s.m.label === 0);
+const tp = fronts.filter(inQueue).length, fp = honest.filter(inQueue).length;
+
+const kinds = makeSuite(20, 77).map(score), noGeo = makeSuite(20, 77, { geo: false }).map(score);
+const table = (rows: Scored[], label: 0 | 1) => [...new Set(rows.filter(s => s.m.label === label).map(s => s.m.kind))].map(kind => {
+  const xs = rows.filter(s => s.m.kind === kind);
+  return `| ${kind} | ${xs.filter(s => s.open).length}/${xs.length} | ${xs.filter(s => s.ask).length}/${xs.length} | ${xs.filter(s => !s.open && !s.ask).length}/${xs.length} |`;
 });
-const byId = new Map(truth.map(t => [t.id, t]));
-const { datasets } = mapExport('examples/portfolio', 'adapters/mappings/generic-pa-v1.json', loadHashKey());
-const rows: PortfolioRow[] = [];
-const scored: { id: string; posterior: number; decision: string; mcc: string; age: number }[] = [];
-const featLines = [`merchant_id,label,${FEATURE_COLUMNS.join(',')}`];
-for (const d of datasets) {
-  const ran = analyze(d);
-  if (!ran.ok) continue;
-  const feat = features(ran.result);
-  const label = byId.get(d.merchant.id)?.label ?? 0;
-  featLines.push([d.merchant.id, label, ...FEATURE_COLUMNS.map(c => feat[c])].join(','));
-  const f = ran.result.fusion;
-  const action = f.decisionAnalysis.actions.find(a => a.level === f.decisionAnalysis.recommended);
-  rows.push({
-    merchantId: d.merchant.id, name: d.merchant.name, posterior: f.posterior, ci: f.posteriorCi,
-    expectedLoss: action?.expectedLoss ?? 0, action: f.decisionAnalysis.recommended, decision: f.decision,
-  });
-  scored.push({ id: d.merchant.id, posterior: f.posterior, decision: f.decision, mcc: d.merchant.mcc, age: d.merchant.accountAgeDays });
-}
-const queue = scorePortfolio(rows);
-const opened = new Set(queue.queue.map(r => r.merchantId));
-const y = (id: string) => byId.get(id)?.label ?? 0;
-const tp = scored.filter(s => opened.has(s.id) && y(s.id) === 1).length;
-const fp = scored.filter(s => opened.has(s.id) && y(s.id) === 0).length;
-const fn = scored.filter(s => !opened.has(s.id) && y(s.id) === 1).length;
-const tn = scored.filter(s => !opened.has(s.id) && y(s.id) === 0).length;
-const fronts = tp + fn, genuine = fp + tn;
-const recall = wilson(tp, fronts), prec = wilson(tp, tp + fp), fpr = wilson(fp, genuine);
-const sat = scored.filter(s => s.posterior > 0.999).length;
-const lines = [
-  '# Benchmark (synthetic)',
-  '',
-  '**Synthetic portfolio derived from 9 hand-built samples; this measures robustness to variation, not real-world accuracy.**',
-  '',
-  `Merchants ${scored.length}. Opened ${queue.opened}. Expected false alarms ${queue.expectedFalseAlarms.toFixed(2)} (sum of 1−P over the opened queue).`,
-  '',
-  '| Metric | Value | Wilson 95% |',
-  '|---|---|---|',
-  `| Recall | ${fmt(tp / (fronts || 1))} (${tp}/${fronts}) | ${ci(recall)} |`,
-  `| Precision | ${fmt(tp / ((tp + fp) || 1))} (${tp}/${tp + fp}) | ${ci(prec)} |`,
-  `| Genuine-merchant false-positive rate | ${fmt(fp / (genuine || 1))} (${fp}/${genuine}) | ${ci(fpr)} |`,
-  '',
-  '## Per-typology recall',
-  '',
-];
-const typos = [...new Set(truth.map(t => t.typology))].filter(t => t !== 'genuine').sort();
-for (const typ of typos) {
-  const ids = truth.filter(t => t.typology === typ);
-  const hit = ids.filter(t => opened.has(t.id)).length;
-  lines.push(`- ${typ}: ${fmt(hit / ids.length)} (${hit}/${ids.length}), Wilson ${ci(wilson(hit, ids.length))}`);
-}
-lines.push('', '## Confusion', '', `| | opened | not opened |`, `|---|---|---|`, `| front | ${tp} | ${fn} |`, `| genuine | ${fp} | ${tn} |`, '');
-lines.push('## Other synthetic measurements', '');
-lines.push(`- Saturation (posterior > 0.999): ${(sat / scored.length).toFixed(3)} (${sat}/${scored.length}).`);
-const top = [...scored].sort((a, b) => b.posterior - a.posterior);
-for (const k of [10, 50]) {
-  const slice = top.slice(0, Math.min(k, top.length));
-  const good = slice.filter(s => y(s.id) === 1).length;
-  lines.push(`- Top-${k} precision: ${fmt(good / slice.length)} (${good}/${slice.length}), Wilson ${ci(wilson(good, slice.length))}.`);
-}
-const band = (age: number) => age < 90 ? '<90d' : age < 365 ? '90–365d' : '≥365d';
-for (const [title, keyOf] of [['MCC', (s: typeof scored[0]) => s.mcc], ['Account age', (s: typeof scored[0]) => band(s.age)], ['City tier', (s: typeof scored[0]) => String(byId.get(s.id)?.tier ?? '?')]] as const) {
-  lines.push('', `### False-positive rate by ${title}`);
-  const groups = [...new Set(scored.filter(s => y(s.id) === 0).map(keyOf))].sort();
-  for (const g of groups) {
-    const members = scored.filter(s => y(s.id) === 0 && keyOf(s) === g);
-    const bad = members.filter(s => opened.has(s.id)).length;
-    lines.push(`- ${g}: ${fmt(bad / (members.length || 1))} (${bad}/${members.length}), Wilson ${ci(wilson(bad, members.length))}`);
-  }
-}
-lines.push('');
+const HEAD = '| Kind | Case opened | Asked to explain | Nothing |\n|---|---|---|---|';
+
+const text = `# Benchmark (synthetic)
+
+**Synthetic merchants from engine/synthetic.ts, written by the same people as the rules. Not real-world accuracy.**
+Account age, feeds and format are drawn the same way for honest merchants and fronts, so behaviour is the only difference.
+
+Merchants ${N} (seed ${SEED}). Opened ${queue.opened}. Expected false alarms ${queue.expectedFalseAlarms.toFixed(2)}; actual ${fp}.
+
+| Metric | Measured | Wilson 95% |
+|---|---|---|
+| Recall: fronts in the case queue | ${rate(tp, fronts.length)} |
+| Fronts opened or asked to explain | ${rate(fronts.filter(s => s.open || s.ask).length, fronts.length)} |
+| Precision of the queue | ${rate(tp, tp + fp)} |
+| Honest merchants wrongly opened | ${rate(fp, honest.length)} |
+| Honest merchants recommended for restriction | ${rate(honest.filter(s => s.l3).length, honest.length)} |
+| Honest merchants asked to explain | ${rate(honest.filter(s => s.ask).length, honest.length)} |
+
+"Asked to explain" restricts nothing, but it is still scrutiny, so it is reported.
+
+## By kind of front (location present for about 60%)
+
+${HEAD}
+${table(kinds, 1).join('\n')}
+
+## By kind of honest merchant
+
+${HEAD}
+${table(kinds, 0).join('\n')}
+
+## Fronts when no payer location exists (a UPI ID does not carry one)
+
+${HEAD}
+${table(noGeo, 1).join('\n')}
+
+## What it does not catch
+
+- A perfect mimic of the shop's amounts, hours, places and payer mix. Payment data alone cannot find this; it needs outside-in
+  evidence such as test purchases, crawls, sightings or complaints.
+- Small side-streams and thin split accounts mostly become a question to the merchant, not a case.
+- Without payer location, several camouflage categories become a question, not a case.
+`;
+
 mkdirSync('reports', { recursive: true });
-mkdirSync('ml/data', { recursive: true });
-writeFileSync('ml/data/features.csv', featLines.join('\n') + '\n');
-writeFileSync('reports/benchmark.md', lines.join('\n'));
-writeFileSync('reports/portfolio-queue.json', JSON.stringify({ opened: queue.opened, expectedFalseAlarms: queue.expectedFalseAlarms, queue: queue.queue.slice(0, 50) }, null, 2));
-console.log(`benchmark wrote reports/benchmark.md · opened ${queue.opened} · expected FA ${queue.expectedFalseAlarms.toFixed(2)}`);
+writeFileSync('reports/benchmark.md', text);
+const label = new Map(all.map(s => [s.row.merchantId, s.m.label === 1]));
+const out = JSON.stringify({
+  synthetic: true, merchants: N, fronts: fronts.length, genuine: honest.length, opened: queue.opened, falseAlarms: fp,
+  expectedFalseAlarms: queue.expectedFalseAlarms, queue: queue.queue.map(r => ({ ...r, plantedFront: label.get(r.merchantId) })),
+}, null, 1) + '\n';
+writeFileSync('reports/portfolio-queue.json', out);
+writeFileSync('frontend/public/portfolio-queue.json', out);
+mkdirSync('examples/portfolio-truth', { recursive: true });
+writeFileSync('examples/portfolio-truth/truth.csv', ['merchant_id,label,kind', ...all.map(s => `${s.row.merchantId},${s.m.label},${s.m.kind}`)].join('\n') + '\n');
+console.log(text);

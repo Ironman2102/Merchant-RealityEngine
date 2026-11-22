@@ -1,10 +1,12 @@
 /**
  * Case store on SQLite. The audit trail lives in its own table and is hash-chained:
  *   hash_n = SHA-256(hash_{n−1} ‖ canonical JSON of entry n)
- * so editing, deleting or reordering any past entry breaks verifyAudit(). ponytail: the chain head is in the same
- * database; anchor it externally (e.g. a daily signed digest) when regulators need it.
+ * The head (length + last hash) is sealed with the server key, so editing, reordering, truncating or rebuilding the
+ * chain without that key breaks verifyAudit(). ponytail: someone holding both database and key can still forge it;
+ * anchor the head externally (e.g. a daily signed digest) when regulators need it.
  */
 import { createHash } from 'node:crypto';
+import { seal } from './seal';
 import type { ActionRecord, InvestigationResult, ResponseLevel, UserState } from '../../frontend/src/types/investigation';
 import type { MlOpinion } from './ml';
 import type { Label } from '../../frontend/src/types/merchant';
@@ -69,6 +71,8 @@ export function appendAudit(caseId: string, entries: { action: string; detail: s
       ins.run(caseId, row.seq, row.at, row.actor, row.actorId, row.action, row.detail, prev, hash);
       prev = hash;
     }
+    db.prepare('INSERT INTO audit_heads (case_id, seq, hash, mac) VALUES (?, ?, ?, ?) ON CONFLICT(case_id) DO UPDATE SET seq = excluded.seq, hash = excluded.hash, mac = excluded.mac')
+      .run(caseId, seq, prev, seal(caseId, seq, prev));
     db.exec('COMMIT');
   } catch (e) { db.exec('ROLLBACK'); throw e; }
   return readAudit(caseId);
@@ -82,12 +86,26 @@ export function verifyAudit(caseId: string): { ok: boolean; brokenAt: number | n
     if (r.prevHash !== prev || chain(prev, r) !== r.hash) return { ok: false, brokenAt: r.seq, entries: rows.length };
     prev = r.hash;
   }
+  const head = getDb().prepare('SELECT seq, hash, mac FROM audit_heads WHERE case_id = ?').get(caseId) as { seq: number; hash: string; mac: string } | undefined;
+  if (rows.length || head) {
+    const last = rows.at(-1);
+    if (!head || !last || head.seq !== last.seq || head.hash !== prev || head.mac !== seal(caseId, head.seq, head.hash))
+      return { ok: false, brokenAt: (last?.seq ?? 0) + 1, entries: rows.length };
+  }
   return { ok: true, brokenAt: null, entries: rows.length };
 }
 
 const hydrate = (json: string): CaseRecord => {
   const rec = JSON.parse(json) as CaseRecord;
   rec.pending ??= {};
+  // Cases saved by engine 0.2 have no streams or follow-up. Their decision is kept as recorded, not re-scored.
+  const r = rec.result;
+  r.scope ??= { kind: 'account', id: 'account', label: 'Whole account', sales: r.events.filter(e => e.type === 'SALE').length, share: 1 };
+  r.streams ??= [];
+  r.suspectLinks ??= [];
+  r.fusion.followUp ??= 'NONE';
+  r.fusion.conductSignals ??= [];
+  r.fusion.priorShift ??= 0;
   rec.user.audit = readAudit(rec.id).map(({ seq, at, actor, action, detail }) => ({ seq, at, actor, action, detail }));
   return rec;
 };

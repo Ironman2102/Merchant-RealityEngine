@@ -1,13 +1,8 @@
 services:
   mre:
     build: { context: .., dockerfile: deploy/Dockerfile }
-    ports: ["8787:8787"]
+    ports: ["127.0.0.1:8787:8787"]
     env_file: .env
     volumes: ["mre-data:/app/backend/data"]
-    depends_on: [ml]
-  ml:
-    build: { context: .., dockerfile: deploy/Dockerfile }
-    command: ["/app/.venv/bin/uvicorn", "ml.serve:app", "--host", "0.0.0.0", "--port", "8790"]
-    expose: ["8790"]
 volumes:
   mre-data:

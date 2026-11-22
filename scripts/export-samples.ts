@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { getScenario } from '../frontend/src/data/scenarios';
 import { scenarioToDataset, toIst, type DatasetTransaction, type MreDataset } from '../frontend/src/data/dataset';
 import { mulberry32 } from '../frontend/src/utils/prng';
+import { genBakery, genDiwali, weeklyTotals } from '../frontend/src/data/transactions';
 
 const OUT = 'frontend/public/samples';
 mkdirSync(OUT, { recursive: true });
@@ -32,6 +33,18 @@ export function rebrand(ds: MreDataset, o: { id: string; name: string; city: str
   return d;
 }
 
+/** Recompute the weeks the ledger covers, after any edit to amounts, times or rows. */
+function reweek(d: MreDataset, seed: number, baseline: number, earlier: (number | null)[], covered = 2) {
+  const events = d.transactions.map(t => ({ merchantId: t.merchantId, type: t.type, amount: t.amount, eventTime: Date.parse(t.time) }));
+  d.merchant.baselineWeekly = baseline;
+  d.weeklySales = weeklyTotals(events, d.merchant.id, seed, baseline, earlier, covered).map((actual, i) => ({ week: `W${i + 1}`, actual, seasonalMultiplier: 1 }));
+}
+const steady = (n: number) => Array<number>(n).fill(1);
+const festive = [...steady(12), 1.25, 1.8];
+/** A different ledger for each sample: never two merchants with the same payments. */
+const bakeryLike = (seed: number, pool?: number) => { const b = genBakery(seed, pool); return { ...getScenario('bakery'), events: b.events, fixtures: b.fixtures }; };
+const diwaliLike = (seed: number) => { const b = genDiwali(seed); return { ...getScenario('diwali'), events: b.events, fixtures: b.fixtures, orders: b.orders, bankCredits: b.bankCredits }; };
+
 const write = (file: string, ds: MreDataset) => { writeFileSync(`${OUT}/${file}`, JSON.stringify(ds, null, 2)); console.log('wrote', file, ds.transactions.length, 'transactions'); };
 
 // 1–4: built-in cases
@@ -47,7 +60,7 @@ write('04-anand-sweets-diwali-genuine.json', scenarioToDataset(getScenario('diwa
 // 5: new betting front with late-night play and loss-chasing
 {
   const r = mulberry32(5150);
-  const d = rebrand(scenarioToDataset(getScenario('bakery')), {
+  const d = rebrand(scenarioToDataset(bakeryLike(5505)), {
     id: 'M-CCC-210', name: 'Chai Corner Café', city: 'Hyderabad, India', domain: 'chaicorner.example',
     linkPrefix: ['PL-SCB', 'PL-CCC'], homeFrom: 'TS', homeTo: 'TS', peers: [['M-KCA-014', 'M-IRC-031'], ['M-HLB-022', 'M-BHB-057']],
   });
@@ -71,8 +84,8 @@ write('04-anand-sweets-diwali-genuine.json', scenarioToDataset(getScenario('diwa
   }
   d.transactions.push(...extra);
   d.transactions.sort((a, b) => Date.parse(a.time) - Date.parse(b.time));
-  d.weeklySales = d.weeklySales.map(w => ({ ...w, actual: w.actual === null ? null : Math.round(w.actual * 0.62) }));
-  d.merchant.baselineWeekly = Math.round(d.merchant.baselineWeekly * 0.62);
+  d.merchant.accountAgeDays = 640;
+  reweek(d, 5505, 45000, [...steady(12), 1.1, 1.4]);
   d.businessFootprint = { supplierPaymentsMonthly: 21000, gstTurnoverMonthly: 140000 };
   d.externalSightings = [{ source: 'WhatsApp', place: 'group invite “Night Satta Club” forwarded publicly (synthetic)', paymentRef: 'PL-CCC-07', seenAt: '2026-10-24', note: '“Top up after 11 pm, 2x bonus”' }];
   d.title = 'Chai Corner Café — late-night betting collections (new synthetic dataset)';
@@ -82,10 +95,12 @@ write('04-anand-sweets-diwali-genuine.json', scenarioToDataset(getScenario('diwa
 
 // 6: new genuine merchant, festive surge in another city
 {
-  const d = rebrand(scenarioToDataset(getScenario('diwali')), {
+  const d = rebrand(scenarioToDataset(diwaliLike(6606)), {
     id: 'M-SGS-118', name: 'Shree Ganesh Sweets', city: 'Pune, India', domain: 'shreeganeshsweets.example',
     linkPrefix: ['PL-ANS', 'PL-SGS'], homeFrom: 'KA', homeTo: 'MH',
   });
+  d.merchant.accountAgeDays = 860;
+  reweek(d, 6606, 36000, festive);
   d.businessFootprint = { supplierPaymentsMonthly: 205000, gstTurnoverMonthly: 495000 };
   d.title = 'Shree Ganesh Sweets — genuine festive surge (new synthetic dataset)';
   d.description = 'A Pune sweet shop triples sales for Diwali. Local customers, menu-sized bills, verified orders and deliveries, bank-reconciled settlements.';
@@ -116,9 +131,11 @@ function perturb(ds: MreDataset, seed: number, o: { scale: number; drop: number;
 
 // 7: steady genuine café (no festival surge)
 {
-  let d = rebrand(scenarioToDataset(getScenario('diwali')), { id: 'M-UTC-077', name: 'Udupi Tiffin Corner', city: 'Mysuru, India', domain: 'udupitiffin.example', linkPrefix: ['PL-ANS', 'PL-UTC'], homeFrom: 'KA', homeTo: 'KA' });
+  let d = rebrand(scenarioToDataset(diwaliLike(7707)), { id: 'M-UTC-077', name: 'Udupi Tiffin Corner', city: 'Mysuru, India', domain: 'udupitiffin.example', linkPrefix: ['PL-ANS', 'PL-UTC'], homeFrom: 'KA', homeTo: 'KA' });
   d = perturb(d, 7007, { scale: 0.55, drop: 0.25, shiftDays: -3, flatWeeks: true });
   d.merchant = { ...d.merchant, mcc: '5814', category: 'Fast food restaurants', products: ['Idli', 'Dosa', 'Filter coffee', 'Meals'], ticketMin: 60, ticketMax: 700, seasonalPeak: 1 };
+  d.merchant.accountAgeDays = 340;
+  reweek(d, 7707, 46000, steady(14));
   d.businessFootprint = { supplierPaymentsMonthly: 118000, gstTurnoverMonthly: 240000 };
   d.title = 'Udupi Tiffin Corner — steady trading (new synthetic dataset)';
   d.description = 'A Mysuru tiffin café with steady local trade, small bills, verified orders and reconciled settlements.';
@@ -126,16 +143,40 @@ function perturb(ds: MreDataset, seed: number, o: { scale: number; drop: number;
 }
 // 8: genuine grocer with a modest seasonal lift
 {
-  let d = rebrand(scenarioToDataset(getScenario('diwali')), { id: 'M-NKG-302', name: 'Nandi Kirana & General', city: 'Chennai, India', domain: 'nandikirana.example', linkPrefix: ['PL-ANS', 'PL-NKG'], homeFrom: 'KA', homeTo: 'TN' });
+  let d = rebrand(scenarioToDataset(diwaliLike(8808)), { id: 'M-NKG-302', name: 'Nandi Kirana & General', city: 'Chennai, India', domain: 'nandikirana.example', linkPrefix: ['PL-ANS', 'PL-NKG'], homeFrom: 'KA', homeTo: 'TN' });
   d = perturb(d, 8008, { scale: 1.3, drop: 0.15, shiftDays: 5 });
   d.merchant = { ...d.merchant, mcc: '5411', category: 'Grocery stores', products: ['Staples', 'Snacks', 'Household'], ticketMin: 80, ticketMax: 2500, catchment: 'LOCAL' };
+  d.merchant.accountAgeDays = 1500;
+  reweek(d, 8808, 85000, [...steady(12), 1.15, 1.35]);
   d.businessFootprint = { supplierPaymentsMonthly: 470000, gstTurnoverMonthly: 690000 };
   d.title = 'Nandi Kirana & General — genuine festive lift (new synthetic dataset)';
   d.description = 'A Chennai grocery store with a real festive lift, local customers and supplier spend in line with sales.';
   write('08-nandi-kirana-genuine.json', d);
 }
 
-// 9: a new, independent upload fixture following the empty template's schema.
+// 9: betting shared on Telegram, found from payments alone
+{
+  const d = rebrand(scenarioToDataset(bakeryLike(9909, 24)), {
+    id: 'M-KMS-077', name: 'Kaveri Mithai Stores', city: 'Bengaluru, India', domain: 'kaveri.example', linkPrefix: ['PL-SCB', 'PL-KMS'], homeFrom: 'KA', homeTo: 'KA',
+  });
+  const id = d.merchant.id;
+  d.transactions = d.transactions.filter(t => t.merchantId === id && t.type !== 'REFUND' && t.type !== 'TRANSFER');
+  d.transactions.filter(t => t.type === 'SETTLEMENT').forEach(t => { t.beneficiaryAccount = 'BEN-KMS'; });
+  d.merchant = { ...d.merchant, accountAgeDays: 210, declaredDomains: [] };
+  d.peers = []; d.matchFixtures = []; d.bankCredits = [];
+  delete d.website;
+  d.dataAvailability = { acquiring: 'AVAILABLE', website: 'MISSING', orders: 'MISSING', bank: 'MISSING', fulfillment: 'MISSING', calendar: 'MISSING', verification: 'MISSING' };
+  reweek(d, 9909, 45000, [...steady(12), 1.1, 1.4]);
+  d.title = 'Kaveri Mithai Stores · betting via Telegram-shared UPI link, no website';
+  d.description = 'SYNTHETIC. A sweet shop whose UPI link is shared in Telegram betting groups. No website or crawler hit, no match calendar, no refunds, no onward payouts, one stable settlement account. The same distant depositors top up again and again. Expected: case opened on payment behaviour alone.';
+  write('09-telegram-betting-no-website.json', d);
+}
+
+// The two demo cases that show per-QR scoring and the Context Passport
+write('10-golden-oven-betting-on-the-side.json', scenarioToDataset(getScenario('sideline'), { title: 'Golden Oven Bakery · betting on one link' }));
+write('11-moonlight-bakes-honest-change.json', scenarioToDataset(getScenario('changed'), { title: 'Moonlight Bakes · honest midnight delivery' }));
+
+// A new, independent upload fixture following the empty template's schema.
 // Its deterministic seed keeps the sample stable when the sample exporter runs.
 {
   const r = mulberry32(110926), id = 'M-RND-926', base = Date.parse('2026-09-01T00:00:00+05:30');
@@ -171,6 +212,7 @@ function perturb(ds: MreDataset, seed: number, o: { scale: number; drop: number;
     merchant, weeklySales: weeks, transactions: transactions.sort((a, b) => Date.parse(a.time) - Date.parse(b.time)), matchFixtures: [],
     dataAvailability: { acquiring: 'AVAILABLE', website: 'MISSING', orders: 'MISSING', bank: 'MISSING', fulfillment: 'MISSING', calendar: 'MISSING', verification: 'MISSING' },
   };
+  reweek(generated, 926, 7000, steady(8), 8);
   write('random-ai-engine-test.json', generated);
 }
 

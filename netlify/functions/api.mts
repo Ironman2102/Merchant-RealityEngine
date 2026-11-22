@@ -5,9 +5,11 @@ import { getDb } from '../../backend/src/db.ts';
 import { handle } from '../../backend/src/http.ts';
 
 if (!process.env.MRE_DB_FILE) process.env.MRE_DB_FILE = '/tmp/mre.db';
+// Instances share no database, so this host needs short signed sessions (see backend/src/auth.ts).
+process.env.MRE_STATELESS_SESSIONS = '1';
 
 function publishEnv(): void {
-  for (const name of ['MRE_BOOT_USERS', 'MRE_BOOT_USER', 'MRE_BOOT_PASSWORD', 'MRE_HASH_KEY', 'MRE_SESSION_SECRET', 'MRE_ML_URL', 'MRE_ML_TIMEOUT', 'DAYTONA_API_KEY', 'DAYTONA_API_URL', 'DAYTONA_SANDBOX_ID']) {
+  for (const name of ['MRE_BOOT_USERS', 'MRE_BOOT_USER', 'MRE_BOOT_PASSWORD', 'MRE_HASH_KEY', 'MRE_SESSION_SECRET']) {
     const value = boot(name);
     if (value) process.env[name] = value;
   }

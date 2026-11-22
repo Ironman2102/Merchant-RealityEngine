@@ -1,13 +1,18 @@
 /** High-contrast Executive Verdict Hero Card shown at the top of the Case Dossier. */
-import { AlertTriangle, CheckCircle2, IndianRupee, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, HelpCircle, IndianRupee, ShieldCheck } from 'lucide-react';
 import type { InvestigationResult } from '../../types/investigation';
 import { MECHANISMS, RESPONSE_LEVELS } from '../../data/evidence';
+import { verdictKind } from '../../engines/verdict';
 import { computeMerchantReality } from '../investigation/ClaimedVsReality';
 import { Badge } from '../ui/ui';
 import { cx, fmtInterval, fmtProb, inr } from '../../utils/format';
 
 export function AnswerBanner({ result, quant = false }: { result: InvestigationResult; quant?: boolean }) {
-  const open = result.fusion.decision === 'OPEN_CASE';
+  const kind = verdictKind(result), open = kind === 'case', ask = kind === 'ask';
+  const border = open ? 'border-rose-200' : ask ? 'border-amber-200' : 'border-emerald-200';
+  const soft = open ? 'bg-rose-50/60' : ask ? 'bg-amber-50/60' : 'bg-emerald-50/60';
+  const solid = open ? 'bg-rose-500' : ask ? 'bg-amber-500' : 'bg-emerald-500';
+  const text = open ? 'text-rose-700' : ask ? 'text-amber-700' : 'text-emerald-700';
   const p = result.scenario.profile;
   const reality = computeMerchantReality(result);
   const level = RESPONSE_LEVELS.find(l => l.id === result.review.recommended);
@@ -19,11 +24,11 @@ export function AnswerBanner({ result, quant = false }: { result: InvestigationR
     <div
       className={cx(
         'overflow-hidden rounded-2xl border shadow-sm',
-        open ? 'border-rose-200 bg-white' : 'border-emerald-200 bg-white',
+        border, 'bg-white',
       )}
     >
       {/* Colored top risk accent strip */}
-      <div className={cx('h-1.5 w-full', open ? 'bg-rose-500' : 'bg-emerald-500')} />
+      <div className={cx('h-1.5 w-full', solid)} />
 
       <div className="p-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
@@ -32,39 +37,41 @@ export function AnswerBanner({ result, quant = false }: { result: InvestigationR
             <div
               className={cx(
                 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-                open ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600',
+                open ? 'bg-rose-100 text-rose-600' : ask ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-600',
               )}
             >
-              {open ? <AlertTriangle size={22} /> : <CheckCircle2 size={22} />}
+              {open ? <AlertTriangle size={22} /> : ask ? <HelpCircle size={22} /> : <CheckCircle2 size={22} />}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone={open ? 'bad' : 'ok'}>
-                  {open ? `ESCALATE · ${result.fusion.priority} PRIORITY` : 'CLEARED · NO CASE OPENED'}
+                <Badge tone={open ? 'bad' : ask ? 'warn' : 'ok'}>
+                  {open ? `ESCALATE · ${result.fusion.priority} PRIORITY` : ask ? 'ASK · NOTHING RESTRICTED' : 'NO CASE OPENED'}
                 </Badge>
                 <span className="text-xs text-dim">MID {p.id} · MCC {p.mcc}</span>
               </div>
               <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-ink">
-                {open ? 'Suspicious — Payment Activity Does Not Match Declared Business' : 'Looks Legitimate — Payments Match Declared Business'}
+                {open ? 'Payments do not fit the declared business' : ask ? 'Something changed. Ask before judging' : 'Nothing contradicts the declared business'}
               </h2>
               <p className="mt-1 text-sm text-mute">
                 {open
-                  ? `${p.name} registered as a ${p.category.toLowerCase()} in ${p.city}, but its payment activity strongly resembles ${topMech ? topMech.name.toLowerCase() : 'an undeclared business'}.`
-                  : `${p.name} behaves like the ${p.category.toLowerCase()} in ${p.city} that it declared during onboarding.`}
+                  ? `${p.name} is registered under ${p.category.toLowerCase()} in ${p.city}. ${result.scope.kind === 'account' ? 'Its payments point to' : `${result.scope.label} (${Math.round(result.scope.share * 100)}% of sales) points to`} ${topMech ? topMech.name.toLowerCase() : 'an undeclared business'}. This is a lead for a person to check.`
+                  : ask
+                    ? `${p.name} departs from what is normal for ${p.category.toLowerCase()}. An honest change can look like this, so the next step is a question and a Context Passport.`
+                    : `Nothing measurable in ${p.name}’s payments contradicts ${p.category.toLowerCase()}. That is not proof of what it sells.`}
               </p>
             </div>
           </div>
 
           {/* Right: 2 High-Signal KPI Boxes (Front Likelihood + ₹ Monthly GMV) */}
           <div className="flex flex-wrap gap-3">
-            <div className={cx('min-w-[165px] rounded-xl border px-4 py-3', open ? 'border-rose-200 bg-rose-50/60' : 'border-emerald-200 bg-emerald-50/60')}>
+            <div className={cx('min-w-[165px] rounded-xl border px-4 py-3', border, soft)}>
               <div className="text-[11px] font-semibold uppercase tracking-wider text-mute">Front Likelihood</div>
-              <div className={cx('mt-0.5 font-mono text-2xl font-bold tabular-nums', open ? 'text-rose-700' : 'text-emerald-700')}>
+              <div className={cx('mt-0.5 font-mono text-2xl font-bold tabular-nums', text)}>
                 {fmtProb(result.fusion.posterior)}
               </div>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/80">
                 <div
-                  className={cx('h-full rounded-full', open ? 'bg-rose-500' : 'bg-emerald-500')}
+                  className={cx('h-full rounded-full', solid)}
                   style={{ width: `${Math.max(4, Math.min(100, result.fusion.posterior * 100))}%` }}
                 />
               </div>
@@ -74,13 +81,13 @@ export function AnswerBanner({ result, quant = false }: { result: InvestigationR
             <div className="min-w-[175px] rounded-xl border border-line bg-slate-50 px-4 py-3">
               <div className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-mute">
                 <IndianRupee size={11} />
-                {open ? 'Monthly GMV at Risk' : 'Protected Monthly GMV'}
+                Monthly collections
               </div>
               <div className="mt-0.5 font-mono text-2xl font-bold tabular-nums text-ink">
                 {inr(reality.monthlyGmv)}
               </div>
               <div className="mt-1 text-[11px] text-dim">
-                {open ? 'Regulatory & chargeback exposure' : 'Spared from false-positive freeze'}
+                Whole account, at a 30-day rate
               </div>
             </div>
           </div>
@@ -114,7 +121,7 @@ export function AnswerBanner({ result, quant = false }: { result: InvestigationR
             <p className="mt-1.5 text-[13px] text-ink">
               <b>{result.review.recommended} — {level?.name ?? result.review.recommended}:</b> {level?.blurb}
             </p>
-            <p className="mt-1 text-[11px] text-dim">Maker-checker enforced: no automated fund freeze.</p>
+            <p className="mt-1 text-[11px] text-dim">{result.suspectLinks.length ? `Scope: ${result.suspectLinks.join(', ')} only. ` : ''}A second person approves any restriction.</p>
           </div>
         </div>
       </div>

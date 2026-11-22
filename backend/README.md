@@ -1,35 +1,19 @@
-# Backend and pilot workflow
+# Backend
 
-The active HTTP API and server-side analysis entry point live in `src/`. Uploaded `mre-dataset/v1` JSON is validated, converted to the canonical scenario, analyzed by the deterministic engine, and saved as a case. The AI Engine workspace reads saved case summaries and case detail from this API.
+The API used by the AI Engine. `./start.sh` runs it on `127.0.0.1:8787`.
 
-## Run locally
-
-`./start.sh` starts this API on `127.0.0.1:8787` and the Vite app on `localhost:5173`. `npm run api` starts only the API. `npm run build` creates the deployment bundle, but the Vercel handler intentionally returns 503 until authentication and tenant isolation exist.
-
-## Routes
-
-| Method | Route | Purpose |
+| Route (under `/api`) | Who | Purpose |
 |---|---|---|
-| GET | `/api/health` | Service and storage mode |
-| GET | `/api/investigations` | List saved cases, newest first |
-| POST | `/api/investigations` | Validate a dataset, run analysis, and open a case |
-| GET | `/api/investigations/{id}` | Retrieve case summary, workflow, evidence, coverage, and audit |
-| POST | `/api/investigations/{id}/review` | Save analyst notes and merchant clarification |
-| POST | `/api/investigations/{id}/response` | Record a proposed response and authority checks |
-| POST | `/api/investigations/{id}/label` | Record an adjudicated label and learning update |
+| `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` | anyone | Sign in and out |
+| `GET`, `POST /investigations` | signed in | List, or analyse and open a case |
+| `GET /investigations/{id}` + `/trace`, `/pack`, `/audit`, `/passport` | signed in | Read |
+| `POST /investigations/{id}/review`, `/response`, `/label` | by role | Record; restrictions and two-person labels wait |
+| `POST /investigations/{id}/approve` | a different person, by role | Approve or reject |
+| `POST /investigations/{id}/passport` | analyst, reviewer, admin | Record a declared change |
+| `POST /investigations/{id}/passport-review` | a different reviewer or admin | Verify and re-score |
+| `GET /rules/status`, `POST /rules/proposals/run` | signed in | Status; request a change |
+| `POST /rules/proposals/{id}/approve`, `/promote`, `POST /rules/rollback` | a different reviewer or admin | Govern rules |
+| `/v1/*` | service key | Scoring and batch, see `openapi.yaml` |
 
-## Source layout
-
-- `src/adapters/canonicalDataset.ts` is the current manual-upload adapter. Future partner adapters should normalize authorized provider data into `mre-dataset/v1`.
-- `src/algorithms/analyze.ts` is the server-side analysis entry point and records the engine version with each case.
-- `src/workflow.ts` manages investigation, analyst review, proposed response, labels, and audit events.
-- `src/store.ts` persists local cases as JSON files and exposes a case list.
-- `src/http.ts` and `src/server.ts` provide the HTTP API and local server.
-
-The analysis uses the explainable rules and statistical checks documented in the root README and `docs/ARCHITECTURE.md`. It does not use a trained model. No payment partner connector is configured yet.
-
-## Pilot readiness limits
-
-The current store is local JSON persistence, suitable for a single-machine development workflow. It is not shared database storage and is not a production deployment configuration. The API does not yet provide user authentication, role-based access, tenant isolation, a secrets vault, encryption-key management, or a live payment action connector. Do not send real personal or payment data until those controls and the partner’s approved access method are in place.
-
-Partner access is intentionally not fabricated. Implement a dedicated adapter only after the partner, authorization, API specification, and permitted data scope are known.
+There is no persona switch. Each person has an account. Limits before a pilot: `docs/FUTURE_BACKEND.md`.
+Do not send real payment data to this prototype.

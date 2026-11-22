@@ -2,123 +2,107 @@
 
 https://merchant-reality-engine.netlify.app
 
-An interactive prototype of a merchant-intelligence platform for Payment Aggregators and payment-risk teams.
-It asks one question: **does this merchant behave like the business it claims to be?**
+**Does this merchant behave like the business it claims to be, on every QR it owns?**
 
-The project has three connected experiences:
+A bakery can pass KYC with genuine papers and then collect betting deposits. MRE is a prototype for payment-aggregator risk teams
+that finds that mismatch without punishing a bakery that has simply changed.
 
-- **Public website** (`/`, `/architecture`): the product story, the seven-layer architecture and the technology.
-- **Guided demo** (`/demo/*`): four deterministic, prebuilt merchant scenarios. Run one and inspect all seven layers and its final result inside the demo.
-- **AI Engine** (`/ai-engine/*`): upload a dataset, run server-side analysis, review evidence, record a proposed response and label, and return to saved case summaries.
-- **Offline Python prototype** (`./start.sh prototype`): a separate synthetic-data experiment; its multi-merchant report is not part of the web app.
-> **Everything is synthetic.** Merchants, transactions, websites, crawler snapshots and portfolio figures are fabricated and deterministic. Nothing is verified real-world evidence. There are no customers, partners or performance claims. The response design is a product proposal, not a statement of legal or regulatory requirements, and nothing freezes real money.
+1. **Every QR is scored on its own.** A side business disappears in a shop's average. On its own link it stands out,
+   once that link has enough payments (30 at the very least) and returning payers.
+2. **A change is a question. Misconduct is a case.** Unusual hours, prices or places get a Context Passport request. A case needs
+   independent evidence that includes conduct a change cannot explain.
+3. **The Context Passport updates the engine.** The merchant names the QR, the date and a document; a second person verifies it;
+   the expectation for that QR changes. It can never excuse conduct signals.
+4. **The response is narrow.** Only an identified link can be recommended for restriction, and never the main QR by default.
+   A second person approves.
 
-## Measured on the synthetic portfolio
+> **Everything is synthetic.** Merchants, transactions, pages and portfolio figures are fabricated. There are no customers,
+> partners or real-world accuracy figures. The response design is a proposal, not legal advice, and nothing freezes real money.
 
-These figures are copied from the report files. They are synthetic. They are not real-world accuracy.
+## Measured, on synthetic data
 
-| Figure | Value | Source |
-|---|---|---|
-| Recall | 0.903 (65/72), Wilson 0.813–0.952 | `reports/benchmark.md` |
-| Precision | 1.000 (65/65), Wilson 0.944–1.000 | `reports/benchmark.md` |
-| Genuine-merchant false-positive rate | 0.000 (0/928), Wilson 0.000–0.004 | `reports/benchmark.md` |
-| Telegram (no-website) recall | 0.857 (12/14), Wilson 0.601–0.960 | `reports/benchmark.md` |
-| M1 AUC-PR | 1.000, bootstrap 1.000–1.000 | `reports/model-comparison.md` |
-| Bayesian AUC-PR | 0.996, bootstrap 0.982–1.000 | `reports/model-comparison.md` |
-| Opened queue | 65 cases, expected false alarms 1.68 | `reports/benchmark.md` |
+Copied from `reports/benchmark.md` (1,000 generated merchants, seed 7).
 
-The trained model is a second opinion. It does not choose the action. Throughput on this machine is in `reports/perf.md`. The red-team rate is in `reports/redteam.md`.
+| Figure | Value |
+|---|---|
+| Fronts opened as a case | 33/81 (0.407) |
+| Fronts opened **or** asked to explain | 67/81 (0.827) |
+| Honest merchants wrongly opened | 0/919 (Wilson upper bound 0.004) |
+| Honest merchants recommended for restriction | 0/919 |
+| Honest merchants asked to explain | 132/919 (0.144) |
+
+Case recall is lower than the 0.903 this README used to show. That figure came from data that gave away the label and has been
+withdrawn. See `docs/AUDIT_FIX_REPORT.md`.
+
+## What it cannot do
+
+- Find betting that copies a shop's amounts, hours, places and payer mix. That needs outside-in evidence: test purchases, crawls,
+  sightings, complaints.
+- Open a case on every small, thin or mixed-in front. A side business with few payments or few returning payers, or mixed into
+  the main QR, often becomes a question where a cruder rule would have opened a case. Many become a question only (`reports/benchmark.md`, `reports/redteam.md`).
+- Locate a payer from a UPI ID. Without payer location several camouflage categories become a question, not a case.
+- Claim calibrated probabilities. Category norms and detector rates are expert priors until a shadow pilot supplies labels.
 
 ## Run it
 
-Use `./start.sh` to start the web app (Node.js 20+). To run the separate offline Python prototype, install its dependencies with `python3 -m pip install -r prototype/requirements.txt` and run `./start.sh prototype`.
-
-for windows user :
-
-Requires Node.js 20 or later.
+Node.js **22.13 or later**.
 
 ```bash
-npm install
-npm run dev        # http://localhost:5173
-npm run build      # type-check + production build into dist/
-npm run preview    # serve the production build
-npm run selftest   # run the engines on all four scenarios and print results
+npm ci
+npm run dev:users   # local test accounts; random passwords in backend/data/dev-users.txt
+./start.sh          # API on 127.0.0.1:8787, web app on localhost:5173
 ```
 
-No API keys or accounts are needed for the synthetic demo. Analyze sends the dataset to the local investigation API in `backend/`.
+The guided demo at `/demo` needs no account. The AI Engine at `/ai-engine` needs a sign-in, and an approval needs a second
+person's account (use a second browser profile).
 
-## Routes
+```bash
+npm test            # engine, leakage, audit regressions, security, adversarial
+npm run build
+npm run benchmark   # rewrites reports/benchmark.md and the console's queue
+npm run train       # rewrites the second-opinion model and its report
+npm run redteam     # rewrites reports/redteam.md
+npm run mre -- batch --in examples/generic-pa --mapping adapters/mappings/generic-pa-v1.json --out out
+```
 
-| Route | What it is |
+## Demo merchants
+
+| Merchant | Expected |
 |---|---|
-| `/` | Homepage: problem, approach, seven-layer explorer, technology, use cases, differentiation |
-| `/architecture` | Architecture, design principles, prototype scope versus production |
-| `/demo` | Four prebuilt scenarios and their seven-layer demo results |
-| `/demo/investigations` | Seven-layer run for the selected demo merchant |
-| `/demo/portfolio` | Results for the four demo merchants only |
-| `/demo/merchant`, `/demo/graph`, `/demo/detection`, `/demo/patterns` | Demo merchant profile and evidence views |
-| `/demo/analyst`, `/demo/response`, `/demo/audit` | Simulated analyst review, response and audit |
-| `/ai-engine` | Saved server case list and current analysis status |
-| `/ai-engine/analyze` | Upload a merchant dataset. The API in `backend/` runs the analysis and stores the case |
-| `/ai-engine/cases/{id}` | Persistent case summary, evidence, analyst review, proposed response and audit |
-| `/ai-engine/portfolio` | The single latest uploaded analysis; empty before the first run |
-| `/ai-engine/investigations`, `/ai-engine/merchant`, `/ai-engine/graph`, `/ai-engine/detection`, `/ai-engine/patterns` | Findings for the latest uploaded dataset only; require a completed run |
-| `/ai-engine/analyst`, `/ai-engine/response`, `/ai-engine/audit` | Review and action tools scoped to the latest uploaded dataset only |
+| Sweet Crumbs Bakery | Case. Betting link found by crawl, refunds and timing |
+| Golden Oven Bakery | Case on one link, from payments alone. The counter QR stays live |
+| Moonlight Bakes | No case. Asked about midnight delivery; a verified passport clears it |
+| Anand Sweets | No case, no question. Diwali is expected |
+| Nova Gift Emporium | Case. Rotation from a dormant account |
+| Aarav Home Decor | Case, due diligence only. Sales cannot be substantiated |
 
-The old `/demo/upload` link redirects to `/ai-engine/analyze`. The demo's four-merchants scenario pages remain under `/demo`.
+## How a decision is made
 
-## Scenarios
+1. 28 detectors run on the whole account, on each QR or link with 30+ sales, and on the group of repeat payers.
+2. Each detector that is both statistically significant and large adds log-likelihood. Missing data adds zero.
+3. A case opens when P(front) ≥ 10%, at least one **conduct** signal fired, and the evidence is independent (two sources, three
+   families, or two different behaviours). Volume, the declaration and derived signals do not count towards independence.
+4. Otherwise a departure from normal becomes **ASK**: a Context Passport request, with nothing restricted.
+5. Labels can propose a calibration. It goes live only after a holdout backtest and approval by a different person.
 
-| Scenario | What it shows | Expected result |
-|---|---|---|
-| Sweet Crumbs Bakery (default) | Betting collections behind a bakery | Case opened; transaction laundering leads; L3 disables one link, POS stays live |
-| Merchant rotation | Dormant account replaced by a similar one | Case opened; rotation leads |
-| Fabricated commercial substance | Online store that cannot substantiate sales | Case opened on four independent families; outcome stays unresolved |
-| Legitimate Diwali growth | Real 3× festival surge | **No case opened.** The volume alarm is explained |
+The trained model (`engine/model.ts`) is a second opinion. It never chooses the action.
 
-The demo and AI Engine use separate state. Demo pages show only their four built-in merchants. The AI Engine sends uploaded canonical JSON to the backend, which stores local case records and serves the saved case list. The optional Python prototype uses its own committed synthetic CSV dataset and runs offline; its report is not served by the web app.
+## Why it matters now
 
-## How it works in brief
+- [RBI's PA Master Direction](https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=12896) requires monitoring merchants' transactions against their business profile.
+- The [Online Gaming Act](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2254606&reg=3&lang=1) has been in force since 1 May 2026 and bars payment systems from processing money-game payments.
 
-1. In the guided demo, deterministic generators (`frontend/src/data/transactions.ts`) create event stores from fixed seeds.
-2. `runInvestigation` (`frontend/src/engines/investigationEngine.ts`) is a pure function: same scenario in, same result out.
-3. Detectors compute their results from the records (residuals, CUSUM, round-number heaping, geographic mismatch, pre-match funding lift against a same-clock-time control, refund reconciliation, beneficiary changes, cohort continuity and more). Nothing about the final verdict is hard-coded.
-4. Fusion collapses correlated signals, excludes UNKNOWN, weights by reliability and fake difficulty, applies the two-independent-family gate and ranks four mechanism hypotheses.
-5. The UI reveals layer results progressively; analyst notes, proposed responses, labels and audit history are recorded by the backend.
-6. The optional offline Python prototype in `prototype/` reads its own sample CSV feeds and applies hand-set evidence-family rules. It is separate from the user-upload workspace and is not a trained machine-learning model.
-
-## Project layout
+## Layout
 
 ```text
-package.json, package-lock.json, vite.config.ts, tsconfig.json, start.sh
-frontend/
-  index.html
-  public/       static assets, sample datasets and flowchart assets
-  src/
-    components/
-    data/
-    engines/
-    hooks/
-    layers/
-    pages/
-    styles/
-    types/
-    utils/
-backend/        HTTP API, server-side analysis entry point, adapter and case store
-api/            Vercel adapter for the backend bundle
-api-src/        pointer to the maintained backend location
-docs/           project and data documentation
-prototype/      separate offline Python experiment and generated output
-scripts/        sample export and engine self-test
-archive/legacy-frontend/  preserved, inactive root-level frontend copy
+engine/      public entry, model, synthetic generator, improver, evidence pack, merchant letter
+rules/       every number the engine uses
+frontend/    website, guided demo, analyst screens, and the engine's detectors and fusion
+backend/     API, sign-in, maker/checker, passports, audit
+adapters/    PA export mapping     cli/  batch and admin commands
+scripts/     benchmark, training, red team, checks
+docs/        pitch, judge Q&A, business case, audit report
+prototype/   an older, separate Python experiment; not used by the app and not maintained
 ```
-Stack: React 18, TypeScript, Vite, Tailwind CSS v4, Recharts, React Flow (`@xyflow/react`), Lucide, React Router.
 
-## Known limitations
-
-- 25 of the 112 catalogued detection patterns run as live statistical detectors in the Bayesian engine, alongside 10 solution and betting patterns (`S1–S7`, `N1–N3`); the remaining catalogue slots are design counts.
-- Category norms (`rules/mcc.json`) and initial detector sensitivities/false-positive rates (`rules/detectors.json`) are expert priors until calibrated on real labelled merchants in a shadow pilot.
-- Trained ML models (`M1` LightGBM with TreeSHAP and `nn-v0` Neural Network) are trained on the 1,000-merchant synthetic portfolio and serve strictly as a second opinion; they never override the governed Bayesian decision.
-- Website, domain-category and purchaser-verification data are synthetic fixtures. No external site is contacted.
-- Controlled self-improvement (`T14` Bayesian label learning and `T15–T16` red-team rule proposals with Wilson CIs and McNemar backtests) requires explicit maker/checker approval by a distinct reviewer/admin; the engine never modifies its own rules autonomously.
-- The evidence pack produces draft FIU-IND STR facts and RBI PA Master Direction mappings for the Principal Officer to review; it is not an automatic portal filing.
+How AI tools were used: [AI_USAGE.md](AI_USAGE.md).

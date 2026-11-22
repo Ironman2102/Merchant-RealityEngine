@@ -19,7 +19,10 @@ export interface DetectorCfg {
   name: string; family: string; lineage: string; provenance: string; requires: string[];
   sensitivity: number; falsePositive: number; alpha: number; minEffect: number; effectFull: number; minN: number;
   fakeDifficulty: number; affinity: [number, number, number, number]; test: string;
+  class: 'profile' | 'conduct'; categoryNorm?: boolean; level?: 'merchant'; derivedFrom?: string[]; conductWith?: string[];
 }
+/** The only fields an approved rule change or calibration may move. */
+export type RulePatch = Record<string, Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN' | 'sensitivity' | 'falsePositive'>>>;
 export type ResponseKey = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 
 const { _note: _m, default: mccDefault, ...mccRows } = mcc as unknown as { _note: string; default: MccNorm } & Record<string, MccNorm>;
@@ -28,21 +31,21 @@ const { _note: _d, ...detectorRows } = detectors as unknown as Record<string, De
 
 /** Synchronous only. Do not await inside `fn`: the override is a process-wide map. */
 let detectorOverrides: Record<string, Partial<DetectorCfg>> | null = null;
-let livePatch: Record<string, Partial<DetectorCfg>> | null = null;
+let livePatch: RulePatch | null = null;
 let liveVersion: string | null = null;
 
-export function withDetectorOverrides<T>(patch: Record<string, Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN'>>>, fn: () => T): T {
+export function withDetectorOverrides<T>(patch: RulePatch, fn: () => T): T {
   const prev = detectorOverrides;
   detectorOverrides = patch;
   try { return fn(); } finally { detectorOverrides = prev; }
 }
 
-export function setLiveDetectorPatch(patch: Record<string, Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN'>>> | null, version: string | null = null): void {
+export function setLiveDetectorPatch(patch: RulePatch | null, version: string | null = null): void {
   livePatch = patch;
   liveVersion = version;
 }
 
-export function getLiveDetectorPatch(): { patch: Record<string, Partial<DetectorCfg>> | null; version: string } {
+export function getLiveDetectorPatch(): { patch: RulePatch | null; version: string } {
   return { patch: livePatch, version: liveVersion ?? engine.version };
 }
 
@@ -50,14 +53,23 @@ export const RULES = {
   get version(): string { return liveVersion ?? engine.version; },
   engine,
   mcc: (code: string): MccNorm => mccRows[code] ?? mccDefault,
+  /** False = we have no idea what is normal here. Callers abstain instead of borrowing the default shop. */
+  knowsCategory: (code: string): boolean => Object.hasOwn(mccRows, code),
+  categories: (): [string, MccNorm][] => Object.entries(mccRows),
   neighbours: (state: string): string[] => adjacency[state] ?? [],
   calendar, amounts, hosts, overrides,
   costs: costs as { missCost: number; actions: Record<ResponseKey, { falseAlarmCost: number; missFactor: number; label: string }>; autoRecommendMax: ResponseKey },
   priors: priors as { default: { rate: number; strength: number }; byMcc: Record<string, { rate: number; strength: number }>; ageOdds: { maxDays: number; odds: number }[] },
+  /** The committed prior. Learning starts here, so re-calibrating never counts the same labels twice. */
+  baseDetector: (id: string): DetectorCfg => {
+    const d = detectorRows[id];
+    if (!d || typeof d === 'string') throw new Error(`rules/detectors.json has no entry for ${id}`);
+    return d;
+  },
   detector: (id: string): DetectorCfg => {
     const d = detectorRows[id];
     if (!d || typeof d === 'string') throw new Error(`rules/detectors.json has no entry for ${id}`);
-    const p = detectorOverrides?.[id] ?? livePatch?.[id];
-    return p ? { ...d, ...p } : d;
+    const live = livePatch?.[id], trial = detectorOverrides?.[id];
+    return live || trial ? { ...d, ...live, ...trial } : d;
   },
 };

@@ -1,35 +1,29 @@
 # Architecture
 
-## Seven layers
-
 | Layer | Job | Code |
 |---|---|---|
-| L1 Ingest & Lineage | Normalise feeds into `PaymentEvent`, classify, separate timestamps, link refunds, hash identifiers, build the coverage map | `data/transactions.ts`, `engines/investigationEngine.ts` (`layer1`), `layers/L1Ingestion` |
-| L2 Merchant Profile | Declared profile and three baselines (anchored, seasonal, rolling) | `engines/residualEngine.ts`, `engines/cusumEngine.ts`, `layers/L2MerchantProfile` |
-| L3 Detection | Transparent detectors over nine families, emitting `EvidenceItem` | `engines/detectors.ts`, `engines/cohortContinuity.ts` |
-| L4 Evidence Fusion | Dedupe, exclude UNKNOWN, weight, independence gate, mechanism scores | `engines/evidenceFusion.ts` |
-| L5 Analyst Review | Legitimate chain versus front chain, inspection, findings | `engines/analystEngine.ts`, `layers/L5AnalystReview` |
-| L6 Governed Response | Six levels, authority gate, HoldRecord, action audit | `engines/responseEngine.ts` |
-| L7 Audit, Labels & Learning | Labels, indicators, reliability updates, hash-chained audit | `engines/learningEngine.ts` |
+| L1 Ingest & Lineage | Normalise feeds, link refunds, pseudonymise, map coverage | `data/dataset.ts`, `utils/ingest.ts`, `adapters/` |
+| L2 Merchant Profile | Category norm, festival calendar, verified passports | `engines/residualEngine.ts`, `engines/passport.ts` |
+| L3 Detection | Statistical tests on the account, each QR and the repeat-payer group | `engines/detectors.ts`, `engines/streams.ts` |
+| L4 Evidence Fusion | Log-odds, shrinkage, gate, ASK | `engines/evidenceFusion.ts` |
+| L5 Analyst Review | Honest story against front story | `engines/analystEngine.ts` |
+| L6 Governed Response | Six levels, narrow scope, two people | `engines/responseEngine.ts`, `backend/src/workflow.ts` |
+| L7 Audit & Learning | Sealed hash chain, labels, approved calibration | `backend/src/store.ts`, `backend/src/improverApi.ts` |
 
-## Key formulas
+## Rules that hold everywhere
 
-- Residual: `R_t = (V_t − E_t) / max(E_t, ε)`, ε = 1.
-- CUSUM: `S_t = max(0, S_{t−1} + R_t − k)`, k = 0.1, alarm when S_t > 0.5.
-- Pre-match alignment (C5): share of match-day sales in the 45 minutes before a start, divided by the share in the same clock window on non-match days (with +0.5/+1 smoothing). Illicit if lift ≥ 3 and z ≥ 3.
-- Effective weight: illicit = `strength × reliability`; benign = `strength × reliability × (0.35 + 0.65 × fakeDifficulty)`.
-- Mechanism score: `1 − exp(−0.5 × Σ weight × affinity)` over counted illicit evidence.
-- Case gate: at least two independent evidence families (each with illicit mass ≥ 0.25) drawing on at least two source systems.
-- Cohort continuity: `.35 payer overlap + .20 ticket shape + .15 timing shape + .20 lifecycle handoff + .10 shared beneficiary`.
+1. Missing data has weight 0 in both directions.
+2. The declaration chooses the category row. Calm results against that row earn a quarter of their weight, and conduct tests ignore it.
+3. An unknown category abstains. It is not treated as a local shop.
+4. Every detector is `profile` (a change could explain it) or `conduct` (it could not). Match timing becomes conduct only with distant payers.
+5. A signal built from others (H3) measures only their co-occurrence, is shrunk when they fire and is not an independent family.
+6. k streams tested lowers each stream's prior log-odds by ln(k).
+7. A passport sets covered payments aside from profile tests. It does not count them as innocent and does not reach conduct tests.
+8. Restriction needs an identified link. Otherwise the recommendation stops at due diligence.
 
-## Fusion rules
+## Case gate
 
-1. UNKNOWN is excluded from scoring (missing data is not evidence).
-2. Signals with the same family, lineage and status collapse to the strongest (for example A1 and A4 read the same ticket data; D7 and D9 read the same refund ledger).
-3. Benign evidence is discounted when it is cheap to fake.
-4. Independence is judged by family and by source system.
-5. Hypotheses are ranked, never declared.
+`P ≥ 0.10` and `conduct ≥ 1` and (`sources ≥ 2` or `families ≥ 3` or `conduct behaviours ≥ 2`).
+Otherwise ASK when a conduct signal fired, or when `P ≥ 0.01` with signals in two families.
 
-## Design inspirations
-
-Quantexa (contextual graphs), LexisNexis Risk Solutions and Metro Bank (behavioural monitoring), HCLTech SIM-box detection (identifier rotation), Airbnb Trust & Safety (intended use, proportionate intervention), PayPal and Palantir (connected investigations). These are inspirations only. No partnership, endorsement or use of proprietary technology is implied.
+All numbers are in `rules/engine.json` and `rules/detectors.json`.

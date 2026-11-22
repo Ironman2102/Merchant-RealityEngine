@@ -16,7 +16,7 @@ paths:
       security: [{ bearer: [] }]
       responses:
         '200':
-          description: Bayesian score. ml is null until the model service is configured.
+          description: Bayesian score on the account and each stream, plus the second-opinion model.
           content:
             application/json:
               schema:
@@ -40,7 +40,11 @@ paths:
                         observed: { type: string }
                         llr: { type: number }
                   rulesVersion: { type: string }
-                  ml: {}
+                  ml: { type: object }
+                  followUp: { type: string, enum: [ASK, NONE] }
+                  scope: { type: object }
+                  streams: { type: array, items: { type: object } }
+                  suspectLinks: { type: array, items: { type: string } }
   /v1/cases:
     post:
       summary: Score and store a case.

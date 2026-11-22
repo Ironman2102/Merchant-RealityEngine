@@ -12,10 +12,9 @@ const H = 3600000;
 export function planResponse(res: InvestigationResult, user: UserState): ResponsePlan {
   const sc = res.scenario, level = user.chosenLevel ?? res.review.recommended;
   const sales = res.events.filter(e => e.type === 'SALE');
-  const ext = sc.web.embeds.filter(e => e.merchantId === sc.primaryMerchantId && !sc.profile.declaredDomains.includes(e.host)).map(e => e.linkId);
   const count = new Map<string, number>();
   sales.forEach(s => s.linkId && count.set(s.linkId, (count.get(s.linkId) ?? 0) + 1));
-  const suspectLinks = ext.length ? ext : [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, 1).map(x => x[0]);
+  const suspectLinks = res.suspectLinks;
   const keepsRunning = [...count.keys()].filter(k => !suspectLinks.includes(k));
   const unsettled = sales.filter(s => !s.settleTime && s.linkId && suspectLinks.includes(s.linkId));
   const holdCandidate = unsettled.reduce((s, e) => s + e.amount, 0);
@@ -23,6 +22,7 @@ export function planResponse(res: InvestigationResult, user: UserState): Respons
   const authorityRequired = RESPONSE_LEVELS.find(l => l.id === level)!.needsAuthority;
   const blocked: string[] = [];
   let hold: HoldRecord | null = null;
+  if (level === 'L3' && !suspectLinks.length) blocked.push('No specific QR or link has been identified as the suspect flow, so there is nothing narrow to disable.');
   if (level === 'L4' || level === 'L5') {
     if (!user.legalVerified) blocked.push('Legal authority not verified. The product design requires a separate legal check before any restriction on funds.');
     if (level === 'L4' && !user.escrowConfirmed) blocked.push('Escrow or contractual reserve clause not confirmed for this merchant agreement.');
@@ -32,7 +32,7 @@ export function planResponse(res: InvestigationResult, user: UserState): Respons
   if (level === 'L4' && !blocked.length) hold = { id: `HR-${sc.id.toUpperCase().slice(0, 3)}-0001`, amount: holdCandidate, scope: `Unsettled collections via ${suspectLinks.join(', ')} only`, expires: fmtDateTime(end + 72 * H), reviewBy: fmtDateTime(end + 24 * H), approver: 'Risk committee (two of three)', basis: 'Simulated: contractual reserve clause plus verified authority' };
   const actions: string[] = {
     L0: ['Log the investigation and evidence set', 'Keep standard monitoring thresholds'],
-    L1: ['Send profile-refresh request to the merchant', 'Ask for an explanation of the volume change', 'Re-baseline the seasonal expectation once evidence is verified'],
+    L1: ['Send a Context Passport request to the merchant', 'Ask what changed and for a document that supports it', 'Update the expectation for that QR only after a second person verifies it'],
     L2: ['Open Enhanced Due Diligence', 'Request invoices, supplier records and order evidence', 'Continue independent purchaser verification', 'Tighten monitoring thresholds'],
     L3: [`Disable payment flow ${suspectLinks.join(', ')}`, 'Open Enhanced Due Diligence in parallel', 'Notify the merchant with a route to appeal'],
     L4: [`Create time-boxed HoldRecord over ${inr(holdCandidate)} of identified unsettled funds`, `Disable payment flow ${suspectLinks.join(', ')}`, 'Schedule review within 24 hours'],

@@ -27,7 +27,7 @@ export default function (): number {
   check('cases byte-identical', casesA === casesB);
   check('scores have rows', scoresA.split('\n').length > 9);
 
-  const samples = readdirSync('frontend/public/samples').filter(f => /^0[1-9]-/.test(f));
+  const samples = readdirSync('frontend/public/samples').filter(f => /^\d\d-/.test(f));
   const { datasets } = mapExport('examples/generic-pa', opts.mappingPath, KEY);
   for (const file of samples) {
     const original = JSON.parse(readFileSync(`frontend/public/samples/${file}`, 'utf8')) as { merchant: { id: string } };

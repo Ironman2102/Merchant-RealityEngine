@@ -42,7 +42,7 @@ export function TracePage() {
       </div>
       {packError && <Callout tone="warn" title="Evidence pack not created">{packError}</Callout>}
 
-      <Panel title="Verdict" subtitle="Probability that this merchant is not the business it declares, with a 90% interval from detector uncertainty.">
+      <Panel title={`Verdict · ${t.scope.label}`} subtitle="Probability that this merchant is not the business it declares, with a 90% interval from detector uncertainty.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div><div className="text-xs text-mute">Decision</div><div className="mt-1"><Badge tone={t.caseSummary.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{t.caseSummary.decision === 'OPEN_CASE' ? 'Case opened' : 'No case'}</Badge></div></div>
           <div><div className="text-xs text-mute">P(front)</div><div className="mt-1 font-mono text-xl">{fmtProb(t.caseSummary.posterior)}</div><div className="text-[11px] text-dim">{fmtInterval(t.caseSummary.ci)}</div></div>
@@ -52,7 +52,7 @@ export function TracePage() {
         </div>
       </Panel>
 
-      <MlPanel caseId={caseId} posterior={t.caseSummary.posterior} />
+      <MlPanel />
 
       <Panel title="How the probability was reached" subtitle="Bayes' rule in log-odds: start from the base rate, add each evidence family's weight (nats). Positive moves towards 'front', negative towards 'genuine'." bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Step</Th><Th>Weight</Th><Th>Running P(front)</Th></tr></thead><tbody>

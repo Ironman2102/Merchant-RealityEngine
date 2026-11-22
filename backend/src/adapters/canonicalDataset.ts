@@ -26,6 +26,9 @@ export function pseudonymize(raw: unknown): unknown {
   }
   if (Array.isArray(d.bankCredits)) for (const b of d.bankCredits as Record<string, unknown>[])
     if (b && typeof b.beneficiaryAccount === 'string') b.beneficiaryAccount = pseudonym(b.beneficiaryAccount);
+  // An upload cannot verify its own Context Passport, nor name someone else as its maker.
+  if (Array.isArray(d.contextPassports)) d.contextPassports = d.contextPassports.map(p =>
+    p && typeof p === 'object' ? { ...p, status: 'SUBMITTED', submittedBy: undefined, reviewedBy: undefined } : p);
   return d;
 }
 

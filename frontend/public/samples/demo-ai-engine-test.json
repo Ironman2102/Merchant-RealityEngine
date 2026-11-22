@@ -26,7 +26,7 @@
     ],
     "expectedRoundShare": 0.06,
     "seasonalPeak": 2,
-    "baselineWeekly": 180000,
+    "baselineWeekly": 45000,
     "accountAgeDays": 1180,
     "declaredDomains": [
       "sweetcrumbs.example"
@@ -57,82 +57,82 @@
   "weeklySales": [
     {
       "week": "W1",
-      "actual": 180125,
+      "actual": 45042,
       "seasonalMultiplier": 1
     },
     {
       "week": "W2",
-      "actual": 180323,
+      "actual": 45108,
       "seasonalMultiplier": 1
     },
     {
       "week": "W3",
-      "actual": 181168,
+      "actual": 45389,
       "seasonalMultiplier": 1
     },
     {
       "week": "W4",
-      "actual": 180974,
+      "actual": 45325,
       "seasonalMultiplier": 1
     },
     {
       "week": "W5",
-      "actual": 183788,
+      "actual": 46263,
       "seasonalMultiplier": 1
     },
     {
       "week": "W6",
-      "actual": 180411,
+      "actual": 45137,
       "seasonalMultiplier": 1
     },
     {
       "week": "W7",
-      "actual": 175464,
+      "actual": 43488,
       "seasonalMultiplier": 1
     },
     {
       "week": "W8",
-      "actual": 180329,
+      "actual": 45110,
       "seasonalMultiplier": 1
     },
     {
       "week": "W9",
-      "actual": 181164,
+      "actual": 45388,
       "seasonalMultiplier": 1
     },
     {
       "week": "W10",
-      "actual": 179464,
+      "actual": 44821,
       "seasonalMultiplier": 1
     },
     {
       "week": "W11",
-      "actual": 179784,
+      "actual": 44928,
       "seasonalMultiplier": 1
     },
     {
       "week": "W12",
-      "actual": 183710,
+      "actual": 46237,
       "seasonalMultiplier": 1
     },
     {
       "week": "W13",
-      "actual": 225000,
+      "actual": 49183,
       "seasonalMultiplier": 1.2
     },
     {
       "week": "W14",
-      "actual": 324000,
+      "actual": 63858,
       "seasonalMultiplier": 1.6
     },
     {
       "week": "W15",
-      "actual": 522000,
+      "actual": 105542,
       "seasonalMultiplier": 2
     },
     {
       "week": "W16",
-      "actual": 540000,
+      "actual": 147291,
       "seasonalMultiplier": 2
     }
   ],
@@ -5061,8 +5061,8 @@
   "bankCredits": [],
   "purchaserVerification": null,
   "businessFootprint": {
-    "supplierPaymentsMonthly": 52000,
-    "gstTurnoverMonthly": 310000
+    "supplierPaymentsMonthly": 42000,
+    "gstTurnoverMonthly": 200000
   },
   "externalSightings": [
     {
@@ -5122,7 +5122,7 @@
         "id": "p2",
         "type": "payer",
         "label": "Match-window funding payers",
-        "sub": "n≈112 · 9 states"
+        "sub": "round top-ups · 9 states"
       },
       {
         "id": "p3",

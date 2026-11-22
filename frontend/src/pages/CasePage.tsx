@@ -6,7 +6,7 @@ import { useInvestigation } from '../hooks/useInvestigation';
 import { verdictOf } from './PortfolioPage';
 import { BaselineChart, CusumChart, HourChart, StateBars, TicketHistogram } from '../components/charts/charts';
 import { PatternBoard } from '../components/common/PatternBoard';
-import { chasingSequences, LADDER, PASSPORT_REASONS, checkPassport, type PassportReason } from '../engines/patternPack';
+import { chasingSequences, LADDER } from '../engines/patternPack';
 import { RESPONSE_LEVELS } from '../data/evidence';
 import type { UserState } from '../types/investigation';
 import { planResponse } from '../engines/responseEngine';
@@ -156,23 +156,17 @@ function Reason({ t, e, n, defaultOpen }: { t: Theme; e: PortfolioEntry; n: numb
 }
 
 function Cleared({ e }: { e: PortfolioEntry }) {
-  const [reason, setReason] = useState<PassportReason>('festival');
   const benign = e.result.evidence.filter(x => x.status === 'BENIGN' && x.fakeDifficulty >= 0.6).sort((a, b) => b.fakeDifficulty - a.fakeDifficulty).slice(0, 6);
-  const alarm = e.result.evidence.find(x => x.id === 'H1' && x.status === 'ILLICIT');
-  const pp = checkPassport(e.result, reason);
+  const asked = e.result.fusion.followUp === 'ASK';
+  const flagged = e.result.evidence.filter(x => x.status === 'ILLICIT');
   return (
     <div className="space-y-4">
-      {alarm && <div className="rounded-lg border border-stone-400/40 bg-panel p-4">
-        <div className="font-semibold text-stone-200">The volume alarm fired, and was explained</div>
-        <p className="mt-1 text-sm text-mute">{alarm.observed}. Only one evidence family points that way, so no case opens. The merchant gets a Context Passport request instead of a restriction.</p>
-        <div className="mt-3 grid gap-3 lg:grid-cols-2"><ChartBox title="Weekly collections vs baselines"><BaselineChart rows={e.result.l2.rows} height={220} /></ChartBox>
-          <ChartBox title="Context Passport: the merchant says…">
-            <div className="flex flex-wrap gap-1.5">{PASSPORT_REASONS.map(r => <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2 py-1 text-xs', reason === r.id ? 'border-zinc-400 bg-zinc-400/10 text-zinc-200' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>)}</div>
-            <div className={cx('mt-3 text-sm', pp.explained ? 'text-gray-300' : 'text-neutral-300')}>{pp.explained ? 'Explained. Request: ' + pp.reason.evidence : `Not explained: ${pp.open.map(x => x.id).join(', ')} remain.`}</div>
-          </ChartBox></div>
+      {asked && <div className="rounded-lg border border-amber-200 bg-panel p-4">
+        <div className="font-semibold text-amber-700">Asked to explain. Nothing restricted</div>
+        <p className="mt-1 text-sm text-mute">{flagged.map(x => x.observed).join(' · ')}. Record the change as a Context Passport on the case; a second person verifies it.</p>
       </div>}
       <div className="rounded-lg border border-gray-400/30 bg-panel p-4">
-        <div className="font-semibold text-gray-200">Why it behaves like the business it declared ({e.scenario.profile.category})</div>
+        <div className="font-semibold text-gray-200">What fits the declared business ({e.scenario.profile.category})</div>
         <div className="mt-3 grid gap-2 md:grid-cols-2">{benign.map(x => <div key={x.id} className="rounded border border-line bg-panel2/60 p-2.5 text-[12.5px]"><div className="font-medium"><span className="mr-1.5 font-mono text-xs text-zinc-300">{x.id}</span>{x.name}</div><div className="mt-0.5 text-gray-100">{x.observed}</div><div className="text-[11px] text-dim">Hard to fake: {pct(x.fakeDifficulty)}</div></div>)}</div>
         <div className="mt-3 grid gap-3 lg:grid-cols-2"><ChartBox title="Ticket sizes"><TicketHistogram sales={sales(e)} profile={e.scenario.profile} height={200} /></ChartBox><ChartBox title="Payer states"><StateBars sales={sales(e)} local={e.scenario.profile.localStates} height={200} /></ChartBox></div>
       </div>
@@ -207,7 +201,7 @@ export function CasePage() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">{p.name}</h1><Badge tone={v.tone}>{v.label}{e.suspicious ? ` · ${f.priority} priority` : ''}</Badge></div>
             <div className="mt-0.5 text-sm text-mute">{p.city} · {p.category} (MCC {p.mcc}) · account {p.accountAgeDays.toLocaleString('en-IN')} days old · <span className="font-mono">{p.id}</span></div>
-            <p className="mt-3 max-w-3xl text-[15px]">{e.suspicious ? `Under suspicion for ${v.reason.toLowerCase()}. ${reasons.length} independent reasons below, each with its proof.` : `Cleared. ${v.reason}.`}</p>
+            <p className="mt-3 max-w-3xl text-[15px]">{e.suspicious ? `Under suspicion for ${v.reason.toLowerCase()}. ${reasons.length} reasons below, each with its proof.` : `${v.label}. ${v.reason}.`}</p>
             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
               <div><div className="text-xs text-mute">Sales analysed</div><div className="font-medium tabular-nums">{sl.length} · {inrK(sl.reduce((a, x) => a + x.amount, 0))}</div></div>
               <div><div className="text-xs text-mute">Evidence families</div><div className="font-medium">{f.independentFamilies.length ? f.independentFamilies.join(', ') : 'none'} </div></div>
@@ -227,7 +221,7 @@ export function CasePage() {
           {reasons.map((t, i) => <Reason key={t.id} t={t} e={e} n={i + 1} defaultOpen={i < 2} />)}
         </section>
       ) : (
-        <section className="space-y-3"><h2 className="text-lg font-semibold">Why this merchant was cleared</h2><Cleared e={e} /></section>
+        <section className="space-y-3"><h2 className="text-lg font-semibold">Why no case was opened</h2><Cleared e={e} /></section>
       )}
 
       <section className="space-y-3">

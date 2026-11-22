@@ -1,5 +1,5 @@
 {
- "_note": "One row per detector. sensitivity = P(fires | front), falsePositive = P(fires | genuine): EXPERT PRIORS (est.) until learned from labels (plan P8). LLR when firing = ln(sensitivity/falsePositive) x grade; when clearly not firing = ln((1-sensitivity)/(1-falsePositive)) x (0.35 + 0.65 x fakeDifficulty). It fires only if p <= alpha AND effect >= minEffect (practical significance, so big samples do not flag trivial differences). affinity = [rotation, laundering, fabricated, other].",
+ "_note": "One row per detector. sensitivity = P(fires | front), falsePositive = P(fires | genuine): EXPERT PRIORS (est.) until learned from labels (plan P8). LLR when firing = ln(sensitivity/falsePositive) x grade; when clearly not firing = ln((1-sensitivity)/(1-falsePositive)) x (0.35 + 0.65 x fakeDifficulty). It fires only if p <= alpha AND effect >= minEffect (practical significance, so big samples do not flag trivial differences). affinity = [rotation, laundering, fabricated, other]. class: 'profile' = departs from what is normal, which an honest change can explain and a verified Context Passport can cover; 'conduct' = behaviour a change of business does not explain. A case needs at least one conduct signal. categoryNorm = needs a known category. level = merchant means it cannot be computed for a single QR or payment stream. derivedFrom = built from those detectors, so it is shrunk when they fire and never counts as an independent family. conductWith = this profile signal counts as conduct when one of those detectors also fires.",
  "A1": {
   "name": "Ticket sizes vs category norm",
   "family": "A",
@@ -11,8 +11,8 @@
   "sensitivity": 0.55,
   "falsePositive": 0.06,
   "alpha": 0.001,
-  "minEffect": 0.2,
-  "effectFull": 0.4,
+  "minEffect": 0.26,
+  "effectFull": 0.45,
   "minN": 30,
   "fakeDifficulty": 0.3,
   "affinity": [
@@ -21,7 +21,9 @@
    0.2,
    0.1
   ],
-  "test": "One-sample Kolmogorov–Smirnov vs lognormal category norm; effect = KS distance D. Menu prices are discrete, so genuine shops show D ≈ 0.15; the practical bar is 0.20."
+  "test": "One-sample Kolmogorov–Smirnov vs the category's log-normal ticket shape, allowing the merchant's median to sit between one third and 1.8× of the category's; effect = KS distance D.",
+  "class": "profile",
+  "categoryNorm": true
  },
  "A4": {
   "name": "Round-number heaping",
@@ -44,7 +46,9 @@
    0.2,
    0.2
   ],
-  "test": "Beta-binomial upper tail vs category round-amount rate; effect = excess share"
+  "test": "Beta-binomial upper tail vs category round-amount rate; effect = excess share",
+  "class": "profile",
+  "categoryNorm": true
  },
  "A5": {
   "name": "Deposit / bonus-tier amounts",
@@ -67,7 +71,9 @@
    0.1,
    0.2
   ],
-  "test": "Beta-binomial upper tail vs category rate of betting bonus-tier amounts; effect = excess share"
+  "test": "Beta-binomial upper tail vs category rate of betting bonus-tier amounts; effect = excess share",
+  "class": "profile",
+  "categoryNorm": true
  },
  "B6": {
   "name": "Payers from outside the service area",
@@ -90,7 +96,9 @@
    0.2,
    0.1
   ],
-  "test": "Beta-binomial upper tail of payers outside home + neighbouring states vs category rate; effect = excess share"
+  "test": "Beta-binomial upper tail of payers outside home + neighbouring states vs category rate; effect = excess share",
+  "class": "profile",
+  "categoryNorm": true
  },
  "B7": {
   "name": "Heavy repeat payers",
@@ -113,7 +121,33 @@
    0.1,
    0.2
   ],
-  "test": "Beta-binomial upper tail: share of sales from payers paying >= 8 times in a week vs category rate"
+  "test": "Beta-binomial upper tail: share of sales from payers paying >= 8 times in a week vs category rate",
+  "class": "profile",
+  "categoryNorm": true
+ },
+ "B8": {
+  "name": "Repeat deposit-like payers",
+  "family": "B",
+  "lineage": "payer.deposit",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.55,
+  "falsePositive": 0.015,
+  "alpha": 0.001,
+  "minEffect": 0.12,
+  "effectFull": 0.45,
+  "minN": 30,
+  "fakeDifficulty": 0.6,
+  "affinity": [
+   0.1,
+   0.8,
+   0.1,
+   0.2
+  ],
+  "test": "Category-free. Beta-binomial upper tail: share of sales that are ₹100-multiple payments of ₹200+ from payers making >= 4 of them within 14 days, vs 5%",
+  "class": "conduct"
  },
  "B9": {
   "name": "Independent purchaser verification",
@@ -136,7 +170,33 @@
    0.9,
    0
   ],
-  "test": "Exact binomial lower tail of confirmations vs 80% for genuine merchants; effect = shortfall"
+  "test": "Exact binomial lower tail of confirmations vs 80% for genuine merchants; effect = shortfall",
+  "class": "conduct",
+  "level": "merchant"
+ },
+ "B10": {
+  "name": "Distant regulars",
+  "family": "B",
+  "lineage": "payer.remote",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.55,
+  "falsePositive": 0.015,
+  "alpha": 0.001,
+  "minEffect": 0.12,
+  "effectFull": 0.45,
+  "minN": 30,
+  "fakeDifficulty": 0.7,
+  "affinity": [
+   0.2,
+   0.7,
+   0.1,
+   0.2
+  ],
+  "test": "Category-free. Beta-binomial upper tail: share of sales from out-of-area payers who pay >= 4 times within 14 days, vs 4%",
+  "class": "conduct"
  },
  "C2": {
   "name": "Sales outside category trading hours",
@@ -159,7 +219,9 @@
    0.2,
    0.2
   ],
-  "test": "Beta-binomial upper tail of off-hours sales vs category rate; effect = excess share"
+  "test": "Beta-binomial upper tail of off-hours sales vs category rate; effect = excess share",
+  "class": "profile",
+  "categoryNorm": true
  },
  "C5": {
   "name": "Pre-match funding",
@@ -182,7 +244,35 @@
    0.1,
    0.3
   ],
-  "test": "Permutation test: in-window share on match days vs randomly chosen days (2,000 draws); effect = rate ratio"
+  "test": "Permutation test: in-window share on match days vs randomly chosen days (2,000 draws); effect = rate ratio. A profile signal on its own (shops are busy on match nights too); conduct when distant payers (B6) fire with it",
+  "class": "profile",
+  "conductWith": [
+   "B6"
+  ]
+ },
+ "C6": {
+  "name": "Rapid rising top-ups",
+  "family": "C",
+  "lineage": "payer.burst",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.35,
+  "falsePositive": 0.01,
+  "alpha": 0.001,
+  "minEffect": 0.05,
+  "effectFull": 0.2,
+  "minN": 30,
+  "fakeDifficulty": 0.7,
+  "affinity": [
+   0.1,
+   0.9,
+   0,
+   0.1
+  ],
+  "test": "Category-free. Beta-binomial upper tail: share of sales inside a same-payer run of 3+ rising payments of ₹200+ within 2 hours, vs 1%",
+  "class": "conduct"
  },
  "D7": {
   "name": "Refunds without an original sale",
@@ -205,7 +295,8 @@
    0.3,
    0.3
   ],
-  "test": "Beta-binomial upper tail of orphan refunds vs 2% norm; effect = excess share"
+  "test": "Beta-binomial upper tail of orphan refunds vs 2% norm; effect = excess share",
+  "class": "conduct"
  },
  "D9": {
   "name": "Refunds paid to someone other than the payer",
@@ -228,7 +319,8 @@
    0.1,
    0.3
   ],
-  "test": "Beta-binomial upper tail vs 5% norm, excluding refunds to the payer's own other accounts; effect = excess share"
+  "test": "Beta-binomial upper tail vs 5% norm, excluding refunds to the payer's own other accounts; effect = excess share",
+  "class": "conduct"
  },
  "D10": {
   "name": "Payments without an order",
@@ -251,7 +343,8 @@
    0.8,
    0
   ],
-  "test": "Exact binomial upper tail of unmatched payments vs 5%; effect = excess share"
+  "test": "Exact binomial upper tail of unmatched payments vs 5%; effect = excess share",
+  "class": "conduct"
  },
  "E1": {
   "name": "Payment link shared with other merchants",
@@ -274,7 +367,8 @@
    0.1,
    0.2
   ],
-  "test": "Deterministic: number of other merchants with links on the same third-party host"
+  "test": "Deterministic: number of other merchants with links on the same third-party host",
+  "class": "conduct"
  },
  "E3": {
   "name": "Continuity with a dormant peer",
@@ -297,7 +391,9 @@
    0,
    0.1
   ],
-  "test": "Hypergeometric test of payer overlap with the peer; effect = continuity score (needs a lifecycle hand-off)"
+  "test": "Hypergeometric test of payer overlap with the peer; effect = continuity score (needs a lifecycle hand-off)",
+  "class": "conduct",
+  "level": "merchant"
  },
  "F2": {
   "name": "Account opened as a similar one went quiet",
@@ -320,7 +416,9 @@
    0.1,
    0.1
   ],
-  "test": "Deterministic: account < 45 days old and started within 7 days of a dormant peer's last sale"
+  "test": "Deterministic: account < 45 days old and started within 7 days of a dormant peer's last sale",
+  "class": "conduct",
+  "level": "merchant"
  },
  "F5": {
   "name": "Settlement beneficiary changes",
@@ -343,7 +441,9 @@
    0.1,
    0.3
   ],
-  "test": "Poisson upper tail of beneficiary changes vs category rate per year; needs >= 2 changes or a beneficiary shared with a peer"
+  "test": "Poisson upper tail of beneficiary changes vs category rate per year; needs >= 2 changes or a beneficiary shared with a peer",
+  "class": "conduct",
+  "level": "merchant"
  },
  "F7": {
   "name": "Orders not delivered / reused tracking",
@@ -366,7 +466,8 @@
    0.9,
    0
   ],
-  "test": "Exact binomial lower tail of delivered share vs 90%; reused tracking counts as undelivered; effect = shortfall"
+  "test": "Exact binomial lower tail of delivered share vs 90%; reused tracking counts as undelivered; effect = shortfall",
+  "class": "conduct"
  },
  "F8": {
   "name": "Settlements missing from bank credits",
@@ -389,7 +490,9 @@
    0.4,
    0.2
   ],
-  "test": "Exact binomial upper tail of unmatched settlements vs 2%; effect = excess share"
+  "test": "Exact binomial upper tail of unmatched settlements vs 2%; effect = excess share",
+  "class": "conduct",
+  "level": "merchant"
  },
  "G2": {
   "name": "Catalogue does not fit the category",
@@ -412,7 +515,9 @@
    0.9,
    0.1
   ],
-  "test": "Exact binomial upper tail of off-category or reused-image items vs 5%; effect = excess share"
+  "test": "Exact binomial upper tail of off-category or reused-image items vs 5%; effect = excess share",
+  "class": "conduct",
+  "level": "merchant"
  },
  "G6": {
   "name": "Payment link on an undeclared site",
@@ -435,7 +540,8 @@
    0.1,
    0.3
   ],
-  "test": "Deterministic: link embedded on an undeclared host (a known betting host also triggers override R-01)"
+  "test": "Deterministic: link embedded on an undeclared host (marketplaces are UNKNOWN; a known betting host also triggers override R-01)",
+  "class": "conduct"
  },
  "H1": {
   "name": "Volume above seasonal expectation",
@@ -458,7 +564,9 @@
    0.3,
    0.2
   ],
-  "test": "Log-normal weekly volume model with festival calendar offsets; Stouffer z over the last 4 weeks; effect = actual / expected"
+  "test": "Log-normal weekly volume model with festival calendar offsets; Stouffer z over the last 4 weeks; effect = actual / expected",
+  "class": "profile",
+  "level": "merchant"
  },
  "H2": {
   "name": "Recent change in behaviour",
@@ -481,7 +589,9 @@
    0.3,
    0.2
   ],
-  "test": "Bayesian online changepoint: P(change in last 4 weeks); CUSUM with h set for one false alarm per merchant-year"
+  "test": "Bayesian online changepoint: P(change in last 4 weeks); CUSUM with h set for one false alarm per merchant-year",
+  "class": "profile",
+  "level": "merchant"
  },
  "H3": {
   "name": "Joint off-profile cluster",
@@ -504,7 +614,15 @@
    0.2,
    0.3
   ],
-  "test": "Beta-binomial upper tail of sales with >= 2 off-profile traits (round, out-of-area, off-hours/pre-match) vs 1%"
+  "test": "Beta-binomial upper tail of sales with >= 2 off-profile traits vs what those traits' own rates predict if independent. It measures only the co-occurrence, not the traits again.",
+  "derivedFrom": [
+   "A4",
+   "B6",
+   "C2",
+   "C5"
+  ],
+  "class": "profile",
+  "categoryNorm": true
  },
  "I2": {
   "name": "Onward payouts to many accounts",
@@ -527,7 +645,10 @@
    0.1,
    0.8
   ],
-  "test": "Poisson upper tail of distinct payout beneficiaries vs category norm; effect = ratio"
+  "test": "Poisson upper tail of distinct payout beneficiaries vs category norm; effect = ratio",
+  "class": "conduct",
+  "categoryNorm": true,
+  "level": "merchant"
  },
  "I3": {
   "name": "Money swept out soon after settlement",
@@ -550,7 +671,9 @@
    0.1,
    0.6
   ],
-  "test": "Exact binomial upper tail of settlements followed by an onward payout within 24 h vs 10%; effect = excess share"
+  "test": "Exact binomial upper tail of settlements followed by an onward payout within 24 h vs 10%; effect = excess share",
+  "class": "conduct",
+  "level": "merchant"
  },
  "K1": {
   "name": "Declared profile far from category norm",
@@ -571,6 +694,9 @@
    0.4,
    0.2
   ],
-  "test": "Chi-square on standardised gaps between the declared profile and the category norm (catchment, hours width, ticket ceiling, round share)"
+  "test": "Chi-square on standardised gaps between the declared profile and the category norm (catchment, hours width, ticket ceiling, round share)",
+  "class": "profile",
+  "categoryNorm": true,
+  "level": "merchant"
  }
 }

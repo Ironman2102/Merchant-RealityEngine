@@ -101,3 +101,12 @@ expected seasonal lift (2 = festival weeks are normally twice a normal week).
 plus two new synthetic datasets (Chai Corner Café, Shree Ganesh Sweets). All data is synthetic.
 Edit any sample and re-upload it to see how the flags change, e.g. set the betting embed's
 `category` to `"own"`, or remove the out-of-state payers.
+
+## Context Passports, limits and honesty rules (22 Nov 2026)
+
+- `contextPassports`: `[{ id, reason, linkId, from, until?, document, hours?, states?, ticketBand?, volumeUplift?, status }]`.
+  An uploaded `VERIFIED` is reset to `SUBMITTED`: verification happens on the server, by a second person.
+- `merchant.undeclared`: any of `ticketMax`, `hours`, `catchment`, `expectedRoundShare`. Those fields are then not tested.
+- `weeklySales` must agree with the last 14 days of the ledger within 25%, or volume evidence is UNKNOWN.
+- Payments may be up to ₹2 crore; settlements and payouts up to ₹1,000 crore.
+- `orderId: null` means "checked, none found". Leave it out when it was never checked.

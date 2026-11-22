@@ -20,6 +20,7 @@ export interface TraceStep { label: string; delta: number; cumulative: number; p
 export interface Counterfactual { what: string; posterior: number; action: ResponseLevel; decision: string }
 export interface ValueOfInformation { feed: CoverageKey; detector: string; pFire: number; ifFires: number; ifCalm: number; voiRupees: number }
 export interface Trace {
+  scope: { label: string; sales: number; share: number };
   caseSummary: { merchant: string; mcc: string; decision: string; posterior: number; ci: [number, number]; prior: number; action: ResponseLevel; mechanism: string; mechanismP: number };
   coverage: { name: string; state: string; records: number }[];
   waterfall: TraceStep[];
@@ -43,17 +44,17 @@ function hypothetical(id: string, fires: boolean): EvidenceItem {
     affinity: { ROTATION: c.affinity[0], TRANSACTION_LAUNDERING: c.affinity[1], FABRICATED_SUBSTANCE: c.affinity[2], OTHER_ABUSE: c.affinity[3] } as Record<Mechanism, number>,
     observed: '', expected: '', explanation: '', metrics: {}, records: [], requires: c.requires as CoverageKey[],
     llr: fires ? fireLlr(c.sensitivity, c.falsePositive) : Math.max(RULES.engine.benignLlrFloor, calmLlr(c.sensitivity, c.falsePositive) * tauOf(c.fakeDifficulty)),
-    provenance: c.provenance as Provenance, test: c.test, p: null, effect: null, effectLabel: '', ci: null, n: 0, expectedSource: 'hypothetical',
+    provenance: c.provenance as Provenance, signal: c.class, test: c.test, p: null, effect: null, effectLabel: '', ci: null, n: 0, expectedSource: 'hypothetical',
   };
 }
 
 export function buildTrace(r: InvestigationResult): Trace {
-  const f = r.fusion, p = r.scenario.profile, ev = r.evidence;
+  const f = r.fusion, p = r.scenario.profile, ev = r.evidence, opts = { draws: 0, priorShift: f.priorShift };
   const top = f.mechanisms[0];
   // Waterfall in log-odds: prior, then each family (largest effect first), then overrides.
   const steps: TraceStep[] = [];
   let cum = f.logOdds.prior;
-  steps.push({ label: `Base rate for MCC ${p.mcc}, account ${p.accountAgeDays} days`, delta: f.logOdds.prior, cumulative: cum, probability: sigmoid(cum) });
+  steps.push({ label: `Base rate for MCC ${p.mcc}, account ${p.accountAgeDays} days${f.priorShift ? `, lowered because ${r.streams.length} streams were tested` : ''}`, delta: f.logOdds.prior, cumulative: cum, probability: sigmoid(cum) });
   [...f.logOdds.families].sort((a, b) => Math.abs(b.llr) - Math.abs(a.llr)).forEach(x => {
     cum += x.llr;
     steps.push({ label: `Family ${x.family} · ${FAMILIES.find(fm => fm.id === x.family)?.name ?? ''} (${x.items.join(', ')})`, delta: x.llr, cumulative: cum, probability: sigmoid(cum) });
@@ -64,7 +65,7 @@ export function buildTrace(r: InvestigationResult): Trace {
   const allPositive = ev.filter(e => e.llr > 0).sort((a, b) => b.llr - a.llr);
   const fired = allPositive.slice(0, 5);
   const counterfactuals: Counterfactual[] = fired.map(e => {
-    const g = fuse(ev.map(x => (x.id === e.id ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, { draws: 0 });
+    const g = fuse(ev.map(x => (x.id === e.id ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, opts);
     return { what: `Without ${e.id} (${e.name})`, posterior: g.posterior, action: g.decisionAnalysis.recommended, decision: g.decision };
   });
   if (f.decision === 'OPEN_CASE' && counterfactuals.every(c => c.decision === 'OPEN_CASE') && allPositive.length > 1) {
@@ -72,7 +73,7 @@ export function buildTrace(r: InvestigationResult): Trace {
     for (const e of allPositive) {
       dropIds.add(e.id);
       if (dropIds.size <= 1) continue;
-      const g = fuse(ev.map(x => (dropIds.has(x.id) ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, { draws: 0 });
+      const g = fuse(ev.map(x => (dropIds.has(x.id) ? { ...x, status: 'UNKNOWN' as const, llr: 0 } : x)), p, opts);
       if (g.decision === 'NO_CASE') {
         counterfactuals.push({
           what: `Minimal flip set: without ${[...dropIds].join(' + ')} (${dropIds.size} signals)`,
@@ -93,13 +94,14 @@ export function buildTrace(r: InvestigationResult): Trace {
     if (!ids.length) return [];
     const id = ids.sort((a, b) => { const A = RULES.detector(a), B = RULES.detector(b); return fireLlr(B.sensitivity, B.falsePositive) - fireLlr(A.sensitivity, A.falsePositive); })[0];
     const c = RULES.detector(id), pFire = P * c.sensitivity + (1 - P) * c.falsePositive;
-    const withIt = (fires: boolean) => fuse(ev.map(x => (x.id === id ? hypothetical(id, fires) : x)), p, { draws: 0 });
+    const withIt = (fires: boolean) => fuse(ev.map(x => (x.id === id ? hypothetical(id, fires) : x)), p, opts);
     const a = withIt(true), b = withIt(false);
     const after = pFire * minLoss(a.posterior, a.gatePassed) + (1 - pFire) * minLoss(b.posterior, b.gatePassed);
     return [{ feed, detector: id, pFire, ifFires: a.posterior, ifCalm: b.posterior, voiRupees: Math.max(0, now - after) }];
   }).sort((a, b) => b.voiRupees - a.voiRupees);
 
   return {
+    scope: { label: r.scope.label, sales: r.scope.sales, share: r.scope.share },
     caseSummary: { merchant: p.name, mcc: p.mcc, decision: f.decision, posterior: f.posterior, ci: f.posteriorCi, prior: f.prior, action: r.review.recommended, mechanism: top.id, mechanismP: f.mechanismPosterior[top.id] },
     coverage: r.l1.sources.map(s => ({ name: s.name, state: s.state, records: s.records })),
     waterfall: steps,

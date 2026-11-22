@@ -8,7 +8,21 @@ import { PublicNav, Footer } from '../components/navigation/PublicNav';
 import { ArchitectureExplorer } from '../components/common/ArchitectureExplorer';
 import { FlowchartExperience } from '../components/common/FlowchartExperience';
 import { Btn } from '../components/ui/ui';
-import { FAMILIES, TOTAL_PATTERNS } from '../data/evidence';
+import { FAMILIES } from '../data/evidence';
+import { getScenario } from '../data/scenarios';
+import { RULES } from '../../../rules/index';
+
+/** Every number in the bakery illustration is measured on the synthetic bakery it describes. */
+function bakeryFacts() {
+  const sc = getScenario('bakery'), p = sc.profile;
+  const sales = sc.events.filter(e => e.merchantId === p.id && e.type === 'SALE');
+  const edges = [250, 450, 500, 750, 1000, 1500, 2000, Infinity], bins = edges.map(() => 0);
+  sales.forEach(s => { bins[edges.findIndex(x => s.amount <= x)]++; });
+  const area = new Set([p.localStates[0], ...RULES.neighbours(p.localStates[0])]);
+  const states = new Set(sales.map(s => s.payerState).filter(s => !area.has(s))).size;
+  const peak = sc.weekly[sc.weekly.length - 1].actual!, base = sc.weekly.slice(0, 8).reduce((a, w) => a + w.actual!, 0) / 8;
+  return { bins, states, growth: (peak / base).toFixed(1) };
+}
 
 const Section = ({ id, title, lead, children }: { id: string; title: string; lead?: string; children: ReactNode }) => (
   <section id={id} className="scroll-mt-16 border-t border-line py-20"><div className="mx-auto max-w-7xl px-5">
@@ -22,15 +36,16 @@ function Bars({ data, color, hi }: { data: number[]; color: string; hi?: number[
 }
 
 function Problem() {
+  const facts = bakeryFacts();
   return (
     <div className="space-y-8">
       <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-2">
         <div className="bg-panel p-6"><div className="text-sm font-semibold text-emerald-300">Declared: Sweet Crumbs Bakery</div><p className="mt-1 text-xs text-mute">Registered as MCC 5462. In-store and local deliveries.</p>
-          <div className="mt-5 text-xs text-mute">Expected ticket sizes (₹150–1,200)</div><Bars data={[3, 8, 14, 18, 15, 10, 6, 3]} color="#34d399" />
+          <div className="mt-5 text-xs text-mute">Expected ticket shape, illustrative (₹150–1,200)</div><Bars data={[3, 8, 14, 18, 15, 10, 6, 3]} color="#34d399" />
           <div className="mt-4 grid grid-cols-3 gap-3 text-center text-xs"><div className="rounded border border-line bg-panel2 py-2"><div className="text-lg font-semibold">1</div><div className="text-mute">state</div></div><div className="rounded border border-line bg-panel2 py-2"><div className="text-lg font-semibold">7–22</div><div className="text-mute">hours</div></div><div className="rounded border border-line bg-panel2 py-2"><div className="text-lg font-semibold">2×</div><div className="text-mute">Diwali peak</div></div></div></div>
         <div className="bg-panel p-6"><div className="text-sm font-semibold text-red-300">Observed: payment behaviour (synthetic)</div><p className="mt-1 text-xs text-mute">The same credentials, a different business.</p>
-          <div className="mt-5 text-xs text-mute">Actual ticket sizes: heaped at ₹500, ₹1,000, ₹2,000</div><Bars data={[3, 2, 22, 3, 24, 2, 25, 1]} color="#64748b" hi={[2, 4, 6]} />
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center text-xs"><div className="rounded border border-red-400/30 bg-red-400/5 py-2"><div className="text-lg font-semibold">9</div><div className="text-mute">other states</div></div><div className="rounded border border-red-400/30 bg-red-400/5 py-2"><div className="text-lg font-semibold">Pre-match</div><div className="text-mute">funding peaks</div></div><div className="rounded border border-red-400/30 bg-red-400/5 py-2"><div className="text-lg font-semibold">3×</div><div className="text-mute">collections</div></div></div></div>
+          <div className="mt-5 text-xs text-mute">Actual ticket sizes: heaped at ₹500, ₹1,000, ₹2,000</div><Bars data={facts.bins} color="#64748b" hi={[2, 4, 6]} />
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center text-xs"><div className="rounded border border-red-400/30 bg-red-400/5 py-2"><div className="text-lg font-semibold">{facts.states}</div><div className="text-mute">far-away states</div></div><div className="rounded border border-red-400/30 bg-red-400/5 py-2"><div className="text-lg font-semibold">Pre-match</div><div className="text-mute">funding peaks</div></div><div className="rounded border border-red-400/30 bg-red-400/5 py-2"><div className="text-lg font-semibold">{facts.growth}×</div><div className="text-mute">collections</div></div></div></div>
       </div>
       <div className="grid gap-3 md:grid-cols-5">
         {[['Disguised betting collections', 'Deposits from a betting app are routed through a retail merchant’s payment link.'], ['Transaction laundering', 'One merchant’s credentials process another business’s payments.'], ['Merchant identity misuse', 'A genuine registration is used for activity its owner never declared.'], ['Fabricated commercial activity', 'Sales that no order, shipment or purchaser can substantiate.'], ['Rotating collection accounts', 'When one account is flagged, a similar one takes over.']].map(([t, d]) => (
@@ -44,7 +59,7 @@ const TECH = [
   [Fingerprint, 'Merchant behavioural profiling', 'Declared profile turned into numeric expectations: ticket band, hours, geography, seasonality.'],
   [Activity, 'Residual and change-point detection', 'R = (V − E) / max(E, ε) against anchored, seasonal and rolling baselines.'],
   [Radar, 'CUSUM drift tracking', 'Accumulates only sustained excess, so a single busy week does not raise an alarm.'],
-  [Boxes, `${TOTAL_PATTERNS} detection patterns, nine families`, 'Ticket, payer, timing, money flow, networks, settlement, provenance, drift and other abuse.'],
+  [Boxes, `${DETECTORS.length} live tests, on every QR`, 'Each QR and link is scored on its own, so a side business cannot hide in the shop’s average.'],
   [Network, 'Heterogeneous relationship graphs', 'Merchants, payers, links, sites, devices and beneficiaries joined by typed edges.'],
   [GitBranch, 'Cohort continuity', 'Detects behaviour that carries on from a dormant account into a new one.'],
   [Layers, 'Evidence fusion', 'Collapses correlated signals, sets UNKNOWN aside and requires independent families.'],
@@ -100,8 +115,6 @@ export function HomePage() {
     <div className="mre-page min-h-screen bg-black text-white">
       <PublicNav landing />
       <section ref={heroRef} className="mre-hero relative isolate flex min-h-[calc(100svh-60px)] flex-col justify-center overflow-hidden px-5 pb-20 pt-12 md:px-10 md:pb-10 md:pt-4">
-        <div className="mre-metric mre-metric-left"><span>TRANSACTIONS</span><strong>12.4M+</strong></div>
-        <div className="mre-metric mre-metric-right"><span>MERCHANTS</span><strong>2.1M+</strong></div>
         <img ref={noteRef} className="mre-note" src="/images/rupee-500-note.png" alt="Floating Indian five hundred rupee note" />
         <div className="relative z-10 mx-auto w-full max-w-[1080px]">
           <h1 className="mre-title"><span>SEE THE BUSINESS</span><span>BEHIND EVERY</span><span>PAYMENT.</span><img ref={coinRef} className="mre-coin" src="/images/rupee-10-coin.png" alt="" aria-hidden="true" /></h1>
@@ -131,8 +144,8 @@ export function HomePage() {
       <Section id="technology" title="Transparent methods, not a black-box score.">
         <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">{TECH.map(([I, t, d]) => (
           <div key={t} className="bg-panel p-5"><I size={20} className="text-cyan-300" /><div className="mt-3 text-sm font-semibold">{t}</div><p className="mt-1 text-[13px] leading-relaxed text-mute">{d}</p></div>))}</div>
-        <div className="mt-6 flex flex-wrap gap-2">{FAMILIES.map(f => <span key={f.id} className="rounded border border-line bg-panel px-2.5 py-1 text-xs text-mute"><span className="mr-1.5 font-mono text-cyan-300">{f.id}</span>{f.name} <span className="text-dim">· {f.patterns}</span></span>)}</div>
-        <p className="mt-3 text-xs text-dim">Pattern counts describe the design catalogue. The engine runs {DETECTORS.length} of them as live statistical detectors.</p>
+        <div className="mt-6 flex flex-wrap gap-2">{FAMILIES.map(f => <span key={f.id} className="rounded border border-line bg-panel px-2.5 py-1 text-xs text-mute"><span className="mr-1.5 font-mono text-cyan-300">{f.id}</span>{f.name}</span>)}</div>
+        <p className="mt-3 text-xs text-dim">The engine runs {DETECTORS.length} live statistical detectors. All demo data is synthetic, and no real-world accuracy has been measured.</p>
       </Section>
 
       <Section id="use-cases" title="Three investigations MRE is built for.">
@@ -148,8 +161,8 @@ export function HomePage() {
 
       <Section id="why" title="Why it is different from conventional monitoring.">
         <div className="overflow-hidden rounded-md border border-line"><table className="w-full text-left text-sm"><thead className="bg-panel2 text-xs text-mute"><tr><th className="px-4 py-3 font-medium">Conventional monitoring</th><th className="px-4 py-3 font-medium text-cyan-300">Merchant Reality Engine</th></tr></thead>
-          <tbody>{[['Flags individual anomalies', 'Finds joint patterns: round amount, far-away payer and match-time funding in the same payments'], ['Adds up scores, so correlated signals inflate risk', 'Collapses correlated signals and requires independent evidence families'], ['Checks identity and documents', 'Checks commercial reality: orders, fulfilment, provenance and settlement'], ['Automatic holds from a score', 'A human reviews competing explanations before any action'], ['Restricts the whole merchant', 'Narrowest effective action, such as one payment link']].map(([a, b]) => <tr key={a} className="border-t border-line"><td className="px-4 py-3.5 text-mute">{a}</td><td className="px-4 py-3.5">{b}</td></tr>)}</tbody></table></div>
-        <div className="mt-8 flex flex-wrap items-center gap-4 rounded-md border border-line bg-panel p-6"><ShieldCheck className="text-emerald-300" /><p className="max-w-2xl flex-1 text-sm text-mute">One of the four demo scenarios is a legitimate Diwali surge. MRE sees the same volume alarm, finds verified orders and local customers, and opens no case.</p><Link to="/demo"><Btn variant="primary">Try all four scenarios <Waypoints size={15} /></Btn></Link></div>
+          <tbody>{[['Flags individual anomalies', 'Finds joint patterns: round amount, far-away payer and match-time funding in the same payments'], ['Adds up scores, so correlated signals inflate risk', 'Collapses correlated signals; a change alone gets a question, and a case needs conduct evidence'], ['Checks identity and documents', 'Checks commercial reality: orders, fulfilment, provenance and settlement'], ['Automatic holds from a score', 'A human reviews competing explanations before any action'], ['Scores the merchant on average', 'Scores every QR, so a side business cannot hide in the average'], ['Penalises a business that changed', 'Asks, then updates on a verified Context Passport'], ['Restricts the whole merchant', 'Narrowest effective action, such as one payment link']].map(([a, b]) => <tr key={a} className="border-t border-line"><td className="px-4 py-3.5 text-mute">{a}</td><td className="px-4 py-3.5">{b}</td></tr>)}</tbody></table></div>
+        <div className="mt-8 flex flex-wrap items-center gap-4 rounded-md border border-line bg-panel p-6"><ShieldCheck className="text-emerald-300" /><p className="max-w-2xl flex-1 text-sm text-mute">Two demo merchants are honest. A Diwali surge gets no case and no question. A bakery that started midnight delivery gets a question, and a verified Context Passport clears it.</p><Link to="/demo"><Btn variant="primary">Try all six scenarios <Waypoints size={15} /></Btn></Link></div>
       </Section>
       <section id="case-studies" className="scroll-mt-16 border-t border-line py-16"><div className="mx-auto max-w-7xl px-5"><FlowchartExperience mode="studies" /></div></section>
       <Footer />

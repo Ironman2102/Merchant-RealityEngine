@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { analyzeDataset } from '../backend/src/algorithms/analyze';
 const verbose = process.argv.includes('-v');
-for (const f of readdirSync('frontend/public/samples').filter(f => /^0\d-.*\.json$/.test(f))) {
+for (const f of readdirSync('frontend/public/samples').filter(f => /^\d\d-.*\.json$/.test(f))) {
   const r = analyzeDataset(JSON.parse(readFileSync(`frontend/public/samples/${f}`, 'utf8')));
   if (!r.ok) { console.log(f, 'REJECT', r.errors[0]); continue; }
   const fu = r.result.fusion, ev = r.result.evidence;

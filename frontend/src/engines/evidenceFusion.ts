@@ -5,8 +5,9 @@
  * Detectors in one family share data, so ρ (rules/engine.json) stops them counting as independent facts.
  * UNKNOWN evidence has LLR 0 and never moves the odds. A 90% interval comes from Monte-Carlo draws of every
  * detector's sensitivity / false-positive rate (Beta, prior strength from rules) and of the base rate.
- * Governance gate (not statistics): a case opens only if P(front) ≥ threshold AND the evidence comes from
- * ≥ 2 independent data provenances, or ≥ 3 independent families when only one provenance is available.
+ * Governance gate (not statistics): a case opens only if P(front) ≥ threshold AND at least one CONDUCT signal fired AND
+ * the evidence is independent (≥ 2 data sources, or ≥ 3 families, or ≥ 2 different conduct behaviours).
+ * A departure from normal on its own produces a question to the merchant (followUp ASK), never a case.
  */
 import type { EvidenceItem, Family, Mechanism } from '../types/evidence';
 import type { FusionResult, FusedItem, FamilySummary, MechanismScore } from '../types/investigation';
@@ -39,9 +40,9 @@ function familyLlr(items: EvidenceItem[], llrOf: (e: EvidenceItem) => number, rh
   return part(pos) + part(neg);
 }
 
-export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: { draws?: number } = {}): FusionResult {
+export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: { draws?: number; priorShift?: number } = {}): FusionResult {
   const E = RULES.engine, rho = E.familyRho, pr = priorFor(profile);
-  const priorLogOdds = logit(pr.rate) + Math.log(pr.odds);
+  const shift = opts.priorShift ?? 0, priorLogOdds = logit(pr.rate) + Math.log(pr.odds) + shift;
   const byFam = new Map<Family, EvidenceItem[]>();
   evidence.filter(e => e.status !== 'UNKNOWN').forEach(e => byFam.set(e.family, [...(byFam.get(e.family) ?? []), e]));
 
@@ -63,7 +64,7 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: {
       sampled.set(e.id, Math.max(E.benignLlrFloor, e.llr * (now / point)));
     });
     const rate = beta(r, pr.rate * pr.strength, (1 - pr.rate) * pr.strength);
-    const lo = logit(rate) + Math.log(pr.odds) + [...byFam.values()].reduce((s, xs) => s + familyLlr(xs, e => sampled.get(e.id) ?? e.llr, rho), 0) + overrides.reduce((s, o) => s + o.llr, 0);
+    const lo = logit(rate) + Math.log(pr.odds) + shift + [...byFam.values()].reduce((s, xs) => s + familyLlr(xs, e => sampled.get(e.id) ?? e.llr, rho), 0) + overrides.reduce((s, o) => s + o.llr, 0);
     draws.push(sigmoid(lo));
   }
   draws.sort((a, b) => a - b);
@@ -75,14 +76,23 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: {
   const provNats = new Map<string, number>();
   byFam.forEach(xs => { const pos = xs.filter(e => e.llr > 0).sort((a, b) => b.llr - a.llr); pos.forEach((e, i) => provNats.set(e.provenance, (provNats.get(e.provenance) ?? 0) + e.llr * (i ? rho : 1))); });
   const provenances = [...provNats.entries()].map(([provenance, nats]) => ({ provenance, nats })).sort((a, b) => b.nats - a.nats);
-  const strongProv = provenances.filter(p => p.nats >= E.gate.minNats), strongFam = famRows.filter(f => f.llr >= E.gate.minNats);
-  const independent = strongProv.length >= E.gate.minProvenances || strongFam.length >= E.gate.minFamiliesSingleProvenance;
-  const gatePassed = posterior >= E.gate.openPosterior && independent;
-  const gateReason = gatePassed
-    ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}) from a ${fmtProb(sigmoid(priorLogOdds))} base rate (category rate adjusted for account age); evidence from ${strongProv.length} independent source(s) (${strongProv.map(p => p.provenance).join(', ')}) across ${strongFam.length} families.`
-    : posterior < E.gate.openPosterior
-      ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}), below the ${fmtProb(E.gate.openPosterior)} needed to open a case. Base rate ${fmtProb(sigmoid(priorLogOdds))} (category rate adjusted for account age).`
-      : `P(front) ${probEq(posterior)} but the support comes from one data source and fewer than ${E.gate.minFamiliesSingleProvenance} independent families; a second source is needed.`;
+  const G = E.gate, supportingOnly = new Set<string>(G.supportingOnlyFamilies), firedItems = evidence.filter(e => e.status === 'ILLICIT' && e.llr > 0);
+  const strongProv = provenances.filter(p => p.nats >= G.minNats && !G.nonIndependentProvenances.includes(p.provenance));
+  const strongFam = famRows.filter(f => f.llr >= G.minNats && !supportingOnly.has(f.family) && firedItems.some(e => e.family === f.family && !e.derived));
+  const conduct = firedItems.filter(e => e.signal === 'conduct'), behaviours = new Set(conduct.map(e => e.lineage)).size;
+  const independent = strongProv.length >= G.minProvenances || strongFam.length >= G.minFamiliesSingleProvenance || behaviours >= G.minConductLineages;
+  const gatePassed = posterior >= G.openPosterior && independent && conduct.length > 0;
+  const askWorthy = conduct.length > 0 || (posterior >= G.askPosterior && new Set(firedItems.filter(e => !e.derived).map(e => e.family)).size >= G.askFamilies);
+  const followUp = !gatePassed && askWorthy ? 'ASK' as const : 'NONE' as const;
+  const why = gatePassed
+    ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}) from a ${fmtProb(sigmoid(priorLogOdds))} base rate (category rate adjusted for account age); evidence from ${strongProv.length} independent source(s) (${strongProv.map(p => p.provenance).join(', ')}) across ${strongFam.length} families, including conduct a change of business does not explain (${conduct.map(e => e.id).join(', ')}).`
+    : posterior < G.openPosterior
+      ? `P(front) ${probEq(posterior)} (${fmtInterval(posteriorCi)}), below the ${fmtProb(G.openPosterior)} needed to open a case. Base rate ${fmtProb(sigmoid(priorLogOdds))} (category rate adjusted for account age).`
+      : !conduct.length
+        ? `P(front) ${probEq(posterior)}, but everything that fired is a departure from normal, which an honest change can explain. No case opens without a conduct signal.`
+        : `P(front) ${probEq(posterior)}, but the conduct evidence rests on one behaviour from one data source. A second independent signal is needed.`;
+  const gateReason = why + (followUp === 'ASK' ? ' The merchant is asked for a Context Passport; nothing is restricted.' : '')
+    + (RULES.knowsCategory(profile.mcc) ? '' : ` MCC ${profile.mcc} has no category norm, so category tests abstained and only category-free tests ran.`);
 
   const families: FamilySummary[] = FAMILIES.map(f => {
     const inF = evidence.filter(e => e.family === f.id);
@@ -97,12 +107,13 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: {
     contributors: fired.map(e => ({ id: e.id, contribution: e.llr * e.affinity[m] })).filter(c => c.contribution > 0.05).sort((a, b) => b.contribution - a.contribution) })).sort((a, b) => b.score - a.score);
 
   const illicitMass = famRows.reduce((s, f) => s + Math.max(0, f.llr), 0), benignMass = famRows.reduce((s, f) => s + Math.max(0, -f.llr), 0);
-  const decisionAnalysis = decide(posterior, posteriorCi, gatePassed);
+  const decisionAnalysis = decide(posterior, posteriorCi, gatePassed, followUp);
   const priority = !gatePassed ? 'NONE' : posterior >= E.priority.high ? 'HIGH' : posterior >= E.priority.medium ? 'MEDIUM' : 'LOW';
   return {
     items, families, independentFamilies: strongFam.map(f => f.family), systems: strongProv.map(p => p.provenance), gatePassed, gateReason, illicitMass, benignMass, mechanisms,
     decision: gatePassed ? 'OPEN_CASE' : 'NO_CASE', priority, priorityScore: posterior, unknownIds: evidence.filter(e => e.status === 'UNKNOWN').map(e => e.id),
     rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi,
+    followUp, conductSignals: conduct.map(e => e.id), priorShift: shift,
     logOdds: { prior: priorLogOdds, families: famRows, overrides, total }, provenances, mechanismPosterior, decisionAnalysis,
   };
 }

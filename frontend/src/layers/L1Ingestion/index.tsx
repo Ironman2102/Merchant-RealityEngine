@@ -68,7 +68,7 @@ export function L1View() {
         </Panel>
         <Panel title="Identifier hashing" subtitle="Raw payer identifiers never enter the store.">
           <div className="space-y-1.5">{l1.hashSamples.map(h => <div key={h.raw} className="flex items-center gap-2 text-[12px]"><Mono className="text-mute">{h.raw}</Mono><ArrowRight size={12} className="text-dim" /><Fingerprint size={12} className="text-zinc-400" /><Mono>{h.hash}</Mono></div>)}</div>
-          <p className="mt-3 text-xs text-dim">Demo uses a simple hash. Production design: salted HMAC-SHA256 with managed keys.</p>
+          <p className="mt-3 text-xs text-dim">The browser demo uses a simple hash. Saved cases replace identifiers with keyed HMAC-SHA256 pseudonyms.</p>
         </Panel>
       </div>
       <Panel title="Merchant coverage map" subtitle="Which evidence exists for this merchant.">

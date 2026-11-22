@@ -1,29 +1,15 @@
-# Connecting a real backend
+# What production would still need
 
-The engines are pure TypeScript functions over typed inputs, so they can move behind an API with little change.
-
-| Concern | Prototype | Suggested production path |
+| Concern | Prototype | Production |
 |---|---|---|
-| Ingestion | Seeded generators | Kafka topics per feed, schema registry, idempotent writers into PostgreSQL (or a column store) |
-| Identifier hashing | FNV demo hash | Salted HMAC-SHA256, keys in a managed KMS, raw identifiers never stored |
-| Profiles and baselines | Computed in the browser | Profile service with per-MCC priors and scheduled baseline jobs |
-| Detectors | `engines/detectors.ts` | Python workers (FastAPI), one module per pattern family, same `EvidenceItem` contract |
-| Graphs | Hand-authored per scenario | Entity resolution jobs writing to a graph store; NetworkX for analysis, Neo4j or similar for serving |
-| Cohort continuity | Payer, ticket, timing, lifecycle, beneficiary | Add device and infrastructure features; candidate generation by blocking |
-| Fusion | Heuristic weights | Calibrate on held-out adjudicated labels; keep the independence gate |
-| Analyst workbench | Local state | Case management with assignment, SLAs, comments and evidence snapshots |
-| Response | Simulated records | Integration with rails and legal workflow, maker-checker approvals, hard expiry on holds |
-| Audit | Hash-chained list | Append-only store with external anchoring |
-| Learning | Reliability nudges | Backtests, drift monitoring, model governance |
-
-## Suggested API surface
-
-- `POST /investigations` `{ merchantId }` → investigation id
-- `GET /investigations/{id}` → `InvestigationResult`
-- `POST /investigations/{id}/review` → analyst findings
-- `POST /investigations/{id}/response` → response plan and authority checks
-- `POST /investigations/{id}/label` → adjudicated label
-
-## Principles to keep
-
-UNKNOWN stays distinct from clean. A case requires independent evidence. Humans review before restrictive action. Actions are the narrowest effective scope, time-boxed and audited. Response levels must be mapped to the legal and contractual rules that apply to each deployment; this prototype does not assert what those rules are.
+| Storage | SQLite, one process (ephemeral on the serverless host) | Postgres, backups, tenant isolation |
+| Sessions | Database sessions; 30-minute signed cookies on serverless | PA single sign-on, shared revocation |
+| Keys | Environment variable | KMS or HSM, rotation |
+| Audit | Sealed hash chain in the same database | Head anchored externally every day |
+| Ingestion | Daily files, 6 MB uploads | Streaming or bulk load, data-quality monitoring |
+| Category norms | Expert priors for about 40 MCCs | Peer norms from the PA's own portfolio |
+| Network view | Peers supplied with the file | Portfolio-wide beneficiary and payer graph |
+| Passport intake | Analyst form | Merchant portal with document checks |
+| Follow-up | Manual after 7 days | Timers, reminders, escalation queue |
+| Reporting | Draft STR facts | FIU-IND's own format, filed by the Principal Officer |
+| Assurance | Automated probes | Independent penetration test, legal review |

@@ -8,9 +8,9 @@ backend/src/data/*.json
 backend/bundle.js
 backend/data/
 .venv/
-ml/data/
-ml/models/*/candidates/
 examples/portfolio/
 rules/history/
 rules/proposals/
 __pycache__/
+.env
+deploy/.env

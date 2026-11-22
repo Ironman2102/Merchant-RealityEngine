@@ -1,13 +1,14 @@
 import { randomBytes } from 'node:crypto';
 import { LAYERS, MECHANISMS } from '../../frontend/src/data/evidence';
-import { profileUpdates, reliabilityUpdates } from '../../frontend/src/engines/learningEngine';
+import { profileUpdates } from '../../frontend/src/engines/learningEngine';
 import { planResponse } from '../../frontend/src/engines/responseEngine';
 import type { ResponseLevel } from '../../frontend/src/types/investigation';
 import type { Label } from '../../frontend/src/types/merchant';
 import { appendAudit, emptyUser, getCase, isCaseId, listCases, putCase, readAudit, verifyAudit, type CaseRecord } from './store';
-import { analyzeDataset, ENGINE_VERSION } from './algorithms/analyze';
+import { analyzeDataset } from './algorithms/analyze';
+import { RULES } from '../../rules/index';
 import { sha256 } from './adapters/canonicalDataset';
-import type { Actor, Role } from './auth';
+import { samePerson, type Actor } from './auth';
 import { emit } from './events';
 import { getAllLabelEvents, recordLabelEvents } from './improverApi';
 import { effectiveRates } from '../../engine/learnedRates';
@@ -53,7 +54,7 @@ function view(rec: CaseRecord): ApiReply {
         ? rec.response.blocked.join(' ')
         : `Waiting for a human decision. The engine recommends ${result.review.recommended}.`,
     rec.pending.label
-      ? `CONFIRMED_ILLICIT proposed by ${rec.pending.label.by.username}; a second reviewer must confirm.`
+      ? `${rec.pending.label.label} proposed by ${rec.pending.label.by.username}; a second reviewer must confirm.`
       : user.label
       ? `${user.label}. ${rec.learning?.profile[0] ?? ''}`
       : 'Waiting for a label: CONFIRMED_ILLICIT, ADJUDICATED_BENIGN, or UNRESOLVED.',
@@ -65,7 +66,8 @@ function view(rec: CaseRecord): ApiReply {
       id: rec.id,
       createdAt: rec.createdAt,
       scenario: result.scenario,
-      engineVersion: rec.engineVersion ?? ENGINE_VERSION,
+      investigation: { ...result, scenario: undefined, events: undefined },
+      engineVersion: rec.engineVersion ?? RULES.version,
       merchant: { id: result.scenario.profile.id, name: result.scenario.profile.name, category: result.scenario.profile.category, city: result.scenario.profile.city },
       workflow: LAYERS.map((layer, i) => ({ layer: layer.n, code: layer.code, name: layer.name, state: state[i], summary: steps[i] })),
       result: {
@@ -73,6 +75,10 @@ function view(rec: CaseRecord): ApiReply {
         priority: result.fusion.priority,
         gatePassed: result.fusion.gatePassed,
         gateReason: result.fusion.gateReason,
+        followUp: result.fusion.followUp,
+        scope: result.scope,
+        streams: result.streams,
+        suspectLinks: result.suspectLinks,
         recommended: result.review.recommended,
         legitStatus: result.review.legitStatus,
         topMechanism: mechanism,
@@ -176,6 +182,8 @@ export function respondInvestigation(id: string, body: unknown, actor: Actor): A
   const level = ((body ?? {}) as { chosenLevel?: string }).chosenLevel ?? rec.result.review.recommended;
   if (!responseOf(level)) return fail(400, 'chosenLevel is not a response in the workflow config.');
   // legalVerified / escrowConfirmed are never taken from the request body; only a legal approval sets them.
+  if (rec.pending.response && !samePerson(rec.pending.response.by, actor))
+    return fail(409, 'Another person\'s proposal is waiting. It must be approved or rejected before a new response is recorded.');
   if (needsApproval(level)) {
     rec.pending.response = { level, by: { id: actor.id, username: actor.username }, at: new Date().toISOString() };
     rec.user.chosenLevel = engineLevelOf(wf(), level); rec.user.executed = false;
@@ -194,7 +202,7 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
   if ('status' in rec) return rec;
   const p = rec.pending.response;
   if (!p) return fail(409, 'There is no proposed response waiting for approval.');
-  if (p.by.id === actor.id) return fail(403, 'You cannot approve your own proposal. A different person must approve it.');
+  if (samePerson(p.by, actor)) return fail(403, 'You cannot approve your own proposal. A different person must approve it.');
   const rule = wf().approvals.levels[p.level];
   const roles = rule?.approverRoles ?? [];
   if (!can(actor, roles)) return fail(403, `${p.level} must be approved by a ${needsLegal(p.level) ? 'legal' : roles.join(' or ') || 'different'} user.`);
@@ -207,7 +215,7 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
     return view(getCase(id)!);
   }
   const soFar = [...(p.approvals ?? [])];
-  if (soFar.some(a => a.id === actor.id)) return fail(403, 'You have already approved this proposal.');
+  if (soFar.some(a => samePerson(a, actor))) return fail(403, 'You have already approved this proposal.');
   soFar.push({ id: actor.id, username: actor.username });
   const needed = rule?.approvers ?? 1;
   if (soFar.length < needed) {
@@ -233,7 +241,8 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
   const finalize = () => {
     rec.user.label = label; delete rec.pending.label;
     const mcc = rec.result.scenario.profile.mcc;
-    recordLabelEvents(id, mcc, rec.result.evidence, label, actor.id, input.origin);
+    recordLabelEvents(rec.result.scenario.profile.id, mcc, rec.result.evidence, label, actor.id, input.origin);
+    // These are candidate rates. They change scoring only through an approved calibration proposal.
     const events = getAllLabelEvents();
     const bayesianUpdates = rec.result.evidence
       .filter(e => e.status !== 'UNKNOWN')
@@ -247,11 +256,13 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
         };
       });
     rec.learning = {
-      updates: bayesianUpdates.length ? bayesianUpdates : reliabilityUpdates(rec.result.evidence, label),
+      updates: bayesianUpdates,
       profile: profileUpdates(rec.result, label),
     };
   };
-  if (label !== 'CONFIRMED_ILLICIT') {
+  // Confirming a front and clearing an opened case are both two-person decisions.
+  const twoPeople = label === 'CONFIRMED_ILLICIT' || (label === 'ADJUDICATED_BENIGN' && rec.result.fusion.decision === 'OPEN_CASE');
+  if (!twoPeople) {
     if (!can(actor, wf().approvals.actions.labelBenign ?? [])) return fail(403, 'Your role cannot label cases.');
     finalize(); putCase(rec);
     appendAudit(id, [{ action: `Label ${label}`, detail: rec.learning?.profile[0] ?? '' }], actor);
@@ -262,14 +273,15 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
     if (!can(actor, [...(wf().approvals.actions.labelBenign ?? []), ...wf().approvals.confirmedIllicit.confirmRoles])) return fail(403, 'Your role cannot propose this label.');
     rec.pending.label = { label, by: { id: actor.id, username: actor.username }, at: new Date().toISOString() };
     putCase(rec);
-    appendAudit(id, [{ action: 'CONFIRMED_ILLICIT proposed', detail: 'Needs confirmation by a second reviewer.' }], actor);
+    appendAudit(id, [{ action: `${label} proposed`, detail: 'Needs confirmation by a second reviewer.' }], actor);
     return view(getCase(id)!);
   }
-  if (rec.pending.label.by.id === actor.id) return fail(403, 'A second, different reviewer must confirm CONFIRMED_ILLICIT.');
-  if (!can(actor, wf().approvals.confirmedIllicit.confirmRoles)) return fail(403, 'Only a reviewer, admin or legal user can confirm CONFIRMED_ILLICIT.');
+  if (rec.pending.label.label !== label) return fail(409, `${rec.pending.label.label} is waiting for confirmation. A different label cannot be confirmed in its place.`);
+  if (samePerson(rec.pending.label.by, actor)) return fail(403, `A second, different reviewer must confirm ${label}.`);
+  if (!can(actor, wf().approvals.confirmedIllicit.confirmRoles)) return fail(403, `Only a reviewer, admin or legal user can confirm ${label}.`);
   const first = rec.pending.label.by.username;
   finalize(); putCase(rec);
-  appendAudit(id, [{ action: 'Label CONFIRMED_ILLICIT', detail: `Proposed by ${first}, confirmed by ${actor.username}. ${rec.learning?.profile[0] ?? ''}` }], actor);
+  appendAudit(id, [{ action: `Label ${label}`, detail: `Proposed by ${first}, confirmed by ${actor.username}. ${rec.learning?.profile[0] ?? ''}` }], actor);
   void emit('case.labelled', id, { label });
   return view(getCase(id)!);
 }

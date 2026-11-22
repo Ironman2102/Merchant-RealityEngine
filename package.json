@@ -19,7 +19,10 @@
     "lint:noscript": "! grep -rnE \"(scenario|sc)\\.id ===\" frontend/src",
     "user:add": "tsx scripts/user-add.ts",
     "dev:users": "tsx scripts/dev-users.ts",
-    "mre": "tsx cli/mre.ts"
+    "mre": "tsx cli/mre.ts",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "train": "tsx scripts/train-model.ts",
+    "redteam": "tsx scripts/redteam.ts"
   },
   "dependencies": {
     "@stdlib/math-base-special-betainc": "^0.2.3",
@@ -49,5 +52,8 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.5"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }

@@ -18,12 +18,15 @@ import { ksOneSample } from '../stats/tests';
 import { wilson } from '../stats/intervals';
 import { bocpdRecentChange } from '../stats/changepoint';
 import { rng, seedOf, shuffle } from '../stats/rng';
+import { passportCover, type Axis } from './passport';
 
 export interface Ctx {
   sc: Scenario; p: MerchantProfile; norm: MccNorm; all: PaymentEvent[];
   sales: PaymentEvent[]; refunds: PaymentEvent[]; settlements: PaymentEvent[]; transfers: PaymentEvent[];
   rows: WeeklyRow[]; cusum: CusumPoint[]; cohort: CohortMatch[]; vol: VolumeModel;
+  scope: ScopeKind; covered: (e: PaymentEvent, axis: Axis) => boolean;
 }
+export type ScopeKind = 'account' | 'link' | 'repeat-payers';
 interface Def { id: string; run: (c: Ctx) => Obs }
 
 const ids = (xs: PaymentEvent[]) => xs.map(e => e.id);
@@ -36,6 +39,22 @@ const unknown = (why: string, expected = '—', expectedSource = '—'): Obs => 
 export const outsideHours = (h: number, [open, close]: [number, number] | number[]) => open < close ? h < open || h >= close : h < open && h >= close;
 const isRound = (a: number) => a >= RULES.amounts.roundMin && a % RULES.amounts.roundStep === 0;
 const homeAndNeighbours = (p: MerchantProfile) => { const home = p.localStates[0]; return home ? new Set([home, ...RULES.neighbours(home)]) : null; };
+const isRemote = (e: PaymentEvent, local: Set<string>) => !!e.payerState && e.payerState !== '—' && e.payerState !== 'UNKNOWN' && !local.has(e.payerState);
+const hasPayer = (e: PaymentEvent) => !!e.payerHash && e.payerHash !== '—';
+
+/** Payments by a payer who made at least `conduct.minPayments` of them inside some `conduct.windowDays` window. */
+export function regulars(xs: PaymentEvent[]): PaymentEvent[] {
+  const { windowDays, minPayments } = RULES.engine.conduct, by = new Map<string, PaymentEvent[]>(), keep = new Set<PaymentEvent>();
+  for (const e of xs) if (hasPayer(e)) { const list = by.get(e.payerHash); if (list) list.push(e); else by.set(e.payerHash, [e]); }
+  by.forEach(list => {
+    list.sort((a, b) => a.eventTime - b.eventTime);
+    for (let i = minPayments - 1; i < list.length; i++) {
+      if (list[i].eventTime - list[i - minPayments + 1].eventTime <= windowDays * 86400000) { list.forEach(e => keep.add(e)); break; }
+    }
+  });
+  return xs.filter(e => keep.has(e));
+}
+
 const normSrc = (c: Ctx) => `Category norm for MCC ${c.p.mcc} (${c.norm.name}), rules/mcc.json`;
 
 /** Rate test against the category norm with empirical-Bayes beta-binomial (prior strength 200 merchant-sales). */
@@ -54,21 +73,24 @@ function matchWindows(c: Ctx) {
 
 export const DETECTORS: Def[] = [
   { id: 'A1', run: c => {
-    const n = c.sales.length, t = ksOneSample(c.sales.map(s => s.amount), x => lognormalCdf(x, c.norm.ticket.median, c.norm.ticket.sigma));
-    const sorted = c.sales.map(s => s.amount).sort((a, b) => a - b), med = sorted[Math.floor(n / 2)] ?? 0;
+    const xs = c.sales.filter(e => !c.covered(e, 'amount')), n = xs.length;
+    if (!n) return unknown('A verified Context Passport covers these payments.');
+    const sorted = xs.map(s => s.amount).sort((a, b) => a - b), med = sorted[Math.floor(n / 2)];
+    const { low, high } = RULES.engine.ticketShift, centre = Math.min(c.norm.ticket.median * high, Math.max(c.norm.ticket.median * low, med));
+    const t = ksOneSample(sorted, x => lognormalCdf(x, centre, c.norm.ticket.sigma));
     return { p: t.p, effect: t.statistic, n, effectLabel: 'KS distance D', ci: null, expectedSource: normSrc(c),
       observed: `Median ticket ${inr(med)}; distribution distance D = ${t.statistic.toFixed(2)}`, expected: `Median about ${inr(c.norm.ticket.median)}, spread like the category`,
       explanation: 'Compares the whole ticket-size distribution with what this kind of business normally takes.', metrics: { D: t.statistic.toFixed(3), p: t.p.toExponential(2), median: inr(med) } };
   } },
   { id: 'A4', run: c => {
-    const r = c.sales.filter(e => isRound(e.amount)), n = c.sales.length, t = rateTest(r.length, n, c.norm.roundShare);
+    const xs = c.sales.filter(e => !c.covered(e, 'amount')), r = xs.filter(e => isRound(e.amount)), n = xs.length, t = rateTest(r.length, n, c.norm.roundShare);
     return { ...t, n, effectLabel: 'excess share at ₹500 multiples', expectedSource: normSrc(c), records: ids(r),
       observed: `${pct(share(r.length, n))} of tickets at round ₹500 multiples (${r.length} of ${n})`, expected: `about ${pct(c.norm.roundShare)}`,
       explanation: 'Real baskets rarely land on round values. Heaping suggests amounts chosen by a payer, not built from products.', metrics: { round: r.length, share: pct(share(r.length, n), 1), p: t.p.toExponential(2) } };
   } },
   { id: 'A5', run: c => {
     const tiers = new Set(RULES.amounts.bonusTiers), catalogue = new Set(c.sc.web.catalogue.map(i => Math.round(i.price)));
-    const hit = c.sales.filter(e => tiers.has(e.amount) && !catalogue.has(e.amount)), n = c.sales.length, t = rateTest(hit.length, n, c.norm.bonusShare);
+    const xs = c.sales.filter(e => !c.covered(e, 'amount')), hit = xs.filter(e => tiers.has(e.amount) && !catalogue.has(e.amount)), n = xs.length, t = rateTest(hit.length, n, c.norm.bonusShare);
     return { ...t, n, effectLabel: 'excess share at deposit/bonus-tier amounts', expectedSource: `${normSrc(c)}; tiers in rules/amounts.json`, records: ids(hit),
       observed: `${pct(share(hit.length, n))} of tickets at deposit-tier amounts not in the catalogue`, expected: `about ${pct(c.norm.bonusShare)}`,
       explanation: 'Amounts like ₹199, ₹999, ₹1,999 that are not catalogue prices match betting deposit tiers.', metrics: { tier: hit.length, p: t.p.toExponential(2) } };
@@ -77,13 +99,14 @@ export const DETECTORS: Def[] = [
     if (c.norm.catchment === 'NATIONAL') return unknown('This category sells nationally, so payer geography is not informative.', 'National catchment', normSrc(c));
     const local = homeAndNeighbours(c.p);
     if (!local) return unknown('No home state on the merchant record.');
-    const known = c.sales.filter(e => e.payerState && e.payerState !== '—'), off = known.filter(e => !local.has(e.payerState)), t = rateTest(off.length, known.length, c.norm.offAreaShare);
+    const known = c.sales.filter(e => e.payerState && e.payerState !== '—' && e.payerState !== 'UNKNOWN' && !c.covered(e, 'area')), off = known.filter(e => !local.has(e.payerState)), t = rateTest(off.length, known.length, c.norm.offAreaShare);
     return { ...t, n: known.length, effectLabel: 'excess out-of-area share', expectedSource: `${normSrc(c)}; neighbouring states count as local (rules/states.json)`, records: ids(off),
       observed: `${pct(share(off.length, known.length))} of payers from outside ${[...local].slice(0, 1)} and its neighbours (${new Set(off.map(e => e.payerState)).size} states)`,
       expected: `about ${pct(c.norm.offAreaShare)}`, explanation: 'A neighbourhood business receiving many payments from far away is off-profile.',
       metrics: { outOfArea: off.length, states: new Set(off.map(e => e.payerState)).size, p: t.p.toExponential(2) } };
   } },
   { id: 'B7', run: c => {
+    if (c.scope === 'repeat-payers') return unknown('This stream is made of repeat payers, so their repetition is not evidence.');
     const per = new Map<string, number>(), wk = (e: PaymentEvent) => `${e.payerHash}|${Math.floor(e.eventTime / (7 * 86400000))}`;
     const known = c.sales.filter(e => e.payerHash && e.payerHash !== '—');
     known.forEach(e => per.set(wk(e), (per.get(wk(e)) ?? 0) + 1));
@@ -91,6 +114,25 @@ export const DETECTORS: Def[] = [
     return { ...t, n: known.length, effectLabel: 'excess share from heavy repeat payers', expectedSource: normSrc(c), records: ids(heavy),
       observed: `${pct(share(heavy.length, known.length))} of sales from payers paying ${RULES.engine.heavyRepeatPerWeek}+ times in a week`, expected: `about ${pct(c.norm.heavyRepeatShare)}`,
       explanation: 'Betting depositors top up again and again within days; regular customers of most shops do not.', metrics: { heavySales: heavy.length, p: t.p.toExponential(2) } };
+  } },
+  { id: 'B8', run: c => {
+    const K = RULES.engine.conduct, known = c.sales.filter(hasPayer);
+    if (!known.length) return unknown('No payer identifiers.');
+    if (c.scope === 'repeat-payers' && (!RULES.knowsCategory(c.p.mcc) || c.norm.roundShare > RULES.engine.streams.repeatCohortMaxRoundNorm)) return unknown('Regulars of this category often pay round amounts, so this stream cannot test it.');
+    const hit = regulars(known.filter(e => e.amount >= K.depositMin && e.amount % K.depositStep === 0)), t = rateTest(hit.length, known.length, K.depositNorm);
+    return { ...t, n: known.length, effectLabel: 'excess share of repeat deposit-like payments', expectedSource: 'Category-free: the declared category cannot relax this test', records: ids(hit),
+      observed: `${pct(share(hit.length, known.length))} of sales are round top-ups from payers who keep coming back (${new Set(hit.map(e => e.payerHash)).size} payers)`, expected: `about ${pct(K.depositNorm)}`,
+      explanation: 'The same people paying round sums again and again is how wallets are topped up, whatever the merchant says it sells.', metrics: { repeatDeposits: hit.length, p: t.p.toExponential(2) } };
+  } },
+  { id: 'B10', run: c => {
+    const local = homeAndNeighbours(c.p);
+    if (!local) return unknown('No home state on the merchant record.');
+    const known = c.sales.filter(e => hasPayer(e) && !!e.payerState && e.payerState !== '—' && e.payerState !== 'UNKNOWN');
+    if (!known.length) return unknown('No payer locations. A UPI ID does not carry one.');
+    const hit = regulars(known.filter(e => isRemote(e, local))), t = rateTest(hit.length, known.length, RULES.engine.conduct.remoteNorm);
+    return { ...t, n: known.length, effectLabel: 'excess share from distant regulars', expectedSource: 'Category-free: the declared category cannot relax this test', records: ids(hit),
+      observed: `${pct(share(hit.length, known.length))} of sales come from distant payers who pay repeatedly`, expected: `about ${pct(RULES.engine.conduct.remoteNorm)}`,
+      explanation: 'Visitors and delivery customers come from far away. People far away who pay every few days are a different thing.', metrics: { distantRegularSales: hit.length, p: t.p.toExponential(2) } };
   } },
   { id: 'B9', run: c => {
     const v = c.sc.verification; if (!v || !v.contacted) return unknown('No purchaser verification sample.');
@@ -100,7 +142,9 @@ export const DETECTORS: Def[] = [
       explanation: 'Independently contacted payers either recognise their purchase or they do not. This is hard to fake.', metrics: { contacted: v.contacted, confirmed: v.confirmed, p: p.toExponential(2) } };
   } },
   { id: 'C2', run: c => {
-    const off = c.sales.filter(e => outsideHours(istHour(e.eventTime), [c.norm.open, c.norm.close])), n = c.sales.length, t = rateTest(off.length, n, c.norm.offHoursShare);
+    if (c.norm.open === 0 && c.norm.close === 24) return unknown('This category trades around the clock, so hours are not informative.');
+    const xs = c.sales.filter(e => !c.covered(e, 'hours'));
+    const off = xs.filter(e => outsideHours(istHour(e.eventTime), [c.norm.open, c.norm.close])), n = xs.length, t = rateTest(off.length, n, c.norm.offHoursShare);
     return { ...t, n, effectLabel: 'excess off-hours share', expectedSource: `${normSrc(c)} (${c.norm.open}:00–${c.norm.close}:00)`, records: ids(off),
       observed: `${pct(share(off.length, n))} of sales outside ${c.norm.open}:00–${c.norm.close}:00`, expected: `about ${pct(c.norm.offHoursShare)}`,
       explanation: 'Collections arriving when this kind of business is normally closed.', metrics: { offHours: off.length, p: t.p.toExponential(2) } };
@@ -122,6 +166,23 @@ export const DETECTORS: Def[] = [
       observed: `${pct(obs)} of match-day sales in the ${PRE} min before a start vs ${pct(ctrl)} on other days (${ratio.toFixed(1)}×)`, expected: 'No difference from other days',
       explanation: 'Funding that clusters just before match starts, compared with the same clock time on days without matches.', metrics: { ratio: ratio.toFixed(2), p: p.toFixed(4), matchDays: k } };
   } },
+  { id: 'C6', run: c => {
+    const K = RULES.engine.conduct, known = c.sales.filter(hasPayer);
+    if (!known.length) return unknown('No payer identifiers.');
+    const by = new Map<string, PaymentEvent[]>(), hit = new Set<PaymentEvent>();
+    for (const e of known) if (e.amount >= K.depositMin) { const list = by.get(e.payerHash); if (list) list.push(e); else by.set(e.payerHash, [e]); }
+    by.forEach(list => {
+      list.sort((a, b) => a.eventTime - b.eventTime);
+      for (let i = 0; i + 2 < list.length; i++) {
+        const [a, b, d] = [list[i], list[i + 1], list[i + 2]];
+        if (d.eventTime - a.eventTime <= K.burstHours * 3600000 && b.amount >= a.amount && d.amount >= b.amount && d.amount > a.amount) [a, b, d].forEach(x => hit.add(x));
+      }
+    });
+    const t = rateTest(hit.size, known.length, K.burstNorm, 100);
+    return { ...t, n: known.length, effectLabel: 'excess share inside rising runs', expectedSource: 'Category-free: the declared category cannot relax this test', records: ids([...hit]),
+      observed: `${pct(share(hit.size, known.length))} of sales sit in a same-payer run of rising payments`, expected: `about ${pct(K.burstNorm)}`,
+      explanation: 'Three growing payments by one person within two hours resembles chasing losses.', metrics: { burstSales: hit.size, p: t.p.toExponential(2) } };
+  } },
   { id: 'D7', run: c => {
     if (!c.refunds.length) return unknown('No refunds in the window.');
     const sid = new Set(c.sales.map(s => s.id)), orph = c.refunds.filter(r => !r.linkedSaleId || !sid.has(r.linkedSaleId)), t = rateTest(orph.length, c.refunds.length, 0.02, 50);
@@ -140,12 +201,15 @@ export const DETECTORS: Def[] = [
       explanation: 'Refunds routed to accounts that never paid. Refunds to the payer\'s own other account are not counted.', metrics: { other: bad.length, value: inr(value), p: t.p.toExponential(2) } };
   } },
   { id: 'D10', run: c => {
-    const n = c.sales.length, un = c.sales.filter(s => !s.orderId), p = binomSf(un.length, n, 0.05);
+    const checked = c.sales.filter(s => s.orderId !== undefined); // null = checked, none found; absent = never checked
+    if (!checked.length) return unknown('No payment was checked against an order.');
+    const n = checked.length, un = checked.filter(s => !s.orderId), p = binomSf(un.length, n, 0.05);
     return { p, effect: share(un.length, n) - 0.05, n, effectLabel: 'excess unmatched share', ci: ci90(un.length, n), expectedSource: 'Norm: ≤ 5% of payments lack an order', records: ids(un),
       observed: `${pct(1 - share(un.length, n))} of payments match an order`, expected: '≥ 95% match', explanation: 'Payments with no corresponding order in the merchant\'s order system.', metrics: { unmatched: un.length, p: p.toExponential(2) } };
   } },
   { id: 'E1', run: c => {
-    const mine = c.sc.web.embeds.filter(e => e.merchantId === c.p.id && e.category !== 'own');
+    if (!c.sc.web.embeds.length) return unknown('No crawl results for this merchant\'s links.');
+    const mine = c.sc.web.embeds.filter(e => e.merchantId === c.p.id && e.category !== 'own' && e.category !== 'marketplace');
     if (!mine.length) return { p: null, effect: 0, n: 1, effectLabel: 'peers on shared host', observed: 'No third-party embeds', expected: 'Links on declared domains only', explanation: 'No payment link shared with other parties was found.', expectedSource: 'Crawler snapshot', force: 'BENIGN' };
     const peers = new Set(c.sc.web.embeds.filter(e => e.merchantId !== c.p.id && mine.some(m => m.host === e.host)).map(e => e.merchantId));
     if (!peers.size) return unknown('Third-party embed found but not shared with other merchants.');
@@ -163,6 +227,7 @@ export const DETECTORS: Def[] = [
       explanation: 'Payers, ticket shape and timing carry over from a dormant peer. A lead for review, not proof of common ownership.', metrics: { peer: b.name, sharedPayers: k, p: p.toExponential(2), handoff: b.handoff ? 'yes' : 'no' } };
   } },
   { id: 'F2', run: c => {
+    if (!c.cohort.length) return unknown('No peer accounts were supplied to check for a hand-off.');
     const h = c.cohort.find(x => x.handoff);
     if (c.p.accountAgeDays < 45 && h) return { p: null, effect: 1, n: 1, effectLabel: 'hand-off', observed: `Account ${c.p.accountAgeDays} days old; started ${h.gapDays!.toFixed(1)} days after ${h.name} went dormant`, expected: 'Independent onboarding', force: 'ILLICIT', explanation: 'A new account opens as a similar one stops.', expectedSource: 'Peer lifecycle records', metrics: { ageDays: c.p.accountAgeDays } };
     if (c.p.accountAgeDays >= 365 && !h) return { p: null, effect: 0, n: 1, effectLabel: 'hand-off', observed: `Account ${c.p.accountAgeDays} days old, no hand-off`, expected: 'Independent onboarding', force: 'BENIGN', explanation: 'A long, continuous history is consistent with an ordinary business.', expectedSource: 'Peer lifecycle records' };
@@ -171,6 +236,7 @@ export const DETECTORS: Def[] = [
   { id: 'F5', run: c => {
     const s = [...c.settlements].sort((a, b) => a.eventTime - b.eventTime);
     if (s.length < 3) return unknown('Too few settlements to judge.');
+    if (s.some(x => !x.beneficiaryHash)) return unknown('Settlement beneficiaries are not in this feed.');
     let ch = 0; s.forEach((x, i) => { if (i && x.beneficiaryHash !== s[i - 1].beneficiaryHash) ch++; });
     const years = Math.max((s[s.length - 1].eventTime - s[0].eventTime) / (365 * 86400000), 30 / 365), lam = c.norm.beneficiaryChangesPerYear * years;
     const peerBen = new Set(c.sc.events.filter(e => e.merchantId !== c.p.id && e.type === 'SETTLEMENT').map(e => e.beneficiaryHash)), shared = s.some(x => peerBen.has(x.beneficiaryHash));
@@ -189,6 +255,7 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'F8', run: c => {
     if (!c.settlements.length) return unknown('No settlements.');
+    if (!c.sc.bankCredits.length) return unknown('No bank credits to reconcile against.');
     const bc = c.sc.bankCredits, un = c.settlements.filter(s => !bc.some(b => Math.abs(b.amount - s.amount) <= 1 && b.beneficiaryHash === s.beneficiaryHash)), n = c.settlements.length, p = binomSf(un.length, n, 0.02);
     return { p, effect: share(un.length, n) - 0.02, n, effectLabel: 'excess unmatched share', ci: ci90(un.length, n), expectedSource: 'Norm: ≤ 2% of settlements missing from bank credits', records: ids(un),
       observed: `${pct(1 - share(un.length, n))} of settlements match a bank credit`, expected: '≥ 98% match', explanation: 'Settlements that do not reconcile with the bank\'s credits.', metrics: { unmatched: un.length, p: p.toExponential(2) } };
@@ -204,12 +271,15 @@ export const DETECTORS: Def[] = [
     const known = new Set(RULES.hosts.known.map(h => h.host)), ext = mine.filter(e => !c.p.declaredDomains.includes(e.host)), bet = ext.filter(e => e.category === 'gambling' || known.has(e.host));
     const place = (e: { host: string; path?: string; pageType?: string }) => `${e.host ?? ''}${e.path ?? ''}${e.pageType ? ` (${e.pageType})` : ''}`;
     if (bet.length) return { p: null, effect: 1.25, n: mine.length, effectLabel: 'betting-host embed', force: 'ILLICIT', observed: `Link ${bet[0].linkId} embedded on ${place(bet[0])}`, expected: 'Links only on declared domains', explanation: 'A merchant payment link on an undeclared betting deposit page.', expectedSource: 'Crawler snapshot + rules/hosts.json', records: embedIds(bet), metrics: { host: bet[0].host } };
+    if (ext.length && ext.every(e => e.category === 'marketplace')) return unknown('The link is on a marketplace page. Ask the merchant to declare it.');
     if (ext.length) return { p: null, effect: 0.6, n: mine.length, effectLabel: 'undeclared embed', force: 'ILLICIT', observed: `Link ${ext[0].linkId} embedded on undeclared ${place(ext[0])}`, expected: 'Links only on declared domains', explanation: 'A payment link used on a page unrelated to the declared business.', expectedSource: 'Crawler snapshot', records: embedIds(ext) };
     return { p: null, effect: 0, n: mine.length, effectLabel: 'undeclared embed', force: 'BENIGN', observed: `All ${mine.length} embed(s) on declared domains`, expected: 'Links only on declared domains', explanation: 'Checkout provenance matches the declared website.', expectedSource: 'Crawler snapshot' };
   } },
   { id: 'H1', run: c => {
     const k = RULES.engine.volume.recentWeeks, zs = c.vol.z.slice(-k).filter((v): v is number => v !== null);
     if (c.rows.length < RULES.engine.volume.minWeeks || !zs.length) return unknown('Too little weekly history.');
+    if (!c.vol.fitted) return unknown(c.vol.note);
+    if (c.sc.weeklyReconciled === false) return unknown('Weekly totals do not reconcile with the ledger, so volume cannot be judged.');
     const Z = zs.reduce((s, v) => s + v, 0) / Math.sqrt(zs.length), p = normalSf(Z), recent = c.rows.slice(-k).filter(r => r.actual !== null);
     const ratio = recent.reduce((s, r) => s + r.actual! / r.seasonal, 0) / Math.max(recent.length, 1);
     return { p, effect: ratio, n: c.rows.length, effectLabel: 'actual ÷ expected (last 4 weeks)', ci: null, expectedSource: c.vol.note,
@@ -219,6 +289,7 @@ export const DETECTORS: Def[] = [
   { id: 'H2', run: c => {
     const zs = c.vol.z.filter((v): v is number => v !== null);
     if (zs.length < 8) return unknown('Too little weekly history for change detection.');
+    if (!c.vol.fitted || c.sc.weeklyReconciled === false) return unknown('No reliable weekly baseline to detect a change against.');
     const pc = bocpdRecentChange(zs), alarm = c.cusum.slice(-RULES.engine.volume.recentWeeks).some(x => x.alarm);
     const force = pc >= 0.7 && alarm ? 'ILLICIT' as const : pc < 0.2 && !alarm ? 'BENIGN' as const : 'UNKNOWN' as const;
     return { p: null, effect: pc, n: zs.length, effectLabel: 'P(change in last 4 weeks)', ci: null, expectedSource: 'Standardised volume residuals; CUSUM h set for one false alarm per merchant-year', force,
@@ -227,34 +298,43 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'H3', run: c => {
     const { fixDays, inWin } = matchWindows(c), local = c.norm.catchment === 'LOCAL' ? homeAndNeighbours(c.p) : null;
-    const traits = (e: PaymentEvent) => [isRound(e.amount), local ? !!e.payerState && e.payerState !== '—' && !local.has(e.payerState) : false,
-      outsideHours(istHour(e.eventTime), [c.norm.open, c.norm.close]) || (fixDays.has(istDayKey(e.eventTime)) && inWin(istMinuteOfDay(e.eventTime)))].filter(Boolean).length;
-    const joint = c.sales.filter(e => traits(e) >= 2), n = c.sales.length, t = rateTest(joint.length, n, 0.01, 100);
-    return { ...t, n, effectLabel: 'excess share with ≥ 2 off-profile traits', expectedSource: 'Norm: about 1% of sales combine two off-profile traits', records: ids(joint),
-      observed: `${joint.length} sales (${pct(share(joint.length, n))}) combine ≥ 2 off-profile traits`, expected: 'About 1%',
+    const traitsOf = (e: PaymentEvent) => [
+      isRound(e.amount) && !c.covered(e, 'amount'),
+      !!local && isRemote(e, local) && !c.covered(e, 'area'),
+      !c.covered(e, 'hours') && (outsideHours(istHour(e.eventTime), [c.norm.open, c.norm.close]) || (fixDays.has(istDayKey(e.eventTime)) && inWin(istMinuteOfDay(e.eventTime)))),
+    ];
+    const rows = c.sales.map(traitsOf), n = rows.length, joint = c.sales.filter((_, i) => rows[i].filter(Boolean).length >= 2);
+    // Expected co-occurrence if the three traits were independent: this test may not re-count the traits themselves.
+    const [a, b, d] = [0, 1, 2].map(i => share(rows.filter(r => r[i]).length, n));
+    const expected = Math.min(0.99, Math.max(0.01, a * b + a * d + b * d - 2 * a * b * d)), t = rateTest(joint.length, n, expected, 100);
+    return { ...t, n, effectLabel: 'excess share with ≥ 2 off-profile traits', expectedSource: 'What each trait\'s own rate predicts if they were unrelated', records: ids(joint),
+      observed: `${joint.length} sales (${pct(share(joint.length, n))}) combine ≥ 2 off-profile traits`, expected: `about ${pct(expected)} if unrelated`,
       explanation: 'Round amount, out-of-area payer and odd timing co-occurring in the same payments: a separate population hidden inside the merchant.', metrics: { joint: joint.length, value: inr(joint.reduce((s, e) => s + e.amount, 0)), p: t.p.toExponential(2) } };
   } },
   { id: 'I2', run: c => {
-    if (!c.transfers.length) return { p: null, effect: 0, n: 1, effectLabel: 'payout beneficiaries ÷ norm', observed: 'No onward payouts', expected: 'Few third-party payouts', explanation: 'No onward payouts to third parties.', expectedSource: normSrc(c), force: 'BENIGN' };
+    if (!c.transfers.length) return unknown('No payout records. A PA usually cannot see what happens after settlement, so this is not evidence of innocence.');
     const b = new Set(c.transfers.map(t => t.beneficiaryHash)).size, p = poissonSf(b, c.norm.payoutBeneficiaries);
     return { p, effect: b / c.norm.payoutBeneficiaries, n: c.transfers.length, effectLabel: 'payout beneficiaries ÷ norm', ci: null, expectedSource: `${normSrc(c)}: ~${c.norm.payoutBeneficiaries} beneficiaries`, records: ids(c.transfers),
       observed: `${c.transfers.length} payouts to ${b} distinct beneficiaries`, expected: `about ${c.norm.payoutBeneficiaries}`, explanation: 'Funds fanning out to many third parties does not fit this category\'s cost structure.', metrics: { beneficiaries: b, value: inr(c.transfers.reduce((s, t) => s + t.amount, 0)), p: p.toExponential(2) } };
   } },
   { id: 'I3', run: c => {
     if (c.settlements.length < 3) return unknown('Too few settlements.');
+    if (!c.transfers.length) return unknown('No payout records, so sweeping cannot be seen either way.');
     const W = RULES.engine.sweepHours * 3600000, swept = c.settlements.filter(s => c.transfers.some(t => t.eventTime >= s.eventTime && t.eventTime - s.eventTime <= W)), n = c.settlements.length, p = binomSf(swept.length, n, 0.1);
     return { p, effect: share(swept.length, n) - 0.1, n, effectLabel: 'excess share swept within 24 h', ci: ci90(swept.length, n), expectedSource: 'Norm: ≤ 10% of settlements followed by an onward payout within 24 h', records: ids(swept),
       observed: `${swept.length} of ${n} settlements followed by an onward payout within ${RULES.engine.sweepHours} h`, expected: 'About 10%', explanation: 'Money passing straight through the merchant account.', metrics: { swept: swept.length, p: p.toExponential(2) } };
   } },
   { id: 'K1', run: c => {
     const n = c.norm, p = c.p, gaps: [string, number][] = [];
-    if (p.catchment === 'NATIONAL' && n.catchment === 'LOCAL') gaps.push(['declares national catchment', 3]);
+    const declared = (k: NonNullable<MerchantProfile['undeclared']>[number]) => !p.undeclared?.includes(k);
+    if ((['catchment', 'hours', 'ticketMax', 'expectedRoundShare'] as const).every(k => !declared(k))) return unknown('The merchant record declares no profile to compare.');
+    if (declared('catchment') && p.catchment === 'NATIONAL' && n.catchment === 'LOCAL') gaps.push(['declares national catchment', 3]);
     const w = (h: number[]) => ((h[1] - h[0]) + 24) % 24 || 24, dw = (w(p.hours) - w([n.open, n.close])) / 3;
-    if (dw > 0) gaps.push([`declares ${w(p.hours)} trading hours vs ${w([n.open, n.close])}`, dw]);
+    if (declared('hours') && dw > 0) gaps.push([`declares ${w(p.hours)} trading hours vs ${w([n.open, n.close])}`, dw]);
     const p95 = n.ticket.median * Math.exp(1.645 * n.ticket.sigma), dt = Math.log(p.ticketMax / p95) / 0.5;
-    if (dt > 0) gaps.push([`declares tickets up to ${inr(p.ticketMax)} vs ~${inr(p95)}`, dt]);
+    if (declared('ticketMax') && dt > 0) gaps.push([`declares tickets up to ${inr(p.ticketMax)} vs ~${inr(p95)}`, dt]);
     const dr = ((p.expectedRoundShare ?? n.roundShare) - n.roundShare) / 0.05;
-    if (dr > 0) gaps.push([`declares ${pct(p.expectedRoundShare)} round amounts vs ${pct(n.roundShare)}`, dr]);
+    if (declared('expectedRoundShare') && dr > 0) gaps.push([`declares ${pct(p.expectedRoundShare)} round amounts vs ${pct(n.roundShare)}`, dr]);
     const chi = gaps.reduce((s, [, g]) => s + g * g, 0), pv = chi2Sf(chi, 4), d = Math.sqrt(chi);
     return { p: pv, effect: d, n: 1, effectLabel: 'standardised distance from the norm', ci: null, expectedSource: normSrc(c), force: d === 0 ? 'BENIGN' : undefined,
       observed: gaps.length ? gaps.map(g => g[0]).join('; ') : 'Declared profile matches the category norm', expected: 'Declared profile close to the category norm',
@@ -263,19 +343,35 @@ export const DETECTORS: Def[] = [
 ];
 
 export function runDetectors(c: Ctx): EvidenceItem[] {
-  return DETECTORS.map(d => {
+  const known = RULES.knowsCategory(c.p.mcc);
+  const items = DETECTORS.map((d): EvidenceItem => {
     const cfg = RULES.detector(d.id), req = cfg.requires as CoverageKey[];
     const miss = req.filter(k => c.sc.coverage[k] === 'MISSING'), part = req.some(k => c.sc.coverage[k] === 'PARTIAL');
     const o: Obs = miss.length
       ? { ...unknown(`Required source (${miss.join(', ')}) is missing. Missing data is UNKNOWN: it does not move the score either way.`), observed: 'Source not available' }
+      : cfg.level === 'merchant' && c.scope !== 'account' ? unknown('Measured on the whole account, not on a single payment stream.')
+      : cfg.categoryNorm && !known ? unknown(`MCC ${c.p.mcc} has no category norm. The engine abstains instead of guessing what is normal.`)
       : d.run(c);
-    const j = judge(cfg, o), llr = part ? j.llr * 0.7 : j.llr, fire = Math.log(cfg.sensitivity / cfg.falsePositive);
+    const j = judge(cfg, o);
+    let llr = part ? j.llr * 0.7 : j.llr;
+    // Looking normal for a category the merchant chose for itself earns little credit.
+    if (j.status === 'BENIGN' && cfg.categoryNorm) llr *= RULES.engine.declaredCalmWeight;
+    const fire = Math.log(cfg.sensitivity / cfg.falsePositive);
     return {
       id: d.id, name: cfg.name, family: cfg.family as Family, status: j.status, strength: Math.min(1, Math.abs(llr) / fire),
       reliability: part ? 0.7 : 1, fakeDifficulty: cfg.fakeDifficulty, lineage: cfg.lineage, system: cfg.provenance, requires: req,
       affinity: { ROTATION: cfg.affinity[0], TRANSACTION_LAUNDERING: cfg.affinity[1], FABRICATED_SUBSTANCE: cfg.affinity[2], OTHER_ABUSE: cfg.affinity[3] } as Record<Mechanism, number>,
       observed: o.observed, expected: o.expected, explanation: o.explanation, metrics: o.metrics ?? {}, records: (o.records ?? []).slice(0, 40),
-      llr, provenance: cfg.provenance as Provenance, test: cfg.test, p: o.p, effect: o.effect, effectLabel: o.effectLabel, ci: o.ci ?? null, n: o.n, expectedSource: o.expectedSource,
+      llr, signal: cfg.class, derived: !!cfg.derivedFrom,
+      provenance: cfg.provenance as Provenance, test: cfg.test, p: o.p, effect: o.effect, effectLabel: o.effectLabel, ci: o.ci ?? null, n: o.n, expectedSource: o.expectedSource,
     };
   });
+  // A signal built from other signals keeps only its within-family share when those already fired.
+  for (const e of items) {
+    // A local crowd before a match is custom. Distant money timed to matches is conduct.
+    if (e.status === 'ILLICIT' && RULES.detector(e.id).conductWith?.some(id => items.some(x => x.id === id && x.status === 'ILLICIT'))) e.signal = 'conduct';
+    const parents = RULES.detector(e.id).derivedFrom;
+    if (e.llr > 0 && parents?.some(id => items.some(x => x.id === id && x.status === 'ILLICIT'))) e.llr *= RULES.engine.familyRho;
+  }
+  return items;
 }

@@ -9,7 +9,9 @@
  * export the sample files.
  */
 import type { Channel, EventType, PaymentEvent } from '../types/payment';
-import type { CoverageKey, CoverageState, EmbedRecord, CatalogueItem, GraphSpec, MerchantProfile, OrderRecord, PeerInfo, Scenario, Sighting, WeeklyPoint } from '../types/merchant';
+import type { CoverageKey, CoverageState, EmbedRecord, CatalogueItem, GraphSpec, MerchantProfile, OrderRecord, PeerInfo, Scenario, Sighting, WeeklyPoint, ContextPassport } from '../types/merchant';
+import { RULES } from '../../../rules/index';
+import { passportErrors } from '../engines/passport';
 import { hashId } from '../utils/hash';
 
 export const DATASET_FORMAT = 'mre-dataset/v1';
@@ -50,6 +52,8 @@ export interface MreDataset {
   purchaserVerification?: { contacted: number; confirmed: number } | null;
   businessFootprint?: { supplierPaymentsMonthly: number; gstTurnoverMonthly: number } | null;
   externalSightings?: Sighting[];
+  /** Uploads can only submit these. Verification happens on the server, by a second person. */
+  contextPassports?: ContextPassport[];
   graph?: GraphSpec;
 }
 
@@ -98,6 +102,7 @@ export function scenarioToDataset(sc: Scenario, extra?: { title?: string; descri
     purchaserVerification: sc.verification,
     businessFootprint: sc.footprint ?? null,
     externalSightings: sc.sightings ?? [],
+    ...(sc.passports?.length ? { contextPassports: sc.passports } : {}),
     graph: sc.graph,
   };
 }
@@ -125,14 +130,14 @@ const STATES: CoverageState[] = ['AVAILABLE', 'PARTIAL', 'MISSING'];
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const isStr = (x: unknown): x is string => typeof x === 'string' && x.length > 0;
 const strArr = (x: unknown) => Array.isArray(x) && x.every(isStr);
-const MAX_AMOUNT = 1_000_000;
+const { maxPaymentRupees, maxSettlementRupees } = RULES.engine.limits;
 
 function defaultSource(t: DatasetTransaction): string {
   return t.type === 'SETTLEMENT' ? 'settlement.ledger' : t.type === 'TRANSFER' ? 'payout.ledger' : t.type === 'REFUND' || t.type === 'CHARGEBACK' ? 'acquirer.refund' : 'acquirer.upi';
 }
 
 /** Minimal evidence graph for datasets that do not supply one. */
-function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedRecord[], peers: PeerInfo[]): GraphSpec {
+export function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedRecord[], peers: PeerInfo[]): GraphSpec {
   const nodes: GraphSpec['nodes'] = [{ id: 'm1', type: 'merchant', label: p.name, sub: `MCC ${p.mcc} · ${p.city.split(',')[0]}` }];
   const edges: GraphSpec['edges'] = [];
   let k = 0; const edge = (source: string, target: string, type: GraphSpec['edges'][number]['type'], label: string, evidence: string[] = []) => edges.push({ id: `a${++k}`, source, target, type, label, evidence });
@@ -147,6 +152,20 @@ function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedReco
   ben.forEach((b, i) => { nodes.push({ id: `b${i}`, type: 'beneficiary', label: `Beneficiary ${i + 1}`, sub: b }); edge('m1', `b${i}`, 'SETTLEMENT_RELATIONSHIP', 'settles to', ben.length > 1 ? ['F5'] : []); });
   peers.forEach((q, i) => { nodes.push({ id: `q${i}`, type: 'peer', label: q.name, sub: `${q.status.toLowerCase()} · ${q.accountAgeDays} days` }); edge('m1', `q${i}`, 'BEHAVIOURAL_SIMILARITY', 'cohort peer', ['E3']); });
   return { nodes, edges };
+}
+
+/**
+ * Do the last two weekly totals agree with the last 14 days of ledger? undefined = too little ledger to tell.
+ * Settlement and refund timestamps do not stretch the window; only sales count.
+ */
+function reconcile(own: PaymentEvent[], weekly: WeeklyPoint[]): boolean | undefined {
+  const { days, tolerance } = RULES.engine.reconcile, sales = own.filter(e => e.type === 'SALE');
+  const totals = weekly.slice(-days / 7).map(w => w.actual);
+  if (!sales.length || totals.length < days / 7 || totals.some(v => v === null)) return undefined;
+  const first = sales[0].eventTime, end = sales[sales.length - 1].eventTime, DAY = 86400000;
+  if (end - first < (days - 1.5) * DAY) return undefined;
+  const ledger = sales.reduce((s, e) => (e.eventTime > end - days * DAY ? s + e.amount : s), 0), stated = totals.reduce<number>((s, v) => s + (v ?? 0), 0);
+  return Math.abs(ledger - stated) <= tolerance * Math.max(ledger, stated);
 }
 
 export function datasetToScenario(raw: unknown): ParseResult {
@@ -170,8 +189,11 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (isNum(m.ticketMin) && isNum(m.ticketMax) && !(m.ticketMin >= 0 && m.ticketMin < m.ticketMax)) errors.push('merchant.ticketMin must be at least 0 and below merchant.ticketMax.');
   if (isNum(m.accountAgeDays) && m.accountAgeDays < 0) errors.push('merchant.accountAgeDays cannot be negative.');
   if (isNum(m.baselineWeekly) && m.baselineWeekly <= 0) errors.push('merchant.baselineWeekly must be above 0.');
+  const undeclared = new Set(Array.isArray(m.undeclared) ? m.undeclared : []);
+  if (m.catchment === undefined) undeclared.add('catchment');
+  if (m.expectedRoundShare === undefined) undeclared.add('expectedRoundShare');
   const defaults = { products: [], catchment: 'LOCAL', expectedRoundShare: 0.06, seasonalPeak: 1, declaredDomains: [], declaredChannels: [], declaredActivity: [] } as Partial<MerchantProfile>;
-  const profile = { ...defaults, ...m } as MerchantProfile;
+  const profile = { ...defaults, ...m, ...(undeclared.size ? { undeclared: [...undeclared] } : {}) } as MerchantProfile;
 
   // transactions
   if (!Array.isArray(d.transactions) || !d.transactions.length) errors.push('"transactions" must be a non-empty list.');
@@ -188,7 +210,11 @@ export function datasetToScenario(raw: unknown): ParseResult {
     if (!isStr(t.id)) errors.push(`${at}: "id" is required.`); else if (ids.has(t.id)) errors.push(`${at}: duplicate id.`); else ids.add(t.id);
     if (!TYPES.includes(t.type)) errors.push(`${at}: "type" must be one of ${TYPES.join(', ')}.`);
     if (!isNum(t.amount) || t.amount < 0) errors.push(`${at}: "amount" must be a positive number in rupees.`);
-    else if (t.amount > MAX_AMOUNT) errors.push(`${at}: "amount" is above ₹${MAX_AMOUNT.toLocaleString('en-IN')}; check the units (rupees, not paise).`);
+    else {
+      // A settlement or payout is a batch of payments, so it gets a batch-sized limit.
+      const cap = t.type === 'SETTLEMENT' || t.type === 'TRANSFER' ? maxSettlementRupees : maxPaymentRupees;
+      if (t.amount > cap) errors.push(`${at}: "amount" is above ₹${cap.toLocaleString('en-IN')}; check the units (rupees, not paise).`);
+    }
     const channel = normalizeChannel(t.channel);
     if (!channel) errors.push(`${at}: "channel" must be one of ${CHANNELS.join(', ')} (UPI is also accepted as UPI_LINK).`);
     if (!isStr(t.merchantId)) errors.push(`${at}: "merchantId" is required.`);
@@ -249,7 +275,13 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (pv && !(isNum(pv.contacted) && isNum(pv.confirmed) && Number.isInteger(pv.contacted) && Number.isInteger(pv.confirmed) && pv.contacted > 0 && pv.confirmed >= 0 && pv.confirmed <= pv.contacted))
     errors.push('purchaserVerification needs whole numbers with 0 ≤ confirmed ≤ contacted and contacted > 0.');
   if (coverage.calendar === 'AVAILABLE' && !fixtures.length) warnings.push('The match calendar is marked AVAILABLE but has no fixtures; calendar checks will be UNKNOWN.');
+  const passports = Array.isArray(d.contextPassports) ? d.contextPassports : [];
+  passports.forEach((p, i) => passportErrors(p).forEach(e => errors.push(`contextPassports[${i}]: ${e}`)));
+  if (d.contextPassports !== undefined && !Array.isArray(d.contextPassports)) errors.push('contextPassports must be a list.');
   if (errors.length) return { ok: false, errors, warnings };
+  if (!RULES.knowsCategory(profile.mcc)) warnings.push(`MCC ${profile.mcc} has no category norm: category tests will abstain rather than guess. Only category-free tests run.`);
+  const weeklyReconciled = reconcile(own, weekly);
+  if (weeklyReconciled === false) warnings.push('weeklySales does not match the transaction ledger for the last 14 days, so volume evidence (H1, H2) will be UNKNOWN.');
 
   const web = {
     embeds: (d.website?.embeds ?? []).map((e, i) => ({ ...e, id: e.id || `EMB-${String(i + 1).padStart(3, '0')}` })),
@@ -258,6 +290,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
   const peers = d.peers ?? [];
   const sc: Scenario = {
     id: 'custom',
+    passports, weeklyReconciled,
     title: d.title ?? profile.name,
     subtitle: 'Uploaded dataset',
     blurb: d.description ?? `Dataset for ${profile.name}, ${profile.city}.`,

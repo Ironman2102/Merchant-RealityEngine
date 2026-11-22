@@ -12,7 +12,8 @@ import { verifyAudit } from '../backend/src/store';
 import { openInvestigation } from '../backend/src/workflow';
 import { analyze, FEATURE_COLUMNS, features } from '../engine/index';
 import { loadWorkflow, validateWorkflow } from '../engine/workflowConfig';
-import { demoLearn, rollbackRules } from '../scripts/demo-learn';
+import { demoLearn } from '../scripts/demo-learn';
+import { rollbackRulesLive } from '../backend/src/improverApi';
 import { runBatch } from './batch';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -91,11 +92,8 @@ if (cmd === 'batch') {
   });
   child.on('exit', code => process.exit(code ?? 0));
 } else if (cmd === 'demo') {
-  let analyst = { id: 1, username: 'dev-analyst', role: 'analyst' as Role };
-  try { analyst = createUser('dev-analyst', 'dev-analyst-demo-2026', 'analyst'); } catch { /* already exists */ }
-  try { createUser('dev-reviewer', 'dev-reviewer-demo-2026', 'reviewer'); } catch { /* already exists */ }
-  try { createUser('dev-legal', 'dev-legal-demo-2026', 'legal'); } catch { /* already exists */ }
-  try { createUser('dev-admin', 'dev-admin-demo-2026', 'admin'); } catch { /* already exists */ }
+  const { ensureDevUsers } = await import('../scripts/dev-users');
+  const analyst = ensureDevUsers();
   const showcase = [
     'frontend/public/samples/01-sweet-crumbs-betting-front.json',
     'frontend/public/samples/09-telegram-betting-no-website.json',
@@ -112,7 +110,8 @@ if (cmd === 'batch') {
 } else if (cmd === 'demo:learn') {
   process.exit(demoLearn());
 } else if (cmd === 'rollback') {
-  rollbackRules();
+  rollbackRulesLive({ id: 0, username: 'cli-operator', role: 'admin' });
+  console.log('live rules rolled back to the committed base; the step is in the rules audit');
 } else if (cmd === 'verify-audit') {
   const { values } = parseArgs({ args: rest, options: { case: { type: 'string' } }, strict: true });
   if (!values.case) { console.error('mre verify-audit --case <INV-id>'); process.exit(2); }

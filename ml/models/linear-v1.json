@@ -1,0 +1,19 @@
+{
+  "version": "linear-v1",
+  "trainedOn": "engine/synthetic.ts makeSuite(34, 101). Synthetic.",
+  "threshold": 0.5,
+  "intercept": -2.145903,
+  "weights": {
+    "A1": 0,
+    "A4": 0.474632,
+    "A5": 0,
+    "B6": 0.536922,
+    "B7": 0,
+    "B8": 1.129172,
+    "B10": 0.610507,
+    "C2": 0.397313,
+    "C5": 0.00015,
+    "C6": 0,
+    "H3": 0
+  }
+}

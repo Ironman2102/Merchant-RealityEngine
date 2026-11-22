@@ -23,7 +23,7 @@
     "localStates": [],
     "expectedRoundShare": 0.04,
     "seasonalPeak": 1,
-    "baselineWeekly": 150000,
+    "baselineWeekly": 110000,
     "accountAgeDays": 240,
     "declaredDomains": [
       "aaravhome.example"
@@ -39,82 +39,82 @@
   "weeklySales": [
     {
       "week": "W1",
-      "actual": 150457,
+      "actual": 110447,
       "seasonalMultiplier": 1
     },
     {
       "week": "W2",
-      "actual": 152155,
+      "actual": 112108,
       "seasonalMultiplier": 1
     },
     {
       "week": "W3",
-      "actual": 151081,
+      "actual": 111057,
       "seasonalMultiplier": 1
     },
     {
       "week": "W4",
-      "actual": 145648,
+      "actual": 105744,
       "seasonalMultiplier": 1
     },
     {
       "week": "W5",
-      "actual": 149519,
+      "actual": 109529,
       "seasonalMultiplier": 1
     },
     {
       "week": "W6",
-      "actual": 152870,
+      "actual": 112807,
       "seasonalMultiplier": 1
     },
     {
       "week": "W7",
-      "actual": 147894,
+      "actual": 107941,
       "seasonalMultiplier": 1
     },
     {
       "week": "W8",
-      "actual": 150829,
+      "actual": 110811,
       "seasonalMultiplier": 1
     },
     {
       "week": "W9",
-      "actual": 152610,
+      "actual": 112552,
       "seasonalMultiplier": 1
     },
     {
       "week": "W10",
-      "actual": 154165,
+      "actual": 114072,
       "seasonalMultiplier": 1
     },
     {
       "week": "W11",
-      "actual": 163242,
+      "actual": 119281,
       "seasonalMultiplier": 1
     },
     {
       "week": "W12",
-      "actual": 180000,
+      "actual": 135257,
       "seasonalMultiplier": 1
     },
     {
       "week": "W13",
-      "actual": 210000,
+      "actual": 150635,
       "seasonalMultiplier": 1
     },
     {
       "week": "W14",
-      "actual": 285000,
+      "actual": 214340,
       "seasonalMultiplier": 1
     },
     {
       "week": "W15",
-      "actual": 345000,
+      "actual": 239340,
       "seasonalMultiplier": 1
     },
     {
       "week": "W16",
-      "actual": 360000,
+      "actual": 277628,
       "seasonalMultiplier": 1
     }
   ],

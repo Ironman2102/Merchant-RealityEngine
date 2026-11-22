@@ -12,7 +12,7 @@ const ALT_TYPE: Record<string, string> = { SALE: 'P', REFUND: 'R', SETTLEMENT: '
 const GENERIC_CHANNEL: Record<string, string> = { UPI_LINK: 'UPI_INTENT', UPI_COLLECT: 'UPI_COLLECT', POS: 'POS', ONLINE: 'CARD_ONLINE', PAYOUT: 'PAYOUT', BANK: 'BANK' };
 const ALT_CHANNEL: Record<string, string> = { UPI_LINK: 'UI', UPI_COLLECT: 'UC', POS: 'PS', ONLINE: 'ON', PAYOUT: 'PO', BANK: 'BK' };
 
-const SAMPLES = readdirSync('frontend/public/samples').filter(f => /^0[1-9]-/.test(f)).sort();
+const SAMPLES = readdirSync('frontend/public/samples').filter(f => /^\d\d-/.test(f)).sort();
 
 function load(): MreDataset[] {
   return SAMPLES.map(f => JSON.parse(readFileSync(join('frontend/public/samples', f), 'utf8')) as MreDataset);

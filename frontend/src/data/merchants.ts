@@ -5,8 +5,20 @@ export const PROFILES: Record<string, MerchantProfile> = {
   bakery: {
     id: 'M-SCB-001', name: 'Sweet Crumbs Bakery', city: 'Bengaluru, India', mcc: '5462', category: 'Bakeries',
     products: ['Breads', 'Cakes', 'Pastries', 'Festive boxes'], ticketMin: 150, ticketMax: 1200, hours: [7, 22],
-    catchment: 'LOCAL', localStates: ['KA'], expectedRoundShare: 0.06, seasonalPeak: 2.0, baselineWeekly: 180000, accountAgeDays: 1180,
+    catchment: 'LOCAL', localStates: ['KA'], expectedRoundShare: 0.06, seasonalPeak: 2.0, baselineWeekly: 45000, accountAgeDays: 1180,
     declaredDomains: ['sweetcrumbs.example'], declaredChannels: ['In-store POS', 'Local deliveries'], declaredActivity: ['In-store purchases', 'Local deliveries'],
+  },
+  sideline: {
+    id: 'M-GOB-061', name: 'Golden Oven Bakery', city: 'Bengaluru, India', mcc: '5462', category: 'Bakeries',
+    products: ['Breads', 'Cakes', 'Puffs'], ticketMin: 150, ticketMax: 1200, hours: [7, 22],
+    catchment: 'LOCAL', localStates: ['KA'], expectedRoundShare: 0.06, seasonalPeak: 1.2, baselineWeekly: 110000, accountAgeDays: 760,
+    declaredDomains: [], declaredChannels: ['Counter QR'], declaredActivity: ['In-store purchases'],
+  },
+  changed: {
+    id: 'M-MOB-112', name: 'Moonlight Bakes', city: 'Bengaluru, India', mcc: '5462', category: 'Bakeries',
+    products: ['Cakes', 'Pastries'], ticketMin: 150, ticketMax: 1200, hours: [7, 22],
+    catchment: 'LOCAL', localStates: ['KA'], expectedRoundShare: 0.06, seasonalPeak: 1.2, baselineWeekly: 64000, accountAgeDays: 540,
+    declaredDomains: [], declaredChannels: ['Counter QR'], declaredActivity: ['In-store purchases'],
   },
   rotation: {
     id: 'M-NOVA-204', name: 'Nova Gift Emporium', city: 'Mumbai, India', mcc: '5947', category: 'Gift, card and novelty shops',
@@ -17,13 +29,13 @@ export const PROFILES: Record<string, MerchantProfile> = {
   fabricated: {
     id: 'M-AHD-310', name: 'Aarav Home Decor Online', city: 'Jaipur, India', mcc: '5712', category: 'Furniture and home furnishings',
     products: ['Furniture', 'Lighting', 'Wall decor'], ticketMin: 800, ticketMax: 9000, hours: [0, 24],
-    catchment: 'NATIONAL', localStates: [], expectedRoundShare: 0.04, seasonalPeak: 1.0, baselineWeekly: 150000, accountAgeDays: 240,
+    catchment: 'NATIONAL', localStates: [], expectedRoundShare: 0.04, seasonalPeak: 1.0, baselineWeekly: 110000, accountAgeDays: 240,
     declaredDomains: ['aaravhome.example'], declaredChannels: ['Online store (national shipping)'], declaredActivity: ['Home decor e-commerce'],
   },
   diwali: {
     id: 'M-ANS-045', name: 'Anand Sweets & Bakes', city: 'Bengaluru, India', mcc: '5462', category: 'Bakeries',
     products: ['Mithai', 'Cakes', 'Festive gift boxes', 'Snacks'], ticketMin: 150, ticketMax: 1200, hours: [7, 22],
-    catchment: 'LOCAL', localStates: ['KA'], expectedRoundShare: 0.06, seasonalPeak: 2.0, baselineWeekly: 160000, accountAgeDays: 2410,
+    catchment: 'LOCAL', localStates: ['KA'], expectedRoundShare: 0.06, seasonalPeak: 2.0, baselineWeekly: 36000, accountAgeDays: 2410,
     declaredDomains: ['anandsweets.example'], declaredChannels: ['In-store POS', 'Local deliveries', 'Website orders'], declaredActivity: ['In-store purchases', 'Local deliveries'],
   },
 };
@@ -37,7 +49,7 @@ export const PEERS: Record<string, PeerInfo[]> = {
     { id: 'M-GGR-117', name: 'Gift Galaxy Retail', status: 'DORMANT', accountAgeDays: 211 },
     { id: 'M-UNR-308', name: 'Bandra Print & Gifts', status: 'ACTIVE', accountAgeDays: 1305 },
   ],
-  fabricated: [], diwali: [],
+  fabricated: [], diwali: [], sideline: [], changed: [],
 };
 
 const bakeryCatalogue: CatalogueItem[] = ['Sourdough loaf', 'Chocolate truffle cake', 'Butter croissant', 'Festive box (12)', 'Plum cake', 'Eclair set', 'Rusk jar', 'Cookie tin']
@@ -51,6 +63,8 @@ const okCatalogue: CatalogueItem[] = [['Kaju katli box', 899], ['Festive hamper'
   .map(([name, price], i) => ({ sku: `ANS-${i + 1}`, name: name as string, price: price as number, inCategory: true, dupImage: false }));
 
 export const WEB: Record<string, WebData> = {
+  sideline: { embeds: [], catalogue: [] },
+  changed: { embeds: [], catalogue: [] },
   bakery: {
     catalogue: bakeryCatalogue,
     embeds: [

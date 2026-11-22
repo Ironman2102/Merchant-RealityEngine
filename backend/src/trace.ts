@@ -7,7 +7,7 @@
 import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { buildPack } from '../../engine/pack';
 import { appendAudit, getCase, isCaseId, putCase, readAudit, verifyAudit } from './store';
-import { scoreWithHost } from './ml';
+import { mlScore } from './ml';
 import type { ApiReply } from './workflow';
 import type { Actor } from './auth';
 
@@ -17,8 +17,9 @@ export async function caseTrace(id: string): Promise<ApiReply> {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
-  const ml = rec.ml ?? await scoreWithHost(rec.result);
-  if (ml && !rec.ml) { rec.ml = ml; putCase(rec); }
+  // Opinions saved by the withdrawn models are never shown again.
+  const ml = rec.ml?.modelVersion === mlScore(rec.result).modelVersion ? rec.ml : mlScore(rec.result);
+  if (rec.ml !== ml) { rec.ml = ml; putCase(rec); }
   return { status: 200, body: { ...buildTrace(rec.result), ml: ml ? { ...ml, synthetic: true } : null } as unknown as Record<string, unknown> };
 }
 

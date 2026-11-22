@@ -43,83 +43,83 @@
   "weeklySales": [
     {
       "week": "W1",
-      "actual": 6875,
+      "actual": 6806,
       "seasonalMultiplier": 1
     },
     {
       "week": "W2",
-      "actual": 6462,
+      "actual": 7212,
       "seasonalMultiplier": 1
     },
     {
       "week": "W3",
-      "actual": 6262,
+      "actual": 7000,
       "seasonalMultiplier": 1
     },
     {
       "week": "W4",
-      "actual": 6916,
+      "actual": 6950,
       "seasonalMultiplier": 1
     },
     {
       "week": "W5",
-      "actual": 6404,
+      "actual": 6843,
       "seasonalMultiplier": 1
     },
     {
       "week": "W6",
-      "actual": 6514,
+      "actual": 7206,
       "seasonalMultiplier": 1
     },
     {
       "week": "W7",
-      "actual": 6296,
+      "actual": 7097,
       "seasonalMultiplier": 1
     },
     {
       "week": "W8",
-      "actual": 6957,
+      "actual": 7003,
       "seasonalMultiplier": 1
     },
     {
       "week": "W9",
-      "actual": 6988,
+      "actual": 2870,
       "seasonalMultiplier": 1
     },
     {
       "week": "W10",
-      "actual": 7163,
+      "actual": 3620,
       "seasonalMultiplier": 1
     },
     {
       "week": "W11",
-      "actual": 7306,
+      "actual": 2890,
       "seasonalMultiplier": 1
     },
     {
       "week": "W12",
-      "actual": 7149,
+      "actual": 4080,
       "seasonalMultiplier": 1
     },
     {
       "week": "W13",
-      "actual": 6796,
+      "actual": 2840,
       "seasonalMultiplier": 1
     },
     {
       "week": "W14",
-      "actual": 6610,
+      "actual": 2730,
       "seasonalMultiplier": 1
     },
     {
       "week": "W15",
       "actual": 12250,
-      "seasonalMultiplier": 1.15
+      "seasonalMultiplier": 1
     },
     {
       "week": "W16",
       "actual": 12750,
-      "seasonalMultiplier": 1.3
+      "seasonalMultiplier": 1
     }
   ],
   "transactions": [

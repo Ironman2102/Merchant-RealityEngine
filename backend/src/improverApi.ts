@@ -1,45 +1,35 @@
 /**
- * Human-governed self-improvement API (T14–T16):
- *  - T14: Bayesian detector sensitivity & false-positive learning from confirmed case labels (with MCC partial pooling & 20% analyst cap)
- *  - T15: Red-team evasion search and silencing diagnostics
- *  - T16: Propose -> Backtest (Wilson CIs + McNemar exact p) -> Maker/Checker Admin Approval -> Promote -> Byte-identical Rollback
- *  - Hash-chained rules_audit trail (tamper-evident SHA-256 chain)
+ * Human-governed rule changes:
+ *  - labels produce a calibration PROPOSAL; they never change a score by themselves;
+ *  - a threshold search proposes only what passes an independent holdout, honest thin merchants included;
+ *  - requester, then a different approver (reviewer/admin), then promote; rollback needs reviewer/admin;
+ *  - every step is in a sealed hash chain, and the promoted rules survive a restart.
  */
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { analyze, DETECTORS, type MreDataset } from '../../engine/index';
-import { bandOf, insideBand, propose, type Proposal } from '../../engine/improver';
+import { analyze, DETECTORS } from '../../engine/index';
+import { insideBand, propose, proposeCalibration, type Proposal } from '../../engine/improver';
 import { effectiveRates, type LabelEvent, type LearnedRate } from '../../engine/learnedRates';
-import { getLiveDetectorPatch, RULES, setLiveDetectorPatch, withDetectorOverrides } from '../../rules/index';
+import { FRONTS, makeMerchant } from '../../engine/synthetic';
+import { getLiveDetectorPatch, withDetectorOverrides, RULES, type RulePatch } from '../../rules/index';
 import type { EvidenceItem } from '../../frontend/src/types/evidence';
 import type { Label } from '../../frontend/src/types/merchant';
-import type { Actor } from './auth';
+import { samePerson, type Actor } from './auth';
 import { getDb } from './db';
+import { saveLiveRules, syncLiveRules } from './rulesState';
+import { seal } from './seal';
 import type { ApiReply } from './workflow';
 
-import sweetSample from '../../frontend/public/samples/01-sweet-crumbs-betting-front.json';
-import diwaliSample from '../../frontend/public/samples/04-anand-sweets-diwali-genuine.json';
-import ganeshSample from '../../frontend/public/samples/06-shree-ganesh-sweets-genuine.json';
-import udupiSample from '../../frontend/public/samples/07-udupi-tiffin-steady.json';
-import nandiSample from '../../frontend/public/samples/08-nandi-kirana-genuine.json';
-import telegramSample from '../../frontend/public/samples/09-telegram-betting-no-website.json';
+const RULES_CHAIN = '__rules__';
 
 export interface StoredProposal extends Proposal {
   status: 'proposed' | 'approved' | 'rejected' | 'live' | 'rolled_back';
-  createdBy: 'mre-improver' | string;
+  requestedBy: { id: number; username: string };
+  /** The rules this was tested against. It cannot be promoted over different ones. */
+  baseVersion: string;
+  /** The complete patch to make live: what was already live plus this change. */
+  livePatch: RulePatch;
   approvedBy?: string | null;
   promotedVersion?: string | null;
-  evasionPreview?: {
-    merchantId: string;
-    name: string;
-    operator: string;
-    attackerCost: number;
-    beforeDecision: string;
-    beforePosterior: number;
-    afterDecision: string;
-    afterPosterior: number;
-    recallRsi: number;
-  };
 }
 
 export interface RulesAuditRow {
@@ -76,6 +66,8 @@ export function appendRulesAudit(action: string, detail: string, actor: Actor | 
     const hash = chain(prev, row);
     db.prepare('INSERT INTO rules_audit (seq, at, actor, actor_id, action, detail, prev_hash, hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
       .run(row.seq, row.at, row.actor, row.actorId, row.action, row.detail, prev, hash);
+    db.prepare('INSERT INTO audit_heads (case_id, seq, hash, mac) VALUES (?, ?, ?, ?) ON CONFLICT(case_id) DO UPDATE SET seq = excluded.seq, hash = excluded.hash, mac = excluded.mac')
+      .run(RULES_CHAIN, seq, hash, seal(RULES_CHAIN, seq, hash));
     db.exec('COMMIT');
   } catch (e) {
     db.exec('ROLLBACK');
@@ -91,19 +83,27 @@ export function verifyRulesAudit(): { ok: boolean; brokenAt: number | null; entr
     if (r.prevHash !== prev || chain(prev, r) !== r.hash) return { ok: false, brokenAt: r.seq, entries: rows.length };
     prev = r.hash;
   }
+  const head = getDb().prepare('SELECT seq, hash, mac FROM audit_heads WHERE case_id = ?').get(RULES_CHAIN) as { seq: number; hash: string; mac: string } | undefined;
+  if (rows.length || head) {
+    const last = rows.at(-1);
+    if (!head || !last || head.seq !== last.seq || head.hash !== prev || head.mac !== seal(RULES_CHAIN, head.seq, head.hash))
+      return { ok: false, brokenAt: (last?.seq ?? 0) + 1, entries: rows.length };
+  }
   return { ok: true, brokenAt: null, entries: rows.length };
 }
 
 /** Record label events for T14 Bayesian detector learning. Skips UNRESOLVED and merchant_dispute origins. */
-export function recordLabelEvents(caseId: string, mcc: string, evidence: EvidenceItem[], label: Label, actorId: number, origin?: string): void {
+export function recordLabelEvents(merchantId: string, mcc: string, evidence: EvidenceItem[], label: Label, actorId: number, origin?: string): void {
   if (label === 'UNRESOLVED' || origin === 'merchant_dispute') return;
   const db = getDb();
   const now = new Date().toISOString();
-  db.prepare('DELETE FROM label_events WHERE case_id = ?').run(caseId);
+  // One merchant is one observation, however many times its file is uploaded: the latest label replaces the last.
+  const key = `m:${merchantId}`;
+  db.prepare('DELETE FROM label_events WHERE case_id = ?').run(key);
   const ins = db.prepare('INSERT INTO label_events (case_id, detector, mcc, fired, label, actor_id, origin, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
   for (const e of evidence) {
     if (e.status === 'UNKNOWN') continue;
-    ins.run(caseId, e.id, mcc, e.status === 'ILLICIT' ? 1 : 0, label, actorId, origin ?? 'analyst', now);
+    ins.run(key, e.id, mcc, e.status === 'ILLICIT' ? 1 : 0, label, actorId, origin ?? 'analyst', now);
   }
 }
 
@@ -126,57 +126,6 @@ export function listLearnedRates(mcc?: string): LearnedRate[] {
   return DETECTORS.map(d => effectiveRates(d.id, events, mcc));
 }
 
-function thinEvasion(ds: MreDataset, id: string, ratio = 0.1): MreDataset {
-  const d = structuredClone(ds);
-  const old = d.merchant.id;
-  d.merchant = { ...d.merchant, id, name: `${ds.merchant.name} (${id})` };
-  d.transactions.forEach(t => { if (t.merchantId === old) t.merchantId = id; });
-  const sales = d.transactions.filter(t => t.type === 'SALE');
-  const n = Math.max(8, Math.floor(sales.length * ratio));
-  const keep = new Set(sales.slice(0, n).map(t => t.id));
-  d.transactions = d.transactions.filter(t => t.type !== 'SALE' || keep.has(t.id));
-  return d;
-}
-
-function loadSample(fallback: unknown, path: string): MreDataset {
-  try { return JSON.parse(readFileSync(path, 'utf8')) as MreDataset; }
-  catch { return structuredClone(fallback) as MreDataset; }
-}
-
-function buildRedTeamSuite(): { evasions: MreDataset[]; genuine: MreDataset[]; silencing: { id: string; name: string; silencedShare: number; band: [number, number] }[] } {
-  const tg = loadSample(telegramSample, 'frontend/public/samples/09-telegram-betting-no-website.json');
-  const sweet = loadSample(sweetSample, 'frontend/public/samples/01-sweet-crumbs-betting-front.json');
-  const evasions = Array.from({ length: 6 }, (_, i) => thinEvasion(tg, `M-EV-${i + 1}`, 0.1));
-  const genuine = [
-    loadSample(diwaliSample, 'frontend/public/samples/04-anand-sweets-diwali-genuine.json'),
-    loadSample(ganeshSample, 'frontend/public/samples/06-shree-ganesh-sweets-genuine.json'),
-    loadSample(udupiSample, 'frontend/public/samples/07-udupi-tiffin-steady.json'),
-    loadSample(nandiSample, 'frontend/public/samples/08-nandi-kirana-genuine.json'),
-  ];
-
-  // Compare original Telegram front vs thinned evasions to measure per-detector silencing rate
-  const baseRun = withDetectorOverrides({}, () => analyze(tg));
-  const baseFired = new Set(baseRun.ok ? baseRun.result.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id) : []);
-  const silenceCounts = new Map<string, number>();
-  for (const ev of evasions) {
-    const r = withDetectorOverrides({}, () => analyze(ev));
-    if (!r.ok) continue;
-    for (const e of r.result.evidence) {
-      if (baseFired.has(e.id) && e.status !== 'ILLICIT') {
-        silenceCounts.set(e.id, (silenceCounts.get(e.id) ?? 0) + 1);
-      }
-    }
-  }
-  void sweet;
-  const silencing = [...baseFired].map(id => ({
-    id,
-    name: RULES.detector(id).name,
-    silencedShare: (silenceCounts.get(id) ?? 0) / evasions.length,
-    band: bandOf(id).minN,
-  }));
-  return { evasions, genuine, silencing };
-}
-
 function saveProposal(p: StoredProposal): void {
   getDb()
     .prepare(
@@ -184,135 +133,114 @@ function saveProposal(p: StoredProposal): void {
        VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET status = excluded.status, approved_by = excluded.approved_by, promoted_version = excluded.promoted_version, proposal_json = excluded.proposal_json`,
     )
-    .run(p.id, p.createdAt, p.createdBy, p.status, p.approvedBy ?? null, p.promotedVersion ?? null, JSON.stringify(p));
+    .run(p.id, p.createdAt, p.requestedBy.username, p.status, p.approvedBy ?? null, p.promotedVersion ?? null, JSON.stringify(p));
 }
 
 export function listProposals(): StoredProposal[] {
   const rows = getDb().prepare('SELECT proposal_json FROM rules_proposals ORDER BY created_at DESC LIMIT 20').all() as { proposal_json: string }[];
-  return rows.map(r => JSON.parse(r.proposal_json) as StoredProposal);
+  // Proposals from before requesters were recorded cannot be approved safely, so they are not offered.
+  return rows.map(r => JSON.parse(r.proposal_json) as StoredProposal).filter(p => p.requestedBy);
 }
 
+/** One thin front, shown on the console so a person can see what a rule change does. */
+export const probeMerchant = () => makeMerchant(FRONTS.find(k => k.name === 'low-volume split')!, 1, { id: 'M-PROBE-THIN', seed: 5151, geo: true, volume: 0.5 });
+
 export function getRulesStatus(): ApiReply {
-  const { patch, version } = getLiveDetectorPatch();
-  const { evasions, silencing } = buildRedTeamSuite();
-  const sampleEvasion = evasions[0];
-  const currentEval = analyze(sampleEvasion);
-  const events = getAllLabelEvents();
-  const learned = listLearnedRates();
+  syncLiveRules();
+  const { patch, version } = getLiveDetectorPatch(), probe = probeMerchant().dataset, now = analyze(probe);
   return {
     status: 200,
     body: {
       rulesVersion: version,
       livePatch: patch,
       evasionCheck: {
-        merchantId: sampleEvasion.merchant.id,
-        name: sampleEvasion.merchant.name,
-        salesCount: sampleEvasion.transactions.filter(t => t.type === 'SALE').length,
-        operator: 'splitMerchant / thinSales (10% volume split across mule accounts)',
-        attackerCost: 5,
-        decision: currentEval.ok ? currentEval.result.fusion.decision : 'ERROR',
-        posterior: currentEval.ok ? currentEval.result.fusion.posterior : 0,
+        merchantId: probe.merchant.id,
+        salesCount: probe.transactions.filter(t => t.type === 'SALE').length,
+        operator: 'A thin account, the size one mule account would be after splitting the volume',
+        decision: now.ok ? now.result.fusion.decision : 'ERROR',
+        followUp: now.ok ? now.result.fusion.followUp : 'NONE',
+        posterior: now.ok ? now.result.fusion.posterior : 0,
       },
-      silencing,
       proposals: listProposals(),
       audit: readRulesAudit(),
       auditVerification: verifyRulesAudit(),
-      labelEventsCount: events.length,
-      learnedRates: learned.filter(r => r.nPos + r.nNeg > 0 || ['A1', 'A4', 'B6', 'B7', 'C5', 'D9', 'G6', 'H3'].includes(r.detectorId)),
+      minLabels: RULES.engine.learning.minLabels,
+      labelledMerchants: new Set((getDb().prepare('SELECT case_id FROM label_events').all() as { case_id: string }[]).map(r => r.case_id)).size,
+      learnedRates: listLearnedRates().filter(r => r.nPos + r.nNeg > 0),
     },
   };
 }
 
-export function runImproverProposal(actor: Actor, createdByMode: 'mre-improver' | 'self' = 'mre-improver'): ApiReply {
-  // Temporarily clear livePatch when computing champion vs challenger
-  const prev = getLiveDetectorPatch();
-  setLiveDetectorPatch(null, null);
-  try {
-    const { evasions, genuine } = buildRedTeamSuite();
-    const rawProp = propose(evasions, genuine, evasions);
-    if (!rawProp) {
-      return { status: 422, body: { error: 'No in-band proposal satisfied the false-positive bound, recall gain, and McNemar p < 0.05.' } };
-    }
-    for (const [id, p] of Object.entries(rawProp.patch)) {
-      if (!insideBand(id, p)) return { status: 400, body: { error: `Proposed parameter for ${id} is outside its allowed band.` } };
-    }
-    const before = analyze(evasions[0]);
-    const after = withDetectorOverrides(rawProp.patch, () => analyze(evasions[0]));
-    const champRecall = rawProp.backtest.champion.recall;
-    const chalRecall = rawProp.backtest.challenger.recall;
-    const stored: StoredProposal = {
-      ...rawProp,
-      createdBy: createdByMode === 'self' ? actor.username : 'mre-improver',
-      status: 'proposed',
-      evasionPreview: {
-        merchantId: evasions[0].merchant.id,
-        name: evasions[0].merchant.name,
-        operator: 'splitMerchant(10) — keeps 14 sales below default minN=30',
-        attackerCost: 5,
-        beforeDecision: before.ok ? before.result.fusion.decision : 'NO_CASE',
-        beforePosterior: before.ok ? before.result.fusion.posterior : 0,
-        afterDecision: after.ok ? after.result.fusion.decision : 'OPEN_CASE',
-        afterPosterior: after.ok ? after.result.fusion.posterior : 0,
-        recallRsi: champRecall > 0 ? (chalRecall - champRecall) / champRecall : chalRecall,
-      },
-    };
-    saveProposal(stored);
-    appendRulesAudit(
-      `Proposal ${stored.id} created`,
-      `Creator: ${stored.createdBy} · Patch: ${Object.entries(stored.patch).map(([k, v]) => `${k}.minN→${v.minN}`).join(', ')} · Backtest recall ${(champRecall * 100).toFixed(0)}%→${(chalRecall * 100).toFixed(0)}% (McNemar p=${rawProp.backtest.mcnemarP.toFixed(4)})`,
-      actor,
-    );
-    return getRulesStatus();
-  } finally {
-    setLiveDetectorPatch(prev.patch, prev.version === RULES.engine.version ? null : prev.version);
+export function runImproverProposal(actor: Actor, kind: Proposal['kind'] = 'threshold'): ApiReply {
+  if (!['analyst', 'reviewer', 'admin'].includes(actor.role)) return { status: 403, body: { error: 'Your role cannot request a rule change.' } };
+  syncLiveRules();
+  const live = getLiveDetectorPatch();
+  const tried = kind === 'calibration' ? proposeCalibration(listLearnedRates()) : propose();
+  if (!tried.proposal) {
+    appendRulesAudit(`No ${kind} change proposed`, tried.reason, actor);
+    return { status: 422, body: { error: tried.reason, backtest: tried.backtest ?? null } };
   }
+  const merged: RulePatch = { ...(live.patch ?? {}) };
+  for (const [id, p] of Object.entries(tried.proposal.patch)) {
+    if (!insideBand(id, p)) return { status: 400, body: { error: `Proposed parameter for ${id} is outside its allowed band.` } };
+    merged[id] = { ...merged[id], ...p };
+  }
+  // The person who asked is the maker, even though the machine did the search.
+  const stored: StoredProposal = { ...tried.proposal, createdBy: actor.username, requestedBy: { id: actor.id, username: actor.username }, status: 'proposed', baseVersion: live.version, livePatch: merged };
+  saveProposal(stored);
+  const { champion, challenger } = stored.backtest;
+  appendRulesAudit(`Proposal ${stored.id} created`, `${kind} · holdout fronts caught ${champion.tp}→${challenger.tp} of ${champion.nFront} · false alarms ${champion.fpCount}→${challenger.fpCount} of ${champion.nGenuine}`, actor);
+  return getRulesStatus();
+}
+
+function checker(id: string, actor: Actor, verb: string): StoredProposal | ApiReply {
+  const prop = listProposals().find(p => p.id === id);
+  if (!prop) return { status: 404, body: { error: 'No rule proposal with that id.' } };
+  if (samePerson(prop.requestedBy, actor)) return { status: 403, body: { error: `You cannot ${verb} a rule change you requested. A different person must.` } };
+  if (actor.role !== 'admin' && actor.role !== 'reviewer') return { status: 403, body: { error: `Only an admin or reviewer can ${verb} rule changes.` } };
+  return prop;
 }
 
 export function approveRuleProposal(id: string, actor: Actor): ApiReply {
-  const list = listProposals();
-  const prop = list.find(p => p.id === id);
-  if (!prop) return { status: 404, body: { error: 'No rule proposal with that id.' } };
-  if (prop.createdBy === actor.username) {
-    return { status: 403, body: { error: 'Maker/checker violation: you cannot approve a rule proposal that you initiated yourself. Switch to a different reviewer/admin persona.' } };
-  }
-  if (actor.role !== 'admin' && actor.role !== 'reviewer') {
-    return { status: 403, body: { error: 'Only an admin or reviewer role can approve rule changes.' } };
-  }
+  const prop = checker(id, actor, 'approve');
+  if (!('patch' in prop)) return prop;
+  if (prop.status !== 'proposed') return { status: 409, body: { error: `This proposal is already ${prop.status}.` } };
   prop.status = 'approved';
   prop.approvedBy = `${actor.username} (${actor.role})`;
   saveProposal(prop);
-  appendRulesAudit(`Proposal ${prop.id} approved`, `Approved by ${actor.username} (${actor.role}); creator was ${prop.createdBy}`, actor);
+  appendRulesAudit(`Proposal ${prop.id} approved`, `Approved by ${actor.username} (${actor.role}); requested by ${prop.requestedBy.username}`, actor);
   return getRulesStatus();
 }
 
 export function promoteRuleProposal(id: string, actor: Actor): ApiReply {
-  const list = listProposals();
-  const prop = list.find(p => p.id === id);
-  if (!prop) return { status: 404, body: { error: 'No rule proposal with that id.' } };
-  if (prop.createdBy === actor.username) {
-    return { status: 403, body: { error: 'Maker/checker violation: you cannot promote your own rule proposal.' } };
-  }
-  if (prop.status !== 'approved' && prop.status !== 'live') {
-    return { status: 409, body: { error: 'Proposal must be approved before it can be promoted to live.' } };
-  }
-  const nextVersion = `${RULES.engine.version}.1`;
-  setLiveDetectorPatch(prop.patch, nextVersion);
+  const prop = checker(id, actor, 'promote');
+  if (!('patch' in prop)) return prop;
+  if (prop.status !== 'approved') return { status: 409, body: { error: 'Proposal must be approved before it can be promoted to live.' } };
+  syncLiveRules();
+  if (getLiveDetectorPatch().version !== prop.baseVersion) return { status: 409, body: { error: 'The live rules changed after this was backtested. Run it again.' } };
+  const version = `${RULES.engine.version}+${prop.id}`;
+  saveLiveRules(prop.livePatch, version);
   prop.status = 'live';
-  prop.promotedVersion = nextVersion;
+  prop.promotedVersion = version;
   saveProposal(prop);
-  appendRulesAudit(`Promoted ${nextVersion}`, `Proposal ${prop.id} promoted live by ${actor.username} (${actor.role})`, actor);
+  appendRulesAudit(`Promoted ${version}`, `Proposal ${prop.id} promoted live by ${actor.username} (${actor.role})`, actor);
   return getRulesStatus();
 }
 
 export function rollbackRulesLive(actor: Actor): ApiReply {
-  const prev = getLiveDetectorPatch();
-  setLiveDetectorPatch(null, null);
+  if (actor.role !== 'admin' && actor.role !== 'reviewer') return { status: 403, body: { error: 'Only an admin or reviewer can roll back rules.' } };
+  syncLiveRules();
+  const from = getLiveDetectorPatch().version;
+  saveLiveRules(null, null);
   for (const p of listProposals()) {
     if (p.status === 'live') {
       p.status = 'rolled_back';
       saveProposal(p);
     }
   }
-  appendRulesAudit('Rollback to base rules', `Restored ${RULES.engine.version} from ${prev.version}`, actor);
+  appendRulesAudit('Rollback to base rules', `Restored ${RULES.engine.version} from ${from}`, actor);
   return getRulesStatus();
 }
+
+/** What a proposal would do to one merchant, without making it live. */
+export const previewPatch = (patch: RulePatch, dataset: unknown) => withDetectorOverrides(patch, () => analyze(dataset));

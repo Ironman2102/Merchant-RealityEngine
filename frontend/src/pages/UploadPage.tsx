@@ -8,6 +8,7 @@ import { MECHANISMS, RESPONSE_LEVELS } from '../data/evidence';
 import { runPatternPack, LADDER } from '../engines/patternPack';
 import { InvestigationPage } from './InvestigationPage';
 import { PatternBoard } from '../components/common/PatternBoard';
+import { RULES } from '../../../rules/index';
 import { Badge, Btn, Callout, Panel } from '../components/ui/ui';
 import { cx } from '../utils/format';
 import {
@@ -21,6 +22,9 @@ import {
 } from '../utils/csvToDataset';
 
 const BASE = import.meta.env.BASE_URL;
+// Nothing about the merchant is pre-filled: a default category or name would become a claim about a real file.
+const EMPTY_META: CsvMerchantMeta = { id: 'M-CSV-001', name: '', category: '', mcc: '', city: '', state: '', catchment: 'LOCAL', ticketMin: 0, ticketMax: 0, openHour: 0, closeHour: 24, accountAgeDays: 1000 };
+const SAMPLE_META: CsvMerchantMeta = { ...EMPTY_META, name: 'Deccan Corner Bakery (synthetic)', category: 'Bakeries', mcc: '5462', city: 'Bengaluru', state: 'KA', ticketMin: 120, ticketMax: 900 };
 type ServerStep = { layer: number; code: string; name: string; state: 'done' | 'waiting' | 'blocked'; summary: string };
 type ServerCase = {
   id: string;
@@ -29,6 +33,8 @@ type ServerCase = {
   user: { notes: string; clarification: string; chosenLevel: string | null; legalVerified: boolean; escrowConfirmed: boolean; executed: boolean; label: string | null };
 };
 const TEST_DATASETS = [
+  { file: '10-golden-oven-betting-on-the-side.json', title: 'Golden Oven Bakery · betting on one link' },
+  { file: '11-moonlight-bakes-honest-change.json', title: 'Moonlight Bakes · honest midnight delivery' },
   { file: 'random-ai-engine-test.json', title: 'Juniper Lane Stationery · new synthetic dataset' },
   { file: 'demo-ai-engine-test.json', title: 'AI Engine upload test · Sweet Crumbs Bakery' },
   { file: '01-sweet-crumbs-betting-front.json', title: 'Sweet Crumbs Bakery · suspected betting collections' },
@@ -56,32 +62,23 @@ export function UploadPage() {
   const [escrowConfirmed, setEscrowConfirmed] = useState(false);
   const [csvData, setCsvData] = useState<ParsedCsv | null>(null);
   const [csvMap, setCsvMap] = useState<CsvColumnMapping | null>(null);
-  const [csvMeta, setCsvMeta] = useState<CsvMerchantMeta>({
-    id: 'M-CSV-001',
-    name: 'Deccan Corner Bakery',
-    category: 'Local Bakery & Confectionery',
-    mcc: '5462',
-    city: 'Bengaluru',
-    state: 'KA',
-    catchment: 'LOCAL',
-    ticketMin: 120,
-    ticketMax: 900,
-    openHour: 7,
-    closeHour: 22,
-  });
+  const [csvMeta, setCsvMeta] = useState<CsvMerchantMeta>(EMPTY_META);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => { clearCustom(); clearUploaded(); setCaseKey(null); }, [clearCustom, clearUploaded]);
 
   const applyCsv = (data: ParsedCsv, mapping: CsvColumnMapping, meta: CsvMerchantMeta, name: string) => {
-    const ds = buildDatasetFromCsv(data, mapping, meta);
-    const jsonText = JSON.stringify(ds);
-    setRaw(jsonText);
+    const built = buildDatasetFromCsv(data, mapping, meta);
     setFileName(name);
-    setParsed(datasetToScenario(ds));
+    const needs = [...built.errors, ...(meta.mcc ? [] : ['Choose the merchant category. It is never guessed.'])];
+    if (needs.length) { setRaw(''); setParsed({ ok: false, errors: needs, warnings: built.warnings }); return; }
+    setRaw(JSON.stringify(built.dataset));
+    const result = datasetToScenario(built.dataset);
+    setParsed({ ...result, warnings: [...built.warnings, ...result.warnings] });
   };
 
-  const read = (name: string, text: string) => {
+  const read = (name: string, text: string, meta: CsvMerchantMeta = EMPTY_META) => {
+    setCsvMeta(meta);
     clearCustom();
     clearUploaded();
     setCaseKey(null);
@@ -99,7 +96,7 @@ export function UploadPage() {
       const detected = autoDetectMapping(parsedCsv.headers);
       setCsvData(parsedCsv);
       setCsvMap(detected);
-      applyCsv(parsedCsv, detected, csvMeta, name);
+      applyCsv(parsedCsv, detected, meta, name);
       return;
     }
 
@@ -110,7 +107,7 @@ export function UploadPage() {
     catch (e) { setParsed({ ok: false, errors: [`Could not read the file as JSON: ${(e as Error).message}`], warnings: [] }); }
   };
   const loadSampleCsv = () => {
-    read('gateway-export-sample.csv', buildSampleGatewayCsv());
+    read('gateway-export-sample.csv', buildSampleGatewayCsv(), SAMPLE_META);
   };
   const onFile = async (f?: File | null) => { if (f) read(f.name, await f.text()); };
   const loadSample = async () => {
@@ -218,11 +215,11 @@ export function UploadPage() {
           <div className="text-[11px] text-dim">The mapped dataset is sent to the investigation API to score all 7 layers and save the case.</div>
         </div>
 
-        <Panel title="Zero-Code Pilot Ready" subtitle="Test on any anonymized payment export in 15 seconds.">
+        <Panel title="What happens to your file" subtitle="Use anonymised exports only.">
           <ul className="space-y-3 text-sm text-mute">
-            <li><span className="font-semibold text-ink">Raw CSV or JSON</span><br />Drop any gateway CSV export — columns like <span className="font-mono text-xs">amount_paise</span>, <span className="font-mono text-xs">created_at</span>, and <span className="font-mono text-xs">payer_state</span> are mapped automatically.</li>
-            <li><span className="font-semibold text-ink">No missing-data penalty</span><br />Missing context feeds (website crawl, GST, orders) are marked <span className="font-mono text-xs">MISSING</span> and never counted against the merchant.</li>
-            <li><span className="font-semibold text-ink">Executive Case Dossier</span><br />Outputs Claimed vs. Reality visuals, ₹ GMV at Risk, Merchant RFI draft, and printable FIU-IND STR summary.</li>
+            <li><span className="font-semibold text-ink">Raw CSV or JSON</span><br />Drop any gateway CSV export — check the suggested columns before running. Dates are read day first, failed payments are left out, and no history is invented.</li>
+            <li><span className="font-semibold text-ink">No missing-data penalty</span><br />Missing context feeds (website crawl, GST, orders) are marked <span className="font-mono text-xs">MISSING</span> and carry zero weight in either direction.</li>
+            <li><span className="font-semibold text-ink">Executive Case Dossier</span><br />Claimed vs. Reality, a score for every QR, a neutral merchant letter and internal draft facts for the Principal Officer.</li>
           </ul>
         </Panel>
       </div>
@@ -245,6 +242,8 @@ export function UploadPage() {
                   ['payerId', 'Payer VPA / ID'],
                   ['channel', 'Channel / Mode'],
                   ['type', 'Txn Type'],
+                  ['status', 'Status (failed rows are left out)'],
+                  ['refundOf', 'Refund of (sale ID)'],
                   ['id', 'Transaction ID'],
                   ['paymentLinkId', 'Payment Link ID'],
                 ] as const).map(([key, label]) => (
@@ -297,6 +296,27 @@ export function UploadPage() {
                   />
                 </label>
                 <label className="block text-xs">
+                  <span className="font-medium text-mute">Category code (MCC) *</span>
+                  <select
+                    value={csvMeta.mcc}
+                    onChange={e => { const mcc = e.target.value; const m = { ...csvMeta, mcc, category: csvMeta.category || (RULES.knowsCategory(mcc) ? RULES.mcc(mcc).name : '') }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
+                    className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                  >
+                    <option value="">Choose…</option>
+                    {RULES.categories().map(([code, n]) => <option key={code} value={code}>{code} · {n.name}</option>)}
+                    <option value="UNKNOWN">Not listed (category tests will abstain)</option>
+                  </select>
+                </label>
+                <label className="block text-xs">
+                  <span className="font-medium text-mute">Account age in days</span>
+                  <input
+                    type="number" min={0}
+                    value={csvMeta.accountAgeDays}
+                    onChange={e => { const m = { ...csvMeta, accountAgeDays: Math.max(0, Number(e.target.value) || 0) }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
+                    className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                  />
+                </label>
+                <label className="block text-xs">
                   <span className="font-medium text-mute">Declared Category</span>
                   <input
                     value={csvMeta.category}
@@ -326,14 +346,14 @@ export function UploadPage() {
                     <input
                       type="number"
                       value={csvMeta.ticketMin}
-                      onChange={e => { const m = { ...csvMeta, ticketMin: Number(e.target.value) || 100 }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
+                      onChange={e => { const m = { ...csvMeta, ticketMin: Number(e.target.value) || 0 }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
                       className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
                     />
                     <span className="text-mute">–</span>
                     <input
                       type="number"
                       value={csvMeta.ticketMax}
-                      onChange={e => { const m = { ...csvMeta, ticketMax: Number(e.target.value) || 1000 }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
+                      onChange={e => { const m = { ...csvMeta, ticketMax: Number(e.target.value) || 0 }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
                       className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -377,7 +397,7 @@ export function UploadPage() {
         <>
         <Panel title="Final result" subtitle={fu.gateReason} right={<Badge tone={fu.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{fu.decision === 'OPEN_CASE' ? `${fu.priority} priority` : 'No case opened'}</Badge>}>
           <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><div className="text-xs text-mute">Outcome</div><div className="mt-1 font-medium">{fu.decision === 'OPEN_CASE' ? 'Analyst review opened' : 'Activity explained'}</div></div>
+            <div><div className="text-xs text-mute">Outcome</div><div className="mt-1 font-medium">{fu.decision === 'OPEN_CASE' ? 'Analyst review opened' : fu.followUp === 'ASK' ? 'Ask the merchant' : 'Nothing to explain'}</div></div>
             <div><div className="text-xs text-mute">Leading finding</div><div className="mt-1 font-medium">{fu.decision === 'OPEN_CASE' && top ? `${MECHANISMS.find(m => m.id === top.id)?.name ?? top.id} (${top.score.toFixed(2)})` : 'No remaining risk signal'}</div></div>
             <div><div className="text-xs text-mute">Recommended response</div><div className="mt-1 font-medium">{level?.id} · {level?.name}</div></div>
             {pack && <div><div className="text-xs text-mute">Trust ladder</div><div className="mt-1 font-medium">{LADDER.find(l => l.id === pack.ladder)?.name}</div></div>}
@@ -397,7 +417,7 @@ export function UploadPage() {
                 <div className={cx('text-xl font-semibold', fu.decision === 'OPEN_CASE' ? 'text-neutral-200' : 'text-gray-200')}>{fu.decision === 'OPEN_CASE' ? `Case opened · ${fu.priority} priority` : 'No case opened'}</div>
                 <div className="mt-1 text-sm text-mute">{fu.gateReason}</div>
                 <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                  <div><div className="text-xs text-mute">Leading hypothesis</div><div className="font-medium">{fu.decision === 'OPEN_CASE' && top ? `${MECHANISMS.find(m => m.id === top.id)?.name ?? top.id} (${top.score.toFixed(2)})` : 'None: alarm explained'}</div></div>
+                  <div><div className="text-xs text-mute">Leading hypothesis</div><div className="font-medium">{fu.decision === 'OPEN_CASE' && top ? `${MECHANISMS.find(m => m.id === top.id)?.name ?? top.id} (${top.score.toFixed(2)})` : 'None'}</div></div>
                   <div><div className="text-xs text-mute">Legitimate-business explanation</div><div className="font-medium">{result.review.legitStatus === 'HOLDS' ? 'Holds' : result.review.legitStatus === 'FAILED' ? 'Fails' : 'Inconclusive'}</div></div>
                   <div><div className="text-xs text-mute">Recommended response</div><div className="font-medium">{level?.id} · {level?.name}</div></div>
                   <div><div className="text-xs text-mute">Trust ladder</div><div className="font-medium">{LADDER.find(l => l.id === pack.ladder)!.name}</div></div>

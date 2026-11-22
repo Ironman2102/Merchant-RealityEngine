@@ -13,8 +13,8 @@ export function MerchantPage() {
   const decision = done(4) ? result.fusion.decision : null;
   return (
     <>
-      <div><h1 className="text-2xl font-semibold tracking-tight">{demoMode ? 'Demo merchant profiles' : 'Your merchant profile'}</h1><p className="mt-1 text-sm text-mute">{demoMode ? 'Declared profiles and behavioural baselines for the four demo merchants.' : 'Declared profile and behavioural baseline for the merchant in your uploaded dataset.'}</p></div>
-      <Panel title={demoMode ? 'The four demo merchants' : 'Uploaded merchant'} subtitle={demoMode ? 'Select a merchant to make it the active demo scenario.' : 'Only the merchant in your current dataset appears here.'} bodyClass="p-0 overflow-x-auto">
+      <div><h1 className="text-2xl font-semibold tracking-tight">{demoMode ? 'Demo merchant profiles' : 'Your merchant profile'}</h1><p className="mt-1 text-sm text-mute">{demoMode ? 'Declared profiles and behavioural baselines for the six demo merchants.' : 'Declared profile and behavioural baseline for the merchant in your uploaded dataset.'}</p></div>
+      <Panel title={demoMode ? 'The six demo merchants' : 'Uploaded merchant'} subtitle={demoMode ? 'Select a merchant to make it the active demo scenario.' : 'Only the merchant in your current dataset appears here.'} bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Merchant</Th><Th>ID</Th><Th>Category</Th><Th>Monitoring status</Th></tr></thead>
           <tbody>{merchants.map(({ id, scenario }) => { const on = id === scenarioId; return (
             <tr key={id} className={cx(rowCls, on && 'bg-zinc-400/5')}><Td>{demoMode ? <button disabled={running} onClick={() => setScenario(id as typeof scenarioId)} className="font-medium text-zinc-200 hover:underline disabled:opacity-50">{scenario.profile.name}</button> : <span className="font-medium">{scenario.profile.name}</span>}</Td><Td><Mono>{scenario.profile.id}</Mono></Td><Td className="text-mute">{scenario.profile.category}</Td>

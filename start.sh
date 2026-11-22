@@ -19,13 +19,13 @@ EOF
 
 ensure_node() {
   if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
-    echo "Error: Node.js and npm are required. Install Node.js 20 or later, then try again." >&2
+    echo "Error: Node.js and npm are required. Install Node.js 22.13 or later, then try again." >&2
     exit 1
   fi
 
-  NODE_MAJOR="$(node -p 'Number(process.versions.node.split(".")[0])')"
-  if (( NODE_MAJOR < 20 )); then
-    echo "Error: Node.js 20 or later is required (found $(node --version))." >&2
+  # node:sqlite works without a flag from 22.13.
+  if ! node -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 13) ? 0 : 1)'; then
+    echo "Error: Node.js 22.13 or later is required (found $(node --version))." >&2
     exit 1
   fi
 
@@ -38,6 +38,11 @@ ensure_node() {
 case "${1:-web}" in
   web|--web)
     ensure_node
+    # An old server left running on this port would silently answer for the new code.
+    if ! node -e 'const s = require("node:net").createServer().once("error", () => process.exit(1)).listen(8787, "127.0.0.1", () => s.close(() => process.exit(0)))'; then
+      echo "Error: something is already running on port 8787 (often an older copy of MRE). Find it with: lsof -nP -iTCP:8787 -sTCP:LISTEN" >&2
+      exit 1
+    fi
     echo "Starting the investigation API at http://127.0.0.1:8787"
     node --import tsx backend/src/server.ts &
     API_PID=$!
