@@ -10,7 +10,7 @@ import { me } from '../../services/pilotApi';
 import { useState } from 'react';
 
 export function L6View() {
-  const { result: r, user, patch, setLevel, execute, audit, caseId, pending, inForce, approve, syncError } = useInvestigation();
+  const { result: r, user, patch, setLevel, execute, audit, caseId, pending, restrictions, approve, syncError } = useInvestigation();
   const { quant } = useQuantMode();
   const [escrow, setEscrow] = useState(false);
   const [selfRefusal, setSelfRefusal] = useState('');
@@ -26,7 +26,7 @@ export function L6View() {
     approve(ok, { escrowConfirmed: escrow });
   };
   const plan = planResponse(r, user), meta = RESPONSE_LEVELS.find(l => l.id === plan.level)!;
-  const proposal = pending?.response, held = caseId && inForce?.restricts ? inForce : null, needsTwo = !!held || ['L3', 'L4', 'L5'].includes(plan.level);
+  const proposal = pending?.response, held = caseId ? restrictions : [], lifting = ['L0', 'L1', 'L2'].includes(proposal?.level ?? ''), needsTwo = held.length > 0 || ['L3', 'L4', 'L5'].includes(plan.level);
   const log = caseId ? audit.filter(a => /^L\d/.test(a.action)) : audit.filter(a => a.actor === 'MRE response engine');
   const isFlow = plan.level === 'L3' || plan.level === 'L4';
   return (
@@ -40,7 +40,7 @@ export function L6View() {
             {isFlow && plan.keepsRunning.length > 0
               ? <>Targets only <b>{plan.suspectLinks.join(', ')}</b> while keeping <b>{plan.keepsRunning.join(', ')}</b> live.</>
               : meta.blurb}
-            {held && <> <b>{held.level} is in force.</b></>}
+            {held.length > 0 && <> <b>{[...new Set(held.map(h => h.level))].join(', ')} is in force.</b></>}
             {proposal ? <> Waiting for a second person to approve {proposal.by.username}’s proposal.</> : user.executed ? ' Action recorded.' : ' Not executed yet.'}
           </>
         ),
@@ -77,10 +77,11 @@ export function L6View() {
         <Panel title={caseId ? 'Approval (maker / checker)' : 'Legal-authority verification'} subtitle={caseId ? 'Nobody approves their own proposal.' : 'A separate step from the risk decision.'}>
           {caseId ? (
             <div className="space-y-3 text-sm">
-              <p className="text-xs text-mute">L0–L2 apply at once, unless a restriction is in force: lifting or changing one needs the approval that the more severe level needs. L3 needs approval by a different reviewer. L4 and L5 need approval by a different user with the legal role; L5 also needs a confirmed-illicit label from two people.</p>
-              {held && <p role="status" className="rounded border border-line2 bg-panel2 px-3 py-2 text-xs"><b>{held.level} in force:</b> {held.actions.join('; ')}. It stays until a different person approves a change.</p>}
+              <p className="text-xs text-mute">L0–L2 apply at once, unless this merchant has a restriction in force on any case: lifting or changing one needs the approval that the more severe level needs. L3 needs approval by a different reviewer. L4 and L5 need approval by a different user with the legal role; L5 also needs a confirmed-illicit label from two people.</p>
+              {held.map(h => <p key={h.caseId} role="status" className="rounded border border-line2 bg-panel2 px-3 py-2 text-xs"><b>{h.level} in force</b>{h.caseId !== caseId && <> (from case <Mono>{h.caseId}</Mono>)</>}<b>:</b> {h.actions.join('; ')}. It follows the merchant to every case and stays until a different person approves a change.</p>)}
               {proposal ? (<div className="rounded border border-stone-400/30 bg-stone-400/5 p-3">
                 <div className="text-sm"><b>{proposal.level}</b> proposed by <b>{proposal.by.username}</b> · {new Date(proposal.at).toLocaleString()}</div>
+                {lifting && held.length > 0 && <p className="mt-2 text-xs"><b>Approving lifts:</b> {held.map(h => `${h.level} in ${h.caseId}`).join(', ')}.</p>}
                 {proposal.level === 'L4' && <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" className="accent-zinc-300" checked={escrow} onChange={e => setEscrow(e.target.checked)} />Escrow or reserve clause confirmed in the merchant agreement</label>}
                 <div className="mt-3 flex gap-2"><Btn size="sm" variant="primary" onClick={() => void onApprove(true)}>Approve</Btn><Btn size="sm" onClick={() => void onApprove(false)}>Reject or withdraw</Btn></div>
               </div>) : <div className="text-xs text-mute">No proposal is waiting for approval.</div>}

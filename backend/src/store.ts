@@ -16,7 +16,8 @@ import { getDb } from './db';
 import type { Actor } from './auth';
 
 export interface Pending {
-  response?: { level: string; by: { id: number; username: string }; at: string; approvals?: { id: number; username: string }[] };
+  /** `over` is the merchant's restrictions when it was proposed. If they change, the approval is stale. */
+  response?: { level: string; by: { id: number; username: string }; at: string; over?: string; approvals?: { id: number; username: string }[] };
   label?: { label: Label; by: { id: number; username: string }; at: string };
 }
 export interface CaseRecord {
@@ -32,7 +33,7 @@ export interface CaseRecord {
   user: UserState;
   response: ResponsePlan | null;
   /** The last action that took effect. A proposal, a rejection, a blocked step or a re-score never replaces it. */
-  inForce?: { id: string; plan: ResponsePlan } | null;
+  inForce?: { id: string; plan: ResponsePlan; at?: string } | null;
   learning: { updates: ReliabilityUpdate[]; profile: string[] } | null;
   pending: Pending;
   /** Saved second opinion from the file that opened the case. Absent on older rows. */
@@ -53,8 +54,28 @@ export function putCase(rec: CaseRecord): void {
   if (!isCaseId(rec.id)) throw Object.assign(new Error('Invalid case id.'), { status: 400 });
   const { audit: _a, ...user } = rec.user;
   const json = JSON.stringify({ ...rec, user: { ...user, audit: [] } });
-  getDb().prepare(`INSERT INTO cases (id, created_at, created_by, engine_version, rules_version, dataset_sha256, record_json) VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET record_json = excluded.record_json`).run(rec.id, rec.createdAt, rec.createdBy ?? null, rec.engineVersion ?? null, rec.result.fusion.rulesVersion, rec.datasetSha256, json);
+  const f = rec.inForce, held = f ? JSON.stringify({ id: f.id, level: f.plan.level, actions: f.plan.actions, at: f.at ?? '' }) : null;
+  getDb().prepare(`INSERT INTO cases (id, created_at, created_by, engine_version, rules_version, dataset_sha256, record_json, merchant_key, in_force_json, decision, label) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET record_json = excluded.record_json, merchant_key = excluded.merchant_key, in_force_json = excluded.in_force_json, decision = excluded.decision, label = excluded.label`)
+    .run(rec.id, rec.createdAt, rec.createdBy ?? null, rec.engineVersion ?? null, rec.result.fusion.rulesVersion, rec.datasetSha256, json,
+      rec.result.scenario.primaryMerchantId, held, rec.result.fusion.decision, rec.user.label);
+}
+
+export interface MerchantCase {
+  id: string; createdAt: string; decision: string; label: Label | null;
+  inForce: { id: string; level: ResponseLevel; actions: string[]; at: string } | null;
+}
+
+/**
+ * Every case of one merchant, oldest first, from columns that putCase maintains (a case record is too big to parse for
+ * each view). Merchant ids are the payment aggregator's, so they mean one merchant across all its clients.
+ */
+export function merchantCases(merchantId: string): MerchantCase[] {
+  const db = getDb();
+  // Saved before the columns existed.
+  for (const r of db.prepare('SELECT id FROM cases WHERE merchant_key IS NULL').all() as { id: string }[]) { const old = getCase(r.id); if (old) putCase(old); }
+  return (db.prepare('SELECT id, created_at, decision, label, in_force_json FROM cases WHERE merchant_key = ? ORDER BY created_at, id').all(merchantId) as { id: string; created_at: string; decision: string; label: Label | null; in_force_json: string | null }[])
+    .map(r => ({ id: r.id, createdAt: r.created_at, decision: r.decision, label: r.label, inForce: r.in_force_json ? JSON.parse(r.in_force_json) : null }));
 }
 
 export function readAudit(caseId: string): AuditRow[] {
@@ -97,6 +118,15 @@ export function verifyAudit(caseId: string): { ok: boolean; brokenAt: number | n
       return { ok: false, brokenAt: (last?.seq ?? 0) + 1, entries: rows.length };
   }
   return { ok: true, brokenAt: null, entries: rows.length };
+}
+
+/** The record as a service client may see it: a passport from another case explains, without its document or people. */
+export function forClient(rec: CaseRecord): InvestigationResult {
+  const passports = rec.result.scenario.passports?.map(p => (!p.ref || p.ref.startsWith(`${rec.id}:`) ? p : {
+    id: p.id, linkId: p.linkId, from: p.from, until: p.until, hours: p.hours, states: p.states, ticketBand: p.ticketBand,
+    volumeUplift: p.volumeUplift, status: p.status, reason: 'Verified by the payment aggregator', document: 'Held by the payment aggregator',
+  }));
+  return { ...rec.result, scenario: { ...rec.result.scenario, passports } };
 }
 
 /** A proposal has ended without taking effect: the case goes back to showing the action still in force. */

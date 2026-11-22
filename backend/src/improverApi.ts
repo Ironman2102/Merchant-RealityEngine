@@ -2,7 +2,7 @@
  * Human-governed rule changes:
  *  - labels produce a calibration PROPOSAL; they never change a score by themselves;
  *  - a threshold search proposes only what passes an independent holdout, honest thin merchants included;
- *  - requester, then a different approver (reviewer/admin), then promote; rollback needs reviewer/admin;
+ *  - requester, then a different approver (reviewer/admin), then promote; rollback takes two reviewers/admins (an operator at the server has an emergency stop);
  *  - every step is in a sealed hash chain, and the promoted rules survive a restart.
  */
 import { createHash } from 'node:crypto';
@@ -171,6 +171,7 @@ export function getRulesStatus(): ApiReply {
         followUp: now.ok ? now.result.fusion.followUp : 'NONE',
         posterior: now.ok ? now.result.fusion.posterior : 0,
       },
+      rollbackRequest: rollbackRequest(),
       proposals: listProposals(),
       audit: readRulesAudit(),
       auditVerification: verifyRulesAudit(),
@@ -237,19 +238,60 @@ export function promoteRuleProposal(id: string, actor: Actor): ApiReply {
   return getRulesStatus();
 }
 
-export function rollbackRulesLive(actor: Actor): ApiReply {
+interface RollbackRequest { by: { id: number; username: string }; at: string; version: string }
+
+/** A rollback waiting for its second person. It lapses when the live rules change. */
+function rollbackRequest(): RollbackRequest | null {
+  const row = getDb().prepare('SELECT request_json FROM rules_rollback WHERE id = 1').get() as { request_json: string } | undefined;
+  if (!row) return null;
+  const request = JSON.parse(row.request_json) as RollbackRequest, live = getLiveDetectorPatch();
+  return live.patch && live.version === request.version ? request : null;
+}
+
+/** Undoing what two people approved takes two people. The first call asks. A different reviewer or admin confirms, or rejects. */
+export function rollbackRulesLive(actor: Actor, body?: unknown): ApiReply {
   if (actor.role !== 'admin' && actor.role !== 'reviewer') return { status: 403, body: { error: 'Only an admin or reviewer can roll back rules.' } };
   syncLiveRules();
+  const waiting = rollbackRequest(), db = getDb();
+  if ((body as { reject?: unknown } | null)?.reject === true) {
+    if (!waiting) return { status: 409, body: { error: 'No rollback is waiting.' } };
+    db.prepare('DELETE FROM rules_rollback').run();
+    appendRulesAudit(`Rollback ${samePerson(waiting.by, actor) ? 'withdrawn' : 'rejected'}`, `Requested by ${waiting.by.username}`, actor);
+    return getRulesStatus();
+  }
+  const live = getLiveDetectorPatch();
+  if (!live.patch) return { status: 409, body: { error: 'The committed base rules are already live.' } };
+  if (!waiting) {
+    const request: RollbackRequest = { by: { id: actor.id, username: actor.username }, at: new Date().toISOString(), version: live.version };
+    db.prepare('INSERT INTO rules_rollback (id, request_json) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET request_json = excluded.request_json').run(JSON.stringify(request));
+    appendRulesAudit('Rollback requested', `From ${live.version}. Waiting for a different reviewer or admin.`, actor);
+    return getRulesStatus();
+  }
+  if (samePerson(waiting.by, actor)) return { status: 403, body: { error: 'A different reviewer or admin must confirm the rollback. In an emergency, an operator can stop the rules at the server: mre rollback --reason "…".' } };
+  restoreBase('Rollback to base rules', `requested by ${waiting.by.username}, confirmed by ${actor.username}`, actor);
+  return getRulesStatus();
+}
+
+/** Break-glass, for an operator with access to the server. There is no route to it over HTTP. */
+export function rollbackRulesEmergency(reason: string): ApiReply {
+  if (!reason.trim()) return { status: 400, body: { error: 'An emergency stop needs a reason.' } };
+  syncLiveRules();
+  if (!getLiveDetectorPatch().patch) return { status: 409, body: { error: 'The committed base rules are already live.' } };
+  restoreBase('EMERGENCY rollback to base rules', `one operator at the server: ${reason.trim()}`, { id: 0, username: 'cli-operator' });
+  return getRulesStatus();
+}
+
+function restoreBase(action: string, why: string, actor: { id: number; username: string }): void {
   const from = getLiveDetectorPatch().version;
   saveLiveRules(null, null);
+  getDb().prepare('DELETE FROM rules_rollback').run();
   for (const p of listProposals()) {
     if (p.status === 'live') {
       p.status = 'rolled_back';
       saveProposal(p);
     }
   }
-  appendRulesAudit('Rollback to base rules', `Restored ${RULES.engine.version} from ${from}`, actor);
-  return getRulesStatus();
+  appendRulesAudit(action, `Restored ${RULES.engine.version} from ${from}; ${why}`, actor);
 }
 
 /** What a proposal would do to one merchant, without making it live. */

@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS label_events (
 CREATE TABLE IF NOT EXISTS rules_proposals (
   id TEXT PRIMARY KEY, created_at TEXT NOT NULL, created_by TEXT NOT NULL, status TEXT NOT NULL,
   approved_by TEXT, promoted_version TEXT, proposal_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS rules_rollback (id INTEGER PRIMARY KEY CHECK (id = 1), request_json TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS rules_audit (
   seq INTEGER PRIMARY KEY, at TEXT NOT NULL, actor TEXT NOT NULL, actor_id INTEGER,
   action TEXT NOT NULL, detail TEXT NOT NULL, prev_hash TEXT NOT NULL, hash TEXT NOT NULL);
@@ -58,6 +59,11 @@ function sealExistingChains(d: DatabaseSync): void {
   for (const h of heads) ins.run(h.case_id, h.seq, h.hash, seal(h.case_id, h.seq, h.hash));
 }
 
+/** Databases from before a column existed get it on first open. */
+function addColumn(d: DatabaseSync, table: string, column: string): void {
+  if (!(d.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some(c => c.name === column)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} TEXT`);
+}
+
 export function getDb(): DatabaseSync {
   if (db) return db;
   if (process.env.MRE_CASE_STORE === 'memory') db = new DatabaseSync(':memory:');
@@ -71,6 +77,9 @@ export function getDb(): DatabaseSync {
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   const sealed = !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'audit_heads'").get();
   db.exec(SCHEMA);
+  addColumn(db, 'users', 'oidc_identity');
+  for (const c of ['merchant_key', 'in_force_json', 'decision', 'label']) addColumn(db, 'cases', c);
+  db.exec('CREATE INDEX IF NOT EXISTS cases_by_merchant ON cases (merchant_key); CREATE UNIQUE INDEX IF NOT EXISTS users_by_identity ON users (oidc_identity)');
   if (!sealed) sealExistingChains(db);
   // Accounts left by the removed persona feature are retired.
   db.exec(`UPDATE users SET disabled = 1 WHERE username IN ('demo-analyst', 'demo-reviewer', 'demo-legal', 'demo-admin')`);

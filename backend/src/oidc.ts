@@ -35,6 +35,10 @@ export function oidcCheckFromEnv(now?: number): OidcCheck | null {
 }
 
 export function verifyIdToken(token: string, check: OidcCheck): { ok: true; role: string; sub: string } | { ok: false; error: string } {
+  try { return readIdToken(token, check); } catch { return { ok: false, error: 'malformed' }; }
+}
+
+function readIdToken(token: string, check: OidcCheck): { ok: true; role: string; sub: string } | { ok: false; error: string } {
   const parts = token.split('.');
   if (parts.length !== 3) return { ok: false, error: 'malformed' };
   const [h, p, s] = parts;

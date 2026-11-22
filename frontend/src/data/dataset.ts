@@ -189,7 +189,7 @@ function reconcile(own: PaymentEvent[], weekly: WeeklyPoint[]): boolean | undefi
 const MERCHANT_LISTS = ['undeclared', 'declaredDomains', 'declaredChannels', 'declaredActivity', 'products'] as const;
 const TEXT_FIELDS = ['payerId', 'payerState', 'paymentLinkId', 'paidTo', 'beneficiaryAccount', 'payerMobile', 'destHolder'] as const;
 /** What a passport from a file is allowed to say about itself. */
-export const asSubmitted = (p: ContextPassport): ContextPassport => (p && typeof p === 'object' ? { ...p, status: 'SUBMITTED', submittedBy: undefined, reviewedBy: undefined } : p);
+export const asSubmitted = (p: ContextPassport): ContextPassport => (p && typeof p === 'object' ? { ...p, status: 'SUBMITTED', submittedBy: undefined, reviewedBy: undefined, revokedBy: undefined, ref: undefined, client: undefined } : p);
 
 /**
  * A file cannot vouch for itself: Context Passports arrive unverified, with no maker or checker, unless the caller says
@@ -219,6 +219,8 @@ function readDataset(raw: unknown, trustPassports: boolean): ParseResult {
   if (!Array.isArray(m.hours) || m.hours.length !== 2 || !m.hours.every(isNum)) errors.push('merchant.hours is required as [open, close] in 24h, e.g. [7, 22].');
   else if (!m.hours.every(h => Number.isInteger(h) && h >= 0 && h <= 24) || m.hours[0] === m.hours[1]) errors.push('merchant.hours must be two different whole hours between 0 and 24. Overnight businesses may close before they open, e.g. [22, 6].');
   if (isNum(m.ticketMin) && isNum(m.ticketMax) && !(m.ticketMin >= 0 && m.ticketMin < m.ticketMax)) errors.push('merchant.ticketMin must be at least 0 and below merchant.ticketMax.');
+  // An invisible character or stray space would make the same merchant look like one with no history.
+  if (isStr(m.id) && (m.id !== m.id.trim() || /[\p{Cc}\p{Cf}]/u.test(m.id))) errors.push('merchant.id cannot start or end with a space, or contain invisible characters.');
   if (isStr(m.mcc) && !/^(\d{4}|UNKNOWN)$/.test(m.mcc)) errors.push('merchant.mcc must be four digits, or UNKNOWN.');
   if (isNum(m.accountAgeDays) && m.accountAgeDays < 0) errors.push('merchant.accountAgeDays cannot be negative.');
   if (isNum(m.baselineWeekly) && m.baselineWeekly <= 0) errors.push('merchant.baselineWeekly must be above 0.');

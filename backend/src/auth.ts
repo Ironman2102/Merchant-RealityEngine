@@ -69,9 +69,10 @@ function actorFromSigned(token: string): Actor | null {
 }
 
 function bootActor(boot: { username: string; password: string; role: Role }): Actor | null {
-  const row = getDb().prepare('SELECT id, disabled FROM users WHERE username = ?').get(boot.username) as { id: number; disabled: number } | undefined;
+  const row = getDb().prepare('SELECT id, disabled, oidc_identity FROM users WHERE username = ?').get(boot.username) as { id: number; disabled: number; oidc_identity: string | null } | undefined;
   if (!row) return createUser(boot.username, boot.password, boot.role);
-  return row.disabled ? null : { id: row.id, username: boot.username, role: boot.role };
+  // A configured account never takes over a single sign-on identity's row.
+  return row.disabled || row.oidc_identity ? null : { id: row.id, username: boot.username, role: boot.role };
 }
 
 /** Maker/checker compares people by id and by name, because ids are not stable across serverless instances. */
@@ -104,18 +105,22 @@ function sameSecret(a: string, b: string): boolean {
   return timingSafeEqual(ab, bb);
 }
 
-function issueSession(actor: Actor): string {
-  const signed = signActor(actor);
+/** Only a password sign-in to a configured account may get a signed cookie: the cookie carries that account's role. */
+function issueSession(actor: Actor, configured = false): string {
+  const signed = configured ? signActor(actor) : null;
   const token = signed ?? randomBytes(32).toString('base64url');
   getDb().prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)').run(tokenHash(token), actor.id, Date.now() + SESSION_MS);
   return token;
 }
 const scrypt = (pw: string, salt: string) => scryptSync(pw, salt, 64, { N: 16384, r: 8, p: 1 }).toString('hex');
 
+const nameTaken = (username: string) => getDb().prepare('SELECT oidc_identity FROM users WHERE lower(username) = lower(?)').get(username) as { oidc_identity: string | null } | undefined;
+
 export function createUser(username: string, password: string, role: Role): Actor {
   if (!/^[a-z0-9._-]{3,40}$/i.test(username)) throw Object.assign(new Error('Username: 3–40 letters, digits, dot, dash or underscore.'), { status: 400 });
   if (weakSecret(password, 12)) throw Object.assign(new Error('Password must be at least 12 characters and not a placeholder.'), { status: 400 });
   if (!ROLES.includes(role)) throw Object.assign(new Error('Unknown role.'), { status: 400 });
+  if (nameTaken(username)) throw Object.assign(new Error('That username is taken. Usernames ignore case.'), { status: 400 });
   const salt = randomBytes(16).toString('hex');
   const r = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at) VALUES (?, ?, ?, ?, ?)').run(username, role, salt, scrypt(password, salt), new Date().toISOString());
   return { id: Number(r.lastInsertRowid), username, role };
@@ -129,7 +134,7 @@ export function login(username: string, password: string): { token: string; acto
   if (boot) {
     if (!sameSecret(pw, boot.password)) return null;
     const actor = bootActor(boot);
-    return actor ? { token: issueSession(actor), actor } : null;
+    return actor ? { token: issueSession(actor, true), actor } : null;
   }
   const row = getDb().prepare('SELECT id, username, role, pw_salt, pw_hash, disabled FROM users WHERE username = ?').get(name) as
     { id: number; username: string; role: Role; pw_salt: string; pw_hash: string; disabled: number } | undefined;
@@ -145,25 +150,47 @@ function usernameFromSub(sub: string): string {
   return cleaned.length >= 3 ? cleaned : `oidc-${createHash('sha256').update(sub).digest('hex').slice(0, 12)}`;
 }
 
-/** Opens a session for a verified ID token. The role is the group map, not a password. */
+const identityOf = (issuer: string, sub: string) => createHash('sha256').update(JSON.stringify([issuer, sub])).digest('hex');
+
+/**
+ * Opens a session for a verified ID token. The role is the group map, not a password.
+ * An account belongs to one (issuer, subject). A name that cleans to somebody else's username never signs in as them:
+ * a local account stays local until an operator links it (`mre user:link-sso`).
+ */
 export function loginWithIdToken(idToken: string, check: OidcCheck): { token: string; actor: Actor } | null {
   const verified = verifyIdToken(idToken, check);
   if (!verified.ok || !ROLES.includes(verified.role as Role)) return null;
-  const role = verified.role as Role;
-  const username = usernameFromSub(verified.sub);
-  const existing = getDb().prepare('SELECT id, disabled FROM users WHERE username = ?').get(username) as { id: number; disabled: number } | undefined;
-  let id: number;
-  if (!existing) {
-    const salt = randomBytes(16).toString('hex');
-    const made = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at) VALUES (?, ?, ?, ?, ?)').run(username, role, salt, scrypt(randomBytes(24).toString('base64url'), salt), new Date().toISOString());
-    id = Number(made.lastInsertRowid);
-  } else if (existing.disabled) return null;
-  else {
-    id = existing.id;
+  const role = verified.role as Role, identity = identityOf(check.issuer, verified.sub);
+  const known = getDb().prepare('SELECT id, username, disabled FROM users WHERE oidc_identity = ?').get(identity) as { id: number; username: string; disabled: number } | undefined;
+  let id: number, username: string;
+  if (known) {
+    if (known.disabled) return null;
+    ({ id, username } = known);
     getDb().prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
+  } else {
+    username = usernameFromSub(verified.sub);
+    if (bootAccounts().some(u => u.username.toLowerCase() === username.toLowerCase())) return null;
+    const taken = nameTaken(username);
+    if (taken && !taken.oidc_identity) return null;
+    if (taken) username = `oidc-${identity.slice(0, 16)}`;
+    if (taken && nameTaken(username)) return null;
+    const salt = randomBytes(16).toString('hex');
+    const made = getDb().prepare('INSERT INTO users (username, role, pw_salt, pw_hash, created_at, oidc_identity) VALUES (?, ?, ?, ?, ?, ?)').run(username, role, salt, scrypt(randomBytes(24).toString('base64url'), salt), new Date().toISOString(), identity);
+    id = Number(made.lastInsertRowid);
   }
   const actor = { id, username, role };
   return { token: issueSession(actor), actor };
+}
+
+/** For an operator at the server: this local account and this single sign-on identity are one person. */
+export function linkSsoIdentity(username: string, issuer: string, sub: string): void {
+  const identity = identityOf(issuer, sub), db = getDb();
+  const row = db.prepare('SELECT id, oidc_identity FROM users WHERE username = ?').get(username) as { id: number; oidc_identity: string | null } | undefined;
+  if (!row) throw new Error('No account with that username.');
+  if (row.oidc_identity) throw new Error('That account is already linked.');
+  if (bootAccounts().some(u => u.username === username)) throw new Error('A configured account cannot be linked.');
+  if (db.prepare('SELECT 1 FROM users WHERE oidc_identity = ?').get(identity)) throw new Error('That identity already has an account.');
+  db.prepare('UPDATE users SET oidc_identity = ? WHERE id = ?').run(identity, row.id);
 }
 
 export function logout(token: string): void {

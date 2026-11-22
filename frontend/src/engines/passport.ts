@@ -46,8 +46,21 @@ export function passportErrors(raw: unknown): string[] {
   return out;
 }
 
-/** A stored passport that breaks today's limits explains nothing. */
-export const passportsInForce = (sc: Scenario) => (sc.passports ?? []).filter(p => p.status === 'VERIFIED' && !passportErrors(p).length);
+/** Two passports for the same QR whose periods meet. Together they would get around every limit that one has. */
+export function passportsOverlap(a: ContextPassport, b: ContextPassport): boolean {
+  if (a.linkId !== b.linkId) return false;
+  const [from, until] = passportPeriod(a), [start, end] = passportPeriod(b);
+  return from <= end && start <= until;
+}
+
+/** What explains payments: verified, within today's limits, and one per QR at a time (the earlier one stands). */
+export function passportsInForce(sc: Scenario): ContextPassport[] {
+  const valid = (sc.passports ?? []).filter(p => p.status === 'VERIFIED' && !passportErrors(p).length)
+    .sort((a, b) => passportPeriod(a)[0] - passportPeriod(b)[0] || a.id.localeCompare(b.id));
+  const out: ContextPassport[] = [];
+  for (const p of valid) if (!out.some(q => passportsOverlap(p, q))) out.push(p);
+  return out;
+}
 
 /** Payments a verified passport explains on one axis. They are set aside from that test: not counted as innocent either. */
 export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => boolean {

@@ -19,7 +19,8 @@
 5. A signal built from others (H3) measures only their co-occurrence, is shrunk when they fire and is not an independent family.
 6. k streams tested lowers each stream's prior log-odds by ln(k).
 7. The merchant is scored without passports first. If a conduct signal fires in any scope, that score stands and the passports are suspended.
-   Otherwise a passport sets covered payments aside from profile tests, without counting them as innocent.
+   Otherwise a passport sets covered payments aside from profile tests, without counting them as innocent. One applies per QR at a
+   time. An answered question is written into the case's reason.
 8. Restriction needs an identified link. Otherwise the recommendation stops at due diligence.
 
 ## Case gate

@@ -20,6 +20,17 @@ Use **Sweet Crumbs** when asked about crawlers, refunds or match timing.
 
 The same two people can record and verify a Context Passport on the Moonlight Bakes test file.
 
+## Before every rehearsal and the real demo
+
+Restrictions, decisions and passports follow the merchant, so a second run on the same database shows the first run's results.
+Start each run on an empty one, in one terminal:
+
+```bash
+export MRE_DB_FILE="$(mktemp -d)/demo.db"
+npm run dev:users   # the last four lines of backend/data/dev-users.txt are the passwords for this run
+./start.sh
+```
+
 ## Fallback
 
 Keep a screen recording. `/demo` works offline once loaded and needs no sign-in or server.

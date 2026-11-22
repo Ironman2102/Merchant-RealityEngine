@@ -1,7 +1,9 @@
 /**
  * Per-stream scoring. A bakery that takes bets on the side looks like a bakery on average, so every QR / link is also
  * scored on its own, plus the merchant's repeat payers as a group (for betting mixed into the same QR).
- * The repeat-payer group is chosen only by how often people pay; the tests that measure repetition abstain inside it.
+ * The repeat-payer group is chosen only by how often people pay, so B7 abstains inside it. B8 and B10 do not, and they
+ * count payments rather than people there: a few generous regulars can open a false case. Counting people instead was
+ * tried on 22 Nov 2026 and lost 80 of 3,112 caught fronts on holdout seeds, so it was not adopted.
  */
 import type { Scenario } from '../types/merchant';
 import type { PaymentEvent } from '../types/payment';

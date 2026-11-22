@@ -16,11 +16,17 @@ is usually a question and 20% is usually a case. In a small shop, where that lin
 even 20-30% is usually a question. Mixed into the same QR at 10% we often miss it. We say so.
 
 **Can a fraudster get a fake passport?**
-It covers one QR, for at most 180 days, 12 hours a day, a 10x price band and 10 states (or a declared national business), and
-needs a document and a second person. If any conduct signal fires (repeat top-ups, distant regulars, refund abuse, a betting-page
-sighting), passports are switched off for that merchant and the score is exactly the one without them. The limit: a front that shows
-only changed hours, prices or places, with no conduct signal, can be quietened by a forged document that a second person accepts.
-In a synthetic stress test with the widest passports on every QR, that silenced the question for 240 of 2,400 fronts. No case moved.
+It is possible. A passport covers one QR, one at a time, for at most 180 days, 12 hours a day, a 10x price band and 10 states (or a
+declared national business). A named person records it and a different person verifies it: a service key cannot do either. If any
+conduct signal fires, passports are switched off and the score is exactly the one without them. An answered question stays on the
+record, and a reviewer can revoke the passport, which brings the question back on every case it answered.
+The limit: payment data cannot show that a document is forged. When we searched for the best forged passport on every QR, it
+answered the question for at least 244 of 2,400 synthetic fronts, none of which had a conduct signal. No case moved.
+
+**Do you ever accuse an honest merchant?**
+Yes. On fresh synthetic seeds, 5 of 10,800 honest merchants opened a case, all bakeries taking catering advances from a few
+regulars. A fix that counted people instead of payments removed 3 of them and lost 80 of 3,112 caught fronts, so we did not adopt
+it. Two people can clear such a case, and later cases show that decision. A passport cannot clear it.
 
 **Can't they pick a looser category?**
 The category picks what is normal, so looking normal earns little credit, and conduct tests ignore the category. Without payer

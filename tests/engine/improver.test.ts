@@ -68,7 +68,8 @@ export default function (): number {
       syncLiveRules();
       check('promoted rules survive a restart', getLiveDetectorPatch().version.includes(prop.id));
       check('analyst cannot roll back', rollbackRulesLive(analyst).status === 403);
-      check('reviewer rolls back', rollbackRulesLive(checker).status === 200);
+      check('a reviewer requests a rollback', rollbackRulesLive(checker).status === 200);
+      check('a second person confirms it', rollbackRulesLive(maker).status === 200);
       const back = analyzeDataset(raw);
       check('rollback restores the score', back.ok && back.result.fusion.posterior === before.result.fusion.posterior);
     }

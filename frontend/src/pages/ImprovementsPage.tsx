@@ -21,6 +21,7 @@ type StoredProposal = {
 type RulesStatus = {
   rulesVersion: string;
   livePatch: Record<string, unknown> | null;
+  rollbackRequest: { by: { username: string }; at: string } | null;
   evasionCheck: { salesCount: number; operator: string; decision: string; followUp: string; posterior: number };
   proposals: StoredProposal[];
   audit: { seq: number; actor: string; action: string; detail: string; hash: string }[];
@@ -101,8 +102,16 @@ export function ImprovementsPage() {
             </table>) : <p className="p-5 text-sm text-mute">No labels yet.</p>}
         </Panel>
 
-        <Panel title="3. Approve, promote, roll back" subtitle="The requester can never approve or promote. Reviewer or admin only."
-          right={status.livePatch ? <Btn size="sm" disabled={busy} onClick={() => void call('/rules/rollback', {}, 'Back on the committed base rules.')}><RotateCcw size={13} />Roll back to base</Btn> : undefined}>
+        <Panel title="3. Approve, promote, roll back" subtitle="The requester can never approve, promote or confirm a rollback. Reviewer or admin only."
+          right={status.livePatch && !status.rollbackRequest ? <Btn size="sm" disabled={busy} onClick={() => void call('/rules/rollback', {}, 'Rollback requested. A different reviewer or admin must confirm it.')}><RotateCcw size={13} />Request rollback</Btn> : undefined}>
+          {status.rollbackRequest && (
+            <div role="status" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded border border-line bg-panel2 p-3 text-sm">
+              <span>Rollback to the base rules requested by <b>{status.rollbackRequest.by.username}</b>. A different reviewer or admin confirms it.</span>
+              <span className="flex gap-2">
+                <Btn size="sm" variant="primary" disabled={busy} onClick={() => void call('/rules/rollback', {}, 'Back on the committed base rules.')}>Confirm rollback</Btn>
+                <Btn size="sm" disabled={busy} onClick={() => void call('/rules/rollback', { reject: true }, 'The rollback request is closed.')}>Reject or withdraw</Btn>
+              </span>
+            </div>)}
           {!status.proposals.length && <p className="text-sm text-mute">No proposal is waiting.</p>}
           <div className="space-y-3">{status.proposals.map(p => (
             <div key={p.id} className="space-y-2 rounded border border-line bg-panel2 p-3">

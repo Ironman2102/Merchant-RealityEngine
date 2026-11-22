@@ -46,7 +46,7 @@ All numbers are synthetic. None is real-world accuracy.
 - **The limit of that exam.** The same assistant wrote the exam and the fix, knew what the exam contained, and all of it is
   synthetic. It shows regressions and direction. It is not an accuracy claim.
 - **After the exam**, the engine got a speed option for backtests. The exam was re-run and the result was byte-identical.
-- **Automated checks:** `npm test` passes (530 engine assertions, 35 security probes, 34 adversarial cases), as do the type
+- **Automated checks:** `npm test` passes (606 engine assertions, 35 security probes, 34 adversarial cases), as do the type
   check and the build.
 - **By hand, in a browser:** the demo, the Context Passport, sign-in, a blocked single-person check followed by a second-person
   check, CSV mapping, the portfolio screen and a phone-width layout.
@@ -172,13 +172,26 @@ test of the rule itself (`tests/engine/retest.test.ts`), run first on the earlie
 | Approvals and labels | Two people to lift as well as to impose. Labels can be rejected or withdrawn | Fixed |
 | Service clients and secrets | Records are scoped to the client. Weak secrets are refused | Fixed |
 
+### J. A second pass over what was left open, and fixed
+
+This pass also found that some rows in section I claimed more than was true. They hold now. The tests are in
+`tests/engine/open-items.test.ts`, including one that lets a single person of each role try random action sequences against
+every two-person rule.
+
+| Area | What holds now | Status |
+|---|---|---|
+| Context Passport | A human maker and a different checker, one per QR at a time, revocable, scoped between clients, answers stay on record | Fixed |
+| Restrictions and labels | They follow the merchant. Clearing a merchant with an earlier case, confirmation or restriction takes two people | Fixed |
+| Rules rollback | Two people, with an audited emergency stop at the server | Fixed |
+| Sign-in, exports and input | Stricter account linking, secrets, identifiers and export encoding | Fixed |
+
 Limits that remain:
 
-- A passport can quieten the question for a front that shows no conduct at all (240 of 2,400 synthetic fronts with the widest
-  passports on every QR). In the same test of 6,000 merchants, no case and no conduct-bearing score moved.
-- A passport cannot clear a false alarm that has a conduct signal. A person must (1 of 3,600 honest merchants in that test).
-- A verified passport cannot yet be revoked. It expires within 180 days.
-- A restriction belongs to a case, not to the merchant: a new case for the same merchant does not show it.
+- Payment data cannot show that a document is forged. The best forged passport found on every QR answered the question for at
+  least 244 of 2,400 synthetic fronts, all without a conduct signal. No case moved.
+- 5 of 10,800 honest merchants opened a case on fresh seeds. Counting people instead of payments removed 3 but lost 80 of
+  3,112 caught fronts, so it was not adopted. Two people can clear such a case.
+- Merchant history follows the merchant id, so a merchant re-onboarded under a new id starts clean.
 
 ---
 

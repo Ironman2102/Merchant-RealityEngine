@@ -45,6 +45,7 @@ paths:
                   scope: { type: object }
                   streams: { type: array, items: { type: object } }
                   suspectLinks: { type: array, items: { type: string } }
+                  passportAnswered: { type: array, items: { type: string }, description: Passports that answered a question. }
   /v1/cases:
     post:
       summary: Score and store a case.

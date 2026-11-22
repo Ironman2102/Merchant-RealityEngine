@@ -6,10 +6,11 @@ const field = 'mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5
 
 /** A merchant's way to explain a change, and the two-person check before it counts. */
 export function PassportPanel() {
-  const { result, caseId, verifyPassport, submitPassport, syncError } = useInvestigation();
+  const { result, caseId, verifyPassport, submitPassport, endorsePassport, revokePassport, syncError } = useInvestigation();
   const list = result.scenario.passports ?? [];
   const links = [...new Set(result.events.flatMap(e => (e.linkId ? [e.linkId] : [])))];
   const [adding, setAdding] = useState(false);
+  const [revoking, setRevoking] = useState<string | null>(null);
   const canAdd = !!caseId && links.length > 0;
   if (!list.length && result.fusion.followUp !== 'ASK' && !canAdd) return null;
 
@@ -30,18 +31,26 @@ export function PassportPanel() {
       <div className="space-y-3 text-sm">
         {!list.length && <p className="text-xs text-mute">No change has been recorded for this merchant.{!caseId && ' Passports are recorded on a saved case in the AI Engine.'}</p>}
         {result.passportsSuspended && <p role="status" className="rounded-lg border border-line bg-panel2 p-2 text-xs">Verified passports are not applied to this case: a conduct signal fired, and a passport cannot explain conduct. The score is the same as with no passport.</p>}
+        {!!result.passportAnswered?.length && <p role="status" className="rounded-lg border border-line bg-panel2 p-2 text-xs">This change raised a question, and passport {result.passportAnswered.join(', ')} answered it. The question returns if the passport is revoked or expires.</p>}
         {list.map(p => (
           <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-panel2 p-3">
             <div className="min-w-0">
-              <div className="font-medium">{p.reason} <Badge tone={p.status === 'VERIFIED' ? 'ok' : p.status === 'REJECTED' ? 'bad' : 'warn'}>{p.status.toLowerCase()}</Badge></div>
+              <div className="font-medium">{p.reason} <Badge tone={p.status === 'VERIFIED' ? 'ok' : p.status === 'SUBMITTED' ? 'warn' : 'bad'}>{p.status.toLowerCase()}</Badge></div>
               <div className="mt-1 text-xs text-mute">{p.linkId} · from {p.from} · {p.document}</div>
               <div className="text-xs text-dim">
                 Covers: {[p.hours && `hours ${p.hours[0]}:00–${p.hours[1]}:00`, p.ticketBand && `₹${p.ticketBand[0]}–₹${p.ticketBand[1]}`, p.states && (p.states.includes('*') ? 'all India' : p.states.join(', ')), p.volumeUplift && `up to ${p.volumeUplift}× volume`].filter(Boolean).join(' · ') || 'nothing measurable'}
               </div>
             </div>
+            {caseId && p.status === 'VERIFIED' && (revoking === p.id ? (
+              <form className="flex flex-wrap items-end gap-2 text-xs" onSubmit={ev => { ev.preventDefault(); revokePassport(p.id, String(new FormData(ev.currentTarget).get('why') ?? '')); setRevoking(null); }}>
+                <label>Reason for revoking<input name="why" required maxLength={500} className={field} /></label>
+                <Btn size="sm" variant="primary" type="submit">Revoke passport</Btn><Btn size="sm" type="button" onClick={() => setRevoking(null)}>Cancel</Btn>
+              </form>) : <Btn size="sm" onClick={() => setRevoking(p.id)}>Revoke</Btn>)}
             {p.status === 'SUBMITTED' && (
               <div className="flex gap-2">
-                <Btn size="sm" variant="primary" onClick={() => verifyPassport(p.id, true)}>{caseId ? 'Verify document' : 'Simulate second-person check'}</Btn>
+                {caseId && !p.submittedBy
+                  ? <Btn size="sm" variant="primary" onClick={() => endorsePassport(p.id)}>Take on as maker</Btn>
+                  : <Btn size="sm" variant="primary" onClick={() => verifyPassport(p.id, true)}>{caseId ? 'Verify document' : 'Simulate second-person check'}</Btn>}
                 {caseId && <Btn size="sm" onClick={() => verifyPassport(p.id, false)}>Reject</Btn>}
               </div>)}
           </div>))}

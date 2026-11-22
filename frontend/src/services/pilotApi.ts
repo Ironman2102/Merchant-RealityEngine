@@ -22,6 +22,9 @@ export interface ServerUser {
   investigation?: ServerInvestigation;
   /** The action now in force. A proposal does not change it. */
   inForce?: { id: string; level: string; actions: string[]; restricts: boolean } | null;
+  /** Every restriction in force on this merchant, from any of its cases. */
+  restrictions?: { caseId: string; id: string; level: string; actions: string[] }[];
+  history?: { id: string; createdAt: string; decision: string; label: string | null }[];
   pending?: { response?: { level: string; by: { id: number; username: string }; at: string }; label?: { label: string; by: { id: number; username: string }; at: string } };
 }
 export type PilotCase = ServerUser & { id: string; createdAt: string; scenario: Scenario; [k: string]: unknown };
@@ -40,7 +43,7 @@ export async function getPilotCase(id: string): Promise<PilotCase> {
   return body;
 }
 
-export async function updatePilotCase(id: string, action: 'review' | 'response' | 'label' | 'approve' | 'passport' | 'passport-review', payload: Record<string, unknown>): Promise<Record<string, any>> {
+export async function updatePilotCase(id: string, action: 'review' | 'response' | 'label' | 'approve' | 'passport' | 'passport-review' | 'passport-revoke', payload: Record<string, unknown>): Promise<Record<string, any>> {
   const response = await fetch(`/api/investigations/${encodeURIComponent(id)}/${action}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
   });

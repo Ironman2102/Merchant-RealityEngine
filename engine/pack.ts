@@ -73,6 +73,7 @@ export function buildPack(result: InvestigationResult, meta: PackMeta): Record<s
     scope: result.scope,
     streams: result.streams,
     contextPassports: result.scenario.passports ?? [],
+    contextPassportsAnswered: result.passportAnswered ?? [],
     contextPassportsSuspended: result.passportsSuspended ?? false,
     confidentiality: 'Internal. Do not share this pack, its reasons or the fact of any report with the merchant.',
     strDraft: {

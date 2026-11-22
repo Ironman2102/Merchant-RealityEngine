@@ -24,10 +24,10 @@ interface Ctx {
   setLevel: (l: ResponseLevel | null) => void; execute: () => void; setLabel: (l: Label | null) => void; rejectLabel: () => void;
   audit: ActionRecord[];
   /** Saved-case mode: analyst actions are written to the server and the server's reply replaces local state. */
-  verifyPassport: (id: string, ok: boolean) => void; submitPassport: (body: Record<string, unknown>) => void;
+  verifyPassport: (id: string, ok: boolean) => void; endorsePassport: (id: string) => void; revokePassport: (id: string, reason: string) => void; submitPassport: (body: Record<string, unknown>) => void;
   caseId: string | null; loadCase: (id: string, sc: Scenario, server: ServerUser, animate?: boolean) => void; syncError: string;
   /** Server-side governance state for a saved case: proposals waiting for a second person, and audit-chain status. */
-  pending: ServerUser['pending']; inForce: ServerUser['inForce']; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
+  pending: ServerUser['pending']; inForce: ServerUser['inForce']; restrictions: NonNullable<ServerUser['restrictions']>; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
 }
 const C = createContext<Ctx | null>(null);
 export const useInvestigation = () => { const c = useContext(C); if (!c) throw new Error('InvestigationProvider missing'); return c; };
@@ -45,6 +45,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   const [syncError, setSyncError] = useState('');
   const [pending, setPending] = useState<ServerUser['pending']>({});
   const [inForce, setInForce] = useState<ServerUser['inForce']>(null);
+  const [restrictions, setRestrictions] = useState<NonNullable<ServerUser['restrictions']>>([]);
   const [auditIntact, setAuditIntact] = useState<boolean | null>(null);
   const userRef = useRef(user);
   userRef.current = user;
@@ -89,7 +90,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => () => { token.current++; }, []);
 
-  const adopt = useCallback((s: ServerUser) => { if (s.investigation && s.scenario) setSaved({ scenario: s.scenario, investigation: s.investigation }); setPending(s.pending ?? {}); setInForce(s.inForce ?? null); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
+  const adopt = useCallback((s: ServerUser) => { if (s.investigation && s.scenario) setSaved({ scenario: s.scenario, investigation: s.investigation }); setPending(s.pending ?? {}); setInForce(s.inForce ?? null); setRestrictions(s.restrictions ?? []); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
     ...u, notes: s.user.notes, clarification: s.user.clarification, chosenLevel: (s.user.chosenLevel as ResponseLevel | null), legalVerified: s.user.legalVerified,
     escrowConfirmed: s.user.escrowConfirmed, executed: s.user.executed, label: (s.user.label as Label | null),
     audit: s.audit.map((a, i) => ({ seq: a.seq ?? i + 1, at: fmtDateTime(Date.parse(a.at)), actor: a.actor, action: a.action, detail: a.detail, hash: a.hash })),
@@ -100,7 +101,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     if (animate) { setDetailsOpen(false); const my = token.current; void (async () => { setStarted(true); for (const n of IDS) { if (token.current !== my) return; setStatus(st => ({ ...st, [n]: 'running' })); selectLayer(n); await new Promise(r => setTimeout(r, 350)); if (token.current !== my) return; setStatus(st => ({ ...st, [n]: 'done' })); } setDetailsOpen(true); })(); }
     else { setStatus({ 1: 'done', 2: 'done', 3: 'done', 4: 'done', 5: 'done', 6: 'done', 7: 'done' }); setStarted(true); setDetailsOpen(true); }
   }, [adopt]);
-  const sync = useCallback(async (action: 'review' | 'response' | 'label' | 'passport' | 'passport-review', payload: Record<string, unknown>) => {
+  const sync = useCallback(async (action: 'review' | 'response' | 'label' | 'passport' | 'passport-review' | 'passport-revoke', payload: Record<string, unknown>) => {
     if (!caseId) return;
     setSyncError('');
     try { adopt(await updatePilotCase(caseId, action, payload) as ServerUser); }
@@ -113,6 +114,8 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   }, [caseId, adopt]);
 
   const submitPassport = useCallback((body: Record<string, unknown>) => void sync('passport', body), [sync]);
+  const endorsePassport = useCallback((id: string) => void sync('passport', { endorse: id }), [sync]);
+  const revokePassport = useCallback((id: string, reason: string) => void sync('passport-revoke', { passportId: id, reason }), [sync]);
   const verifyPassport = useCallback((id: string, ok: boolean) => {
     if (caseId) { void sync('passport-review', { passportId: id, verify: ok }); return; }
     if (ok) setChecked(c => [...c, id]);
@@ -135,6 +138,6 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     return [...sys, ...user.audit].map((a, i) => ({ ...a, seq: i + 1 }));
   }, [status, user.audit, t0]);
 
-  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, rejectLabel, audit, caseId, loadCase, syncError, pending, inForce, auditIntact, approve, verifyPassport, submitPassport };
+  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, rejectLabel, audit, caseId, loadCase, syncError, pending, inForce, restrictions, auditIntact, approve, verifyPassport, submitPassport, endorsePassport, revokePassport };
   return <C.Provider value={v}>{children}</C.Provider>;
 }

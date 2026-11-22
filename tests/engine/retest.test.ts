@@ -239,7 +239,7 @@ export default async function (): Promise<number> {
     const responses = loadWorkflow('workflow').responses;
     writeFileSync(join(wfDir, 'responses.json'), JSON.stringify(responses.map(r => (r.id === 'L3' ? { ...r, auto: true } : r))));
     process.env.MRE_WORKFLOW_DIR = wfDir;
-    try { id = open(front()); go(id, 'L3'); check('R7 auto:true cannot skip approval of a restriction', !!now(id).pending.response); }
+    try { id = open(load('09-telegram-betting-no-website.json')); go(id, 'L3'); check('R7 auto:true cannot skip approval of a restriction', !!now(id).pending.response); }
     finally { delete process.env.MRE_WORKFLOW_DIR; }
     const cfg = loadWorkflow('workflow');
     check('R7 a restriction cannot be relabelled harmless', validateWorkflow({ ...cfg, responses: cfg.responses.map(r => (r.id === 'L3' ? { ...r, restrictsFunds: false } : r)) }).length > 0);

@@ -108,6 +108,8 @@ Edit any sample and re-upload it to see how the flags change, e.g. set the betti
   `status`, `submittedBy` and `reviewedBy` in a file are never trusted: every passport arrives `SUBMITTED`, and a second person verifies it on the server.
   Limits: unique ids, at most 180 days, hours up to 12 a day, highest price up to 10x the lowest (above 0), up to 10 states or `*`,
   volume up to 3x, and at least one of these set. A file with a passport outside the limits is refused.
+  Passports for the same QR cannot be verified for overlapping periods. One that arrives through the API needs a person to take it on first.
+- `merchant.id`: no leading or trailing space and no invisible characters. Restrictions and decisions follow this id.
 - `merchant.mcc`: four digits as text (keep a leading zero, as in `"0742"`), or `UNKNOWN`.
 - Identifiers (`payerId`, `paidTo`, `beneficiaryAccount`, `payerMobile`, `destHolder`) are text.
 - `merchant.undeclared`: any of `ticketMax`, `hours`, `catchment`, `expectedRoundShare`. Those fields are then not tested.

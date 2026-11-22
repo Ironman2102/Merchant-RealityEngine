@@ -6,7 +6,7 @@ import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
 import { mlScore } from './ml';
-import { listPassports, proposePassport, reviewPassport } from './passports';
+import { listPassports, proposePassport, reviewPassport, revokePassport } from './passports';
 import { getCase, putCase } from './store';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
@@ -85,7 +85,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/rules/rollback' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to roll back rules.' } });
-      return send(res, rollbackRulesLive(actor));
+      return send(res, rollbackRulesLive(actor, await readBody(req)));
     }
     const rulesMatch = path.match(/^\/rules\/proposals\/([^/]+)\/(approve|promote)$/);
     if (rulesMatch && method === 'POST') {
@@ -98,7 +98,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (v1) return send(res, v1);
     }
 
-    const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit|passport|passport-review))?)?$/);
+    const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit|passport|passport-review|passport-revoke))?)?$/);
     if (!match) return send(res, { status: 404, body: { error: 'Unknown route.' } });
     if (!actor) return send(res, { status: 401, body: { error: 'Sign in to use the investigation API.' } });
     const [, id, action] = match;
@@ -133,6 +133,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       : action === 'label' ? labelInvestigation(id, body, actor)
       : action === 'passport' ? proposePassport(id, body, actor)
       : action === 'passport-review' ? reviewPassport(id, body, actor)
+      : action === 'passport-revoke' ? revokePassport(id, body, actor)
       : action === 'summary' ? await summarise(id, actor)
       : { status: 405, body: { error: 'Unknown step.' } };
     send(res, reply);

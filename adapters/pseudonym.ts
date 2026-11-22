@@ -22,8 +22,10 @@ export function maskIds(row: object, key: () => Buffer, fields: readonly string[
 let cached: Buffer | null = null;
 
 const PLACEHOLDER = /change[-_ ]?me|placeholder|replace[-_ ]?(me|this)|your[-_ ](secret|key|password)/i;
-/** Too short, a documented placeholder, or hardly any distinct characters. */
-export const weakSecret = (value: string, minLength = 16) => value.length < minLength || PLACEHOLDER.test(value) || new Set(value).size < 5;
+const GUESSABLE = /passw(or|0r)d|secret|admin|qwerty|letmein|welcome|merchant|bakery|netlify|default|example|123456789|12345678|1234567|123456|12345|1234/gi;
+/** Too short, a documented placeholder, hardly any distinct characters, or little more than guessable words. */
+export const weakSecret = (value: string, minLength = 16) => value.length < minLength || PLACEHOLDER.test(value) || new Set(value).size < 5
+  || value.replace(GUESSABLE, '').replace(/[-_ .!@]/g, '').length < 6;
 
 /** A host other than a developer's machine. Function hosts often leave NODE_ENV unset. */
 export const hosted = () => process.env.NODE_ENV === 'production' || process.env.MRE_STATELESS_SESSIONS === '1'

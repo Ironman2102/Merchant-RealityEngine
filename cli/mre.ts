@@ -5,15 +5,16 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadHashKey } from '../adapters/pseudonym';
+import { toCsv } from '../adapters/csv';
 import { mapExport } from '../adapters/mapExport';
-import { createUser, ROLES, type Role } from '../backend/src/auth';
+import { createUser, linkSsoIdentity, ROLES, type Role } from '../backend/src/auth';
 import { createServiceKey } from '../backend/src/serviceKeys';
 import { verifyAudit } from '../backend/src/store';
 import { openInvestigation } from '../backend/src/workflow';
 import { analyze, FEATURE_COLUMNS, features } from '../engine/index';
 import { loadWorkflow, validateWorkflow } from '../engine/workflowConfig';
 import { demoLearn } from '../scripts/demo-learn';
-import { rollbackRulesLive } from '../backend/src/improverApi';
+import { rollbackRulesEmergency } from '../backend/src/improverApi';
 import { analyseCanonical } from '../backend/src/algorithms/analyze';
 import { syncLiveRules } from '../backend/src/rulesState';
 import { runBatch } from './batch';
@@ -21,7 +22,7 @@ import { runBatch } from './batch';
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd || cmd === '--help') {
-  console.log('mre batch | features | serve | demo | demo:learn | rollback | validate-config | verify-audit | user:add | key:create');
+  console.log('mre batch | features | serve | demo | demo:learn | rollback | validate-config | verify-audit | user:add | user:link-sso | key:create');
   process.exit(cmd ? 0 : 2);
 }
 
@@ -61,7 +62,7 @@ if (cmd === 'batch') {
     if (!ran.ok) continue;
     const row = features(ran.result);
     const label = truth.get(d.merchant.id) ?? 0;
-    lines.push([d.merchant.id, label, ...FEATURE_COLUMNS.map(c => row[c])].join(','));
+    lines.push(toCsv([[d.merchant.id, label, ...FEATURE_COLUMNS.map(c => row[c])]]).trimEnd());
   }
   mkdirSync(dirname(values.out), { recursive: true });
   writeFileSync(values.out, lines.join('\n') + '\n');
@@ -116,8 +117,11 @@ if (cmd === 'batch') {
 } else if (cmd === 'demo:learn') {
   process.exit(demoLearn());
 } else if (cmd === 'rollback') {
-  rollbackRulesLive({ id: 0, username: 'cli-operator', role: 'admin' });
-  console.log('live rules rolled back to the committed base; the step is in the rules audit');
+  const { values } = parseArgs({ args: rest, options: { reason: { type: 'string' } }, strict: true });
+  if (!values.reason?.trim()) { console.error('mre rollback --reason "<why>"   (emergency stop; a normal rollback takes two reviewers, in the console)'); process.exit(2); }
+  const done = rollbackRulesEmergency(values.reason);
+  if (done.status !== 200) { console.error(done.body.error); process.exit(1); }
+  console.log('live rules rolled back to the committed base; the emergency stop is in the rules audit');
 } else if (cmd === 'verify-audit') {
   const { values } = parseArgs({ args: rest, options: { case: { type: 'string' } }, strict: true });
   if (!values.case) { console.error('mre verify-audit --case <INV-id>'); process.exit(2); }
@@ -130,6 +134,13 @@ if (cmd === 'batch') {
   const password = randomBytes(15).toString('base64url');
   const actor = createUser(username, password, role);
   console.log(`created ${actor.username} (${actor.role}) password: ${password}`);
+} else if (cmd === 'user:link-sso') {
+  const [username, issuer, sub] = rest;
+  if (!username || !issuer || !sub) { console.error('mre user:link-sso <username> <issuer> <subject>'); process.exit(2); }
+  try {
+    linkSsoIdentity(username, issuer, sub);
+    console.log(`${username} now signs in as that identity`);
+  } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
 } else if (cmd === 'key:create') {
   const name = rest[0], scopes = (rest[1] ?? '').split(',').filter(Boolean);
   if (!name || !scopes.length) { console.error('mre key:create <name> <scopes,comma>'); process.exit(2); }

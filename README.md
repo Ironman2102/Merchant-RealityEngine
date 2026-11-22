@@ -13,8 +13,9 @@ that finds that mismatch without punishing a bakery that has simply changed.
    independent evidence that includes conduct a change cannot explain.
 3. **The Context Passport updates the engine.** The merchant names the QR, the date and a document; a second person verifies it;
    the expectation for that QR changes. If any conduct signal fires, passports are set aside and the score is the one without them.
+   Only one applies to a QR at a time, an answered question stays on the record, and a reviewer can revoke it.
 4. **The response is narrow.** Only an identified link can be recommended for restriction, and never the main QR by default.
-   A second person approves, and a second person is needed to lift it.
+   A second person approves. The restriction follows the merchant to every case, and lifting it takes a second person too.
 
 > **Everything is synthetic.** Merchants, transactions, pages and portfolio figures are fabricated. There are no customers,
 > partners or real-world accuracy figures. The response design is a proposal, not legal advice, and nothing freezes real money.

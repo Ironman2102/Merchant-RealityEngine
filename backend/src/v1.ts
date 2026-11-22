@@ -27,8 +27,8 @@ const scopedKey = (p: ServicePrincipal, key: string | undefined) => (key ? `${p.
 /** Batch callers pick a shipped mapping by name; they never supply a path to read. */
 const MAPPINGS = ['generic-pa-v1', 'alt-pa-example'];
 
-async function scoreOf(raw: unknown): Promise<ApiReply> {
-  const ran = analyzeDataset(raw);
+async function scoreOf(raw: unknown, client: string): Promise<ApiReply> {
+  const ran = analyzeDataset(raw, client);
   if (!ran.ok) return { status: 400, body: { error: ran.errors.join(' ') } };
   const f = ran.result.fusion;
   const top = [...f.mechanisms].sort((a, b) => b.score - a.score)[0];
@@ -42,7 +42,7 @@ async function scoreOf(raw: unknown): Promise<ApiReply> {
       recommended: ran.result.review.recommended, mechanism: top?.id ?? null, topEvidence,
       rulesVersion: f.rulesVersion,
       ml: { p: ml.p, threshold: ml.threshold, drivers: ml.drivers, modelVersion: ml.modelVersion, synthetic: true },
-      followUp: f.followUp, scope: ran.result.scope, streams: ran.result.streams, suspectLinks: ran.result.suspectLinks,
+      followUp: f.followUp, passportAnswered: ran.result.passportAnswered ?? [], scope: ran.result.scope, streams: ran.result.streams, suspectLinks: ran.result.suspectLinks,
     },
   };
 }
@@ -69,13 +69,13 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
 
   if (req.path === '/v1/score' && req.method === 'POST') {
     const denied = allow(principal, 'score'); if (denied) return denied;
-    return await scoreOf(req.body);
+    return await scoreOf(req.body, principal.name);
   }
 
   const caseMatch = req.path.match(/^\/v1\/cases(?:\/([^/]+)(?:\/(trace|pack))?)?$/);
   if (caseMatch && req.method === 'POST' && !caseMatch[1]) {
     const denied = allow(principal, 'cases'); if (denied) return denied;
-    const score = await scoreOf(req.body);
+    const score = await scoreOf(req.body, principal.name);
     if (score.status !== 200) return score;
     const raw = JSON.stringify(req.body);
     const idem = scopedKey(principal, req.header('idempotency-key'));
@@ -91,8 +91,8 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
     const id = caseMatch[1];
     if (!ownsCase(principal, id)) return { status: 404, body: { error: 'No case with that id.' } };
     if (caseMatch[2] === 'trace') return await caseTrace(id);
-    if (caseMatch[2] === 'pack') return evidencePack(id, serviceActor(principal));
-    return getInvestigation(id);
+    if (caseMatch[2] === 'pack') return evidencePack(id, serviceActor(principal), false);
+    return getInvestigation(id, false);
   }
 
   if (req.path === '/v1/batches' && req.method === 'POST') {
@@ -116,7 +116,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
           const name = String(body.mapping).replace(/^adapters\/mappings\//, '').replace(/\.json$/, '');
           if (!MAPPINGS.includes(name)) throw new Error(`mapping must be one of ${MAPPINGS.join(', ')}.`);
           const out = join(dir, 'out');
-          const ran = runBatch({ inDir: dir, mappingPath: `adapters/mappings/${name}.json`, outDir: out, key: loadHashKey() });
+          const ran = runBatch({ inDir: dir, mappingPath: `adapters/mappings/${name}.json`, outDir: out, key: loadHashKey(), client: principal.name });
           state.result = { ...ran, scoresCsv: readFileSync(join(out, 'scores.csv'), 'utf8') };
           state.status = 'done';
         } catch (e) {

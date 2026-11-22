@@ -43,9 +43,13 @@ export interface ContextPassport {
   states?: string[];
   ticketBand?: [number, number];
   volumeUplift?: number;
-  status: 'SUBMITTED' | 'VERIFIED' | 'REJECTED';
+  status: 'SUBMITTED' | 'VERIFIED' | 'REJECTED' | 'REVOKED';
   submittedBy?: string;
   reviewedBy?: string;
+  revokedBy?: string;
+  /** Set by the server on verification: its registry key, and the service client whose case it was verified on. */
+  ref?: string;
+  client?: string;
 }
 
 export interface WeeklyPoint { week: string; actual: number | null; seasonalMult: number }

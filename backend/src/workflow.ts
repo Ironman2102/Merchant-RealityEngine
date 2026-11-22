@@ -4,7 +4,7 @@ import { profileUpdates } from '../../frontend/src/engines/learningEngine';
 import { planResponse } from '../../frontend/src/engines/responseEngine';
 import type { ResponseLevel } from '../../frontend/src/types/investigation';
 import type { Label } from '../../frontend/src/types/merchant';
-import { appendAudit, emptyUser, getCase, isCaseId, listCases, putCase, readAudit, restoreInForce, verifyAudit, type CaseRecord } from './store';
+import { appendAudit, emptyUser, forClient, getCase, isCaseId, listCases, merchantCases, putCase, readAudit, restoreInForce, verifyAudit, type CaseRecord, type MerchantCase } from './store';
 import { analyzeDataset } from './algorithms/analyze';
 import { own, RULES } from '../../rules/index';
 import { sha256 } from './adapters/canonicalDataset';
@@ -24,37 +24,53 @@ const responseOf = (id: string) => wf().responses.find(r => r.id === id);
 const needsLegal = (l: string) => !!responseOf(l)?.needsLegal;
 const restricts = (l: string) => !!responseOf(l)?.restrictsFunds || RESTRICTING.includes(engineLevelOf(wf(), l));
 
-/** The restriction now in force on a case, if there is one. */
-function restrictionOf(rec: CaseRecord) {
+export interface Restriction { caseId: string; id: string; level: ResponseLevel; actions: string[]; at: string }
+const isRestriction = (f: { id: string; level: ResponseLevel }) => RESTRICTING.includes(f.level) || !!responseOf(f.id)?.restrictsFunds;
+
+/** The restriction this case itself put in force, if any. */
+function ownRestriction(rec: CaseRecord): Restriction | null {
   const f = rec.inForce;
-  return f && (RESTRICTING.includes(f.plan.level) || !!responseOf(f.id)?.restrictsFunds) ? f : null;
+  return f && isRestriction({ id: f.id, level: f.plan.level }) ? { caseId: rec.id, id: f.id, level: f.plan.level, actions: f.plan.actions, at: f.at ?? '' } : null;
 }
 
-/** `auto` in a config file can never skip approval of a restriction, nor of any change to one already in force. */
-const needsApproval = (rec: CaseRecord, l: string) => !responseOf(l)?.auto || restricts(l) || !!restrictionOf(rec);
+/**
+ * Restrictions follow the merchant. They add up across its cases, every case shows all of them, and an approved response
+ * that restricts nothing lifts all of them, wherever they were imposed.
+ */
+export function restrictionsOn(rec: CaseRecord, cases: MerchantCase[] = merchantCases(rec.result.scenario.primaryMerchantId)): Restriction[] {
+  const own = ownRestriction(rec);
+  return [...(own ? [own] : []), ...cases.flatMap(c => (c.id !== rec.id && c.inForce && isRestriction(c.inForce) ? [{ caseId: c.id, ...c.inForce }] : []))];
+}
 
-/** Who approves a move to `target`: the rule of the more severe of where the case is and where it would go. */
-function approvalRule(rec: CaseRecord, target: string): { roles: string[]; approvers: number; legal: boolean } {
+const fingerprint = (held: Restriction[]) => held.map(r => `${r.caseId}:${r.id}:${r.at}`).sort().join('|');
+
+/** `auto` in a config file can never skip approval of a restriction, nor of any change while one is in force. */
+const needsApproval = (held: Restriction[], l: string) => !responseOf(l)?.auto || restricts(l) || held.length > 0;
+
+/** Who approves a move to `target`: the rule of the most severe of what is in force and where it would go. */
+function approvalRule(held: Restriction[], target: string): { roles: string[]; approvers: number; legal: boolean; rank: number } {
   const cfg = wf();
   const ruleOf = (id: string) => {
     const rule = own(cfg.approvals.levels, id), legal = needsLegal(id), level = engineLevelOf(cfg, id);
     return { roles: rule?.approverRoles ?? [], approvers: rule?.approvers ?? 1, legal, rank: (legal ? 10 : 0) + Number(level.slice(1)) };
   };
-  const to = ruleOf(target), held = restrictionOf(rec);
-  if (!held) return to;
-  // A restriction from an older config keeps the rule of the same engine level. If there is none, only legal can move it.
-  const id = responseOf(held.id)?.id ?? cfg.responses.find(r => engineLevelOf(cfg, r.id) === held.plan.level)?.id;
-  const from = id ? ruleOf(id) : { roles: ['legal'], approvers: 1, legal: true, rank: Infinity };
-  return { ...(from.rank >= to.rank ? from : to), approvers: Math.max(from.approvers, to.approvers) };
+  return held.reduce((strictest, r) => {
+    // A restriction from an older config keeps the rule of the same engine level. If there is none, only legal can move it.
+    const id = responseOf(r.id)?.id ?? cfg.responses.find(x => engineLevelOf(cfg, x.id) === r.level)?.id;
+    const from = id ? ruleOf(id) : { roles: ['legal'], approvers: 1, legal: true, rank: Infinity };
+    return { ...(from.rank >= strictest.rank ? from : strictest), approvers: Math.max(from.approvers, strictest.approvers) };
+  }, ruleOf(target));
 }
+
 const can = (a: Actor, roles: readonly string[]) => roles.includes(a.role);
 
 function fail(status: number, error: string): ApiReply {
   return { status, body: { error } };
 }
 
-function view(rec: CaseRecord): ApiReply {
-  const { result, user } = rec;
+/** `staff` is false for a service client: it sees its own case, not the merchant's other cases or their documents. */
+function view(rec: CaseRecord, staff = true): ApiReply {
+  const { user } = rec, result = staff ? rec.result : forClient(rec);
   const counts = result.l1.counts;
   const missing = result.l1.sources.filter(s => s.state === 'MISSING').map(s => s.name);
   const alarms = result.l2.cusum.filter(p => p.alarm).length;
@@ -64,7 +80,11 @@ function view(rec: CaseRecord): ApiReply {
   const mechanism = top ? (MECHANISMS.find(m => m.id === top.id)?.name ?? top.id) : 'none';
   const l6 = rec.pending.response ? 'waiting' : user.executed ? 'done' : rec.response?.blocked.length ? 'blocked' : 'waiting';
   const l7 = user.label ? 'done' : 'waiting';
-  const held = restrictionOf(rec), stillOn = held ? ` ${held.plan.level} stays in force until a change is approved.` : '';
+  const mine = ownRestriction(rec), cases = staff ? merchantCases(result.scenario.primaryMerchantId) : [];
+  const held = staff ? restrictionsOn(rec, cases) : mine ? [mine] : [];
+  const stillOn = held.length ? ` ${held.map(r => (r.caseId === rec.id ? r.level : `${r.level} from ${r.caseId}`)).join(', ')} stays in force until a change is approved.` : '';
+  const others = cases.filter(c => c.id !== rec.id).reverse();
+  const history = others.filter((c, i) => c.label || i < 5).map(({ id, createdAt, decision, label }) => ({ id, createdAt, decision, label }));
   const steps = [
     `Read ${counts.SALE?.n ?? 0} sales, ${counts.REFUND?.n ?? 0} refunds, ${counts.SETTLEMENT?.n ?? 0} settlements, ${counts.TRANSFER?.n ?? 0} payouts. ${missing.length ? `Missing feeds stay UNKNOWN: ${missing.join(', ')}.` : 'No feed is marked missing.'}`,
     `${result.l2.profile.name}, ${result.l2.profile.category}. ${alarms} CUSUM alarm week${alarms === 1 ? '' : 's'}.${peak?.rSeasonal != null ? ` Latest seasonal residual ${peak.rSeasonal.toFixed(2)}.` : ''}`,
@@ -72,7 +92,7 @@ function view(rec: CaseRecord): ApiReply {
     `${result.fusion.decision} (${result.fusion.priority}). ${result.fusion.gateReason} Leading mechanism: ${mechanism}${top ? ` (${top.score.toFixed(2)})` : ''}.`,
     `Legitimate-business chain ${result.review.legitStatus}. Recommended response ${result.review.recommended}.${user.notes ? ` Analyst note: ${user.notes}` : ' Engine draft is waiting for a human note.'}`,
     rec.pending.response
-      ? `${rec.pending.response.level} proposed by ${rec.pending.response.by.username}; waiting for ${approvalRule(rec, rec.pending.response.level).legal ? 'legal' : 'reviewer'} approval by a different person.${stillOn}`
+      ? `${rec.pending.response.level} proposed by ${rec.pending.response.by.username}; waiting for ${approvalRule(held, rec.pending.response.level).legal ? 'legal' : 'reviewer'} approval by a different person.${stillOn}`
       : user.executed
       ? rec.response!.actions.join(' ')
       : rec.response?.blocked.length
@@ -101,6 +121,7 @@ function view(rec: CaseRecord): ApiReply {
         gatePassed: result.fusion.gatePassed,
         gateReason: result.fusion.gateReason,
         followUp: result.fusion.followUp,
+        passportAnswered: result.passportAnswered ?? [],
         scope: result.scope,
         streams: result.streams,
         suspectLinks: result.suspectLinks,
@@ -117,12 +138,14 @@ function view(rec: CaseRecord): ApiReply {
       })),
       user: { notes: user.notes, clarification: user.clarification, chosenLevel: user.chosenLevel, legalVerified: user.legalVerified, escrowConfirmed: user.escrowConfirmed, executed: user.executed, label: user.label },
       response: rec.response,
-      inForce: rec.inForce ? { id: rec.inForce.id, level: rec.inForce.plan.level, actions: rec.inForce.plan.actions, restricts: !!held } : null,
+      inForce: rec.inForce ? { id: rec.inForce.id, level: rec.inForce.plan.level, actions: rec.inForce.plan.actions, restricts: !!mine } : null,
+      restrictions: held,
+      history,
       learning: rec.learning,
       audit: readAudit(rec.id).map(({ seq, at, actor, action, detail, prevHash, hash }) => ({ seq, at, actor, action, detail, prevHash, hash })),
       auditIntact: verifyAudit(rec.id).ok,
       pending: rec.pending,
-      status: user.label ? wf().statuses.labelled : rec.pending.response ? wf().statuses.proposed : user.executed || held ? wf().statuses.approved : wf().statuses.opened,
+      status: user.label ? wf().statuses.labelled : rec.pending.response ? wf().statuses.proposed : user.executed || held.length ? wf().statuses.approved : wf().statuses.opened,
       rulesVersion: result.fusion.rulesVersion,
       posterior: { p: result.fusion.posterior, ci: result.fusion.posteriorCi, prior: result.fusion.prior },
     },
@@ -138,7 +161,9 @@ function ensure(id: string): CaseRecord | ApiReply {
 export function openInvestigation(raw: unknown, actor: Actor, client?: string): ApiReply {
   if (!can(actor, wf().approvals.actions.open ?? [])) return fail(403, 'Your role cannot open cases.');
   const id = `INV-${randomBytes(4).toString('hex')}`;
-  const analysis = analyzeDataset(raw);
+  const analysis = analyzeDataset(raw, client);
+  // Whoever uploads a passport is its maker. A service key is not a person, so its passports wait for one.
+  if (analysis.ok && actor.id > 0) for (const p of analysis.scenario.passports ?? []) if (p.status === 'SUBMITTED') p.submittedBy = actor.username;
   if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
   const rec: CaseRecord = {
     id, createdAt: new Date().toISOString(), createdBy: actor.id > 0 ? actor.id : null, client, engineVersion: analysis.engineVersion, datasetSha256: sha256(JSON.stringify(raw)),
@@ -151,10 +176,10 @@ export function openInvestigation(raw: unknown, actor: Actor, client?: string): 
   return view(getCase(id)!);
 }
 
-export function getInvestigation(id: string): ApiReply {
+export function getInvestigation(id: string, staff = true): ApiReply {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
-  return rec ? view(rec) : fail(404, 'No case with that id.');
+  return rec ? view(rec, staff) : fail(404, 'No case with that id.');
 }
 
 export function listInvestigations(): ApiReply {
@@ -186,26 +211,37 @@ export function reviewInvestigation(id: string, body: unknown, actor: Actor): Ap
 }
 
 function execute(rec: CaseRecord, id: string, actor: Actor, approvedBy: string | null): void {
-  const held = restrictionOf(rec);
+  const held = restrictionsOn(rec), mine = ownRestriction(rec), others = held.filter(r => r.caseId !== rec.id);
   rec.user.chosenLevel = engineLevelOf(wf(), id);
   const plan = planResponse(rec.result, rec.user);
   rec.response = plan;
   if (plan.blocked.length) {
     rec.user.executed = false;
     putCase(rec);
-    appendAudit(rec.id, [{ action: `${plan.level} blocked`, detail: plan.blocked.join(' ') + (held ? ` ${held.plan.level} stays in force.` : '') }], actor);
-  } else {
-    rec.user.executed = true;
-    rec.inForce = { id, plan };
-    putCase(rec);
-    const detail = [approvedBy ? `Approved by ${approvedBy}` : '', held && held.id !== id ? `Replaces ${held.id}` : ''].filter(Boolean).join('; ');
-    appendAudit(rec.id, plan.actions.map(a => ({ action: `${plan.level}: ${a}`, detail })), actor);
+    appendAudit(rec.id, [{ action: `${plan.level} blocked`, detail: plan.blocked.join(' ') + (held.length ? ' What was in force stays in force.' : '') }], actor);
+    return;
+  }
+  const at = new Date().toISOString(), lifts = !restricts(id);
+  rec.user.executed = true;
+  rec.inForce = { id, plan, at };
+  putCase(rec);
+  const detail = [approvedBy ? `Approved by ${approvedBy}` : '', mine && mine.id !== id ? `Replaces ${mine.id}` : '', lifts && others.length ? 'Lifts the restrictions from the merchant\'s other cases' : ''].filter(Boolean).join('; ');
+  appendAudit(rec.id, plan.actions.map(a => ({ action: `${plan.level}: ${a}`, detail })), actor);
+  // A restriction adds to what other cases imposed. A response that restricts nothing replaces it.
+  if (!lifts) return;
+  for (const r of others) {
+    const c = getCase(r.caseId)!;
+    c.inForce = { id, plan: { ...plan, hold: null }, at };
+    if (!c.pending.response) restoreInForce(c);
+    putCase(c);
+    appendAudit(c.id, [{ action: `${r.id} lifted from ${rec.id}`, detail: `Now ${plan.level}. ${approvedBy ? `Approved by ${approvedBy}` : ''}` }], actor);
   }
 }
 
 /**
- * Propose a response. An action that restricts nothing takes effect at once. A restriction, and any change to one that is
- * in force, waits for a second person (see approveInvestigation) and changes nothing until then.
+ * Propose a response. An action that restricts nothing takes effect at once, unless this merchant has a restriction in
+ * force on any of its cases. A restriction, and any change while one is in force, waits for a second person (see
+ * approveInvestigation) and changes nothing until then.
  */
 export function respondInvestigation(id: string, body: unknown, actor: Actor): ApiReply {
   const rec = ensure(id);
@@ -216,12 +252,12 @@ export function respondInvestigation(id: string, body: unknown, actor: Actor): A
   // legalVerified / escrowConfirmed are never taken from the request body; only a legal approval sets them.
   if (rec.pending.response && !samePerson(rec.pending.response.by, actor))
     return fail(409, 'Another person\'s proposal is waiting. It must be approved or rejected before a new response is recorded.');
-  if (needsApproval(rec, level)) {
-    rec.pending.response = { level, by: { id: actor.id, username: actor.username }, at: new Date().toISOString() };
+  const held = restrictionsOn(rec);
+  if (needsApproval(held, level)) {
+    rec.pending.response = { level, by: { id: actor.id, username: actor.username }, at: new Date().toISOString(), over: fingerprint(held) };
     rec.user.chosenLevel = engineLevelOf(wf(), level); rec.user.executed = false;
     putCase(rec);
-    const held = restrictionOf(rec);
-    appendAudit(id, [{ action: `${level} proposed`, detail: `Waiting for ${approvalRule(rec, level).legal ? 'legal' : 'reviewer'} approval by a different person.${held ? ` ${held.id} stays in force until then.` : ''}` }], actor);
+    appendAudit(id, [{ action: `${level} proposed`, detail: `Waiting for ${approvalRule(held, level).legal ? 'legal' : 'reviewer'} approval by a different person.${held.length ? ' What is in force stays in force until then.' : ''}` }], actor);
     void emit('case.response.proposed', id, { level });
     return view(getCase(id)!);
   }
@@ -237,7 +273,7 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
   if (!p) return fail(409, 'There is no proposed response waiting for approval.');
   const input = (body ?? {}) as { approve?: unknown; escrowConfirmed?: unknown; reason?: unknown };
   const reason = typeof input.reason === 'string' ? input.reason.slice(0, 500) : '';
-  const self = samePerson(p.by, actor), rule = approvalRule(rec, p.level);
+  const self = samePerson(p.by, actor), held = restrictionsOn(rec), rule = approvalRule(held, p.level);
   // The proposer may withdraw, never approve.
   if (self && input.approve !== false) return fail(403, 'You cannot approve your own proposal. A different person must approve it.');
   if (!self && !can(actor, rule.roles)) return fail(403, `${p.level} must be approved by a ${rule.legal ? 'legal' : rule.roles.join(' or ') || 'different'} user.`);
@@ -248,6 +284,7 @@ export function approveInvestigation(id: string, body: unknown, actor: Actor): A
     return view(getCase(id)!);
   }
   // The config may have changed since the proposal.
+  if ((p.over ?? '') !== fingerprint(held)) return fail(409, 'The restrictions on this merchant changed after this was proposed. Reject it and propose again.');
   if (!responseOf(p.level)) return fail(409, `${p.level} is no longer a response in the workflow config. Reject it and propose again.`);
   const soFar = [...(p.approvals ?? [])];
   if (soFar.some(a => samePerson(a, actor))) return fail(403, 'You have already approved this proposal.');
@@ -311,10 +348,13 @@ export function labelInvestigation(id: string, body: unknown, actor: Actor): Api
       profile: profileUpdates(rec.result, label),
     };
   };
-  // Two people: confirming a front, clearing an opened case, changing a final label, overriding another case's
-  // confirmation of this merchant, and finishing anything that two people started.
+  // Two people: confirming a front, changing a final label, finishing anything that two people started, and clearing
+  // a merchant that has an opened case, a confirmation or a restriction on any of its cases. This reads the cases
+  // themselves, because a label recorded as a dispute never becomes a calibration event.
+  const cases = merchantCases(merchant);
   const twoPeople = !!rec.pending.label || label === 'CONFIRMED_ILLICIT' || was === 'CONFIRMED_ILLICIT' || was === 'ADJUDICATED_BENIGN'
-    || (label === 'ADJUDICATED_BENIGN' && (rec.result.fusion.decision === 'OPEN_CASE' || merchantLabel(merchant) === 'CONFIRMED_ILLICIT'));
+    || (label === 'ADJUDICATED_BENIGN' && (rec.result.fusion.decision === 'OPEN_CASE' || merchantLabel(merchant) === 'CONFIRMED_ILLICIT'
+      || cases.some(c => c.decision === 'OPEN_CASE' || c.label === 'CONFIRMED_ILLICIT') || restrictionsOn(rec, cases).length > 0));
   if (!twoPeople) {
     if (!can(actor, wf().approvals.actions.labelBenign ?? [])) return fail(403, 'Your role cannot label cases.');
     finalize(); putCase(rec);

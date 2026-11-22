@@ -107,6 +107,8 @@ export interface InvestigationResult {
   suspectLinks: string[];
   /** Verified passports exist but were not applied, because a conduct signal fired. */
   passportsSuspended?: boolean;
+  /** Passports that answered a question the merchant would otherwise be asked. */
+  passportAnswered?: string[];
   timelines: Record<LayerId, Timeline[]>;
 }
 export type { Mechanism };
