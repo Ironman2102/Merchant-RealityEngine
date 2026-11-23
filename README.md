@@ -5,7 +5,6 @@ https://merchant-reality-engine.netlify.app
 An interactive prototype of a merchant-intelligence platform for Payment Aggregators and payment-risk teams.
 It asks one question: **does this merchant behave like the business it claims to be?**
 
-
 The project has three connected experiences:
 
 - **Public website** (`/`, `/architecture`): the product story, the seven-layer architecture and the technology.
