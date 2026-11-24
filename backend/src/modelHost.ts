@@ -44,7 +44,7 @@ async function modelUpToDate(): Promise<boolean> {
   } catch { return false; }
 }
 
-const RAW_GH = `https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/${process.env.MRE_RAW_GH_BRANCH || 'final-edition'}`;
+const RAW_GH = `https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/${process.env.MRE_RAW_GH_BRANCH || 'main'}`;
 
 async function launchServer(id: string): Promise<void> {
   const info = await daytona(`/sandbox/${encodeURIComponent(id)}`);
