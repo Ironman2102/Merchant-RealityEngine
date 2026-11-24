@@ -1,0 +1,23 @@
+{
+  "name": "generic-pa-v1",
+  "files": { "transactions": "transactions.csv", "merchants": "merchants.csv", "weekly": "weekly.csv" },
+  "delimiter": ",",
+  "amountUnit": "rupees",
+  "timezone": "+05:30",
+  "transactions": {
+    "id": "txn_id", "merchantId": "merchant_id",
+    "type": { "column": "txn_type", "map": { "PAYMENT": "SALE", "REFUND": "REFUND", "SETTLEMENT": "SETTLEMENT", "PAYOUT": "TRANSFER", "CHARGEBACK": "CHARGEBACK" } },
+    "amount": "amount", "time": "txn_time", "settledAt": "settled_at",
+    "payerId": "payer_vpa", "payerState": "payer_state", "payerMobile": "payer_mobile",
+    "channel": { "column": "channel", "map": { "UPI_INTENT": "UPI_LINK", "UPI_COLLECT": "UPI_COLLECT", "QR": "POS", "POS": "POS", "CARD_ONLINE": "ONLINE", "NETBANKING": "ONLINE", "PAYOUT": "PAYOUT", "BANK": "BANK" } },
+    "paymentLinkId": "link_id", "orderId": "order_id", "refundOfTransactionId": "original_txn_id",
+    "paidTo": "refund_to", "destHolder": "refund_to_holder", "beneficiaryAccount": "beneficiary_account"
+  },
+  "merchants": {
+    "id": "merchant_id", "name": "legal_name", "city": "city", "mcc": "mcc", "category": "category",
+    "ticketMin": "declared_min_ticket", "ticketMax": "declared_max_ticket", "openHour": "open_hour", "closeHour": "close_hour",
+    "homeState": "state", "catchment": "catchment", "baselineWeekly": "declared_weekly_volume",
+    "onboardedOn": "onboarded_on", "declaredDomains": { "column": "domains", "split": "|" }
+  },
+  "weekly": { "merchantId": "merchant_id", "weekEnd": "week_end", "sales": "sales_value" }
+}

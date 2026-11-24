@@ -6,6 +6,7 @@ import { runInvestigation } from '../engines/investigationEngine';
 import { actionLog, planResponse } from '../engines/responseEngine';
 import { fmtDateTime } from '../utils/format';
 import { LAYERS } from '../data/evidence';
+import { approvePilotCase, updatePilotCase, type ServerUser } from '../services/pilotApi';
 
 const IDS: LayerId[] = [1, 2, 3, 4, 5, 6, 7];
 const idle = (): Record<LayerId, LayerStatus> => ({ 1: 'pending', 2: 'pending', 3: 'pending', 4: 'pending', 5: 'pending', 6: 'pending', 7: 'pending' });
@@ -13,7 +14,7 @@ const freshUser = (): UserState => ({ notes: '', clarification: '', chosenLevel:
 
 export type ActiveId = ScenarioId | 'custom';
 interface Ctx {
-  scenarioId: ActiveId; scenario: Scenario; custom: Scenario | null; loadCustom: (sc: Scenario, runNow?: boolean) => void; clearCustom: () => void; result: InvestigationResult;
+  scenarioId: ActiveId; scenario: Scenario; custom: Scenario | null; loadCustom: (sc: Scenario, runNow?: boolean, instant?: boolean) => void; clearCustom: () => void; result: InvestigationResult;
   status: Record<LayerId, LayerStatus>; started: boolean; running: boolean; allDone: boolean; fast: boolean; setFast: (b: boolean) => void; detailsOpen: boolean; setDetailsOpen: (open: boolean) => void;
   selectedLayer: LayerId; selectLayer: (n: LayerId) => void;
   setScenario: (id: ActiveId) => void; run: (id?: ActiveId) => void; reset: () => void;
@@ -21,6 +22,10 @@ interface Ctx {
   user: UserState; patch: (p: Partial<UserState>) => void; note: (action: string, detail?: string, actor?: string) => void;
   setLevel: (l: ResponseLevel | null) => void; execute: () => void; setLabel: (l: Label | null) => void;
   audit: ActionRecord[];
+  /** Saved-case mode: analyst actions are written to the server and the server's reply replaces local state. */
+  caseId: string | null; loadCase: (id: string, sc: Scenario, server: ServerUser, animate?: boolean) => void; syncError: string;
+  /** Server-side governance state for a saved case: proposals waiting for a second person, and audit-chain status. */
+  pending: ServerUser['pending']; auditIntact: boolean | null; approve: (approve: boolean, extra?: { escrowConfirmed?: boolean; reason?: string }) => void;
 }
 const C = createContext<Ctx | null>(null);
 export const useInvestigation = () => { const c = useContext(C); if (!c) throw new Error('InvestigationProvider missing'); return c; };
@@ -34,6 +39,12 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedLayer, selectLayer] = useState<LayerId>(1);
   const [user, setUser] = useState<UserState>(freshUser());
+  const [caseId, setCaseId] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState('');
+  const [pending, setPending] = useState<ServerUser['pending']>({});
+  const [auditIntact, setAuditIntact] = useState<boolean | null>(null);
+  const userRef = useRef(user);
+  userRef.current = user;
   const token = useRef(0);
   const pick = useCallback((id: ActiveId) => (id === 'custom' && custom ? custom : getScenario(id === 'custom' ? 'bakery' : id)), [custom]);
   const scenario = useMemo(() => pick(scenarioId), [scenarioId, pick]);
@@ -42,7 +53,7 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
   const allDone = IDS.every(n => status[n] === 'done');
 
   const reset = useCallback(() => { token.current++; setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1); }, []);
-  const setScenario = useCallback((id: ActiveId) => { token.current++; setScenarioId(id); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1); }, []);
+  const setScenario = useCallback((id: ActiveId) => { token.current++; setCaseId(null); setScenarioId(id); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1); }, []);
   const start = useCallback((res: InvestigationResult) => {
     const my = ++token.current;
     setUser(freshUser()); setStatus(idle()); setStarted(true); setDetailsOpen(false); selectLayer(1);
@@ -58,31 +69,61 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     })();
   }, [fast]);
   const run = useCallback((id?: ActiveId) => { if (id) setScenarioId(id); start(id ? runInvestigation(pick(id)) : result); }, [result, pick, start]);
-  const loadCustom = useCallback((sc: Scenario, runNow = true) => {
-    token.current++; setCustom(sc); setScenarioId('custom'); setUser(freshUser()); setStatus(idle()); setStarted(false); setDetailsOpen(false); selectLayer(1);
+  const loadCustom = useCallback((sc: Scenario, runNow = true, instant = false) => {
+    token.current++; setCaseId(null); setCustom(sc); setScenarioId('custom'); setUser(freshUser()); selectLayer(1);
+    if (instant) {
+      setStatus({ 1: 'done', 2: 'done', 3: 'done', 4: 'done', 5: 'done', 6: 'done', 7: 'done' });
+      setStarted(true);
+      setDetailsOpen(true);
+      return;
+    }
+    setStatus(idle()); setStarted(false); setDetailsOpen(false);
     if (runNow) start(runInvestigation(sc));
   }, [start]);
   const clearCustom = useCallback(() => {
-    token.current++; setCustom(null); setScenarioId('bakery'); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1);
+    token.current++; setCaseId(null); setCustom(null); setScenarioId('bakery'); setStatus(idle()); setStarted(false); setDetailsOpen(false); setUser(freshUser()); selectLayer(1);
   }, []);
   useEffect(() => () => { token.current++; }, []);
 
+  const adopt = useCallback((s: ServerUser) => { setPending(s.pending ?? {}); setAuditIntact(s.auditIntact ?? null); setUser(u => ({
+    ...u, notes: s.user.notes, clarification: s.user.clarification, chosenLevel: (s.user.chosenLevel as ResponseLevel | null), legalVerified: s.user.legalVerified,
+    escrowConfirmed: s.user.escrowConfirmed, executed: s.user.executed, label: (s.user.label as Label | null),
+    audit: s.audit.map((a, i) => ({ seq: a.seq ?? i + 1, at: fmtDateTime(Date.parse(a.at)), actor: a.actor, action: a.action, detail: a.detail, hash: a.hash })),
+  })); }, []);
+  const loadCase = useCallback((id: string, sc: Scenario, server: ServerUser, animate = false) => {
+    token.current++; setCustom(sc); setScenarioId('custom'); setCaseId(id); setSyncError(''); selectLayer(1);
+    setUser(freshUser()); adopt(server);
+    if (animate) { setDetailsOpen(false); const my = token.current; void (async () => { setStarted(true); for (const n of IDS) { if (token.current !== my) return; setStatus(st => ({ ...st, [n]: 'running' })); selectLayer(n); await new Promise(r => setTimeout(r, 350)); if (token.current !== my) return; setStatus(st => ({ ...st, [n]: 'done' })); } setDetailsOpen(true); })(); }
+    else { setStatus({ 1: 'done', 2: 'done', 3: 'done', 4: 'done', 5: 'done', 6: 'done', 7: 'done' }); setStarted(true); setDetailsOpen(true); }
+  }, [adopt]);
+  const sync = useCallback(async (action: 'review' | 'response' | 'label', payload: Record<string, unknown>) => {
+    if (!caseId) return;
+    setSyncError('');
+    try { adopt(await updatePilotCase(caseId, action, payload) as ServerUser); }
+    catch (e) { setSyncError(e instanceof Error ? e.message : 'Could not save to the case record.'); }
+  }, [caseId, adopt]);
+  const approve = useCallback((ok: boolean, extra: { escrowConfirmed?: boolean; reason?: string } = {}) => {
+    if (!caseId) return;
+    setSyncError('');
+    approvePilotCase(caseId, ok, extra).then(r => adopt(r as ServerUser)).catch(e => setSyncError(e instanceof Error ? e.message : 'Could not save the approval.'));
+  }, [caseId, adopt]);
+
   const patch = useCallback((p: Partial<UserState>) => setUser(u => ({ ...u, ...p })), []);
   const t0 = useMemo(() => Math.max(...scenario.events.map(e => e.eventTime)) + 3600000, [scenario]);
-  const note = useCallback((action: string, detail = '', actor = 'Analyst (demo user)') => setUser(u => ({ ...u, audit: [...u.audit, { seq: u.audit.length + 1, at: fmtDateTime(t0 + (30 + u.audit.length * 4) * 60000), actor, action, detail }] })), [t0]);
+  const note = useCallback((action: string, detail = '', actor = 'Analyst (demo user)') => caseId ? void sync('review', { notes: userRef.current.notes, clarification: userRef.current.clarification }) : setUser(u => ({ ...u, audit: [...u.audit, { seq: u.audit.length + 1, at: fmtDateTime(t0 + (30 + u.audit.length * 4) * 60000), actor, action, detail }] })), [t0, caseId, sync]);
   const setLevel = useCallback((l: ResponseLevel | null) => setUser(u => ({ ...u, chosenLevel: l, executed: false })), []);
-  const setLabel = useCallback((l: Label | null) => setUser(u => ({ ...u, label: l })), []);
-  const execute = useCallback(() => setUser(u => {
+  const setLabel = useCallback((l: Label | null) => { if (caseId) { if (l) void sync('label', { label: l }); return; } setUser(u => ({ ...u, label: l })); }, [caseId, sync]);
+  const execute = useCallback(() => caseId ? void sync('response', { chosenLevel: userRef.current.chosenLevel ?? result.review.recommended, legalVerified: userRef.current.legalVerified, escrowConfirmed: userRef.current.escrowConfirmed }) : setUser(u => {
     const plan = planResponse(result, u);
     if (plan.blocked.length) return u;
     return { ...u, executed: true, audit: [...u.audit, ...actionLog(result, plan, u.audit.length).map(a => ({ ...a, seq: a.seq }))] };
-  }), [result]);
+  }), [result, caseId, sync]);
 
   const audit = useMemo<ActionRecord[]>(() => {
     const sys: ActionRecord[] = LAYERS.filter(l => status[l.n] === 'done').map((l, i) => ({ seq: 0, at: fmtDateTime(t0 + i * 60000), actor: 'MRE pipeline', action: `${l.code} ${l.name} complete`, detail: l.outputs.join('; ') }));
     return [...sys, ...user.audit].map((a, i) => ({ ...a, seq: i + 1 }));
   }, [status, user.audit, t0]);
 
-  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit };
+  const v: Ctx = { scenarioId, scenario, custom, loadCustom, clearCustom, result, status, started, running, allDone, fast, setFast, detailsOpen, setDetailsOpen, selectedLayer, selectLayer, setScenario, run, reset, done: n => status[n] === 'done', user, patch, note, setLevel, execute, setLabel, audit, caseId, loadCase, syncError, pending, auditIntact, approve };
   return <C.Provider value={v}>{children}</C.Provider>;
 }

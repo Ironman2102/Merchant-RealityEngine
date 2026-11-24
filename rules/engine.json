@@ -1,0 +1,40 @@
+{
+ "_note": "Fusion, gate and model settings. Change only through the approval loop (plan P11); every result records this version.",
+ "version": "mre-bayes-0.2.0",
+ "gate": {
+  "openPosterior": 0.1,
+  "minNats": 0.5,
+  "minProvenances": 2,
+  "minFamiliesSingleProvenance": 3,
+  "_why": "Cost break-even for asking the merchant (L2 vs L1) is ~0.8% with rules/costs.json; raised to 10% to respect analyst capacity until portfolio FDR control (plan P9). Honest adversarial variants score <= 0.004%."
+ },
+ "priority": {
+  "high": 0.8,
+  "medium": 0.5
+ },
+ "familyRho": 0.3,
+ "benignLlrFloor": -1.5,
+ "posteriorDraws": 1000,
+ "detectorPriorStrength": 20,
+ "portfolio": { "fdrQ": 0.10 },
+ "mechanismPrior": {
+  "TRANSACTION_LAUNDERING": 0.4,
+  "ROTATION": 0.2,
+  "FABRICATED_SUBSTANCE": 0.25,
+  "OTHER_ABUSE": 0.15
+ },
+ "cusum": {
+  "k": 0.5,
+  "h": 2.35,
+  "arl0Weeks": 52
+ },
+ "volume": {
+  "baselineWeeks": 8,
+  "recentWeeks": 4,
+  "minWeeks": 6
+ },
+ "permutationDraws": 2000,
+ "preMatchMinutes": 45,
+ "heavyRepeatPerWeek": 8,
+ "sweepHours": 24
+}

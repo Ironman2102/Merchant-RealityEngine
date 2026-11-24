@@ -1,0 +1,13 @@
+{
+  "_note": "Expected-loss inputs in rupees (est.; set these with the PA's risk team). missFactor = share of the miss cost that remains if this action is taken against a real front.",
+  "missCost": 500000,
+  "actions": {
+    "L0": { "falseAlarmCost": 0, "missFactor": 1.0, "label": "Watch and log" },
+    "L1": { "falseAlarmCost": 300, "missFactor": 0.9, "label": "Enhanced monitoring" },
+    "L2": { "falseAlarmCost": 1500, "missFactor": 0.6, "label": "Ask the merchant for clarification" },
+    "L3": { "falseAlarmCost": 15000, "missFactor": 0.2, "label": "Restrict one defined flow" },
+    "L4": { "falseAlarmCost": 60000, "missFactor": 0.1, "label": "Hold attributable unsettled funds (legal approval)" },
+    "L5": { "falseAlarmCost": 200000, "missFactor": 0.05, "label": "Terminate (legal approval + confirmed label)" }
+  },
+  "autoRecommendMax": "L3"
+}

@@ -13,7 +13,7 @@ type Row = { id: string; name: string; status: PatternStatus; observed: string; 
 
 const STYLE: Record<PatternStatus, { label: string; cls: string; card: string; Icon: typeof AlertTriangle }> = {
   FLAGGED: { label: 'Flagged', cls: 'bg-neutral-400/15 text-neutral-300', card: 'border-neutral-400/40 bg-neutral-400/[0.04]', Icon: AlertTriangle },
-  CLEAR: { label: 'Clear', cls: 'bg-gray-400/15 text-gray-300', card: 'border-line bg-panel', Icon: CheckCircle2 },
+  CLEAR: { label: 'Clear', cls: 'bg-emerald-50 text-emerald-700', card: 'border-line bg-panel', Icon: CheckCircle2 },
   UNKNOWN: { label: 'Unknown · no data', cls: 'bg-slate-500/20 text-slate-400', card: 'border-line border-dashed bg-panel', Icon: CircleHelp },
   INPUT: { label: 'Needs merchant input', cls: 'bg-stone-400/15 text-stone-300', card: 'border-stone-400/40 bg-stone-400/[0.04]', Icon: MessageSquareText },
 };
@@ -28,7 +28,7 @@ function Card({ r, children }: { r: Row; children?: React.ReactNode }) {
   return (
     <div className={cx('rounded-md border p-3.5', s.card)}>
       <div className="flex items-start justify-between gap-3">
-        <div className="text-sm font-medium"><span className="mr-1.5 font-mono text-xs text-zinc-300">{r.id}</span>{r.name}</div>
+        <div className="text-sm font-medium"><span className="mr-1.5 font-mono text-xs font-semibold text-indigo-700">{r.id}</span>{r.name}</div>
         <span className={cx('flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium', s.cls)}><s.Icon size={11} />{s.label}</span>
       </div>
       <div className="mt-2 grid gap-2 text-[12.5px] sm:grid-cols-2">
@@ -46,15 +46,15 @@ function Passport({ res }: { res: InvestigationResult }) {
   const [reason, setReason] = useState<PassportReason | null>(null);
   const out = reason ? checkPassport(res, reason) : null;
   return (
-    <div className="mt-3 rounded-md border border-line bg-bg/60 p-3">
+    <div className="mt-3 rounded-md border border-line bg-panel2 p-3">
       <div className="text-xs font-medium text-ink">Try it: the merchant’s explanation is…</div>
       <div className="mt-2 flex flex-wrap gap-1.5">{PASSPORT_REASONS.map(r => (
-        <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2.5 py-1 text-xs', reason === r.id ? 'border-zinc-400 bg-zinc-400/10 text-zinc-200' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>))}</div>
+        <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2.5 py-1 text-xs', reason === r.id ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>))}</div>
       {out && (
         <div className="mt-3 space-y-1.5 text-xs">
-          <div className={out.explained ? 'text-gray-300' : 'text-neutral-300'}>{out.explained ? 'Explained. Ask for the supporting document, then refresh the profile.' : `Not explained: this reason cannot account for ${out.open.length} signal(s). Escalate to analyst review.`}</div>
+          <div className={out.explained ? 'font-medium text-emerald-700' : 'font-medium text-rose-700'}>{out.explained ? 'Explained. Ask for the supporting document, then refresh the profile.' : `Not explained: this reason cannot account for ${out.open.length} signal(s). Escalate to analyst review.`}</div>
           {out.covered.length > 0 && <div className="text-mute">Covered: {out.covered.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
-          {out.open.length > 0 && <div className="text-mute">Still unexplained: <span className="text-neutral-200">{out.open.map(e => `${e.id} ${e.name}`).join(' · ')}</span></div>}
+          {out.open.length > 0 && <div className="text-mute">Still unexplained: <span className="font-medium text-rose-700">{out.open.map(e => `${e.id} ${e.name}`).join(' · ')}</span></div>}
           <div className="text-dim">Evidence to request: {out.reason.evidence}</div>
         </div>)}
     </div>
@@ -74,7 +74,7 @@ export function PatternBoard({ res, label = null }: { res: InvestigationResult; 
   return (
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[['Patterns checked', all.length, 'text-ink'], ['Flagged', n('FLAGGED'), 'text-neutral-300'], ['Clear', n('CLEAR'), 'text-gray-300'], ['Needs merchant input', n('INPUT'), 'text-stone-300'], ['Unknown (no data)', n('UNKNOWN'), 'text-slate-400']].map(([l, v, c]) => (
+        {[['Patterns checked', all.length, 'text-ink'], ['Flagged', n('FLAGGED'), 'text-rose-700'], ['Clear', n('CLEAR'), 'text-emerald-700'], ['Needs merchant input', n('INPUT'), 'text-amber-700'], ['Unknown (no data)', n('UNKNOWN'), 'text-slate-500']].map(([l, v, c]) => (
           <div key={l as string} className="rounded-md border border-line bg-panel p-4"><div className="text-xs text-mute">{l}</div><div className={cx('mt-1 text-2xl font-semibold tabular-nums', c as string)}>{v}</div></div>))}
       </div>
 
@@ -109,7 +109,7 @@ export function PatternBoard({ res, label = null }: { res: InvestigationResult; 
           if (!rows.length) return null;
           return (
             <div key={f.id}>
-              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mute"><span className="font-mono text-zinc-300">{f.id}</span> · {f.name}</div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mute"><span className="font-mono font-semibold text-indigo-700">{f.id}</span> · {f.name}</div>
               <div className="grid gap-3 lg:grid-cols-2">{rows.map(r => <Card key={r.id} r={r} />)}</div>
             </div>);
         })}

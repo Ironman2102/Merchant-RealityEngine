@@ -27,7 +27,7 @@ function Chain({ title, tone, items, mode, sel, onSel }: { title: string; tone: 
         {items.map((it, i) => (
           <li key={it.label}><button onClick={() => onSel(it.label)} className={cx('flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-panel2/60', sel === it.label && 'bg-panel2')}>
             <span className="relative mt-0.5 flex flex-col items-center"><span className={cx('h-2.5 w-2.5 rounded-full', vTone[mode][it.verdict] === 'bad' ? 'bg-neutral-400' : vTone[mode][it.verdict] === 'ok' ? 'bg-gray-400' : vTone[mode][it.verdict] === 'warn' ? 'bg-stone-400' : 'bg-slate-500')} />{i < items.length - 1 && <span className="absolute top-3 h-8 w-px bg-line2" />}</span>
-            <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">{it.label}</span><span className="block text-xs text-mute">{it.detail}</span><span className="mt-1 block text-[11px] text-dim">Tests: {it.evidenceIds.join(', ')}</span></span>
+            <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">{it.label}</span>{sel === it.label && <><span className="block text-xs text-mute">{it.detail}</span><span className="mt-1 block text-[11px] text-dim">Tests: {it.evidenceIds.join(', ')}</span></>}</span>
             <Badge tone={vTone[mode][it.verdict]}>{vLabel[mode][it.verdict]}</Badge></button></li>))}
       </ol>
     </div>
@@ -42,16 +42,34 @@ export function L5View() {
   const sc = r.scenario, byId = new Map(r.events.map(e => [e.id, e]));
   const refunds = r.events.filter(e => e.type === 'REFUND'), gaps = Object.entries(sc.coverage).filter(([k, v]) => v === 'MISSING' && GAPS[k]);
   const level = user.chosenLevel ?? rv.recommended;
-  const statusTone: Tone = rv.legitStatus === 'FAILED' ? 'bad' : rv.legitStatus === 'HOLDS' ? 'ok' : 'warn';
+  const failedLegit = rv.legit.filter(x => x.verdict === 'FAILED').length;
+  const supportedFront = rv.front.filter(x => x.verdict === 'SUPPORTED').length;
   return (
-    <LayerFrame n={5} evidenceCount={rv.legit.length + rv.front.length} evidenceLabel="chain links tested" summary={<>Legitimate explanation: <Badge tone={statusTone}>{rv.legitStatus === 'FAILED' ? 'Fails' : rv.legitStatus === 'HOLDS' ? 'Holds' : 'Inconclusive'}</Badge> Recommended action: <b className="text-ink">{level} {RESPONSE_LEVELS.find(l => l.id === level)!.name}</b></>}>
+    <LayerFrame
+      n={5}
+      brief={{
+        checks: 'Tests the merchant’s own "we are a normal business" story side-by-side against the "this is a front" story, and lets a human analyst inspect raw transactions, payment links, refunds, and missing feeds.',
+        happened: (
+          <>
+            Legitimate-business story: <b>{rv.legitStatus}</b> ({failedLegit} of {rv.legit.length} checks failed).
+            Front story: <b>{supportedFront} of {rv.front.length}</b> links supported.
+            Suggested action: <b>{level} — {RESPONSE_LEVELS.find(l => l.id === level)!.name}</b>.
+          </>
+        ),
+        whyItMatters: 'The system never freezes an account automatically. An analyst verifies the concrete proof here, records notes or a merchant explanation, and passes their recommendation to L6.',
+      }}
+    >
       <div className="grid gap-4 lg:grid-cols-2">
         <Chain title="Legitimate business chain" tone="ok" items={rv.legit} mode="legit" sel={sel} onSel={setSel} />
         <Chain title="Potential front chain" tone="bad" items={rv.front} mode="front" sel={sel} onSel={setSel} />
       </div>
       <Panel title="Analyst reasoning" subtitle="Generated from the evidence; the analyst can accept or override it.">
         <ul className="space-y-2 text-[13px]">{rv.reasoning.map((t, i) => <li key={i} className="flex gap-2"><ShieldCheck size={15} className="mt-0.5 shrink-0 text-zinc-300" /><span className="text-ink/90">{t}</span></li>)}</ul>
-        {rv.legitStatus === 'FAILED' && r.scenario.id === 'bakery' && <div className="mt-3"><Callout tone="warn" title="Why the legitimate chain fails here">Checkout provenance (G6) shows the payment link on an undeclared betting deposit page, and refund destinations (D9) do not match the original payers. These come from different data sources and are both hard to explain away with a bakery story.</Callout></div>}
+        {rv.legitStatus === 'FAILED' && (() => {
+          const top = [...r.evidence].filter(e => e.status === 'ILLICIT').sort((a, b) => b.strength * b.reliability - a.strength * a.reliability)
+            .filter((e, i, xs) => xs.findIndex(x => x.system === e.system) === i).slice(0, 2);
+          return top.length === 2 && <div className="mt-3"><Callout tone="warn" title="Why the legitimate chain fails here">{top.map(e => `${e.name} (${e.id}): ${e.observed}.`).join(' ')} These come from different data sources, so one innocent explanation would have to cover both.</Callout></div>;
+        })()}
       </Panel>
       <Panel title="Evidence inspection" subtitle={item ? `Showing evidence for “${item.label}”. Select another link or clear.` : 'Showing all informative signals. Select a link above to focus.'} right={item && <Btn size="sm" variant="ghost" onClick={() => setSel(null)}>Clear</Btn>}>
         <Tabs<Tool> value={tool} onChange={setTool} tabs={[{ id: 'signals', label: 'Signals and records' }, { id: 'links', label: 'Payment links' }, { id: 'refunds', label: 'Refund reconciliation' }, { id: 'domain', label: 'Domain provenance' }, { id: 'gaps', label: `Coverage gaps (${gaps.length})` }]} />

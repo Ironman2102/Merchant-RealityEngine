@@ -3,9 +3,10 @@ import { Badge, Td, Th, rowCls, tableCls, Mono } from '../ui/ui';
 import { fmtDateTime, inr } from '../../utils/format';
 
 /** Shows the original synthetic records behind a signal. */
-export function RecordPeek({ r, ids, max = 8 }: { r: InvestigationResult; ids: string[]; max?: number }) {
-  if (!ids.length) return <div className="text-xs text-dim">No individual records: this signal is an aggregate or an absence.</div>;
-  const em = ids.filter(i => i.startsWith('EMB')), evIds = ids.filter(i => !i.startsWith('EMB'));
+export function RecordPeek({ r, ids, max = 8 }: { r: InvestigationResult; ids?: string[]; max?: number }) {
+  const clean = (ids ?? []).filter((i): i is string => typeof i === 'string' && i.length > 0);
+  if (!clean.length) return <div className="text-xs text-dim">No individual records: this signal is an aggregate or an absence.</div>;
+  const em = clean.filter(i => i.startsWith('EMB')), evIds = clean.filter(i => !i.startsWith('EMB'));
   const byId = new Map(r.events.map(e => [e.id, e]));
   const evs = evIds.map(i => byId.get(i)).filter((e): e is NonNullable<typeof e> => !!e).slice(0, max);
   return (

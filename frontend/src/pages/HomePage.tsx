@@ -1,3 +1,4 @@
+import { DETECTORS } from '../engines/detectors';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
@@ -131,7 +132,7 @@ export function HomePage() {
         <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">{TECH.map(([I, t, d]) => (
           <div key={t} className="bg-panel p-5"><I size={20} className="text-cyan-300" /><div className="mt-3 text-sm font-semibold">{t}</div><p className="mt-1 text-[13px] leading-relaxed text-mute">{d}</p></div>))}</div>
         <div className="mt-6 flex flex-wrap gap-2">{FAMILIES.map(f => <span key={f.id} className="rounded border border-line bg-panel px-2.5 py-1 text-xs text-mute"><span className="mr-1.5 font-mono text-cyan-300">{f.id}</span>{f.name} <span className="text-dim">· {f.patterns}</span></span>)}</div>
-        <p className="mt-3 text-xs text-dim">Pattern counts describe the design catalogue. The demo runs a subset of 21 as live detectors.</p>
+        <p className="mt-3 text-xs text-dim">Pattern counts describe the design catalogue. The engine runs {DETECTORS.length} of them as live statistical detectors.</p>
       </Section>
 
       <Section id="use-cases" title="Three investigations MRE is built for.">

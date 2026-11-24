@@ -1,0 +1,88 @@
+openapi: 3.1.0
+info:
+  title: Merchant Reality Engine
+  version: 0.1.0
+  description: Versioned scoring API. Browser sessions stay under /api. Service keys use Authorization Bearer.
+paths:
+  /v1/health:
+    get:
+      summary: Liveness
+      responses:
+        '200':
+          description: OK
+  /v1/score:
+    post:
+      summary: Score one mre-dataset/v1 merchant. Does not create a case.
+      security: [{ bearer: [] }]
+      responses:
+        '200':
+          description: Bayesian score. ml is null until the model service is configured.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [decision, posterior, ci, prior, recommended, mechanism, topEvidence, rulesVersion, ml]
+                properties:
+                  decision: { type: string }
+                  posterior: { type: number }
+                  ci: { type: array, items: { type: number }, minItems: 2, maxItems: 2 }
+                  prior: { type: number }
+                  recommended: { type: string }
+                  mechanism: { type: string }
+                  topEvidence:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, name, observed, llr]
+                      properties:
+                        id: { type: string }
+                        name: { type: string }
+                        observed: { type: string }
+                        llr: { type: number }
+                  rulesVersion: { type: string }
+                  ml: {}
+  /v1/cases:
+    post:
+      summary: Score and store a case.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema: { type: string }
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: Case id plus the score }
+  /v1/cases/{id}:
+    get:
+      security: [{ bearer: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Saved case }
+  /v1/cases/{id}/trace:
+    get:
+      security: [{ bearer: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Reasoning trace }
+  /v1/cases/{id}/pack:
+    get:
+      security: [{ bearer: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Evidence pack }
+  /v1/batches:
+    post:
+      summary: Queue one portfolio batch. One batch runs at a time.
+      security: [{ bearer: [] }]
+      responses:
+        '202': { description: batchId }
+  /v1/batches/{id}:
+    get:
+      security: [{ bearer: [] }]
+      parameters: [{ in: path, name: id, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Batch status }
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer

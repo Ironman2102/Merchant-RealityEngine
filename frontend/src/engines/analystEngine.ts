@@ -51,11 +51,11 @@ export function buildReview(evidence: EvidenceItem[], fusion: FusionResult): Ana
   if (legitStatus === 'HOLDS') reasoning.push(`The legitimate chain holds on ${supported.length} links, including verified, hard-to-fake evidence. The volume alarm is explained.`);
   if (legitStatus === 'FAILED') reasoning.push(`The legitimate chain fails on ${failed.length} links across ${failedFamilies.size} independent evidence families, so it is no longer the most plausible explanation.`);
   if (legitStatus === 'INCONCLUSIVE') reasoning.push('Evidence neither confirms nor rules out the legitimate explanation. A merchant clarification is the proportionate next step.');
+  // The response comes from decision theory (expected loss); fabricated substance is capped at a clarification first.
   const top = fusion.mechanisms[0];
-  let recommended: ResponseLevel;
-  if (fusion.decision === 'NO_CASE') recommended = legitStatus === 'HOLDS' ? 'L1' : 'L0';
-  else if (legitStatus === 'INCONCLUSIVE') recommended = 'L2';
-  else if (top.id === 'FABRICATED_SUBSTANCE') recommended = 'L2';
-  else recommended = fusion.priority === 'HIGH' ? 'L3' : fusion.priority === 'MEDIUM' ? 'L2' : 'L1';
+  let recommended: ResponseLevel = fusion.decisionAnalysis.recommended;
+  if (fusion.decision === 'OPEN_CASE' && legitStatus === 'INCONCLUSIVE' && recommended > 'L2') recommended = 'L2';
+  if (fusion.decision === 'OPEN_CASE' && top.id === 'FABRICATED_SUBSTANCE' && recommended > 'L2') recommended = 'L2';
+  reasoning.push(fusion.decisionAnalysis.reason);
   return { legit, front, legitStatus, frontFit, reasoning, recommended };
 }

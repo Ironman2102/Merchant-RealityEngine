@@ -38,7 +38,7 @@ export function DemoPage() {
               </div>); })}
           </div>
         </Panel>
-        {scenarioId === 'bakery' && <Callout tone="info" title="Four examples, one guided demo">Choose a merchant to watch the seven layers run, then review its result and evidence.</Callout>}
+        {<Callout tone="info" title="Four examples, one guided demo">Choose a merchant to watch the seven layers run, then review its result and evidence.</Callout>}
       </>}
 
       {started && !allDone && <><InvestigationPage progressOnly /><div className="flex justify-end"><Btn onClick={reset}>Reset investigation</Btn></div></>}

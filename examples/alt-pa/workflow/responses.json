@@ -1,0 +1,5 @@
+[
+  { "id": "MONITOR", "label": "Monitor", "auto": true, "restrictsFunds": false, "needsLegal": false, "engineLevel": "L1" },
+  { "id": "QUERY_MERCHANT", "label": "Query the merchant", "auto": true, "restrictsFunds": false, "needsLegal": false, "engineLevel": "L2" },
+  { "id": "RESTRICT_FLOW", "label": "Restrict the flow", "auto": false, "restrictsFunds": true, "needsLegal": false, "engineLevel": "L3" }
+]

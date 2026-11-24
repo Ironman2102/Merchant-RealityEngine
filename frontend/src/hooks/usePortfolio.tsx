@@ -4,6 +4,7 @@ import type { InvestigationResult } from '../types/investigation';
 import { SCENARIO_IDS, getScenario } from '../data/scenarios';
 import { runInvestigation } from '../engines/investigationEngine';
 import { runPatternPack, type PatternPack } from '../engines/patternPack';
+import { detectRings, type RingReport } from '../../../engine/ringDetector';
 
 /** A merchant in the reviewed portfolio, already analysed by the engine. */
 export interface PortfolioEntry {
@@ -29,7 +30,16 @@ export function analyse(key: string, source: PortfolioEntry['source'], scenario:
 }
 
 export type PortfolioMode = 'demo' | 'user';
-interface Ctx { entries: PortfolioEntry[]; loading: boolean; mode: PortfolioMode; get: (key: string) => PortfolioEntry | undefined; addUploaded: (sc: Scenario) => string; clearUploaded: () => void }
+interface Ctx {
+  entries: PortfolioEntry[];
+  rings: RingReport;
+  loading: boolean;
+  mode: PortfolioMode;
+  get: (key: string) => PortfolioEntry | undefined;
+  addUploaded: (sc: Scenario) => string;
+  setUploadedBatch: (scs: Scenario[]) => string[];
+  clearUploaded: () => void;
+}
 const C = createContext<Ctx | null>(null);
 export const usePortfolio = () => { const c = useContext(C); if (!c) throw new Error('PortfolioProvider missing'); return c; };
 
@@ -37,6 +47,7 @@ export function PortfolioProvider({ children, mode }: { children: ReactNode; mod
   const builtIns = useMemo(() => mode === 'demo' ? SCENARIO_IDS.map(id => analyse(id, 'built-in', getScenario(id), id)) : [], [mode]);
   const [uploaded, setUploaded] = useState<PortfolioEntry[]>([]);
   const entries = useMemo(() => [...uploaded, ...builtIns].sort((a, b) => b.risk - a.risk), [uploaded, builtIns]);
+  const rings = useMemo(() => detectRings(entries.map(e => e.scenario)), [entries]);
   const get = useCallback((key: string) => entries.find(e => e.key === key), [entries]);
   const addUploaded = useCallback((sc: Scenario) => {
     const key = `upload-${sc.profile.id}-${Date.now().toString(36)}`;
@@ -44,6 +55,12 @@ export function PortfolioProvider({ children, mode }: { children: ReactNode; mod
     setUploaded(u => mode === 'user' ? [entry] : [entry, ...u.filter(x => x.scenario.profile.id !== sc.profile.id)]);
     return key;
   }, [mode]);
+  const setUploadedBatch = useCallback((scs: Scenario[]) => {
+    const ts = Date.now().toString(36);
+    const batch = scs.map((sc, idx) => analyse(`upload-${sc.profile.id}-${ts}-${idx}`, 'uploaded', sc));
+    setUploaded(batch);
+    return batch.map(b => b.key);
+  }, []);
   const clearUploaded = useCallback(() => setUploaded([]), []);
-  return <C.Provider value={{ entries, loading: false, mode, get, addUploaded, clearUploaded }}>{children}</C.Provider>;
+  return <C.Provider value={{ entries, rings, loading: false, mode, get, addUploaded, setUploadedBatch, clearUploaded }}>{children}</C.Provider>;
 }

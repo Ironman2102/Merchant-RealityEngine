@@ -1,0 +1,7 @@
+{
+  "_note": "Hard rules. They can only raise the odds, are always shown in the trace, and still need the governance gate.",
+  "rules": [
+    { "id": "R-01", "when": "payment link embedded on a known betting host (rules/hosts.json known)", "detector": "G6", "llr": 3.0 },
+    { "id": "R-02", "when": "settlement beneficiary also settles a terminated or dormant peer that handed off to this merchant", "detector": "F5", "llr": 2.0 }
+  ]
+}
