@@ -29,7 +29,10 @@ ensure_node() {
     exit 1
   fi
 
-  if [[ ! -x node_modules/.bin/vite ]]; then
+  if [[ ! -x node_modules/.bin/vite \
+    || ! -d node_modules/@stdlib/math-base-special-gammainc \
+    || ! -d node_modules/@stdlib/math-base-special-betainc \
+    || ! -d node_modules/@stdlib/math-base-special-betaincinv ]]; then
     echo "Dependencies are missing; installing from package-lock.json..."
     npm ci --cache "${TMPDIR:-/tmp}/merchant-reality-engine-npm-cache"
   fi
