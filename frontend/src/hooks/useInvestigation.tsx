@@ -14,7 +14,7 @@ const freshUser = (): UserState => ({ notes: '', clarification: '', chosenLevel:
 
 export type ActiveId = ScenarioId | 'custom';
 interface Ctx {
-  scenarioId: ActiveId; scenario: Scenario; custom: Scenario | null; loadCustom: (sc: Scenario, runNow?: boolean) => void; clearCustom: () => void; result: InvestigationResult;
+  scenarioId: ActiveId; scenario: Scenario; custom: Scenario | null; loadCustom: (sc: Scenario, runNow?: boolean, instant?: boolean) => void; clearCustom: () => void; result: InvestigationResult;
   status: Record<LayerId, LayerStatus>; started: boolean; running: boolean; allDone: boolean; fast: boolean; setFast: (b: boolean) => void; detailsOpen: boolean; setDetailsOpen: (open: boolean) => void;
   selectedLayer: LayerId; selectLayer: (n: LayerId) => void;
   setScenario: (id: ActiveId) => void; run: (id?: ActiveId) => void; reset: () => void;
@@ -69,8 +69,15 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
     })();
   }, [fast]);
   const run = useCallback((id?: ActiveId) => { if (id) setScenarioId(id); start(id ? runInvestigation(pick(id)) : result); }, [result, pick, start]);
-  const loadCustom = useCallback((sc: Scenario, runNow = true) => {
-    token.current++; setCaseId(null); setCustom(sc); setScenarioId('custom'); setUser(freshUser()); setStatus(idle()); setStarted(false); setDetailsOpen(false); selectLayer(1);
+  const loadCustom = useCallback((sc: Scenario, runNow = true, instant = false) => {
+    token.current++; setCaseId(null); setCustom(sc); setScenarioId('custom'); setUser(freshUser()); selectLayer(1);
+    if (instant) {
+      setStatus({ 1: 'done', 2: 'done', 3: 'done', 4: 'done', 5: 'done', 6: 'done', 7: 'done' });
+      setStarted(true);
+      setDetailsOpen(true);
+      return;
+    }
+    setStatus(idle()); setStarted(false); setDetailsOpen(false);
     if (runNow) start(runInvestigation(sc));
   }, [start]);
   const clearCustom = useCallback(() => {

@@ -159,7 +159,7 @@ export function PortfolioPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">{userMode ? 'Portfolio & Bayesian-FDR Queue' : 'Demo merchant portfolio'}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-mute">{userMode ? 'Inspect your uploaded merchant analysis and simulate analyst team capacity across the 1,000-merchant portfolio queue.' : 'Four prebuilt demo merchants, analyzed through the seven layers. Open one to inspect the Executive Dossier and proof.'}</p>
+          <p className="mt-1 max-w-2xl text-sm text-mute">{userMode ? (entries.length > 1 ? `Overall report for ${entries.length} uploaded merchants, including cross-MID rings, GMV exposure, and analyst capacity.` : 'Inspect your uploaded merchant analysis and simulate analyst team capacity.') : 'Four prebuilt demo merchants, analyzed through the seven layers. Open one to inspect the Executive Dossier and proof.'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {entries.length > 0 && (
@@ -242,7 +242,7 @@ export function PortfolioPage() {
                 const v = verdictOf(e), p = e.scenario.profile, step = LADDER.find(l => l.id === e.pack.ladder)!;
                 const reality = computeMerchantReality(e.result);
                 return (
-                  <tr key={e.key} onClick={() => { if (userMode) loadCustom(e.scenario, true); nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`); }} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-slate-50', e.suspicious && 'bg-rose-50/30')}>
+                  <tr key={e.key} onClick={() => { if (userMode) loadCustom(e.scenario, true, true); nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`); }} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-slate-50', e.suspicious && 'bg-rose-50/30')}>
                     <td className="px-4 py-3"><div className="flex items-center gap-2.5">{e.suspicious ? <ShieldAlert size={17} className="shrink-0 text-rose-600" /> : <ShieldCheck size={17} className="shrink-0 text-emerald-600" />}
                       <div><div className="font-semibold text-ink">{p.name}</div><div className="text-xs text-mute">{p.city.split(',')[0]} · <span className="font-mono">{p.id}</span>{e.source === 'uploaded' && <span className="ml-1.5 font-medium text-indigo-600">uploaded</span>}</div></div></div></td>
                     <td className="px-4 py-3"><div className="text-ink">{p.category}</div><div className="text-xs text-mute">MCC {p.mcc}</div></td>

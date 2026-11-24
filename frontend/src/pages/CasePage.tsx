@@ -195,7 +195,7 @@ export function CasePage() {
   const level = RESPONSE_LEVELS.find(l => l.id === e.result.review.recommended)!;
   const plan = planResponse(e.result, NO_USER);
   const sl = e.result.events.filter(x => x.type === 'SALE');
-  const open7 = () => { if (e.builtInId) run(e.builtInId); else loadCustom(e.scenario, true); nav(investigationPath); };
+  const open7 = () => { if (e.builtInId) run(e.builtInId); else loadCustom(e.scenario, true, true); nav(investigationPath); };
 
   return (
     <>

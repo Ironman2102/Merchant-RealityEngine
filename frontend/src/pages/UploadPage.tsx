@@ -86,7 +86,7 @@ export function UploadPage() {
   });
   const input = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { clearCustom(); clearUploaded(); setCaseKey(null); }, [clearCustom, clearUploaded]);
+  useEffect(() => { clearCustom(); setCaseKey(null); }, [clearCustom]);
 
   const applyCsv = (data: ParsedCsv, mapping: CsvColumnMapping, meta: CsvMerchantMeta, name: string) => {
     const { datasets, isMulti } = buildDatasetsFromMultiCsv(data, mapping, meta);
@@ -327,34 +327,45 @@ export function UploadPage() {
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><h1 className="text-2xl font-bold tracking-tight text-ink">{showSimulation ? 'Investigation in progress' : showResult ? 'Investigation result' : 'Analyze a merchant dataset'}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-mute">{showSimulation ? `${custom?.profile.name} is moving through the seven analysis layers.` : showResult ? `${custom?.profile.name} · completed across all seven layers.` : <>Drop any raw gateway <span className="font-mono font-semibold text-indigo-700">.csv</span> export (with auto column mapping) or an <span className="font-mono font-semibold text-indigo-700">mre-dataset/v1 .json</span> file.</>}</p></div>
-        {!analysed && <div className="flex flex-wrap gap-2"><Btn size="sm" variant="outline" onClick={loadSampleCsv}><FileSpreadsheet size={14} className="text-indigo-600" />Try sample CSV export</Btn><a href={`${BASE}samples/DATASET_FORMAT.md`} download><Btn size="sm"><FileJson size={14} />Format guide</Btn></a><a href={`${BASE}samples/mre-dataset-template.json`} download><Btn size="sm"><Download size={14} />Empty template</Btn></a></div>}
+        <div><h1 className="text-2xl font-bold tracking-tight text-ink">{showSimulation ? 'Investigation in progress' : showResult ? 'Investigation result' : 'Analyze & Bulk Scan'}</h1>
+          <p className="mt-1 max-w-2xl text-sm text-mute">{showSimulation ? `${custom?.profile.name} is moving through the seven analysis layers.` : showResult ? `${custom?.profile.name} · completed across all seven layers.` : 'Drop one or multiple gateway CSV, JSON, or JSONL files, or load a sample portfolio below.'}</p></div>
+        <div className="flex flex-wrap gap-2">
+          <a href={`${BASE}samples/DATASET_FORMAT.md`} download><Btn size="sm"><FileJson size={14} />Format guide</Btn></a>
+          <a href={`${BASE}samples/mre-dataset-template.json`} download><Btn size="sm"><Download size={14} />Template</Btn></a>
+        </div>
       </div>
 
-      {!analysed && <>
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-2">
         <div onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}
-          className={cx('flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors', over ? 'border-indigo-500 bg-indigo-50/50' : 'border-line2 bg-panel')}>
-          <FileUp className="text-indigo-600" size={30} />
-          <div className="text-sm font-semibold text-ink">Drop one or multiple CSV (.csv) / dataset (.json, .jsonl) files here</div>
+          className={cx('flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors', over ? 'border-indigo-500 bg-indigo-50/50' : 'border-line2 bg-panel')}>
+          <FileUp className="text-indigo-600" size={28} />
+          <div className="text-sm font-semibold text-ink">Drop one or multiple CSV / JSON / JSONL files</div>
           <div className="text-xs text-mute">Auto-detects columns, paise/rupee scaling, and multi-merchant files</div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Btn variant="primary" onClick={() => input.current?.click()}>Choose file(s)</Btn>
-            <Btn variant="outline" onClick={loadSampleCsv}><FileSpreadsheet size={14} />Load sample CSV</Btn>
+            <Btn variant="outline" onClick={loadSampleCsv}><FileSpreadsheet size={14} />Sample CSV</Btn>
           </div>
           <input ref={input} type="file" multiple accept=".json,.jsonl,.csv,application/json,text/csv" className="hidden" onChange={e => void onFiles(e.target.files)} />
-          <div className="text-[11px] text-dim">The mapped dataset is sent to the investigation API to score all 7 layers and save the case.</div>
         </div>
 
-        <Panel title="Zero-Code Pilot Ready" subtitle="Test on any anonymized payment export in 15 seconds.">
-          <ul className="space-y-3 text-sm text-mute">
-            <li><span className="font-semibold text-ink">Raw CSV or JSON</span><br />Drop any gateway CSV export — columns like <span className="font-mono text-xs">amount_paise</span>, <span className="font-mono text-xs">created_at</span>, and <span className="font-mono text-xs">payer_state</span> are mapped automatically.</li>
-            <li><span className="font-semibold text-ink">No missing-data penalty</span><br />Missing context feeds (website crawl, GST, orders) are marked <span className="font-mono text-xs">MISSING</span> and never counted against the merchant.</li>
-            <li><span className="font-semibold text-ink">Executive Case Dossier</span><br />Outputs Claimed vs. Reality visuals, ₹ GMV at Risk, Merchant RFI draft, and printable FIU-IND STR summary.</li>
-          </ul>
+        <Panel title="Quick-Start Sample or Bulk Portfolio" subtitle="Run a 9-merchant batch scan or pick a single scenario.">
+          <div className="space-y-3">
+            <Btn variant="primary" className="w-full justify-center" disabled={loadingSample} onClick={loadBulkPortfolio}>
+              <Play size={14} />{loadingSample ? 'Loading…' : 'Load 9-merchant bulk portfolio'}
+            </Btn>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <select value={sampleFile} onChange={e => setSampleFile(e.target.value)} disabled={loadingSample} className="min-h-10 min-w-0 flex-1 rounded-lg border border-line2 bg-panel px-3 text-sm text-ink outline-none focus:border-indigo-500 disabled:opacity-50">
+                <option value="">Choose a single test file…</option>
+                {TEST_DATASETS.map(sample => <option key={sample.file} value={sample.file}>{sample.title}</option>)}
+              </select>
+              <Btn variant="outline" disabled={!sampleFile || loadingSample} onClick={loadSample}><FileJson size={14} />Load</Btn>
+            </div>
+            <p className="text-[11px] text-dim">Missing context feeds (website, GST, orders) stay <span className="font-mono">MISSING</span> and never penalize a merchant.</p>
+          </div>
         </Panel>
       </div>
+
+      {!analysed && <>
 
       {csvData && csvMap && (
         <Panel
@@ -486,17 +497,6 @@ export function UploadPage() {
         </Panel>
       )}
 
-      <Panel title="Use a built-in test file or bulk portfolio" subtitle="Choose a single merchant dataset or load all 9 synthetic merchants together for an overall portfolio report.">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <select value={sampleFile} onChange={e => setSampleFile(e.target.value)} disabled={loadingSample} className="min-h-10 min-w-0 flex-1 rounded-lg border border-line2 bg-panel px-3 text-sm text-ink outline-none focus:border-indigo-500 disabled:opacity-50">
-            <option value="">Choose a test file</option>
-            {TEST_DATASETS.map(sample => <option key={sample.file} value={sample.file}>{sample.title}</option>)}
-          </select>
-          <Btn variant="outline" disabled={!sampleFile || loadingSample} onClick={loadSample}><FileJson size={14} />{loadingSample ? 'Loading file…' : 'Load test file'}</Btn>
-          <Btn variant="primary" disabled={loadingSample} onClick={loadBulkPortfolio}><Play size={14} />Load 9-merchant bulk portfolio</Btn>
-        </div>
-        <p className="mt-3 text-xs text-dim">Supports single-merchant JSON, multi-merchant JSON arrays / JSONL, and multi-merchant CSVs (grouped by <code className="font-mono">merchant_id</code>).</p>
-      </Panel>
       </>}
 
       {bulkScenarios.length > 0 && (

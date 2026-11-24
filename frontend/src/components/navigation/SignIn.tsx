@@ -63,7 +63,7 @@ export function SignedInAs({ user, logout }: { user: SessionUser; logout: () => 
   return (
     <div className="space-y-2 border-t border-line p-4 text-xs text-mute">
       <div className="flex items-center justify-between gap-2">
-        <span>Signed in as <b className="text-ink">{user.username}</b> · <span className="font-mono text-zinc-300">{user.role}</span></span>
+        <span>Signed in as <b className="text-ink">{user.username}</b> · <span className="font-mono font-semibold text-indigo-700">{user.role}</span></span>
         <button onClick={logout} className="inline-flex items-center gap-1 hover:text-ink" aria-label="Sign out"><LogOut size={13} />Sign out</button>
       </div>
       <div>
@@ -75,9 +75,9 @@ export function SignedInAs({ user, logout }: { user: SessionUser; logout: () => 
               type="button"
               disabled={switching || (user.role === r && user.username === `demo-${r}`)}
               onClick={() => void switchRole(r)}
-              className={`rounded border px-1.5 py-0.5 text-[11px] transition-colors ${
+              className={`rounded border px-2 py-0.5 text-[11px] font-medium transition-colors ${
                 user.role === r
-                  ? 'border-zinc-400 bg-zinc-400/15 text-zinc-100'
+                  ? 'border-indigo-600 bg-indigo-600 text-white'
                   : 'border-line2 bg-panel2 text-mute hover:text-ink'
               }`}
             >
