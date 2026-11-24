@@ -12,10 +12,10 @@ export const FEATURE_COLUMNS: string[] = [
   'n_sales', 'account_age_days',
 ];
 
-/** Leakage-free behavioral feature columns for independent ML training (no posterior/prior/logodds/coverage shortcuts). */
+/** Leakage-free behavioral feature columns for independent ML training (no posterior/prior/logodds/coverage/age shortcuts). */
 export const BEHAVIORAL_FEATURE_COLUMNS: string[] = [
   ...DETECTORS.flatMap(d => [`llr_${d.id}`, `eff_${d.id}`, `fired_${d.id}`]),
-  'n_sales', 'account_age_days',
+  'n_sales',
   'night_share', 'weekend_share', 'refund_ratio', 'payer_hhi', 'ticket_cv', 'sweep_lag_median_h',
 ];
 
@@ -36,7 +36,6 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
     else if (e.type === 'TRANSFER') transfers.push(e.eventTime);
   }
   row.n_sales = sales.length;
-  row.account_age_days = result.scenario.profile.accountAgeDays;
   const IST = 19_800_000;
   let night = 0, weekend = 0, sum = 0;
   const payerCounts = new Map<string, number>();

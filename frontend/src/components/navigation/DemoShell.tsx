@@ -5,7 +5,7 @@ import { useInvestigation } from '../../hooks/useInvestigation';
 import { cx } from '../../utils/format';
 
 const NAV = [
-  { to: '/demo', label: 'Four merchant scenarios', icon: Briefcase, end: true },
+  { to: '/demo', label: 'Six merchant scenarios', icon: Briefcase, end: true },
   { to: '/demo/investigations', label: 'Seven-layer run', icon: FileSearch },
   { to: '/demo/trace', label: 'Reasoning trace', icon: ScrollText },
   { to: '/demo/merchant', label: 'Merchant profile', icon: Store },
@@ -15,7 +15,7 @@ const NAV = [
   { to: '/demo/analyst', label: 'Analyst review', icon: Boxes },
   { to: '/demo/response', label: 'Response simulation', icon: ShieldAlert },
   { to: '/demo/audit', label: 'Audit and learning', icon: BarChart3 },
-  { to: '/demo/portfolio', label: 'Four merchant results', icon: Briefcase },
+  { to: '/demo/portfolio', label: 'Six merchant results', icon: Briefcase },
 ];
 
 export function DemoShell() {

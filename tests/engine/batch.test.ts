@@ -7,11 +7,11 @@ import { pseudonymize } from '../../backend/src/adapters/canonicalDataset';
 import { runBatch } from '../../cli/batch';
 import { analyze } from '../../engine/index';
 
-const KEY = Buffer.from('batch-test-key', 'utf8');
+const KEY = Buffer.from('batch-test-only-key', 'utf8');
 
 export default function (): number {
   const prev = process.env.MRE_HASH_KEY;
-  process.env.MRE_HASH_KEY = 'batch-test-key';
+  process.env.MRE_HASH_KEY = 'batch-test-only-key';
   let bad = 0;
   const check = (name: string, ok: boolean, detail = '') => { if (!ok) { bad++; console.log(`  ✗ ${name} ${detail}`); } else console.log(`  ✓ ${name}`); };
   const a = mkdtempSync(join(tmpdir(), 'mre-batch-a-'));
@@ -27,7 +27,7 @@ export default function (): number {
   check('cases byte-identical', casesA === casesB);
   check('scores have rows', scoresA.split('\n').length > 9);
 
-  const samples = readdirSync('frontend/public/samples').filter(f => /^0[1-9]-/.test(f));
+  const samples = readdirSync('frontend/public/samples').filter(f => /^\d\d-/.test(f));
   const { datasets } = mapExport('examples/generic-pa', opts.mappingPath, KEY);
   for (const file of samples) {
     const original = JSON.parse(readFileSync(`frontend/public/samples/${file}`, 'utf8')) as { merchant: { id: string } };

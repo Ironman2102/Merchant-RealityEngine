@@ -71,7 +71,8 @@ def test_serve_no_model_and_nn_only_fallbacks(tmp_path, monkeypatch):
     monkeypatch.setattr(serve, 'NET', tmp_path / 'missing-nn.json')
     client = TestClient(serve.app)
 
-    assert client.get('/health').json() == {'status': 'no-model', 'model': None, 'nn': False}
+    h_no_model = client.get('/health').json()
+    assert h_no_model['status'] == 'no-model' and h_no_model['model'] is None and h_no_model['nn'] is False
     assert client.post('/score', json={'features': {'llr_A1': 1.0}}).json() == {
         'p_raw': None, 'p': None, 'drivers': [], 'modelVersion': None,
     }
@@ -79,7 +80,8 @@ def test_serve_no_model_and_nn_only_fallbacks(tmp_path, monkeypatch):
     # NN-only fallback when LightGBM model.txt is absent
     _reset_serve_globals()
     monkeypatch.setattr(serve, 'NET', ROOT / 'ml' / 'models' / 'nn-v0' / 'network.json')
-    assert client.get('/health').json() == {'status': 'ok', 'model': 'nn-v0', 'nn': True}
+    h_nn_only = client.get('/health').json()
+    assert h_nn_only['status'] == 'ok' and h_nn_only['model'] == 'nn-v0' and h_nn_only['nn'] is True
     nn_res = client.post('/score', json={'features': {'llr_A1': 2.0}}).json()
     assert nn_res['modelVersion'] == 'nn-v0'
     assert 0.0 <= nn_res['p'] <= 1.0

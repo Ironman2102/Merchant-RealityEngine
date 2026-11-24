@@ -83,15 +83,19 @@ export function UploadPage() {
     ticketMax: 900,
     openHour: 7,
     closeHour: 22,
+    accountAgeDays: 180,
   });
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => { clearCustom(); setCaseKey(null); }, [clearCustom]);
 
   const applyCsv = (data: ParsedCsv, mapping: CsvColumnMapping, meta: CsvMerchantMeta, name: string) => {
-    const { datasets, isMulti } = buildDatasetsFromMultiCsv(data, mapping, meta);
+    const { datasets, imports, isMulti } = buildDatasetsFromMultiCsv(data, mapping, meta);
     if (isMulti && datasets.length > 1) {
-      const results = datasets.map(d => datasetToScenario(d));
+      const results = datasets.map((d, i) => {
+        const res = datasetToScenario(d);
+        return { ...res, errors: [...(imports[i]?.errors ?? []), ...res.errors], warnings: [...(imports[i]?.warnings ?? []), ...res.warnings] };
+      });
       const valid = results.filter(r => r.ok && r.scenario).map(r => r.scenario!);
       const errs = results.filter(r => !r.ok).flatMap(r => r.errors);
       setBulkScenarios(valid);
@@ -104,10 +108,17 @@ export function UploadPage() {
     setBulkScenarios([]);
     setBulkErrors([]);
     const ds = datasets[0];
+    const imp = imports[0];
     const jsonText = JSON.stringify(ds);
     setRaw(jsonText);
     setFileName(name);
-    setParsed(datasetToScenario(ds));
+    const res = datasetToScenario(ds);
+    setParsed({
+      ...res,
+      ok: res.ok && (imp?.errors.length ?? 0) === 0,
+      errors: [...(imp?.errors ?? []), ...res.errors],
+      warnings: [...(imp?.warnings ?? []), ...res.warnings],
+    });
   };
 
   const read = (name: string, text: string) => {

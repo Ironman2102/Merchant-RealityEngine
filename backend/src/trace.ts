@@ -6,8 +6,10 @@
  */
 import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { buildPack } from '../../engine/pack';
-import { appendAudit, getCase, isCaseId, putCase, readAudit, verifyAudit } from './store';
+import { appendAudit, assertCase, forClient, getCase, isCaseId, putCase, readAudit, verifyAudit } from './store';
+import { restrictionsOn } from './workflow';
 import { scoreWithHost } from './ml';
+import { syncLiveRules } from './rulesState';
 import type { ApiReply } from './workflow';
 import type { Actor } from './auth';
 
@@ -17,26 +19,30 @@ export async function caseTrace(id: string): Promise<ApiReply> {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(id);
+  syncLiveRules();
   const ml = rec.ml ?? await scoreWithHost(rec.result);
   if (ml && !rec.ml) { rec.ml = ml; putCase(rec); }
   return { status: 200, body: { ...buildTrace(rec.result), ml: ml ? { ...ml, synthetic: true } : null } as unknown as Record<string, unknown> };
 }
 
-export function evidencePack(id: string, actor: Actor): ApiReply {
+export function evidencePack(id: string, actor: Actor, staff = true): ApiReply {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
+  assertCase(id);
   appendAudit(id, [{ action: 'Evidence pack exported', detail: `By ${actor.username} (${actor.role})` }], actor);
   const audit = readAudit(id);
-  const body = buildPack(rec.result, {
+  syncLiveRules();
+  const body = buildPack(staff ? rec.result : forClient(rec), {
     caseId: rec.id,
     createdAt: rec.createdAt,
     datasetSha256: rec.datasetSha256,
     generatedBy: { username: actor.username, role: actor.role },
     reportingEntity: process.env.MRE_ENTITY_NAME,
     engineVersion: rec.engineVersion ?? null,
-    oversightEvidence: audit.filter(a => /proposed|approved|Approved by|Label/.test(a.action + a.detail)).map(a => `#${a.seq}`),
-    actionTaken: rec.user.executed && rec.response ? rec.response.actions : [],
+    oversightEvidence: audit.filter(a => /proposed|approved|Approved by|Label|rejected|withdrawn/.test(a.action + a.detail)).map(a => `#${a.seq}`),
+    actionTaken: rec.inForce?.plan.actions ?? [],
     label: rec.user.label,
     analystNotes: rec.user.notes,
   });
@@ -44,6 +50,7 @@ export function evidencePack(id: string, actor: Actor): ApiReply {
     status: 200,
     body: {
       ...body,
+      ...(staff ? { restrictionsInForce: restrictionsOn(rec) } : {}),
       audit: audit.map(({ seq, at, actor: who, action, detail, prevHash, hash }) => ({ seq, at, actor: who, action, detail, prevHash, hash })),
       auditVerification: verifyAudit(id),
     },

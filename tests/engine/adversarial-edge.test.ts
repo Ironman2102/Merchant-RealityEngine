@@ -140,6 +140,7 @@ export default function (): number {
     d.merchant.catchment = 'NATIONAL';
     d.merchant.hours = [0, 24];
     d.transactions.filter((t: D) => t.merchantId === d.merchant.id && t.type === 'SALE').forEach((t: D, i: number) => {
+      t.payerId = `FURN-CUST-${i}`;
       t.payerState = ['DL', 'MH', 'WB', 'TN', 'RJ'][i % 5];
       t.amount = 3500 + (i % 5) * 400;
     });

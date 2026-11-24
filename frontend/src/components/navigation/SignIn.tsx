@@ -10,12 +10,6 @@ export function SignInGate({ children }: { children: (user: SessionUser, logout:
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
   useEffect(() => {
     me().then(setUser).catch(() => setUser(null));
-    const onSwitch = (ev: Event) => {
-      const next = (ev as CustomEvent<SessionUser>).detail;
-      if (next) setUser(next);
-    };
-    window.addEventListener('mre-role-switched', onSwitch);
-    return () => window.removeEventListener('mre-role-switched', onSwitch);
   }, []);
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setBusy(true); setError('');
@@ -40,52 +34,14 @@ export function SignInGate({ children }: { children: (user: SessionUser, logout:
   );
 }
 
-const DEMO_ROLES = ['analyst', 'reviewer', 'legal', 'admin'] as const;
-
 export function SignedInAs({ user, logout }: { user: SessionUser; logout: () => void }) {
-  const [switching, setSwitching] = useState(false);
-  const switchRole = async (role: string) => {
-    setSwitching(true);
-    try {
-      const res = await fetch('/api/auth/demo-switch', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ role }),
-      });
-      if (res.ok) {
-        const body = await res.json() as { user?: SessionUser };
-        if (body.user) window.dispatchEvent(new CustomEvent('mre-role-switched', { detail: body.user }));
-      }
-    } finally {
-      setSwitching(false);
-    }
-  };
   return (
-    <div className="space-y-2 border-t border-line p-4 text-xs text-mute">
+    <div className="space-y-1 border-t border-line p-4 text-xs text-mute">
       <div className="flex items-center justify-between gap-2">
-        <span>Signed in as <b className="text-ink">{user.username}</b> · <span className="font-mono font-semibold text-indigo-700">{user.role}</span></span>
+        <span>Signed in as <b className="text-ink">{user.username}</b> · <span className="font-mono">{user.role}</span></span>
         <button onClick={logout} className="inline-flex items-center gap-1 hover:text-ink" aria-label="Sign out"><LogOut size={13} />Sign out</button>
       </div>
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-dim">Maker/Checker persona switch</div>
-        <div className="mt-1 flex flex-wrap gap-1">
-          {DEMO_ROLES.map(r => (
-            <button
-              key={r}
-              type="button"
-              disabled={switching || (user.role === r && user.username === `demo-${r}`)}
-              onClick={() => void switchRole(r)}
-              className={`rounded border px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                user.role === r
-                  ? 'border-indigo-600 bg-indigo-600 text-white'
-                  : 'border-line2 bg-panel2 text-mute hover:text-ink'
-              }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="text-[10px] text-dim">Approvals need a different person signed in with their own account.</p>
     </div>
   );
 }

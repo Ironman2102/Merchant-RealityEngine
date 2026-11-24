@@ -70,9 +70,11 @@ function buildShopDataset(
     beneficiaryAccount: 'BEN-1',
   }));
 
+  const ledgerSum = sales.reduce((s, t) => s + Number(t.amount), 0);
+  const weeklyBase = Math.max(1000, Math.round(ledgerSum / 2));
   const weeklySales = Array.from({ length: 12 }, (_, i) => ({
     week: `W${i + 1}`,
-    actual: i === 11 && opts.festMult ? Math.round(100000 * opts.festMult) : 100000 + ((i % 3) - 1) * 3000,
+    actual: i === 11 && opts.festMult ? Math.round(weeklyBase * opts.festMult) : weeklyBase + ((i % 3) - 1) * Math.round(weeklyBase * 0.03),
     seasonalMultiplier: 1,
   }));
 
@@ -86,7 +88,7 @@ function buildShopDataset(
       category: n.name,
       ticketMin: 20,
       ticketMax: Math.round(n.ticket.median * 5),
-      baselineWeekly: 100000,
+      baselineWeekly: weeklyBase,
       accountAgeDays: 400,
       hours: [open, close],
       catchment: n.catchment,
@@ -188,9 +190,10 @@ export default function (): number {
       pc4 >= 0.7, `got pc=${pc4.toFixed(4)}`);
 
     const dH2 = buildShopDataset('5411', { missingOpt: true });
+    const baseW = dH2.merchant.baselineWeekly as number;
     dH2.weeklySales = Array.from({ length: 12 }, (_, i) => ({
       week: `W${i + 1}`,
-      actual: i < 8 ? 100000 + ((i % 2) * 2000 - 1000) : 450000,
+      actual: i < 8 ? Math.round(baseW * 0.22) + ((i % 2) * 200 - 100) : baseW,
       seasonalMultiplier: 1,
     }));
     const rH2 = analyze(dH2);

@@ -14,7 +14,7 @@ export const GRAPHS: Record<string, GraphSpec> = {
       n('w1', 'website', 'sweetcrumbs.example', 'declared website'),
       n('w2', 'website', 'stakearena.example/wallet/deposit', 'undeclared betting app', 'Category assigned by the synthetic crawler fixture.'),
       n('p1', 'payer', 'Local customers', 'n≈58 · KA'),
-      n('p2', 'payer', 'Match-window funding payers', 'n≈112 · 9 states'),
+      n('p2', 'payer', 'Match-window funding payers', 'round top-ups · 9 states'),
       n('p3', 'account', 'Refund destination cluster', '15 destination accounts'),
       n('d1', 'device', 'Checkout device cluster DF-5521', 'shared fingerprint'),
       n('b1', 'beneficiary', 'BEN_SCB_MAIN', 'settlement until day 9'),

@@ -1,46 +1,62 @@
-/** A short red-team pass: thin a front until it is no-case, and record the rate with a Wilson interval. Synthetic. */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import type { MreDataset } from '../frontend/src/data/dataset';
+/**
+ * Red team: take DISTINCT fronts the engine catches and try to make each one get away.
+ * Every operator runs on every merchant, so a rate here is over different merchants, not copies of one.
+ */
+import { mkdirSync, writeFileSync } from 'node:fs';
+import type { DatasetTransaction, MreDataset } from '../frontend/src/data/dataset';
+import { toIst } from '../frontend/src/data/dataset';
 import { analyze } from '../engine/index';
+import { makeSuite } from '../engine/synthetic';
+import { mulberry32, type Rng } from '../frontend/src/utils/prng';
+import { rate } from './lib';
 
-function wilson(k: number, n: number, z = 1.96): [number, number] {
-  if (!n) return [0, 1];
-  const p = k / n, den = 1 + z * z / n;
-  const centre = (p + z * z / (2 * n)) / den;
-  const margin = z * Math.sqrt((p * (1 - p) + z * z / (4 * n)) / n) / den;
-  return [Math.max(0, centre - margin), Math.min(1, centre + margin)];
-}
+type Operator = (sales: DatasetTransaction[], r: Rng, d: MreDataset) => void;
+// The attacker changes only its own payments: the side-stream where there is one, otherwise the whole account.
+const illicit = (d: MreDataset) => {
+  const sales = d.transactions.filter(t => t.type === 'SALE'), side = sales.filter(t => t.payerId?.startsWith('b'));
+  return side.length ? side : sales;
+};
+const OPS: Record<string, Operator> = {
+  'nudge round amounts': (xs, r) => xs.forEach(t => { if (t.amount % 50 === 0) t.amount += 1 + Math.floor(r() * 48); }),
+  'move into shop hours': (xs, r) => xs.forEach(t => { t.time = toIst(Date.parse(`${t.time.slice(0, 10)}T09:00:00+05:30`) + r() * 11 * 3600000); }),
+  'use local mules': (xs, _r, d) => xs.forEach(t => { if (t.payerState) t.payerState = d.merchant.localStates[0]; }),
+  'never reuse a payer': xs => xs.forEach((t, i) => { t.payerId = `fresh${i}`; }),
+  'hide in the main QR': xs => xs.forEach(t => { t.paymentLinkId = 'QR-MAIN'; }),
+  'rotate links every 20 payments': xs => xs.forEach((t, i) => { t.paymentLinkId = `ROT-${Math.floor(i / 20)}`; }),
+  'thin to a tenth': (xs, _r, d) => {
+    const gone = new Set(xs.filter((_, i) => i % 10 !== 0).map(t => t.id));
+    d.transactions = d.transactions.filter(t => !gone.has(t.id) && !(t.refundOfTransactionId && gone.has(t.refundOfTransactionId)));
+  },
+};
+OPS['all of the first four'] = (xs, r, d) => ['nudge round amounts', 'move into shop hours', 'use local mules', 'never reuse a payer'].forEach(k => OPS[k](xs, r, d));
 
-const base = JSON.parse(readFileSync('frontend/public/samples/09-telegram-betting-no-website.json', 'utf8')) as MreDataset;
-const variants = 24;
-let evaded = 0;
-const lines: string[] = [];
-for (let i = 0; i < variants; i++) {
-  const d = structuredClone(base);
-  const old = d.merchant.id;
-  d.merchant = { ...d.merchant, id: `M-RT-${i}` };
-  d.transactions.forEach(t => { if (t.merchantId === old) t.merchantId = d.merchant.id; });
-  const sales = d.transactions.filter(t => t.type === 'SALE');
-  const keep = Math.max(8, Math.floor(sales.length * (0.08 + (i % 5) * 0.01)));
-  const ids = new Set(sales.slice(0, keep).map(t => t.id));
-  d.transactions = d.transactions.filter(t => t.type !== 'SALE' || ids.has(t.id));
-  const ran = analyze(d);
-  const decision = ran.ok ? ran.result.fusion.decision : 'ERROR';
-  const p = ran.ok ? ran.result.fusion.posterior : 0;
-  if (decision === 'NO_CASE') evaded++;
-  lines.push(JSON.stringify({ baseMerchantId: base.merchant.id, operators: ['thinSales'], cost: 5, posterior: p, decision }));
-}
-const ci = wilson(evaded, variants);
+const decide = (d: MreDataset) => { const r = analyze(d); if (!r.ok) throw new Error(r.errors.join(' ')); return r.result.fusion; };
+const targets = makeSuite(12, 31, { geo: true }).filter(m => m.label === 1 && decide(m.dataset).decision === 'OPEN_CASE');
+const rows: string[] = [], log: string[] = [];
+Object.entries(OPS).forEach(([name, op], i) => {
+  let evaded = 0, silent = 0;
+  targets.forEach((m, k) => {
+    const d = structuredClone(m.dataset);
+    op(illicit(d), mulberry32(9000 + i * 1000 + k), d);
+    const f = decide(d);
+    if (f.decision === 'NO_CASE') { evaded++; if (f.followUp === 'NONE') silent++; }
+    log.push(JSON.stringify({ merchantId: d.merchant.id, kind: m.kind, operator: name, posterior: +f.posterior.toFixed(6), decision: f.decision, followUp: f.followUp }));
+  });
+  rows.push(`| ${name} | ${rate(evaded, targets.length)} | ${silent}/${targets.length} |`);
+});
 const text = `# Red team (synthetic)
 
-**Synthetic.** ${variants} thinned copies of the Telegram betting sample. This is not a live attacker.
+**Synthetic.** ${targets.length} different fronts that the engine catches, each attacked with ${Object.keys(OPS).length} operators. Not a live attacker.
 
-- Evasion rate ${evaded}/${variants} = ${(evaded / variants).toFixed(3)}, Wilson 95% ${ci[0].toFixed(3)}–${ci[1].toFixed(3)}
-- Operator: thinSales (keep about 8–12% of sales). Attacker cost 5 in rules/redteam.json units.
-- Backstop: lowering minN inside its band catches this evasion. See \`mre demo:learn\`.
+| Attack | Case avoided | Wilson 95% | Not even asked |
+|---|---|---|---|
+${rows.join('\n')}
+
+These are open weaknesses. An attacker who does everything at once looks like a shop in payment data and needs outside-in
+evidence to find. A threshold fix is proposed only if it passes the honest-merchant holdout in engine/improver.ts.
 `;
 mkdirSync('reports', { recursive: true });
 mkdirSync('examples/redteam', { recursive: true });
 writeFileSync('reports/redteam.md', text);
-writeFileSync('examples/redteam/evasions.jsonl', lines.join('\n') + '\n');
+writeFileSync('examples/redteam/evasions.jsonl', log.join('\n') + '\n');
 console.log(text);

@@ -4,6 +4,8 @@ import { useInvestigation } from '../hooks/useInvestigation';
 import { QuantModeProvider, useQuantMode } from '../hooks/useQuantMode';
 import { AnswerBanner } from '../components/common/AnswerBanner';
 import { ClaimedVsReality } from '../components/investigation/ClaimedVsReality';
+import { PassportPanel } from '../components/investigation/PassportPanel';
+import { StreamsPanel } from '../components/investigation/StreamsPanel';
 import { ActionPack } from '../components/investigation/ActionPack';
 import { LAYERS } from '../data/evidence';
 import { L1View } from '../layers/L1Ingestion';
@@ -88,6 +90,9 @@ function InvestigationBody({ progressOnly = false }: { progressOnly?: boolean })
           {/* 1. Hero Risk Verdict Banner */}
           <AnswerBanner result={result} quant={quant} />
 
+          <StreamsPanel />
+          <PassportPanel />
+
           {/* 2. Side-by-Side Claimed vs Reality + 24-Hour Activity Chart */}
           <ClaimedVsReality result={result} />
 
@@ -96,7 +101,7 @@ function InvestigationBody({ progressOnly = false }: { progressOnly?: boolean })
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-slate-50/80 px-5 py-3.5">
               <div>
                 <h3 className="text-sm font-semibold text-ink">Signal Breakdown ({fired.length} Red Flags · {calm.length} Normal · {unknown.length} No Data)</h3>
-                <p className="text-xs text-mute">Every behavioral check scored independently. Missing data feeds are never counted against the merchant.</p>
+                <p className="text-xs text-mute">Measured on: {result.scope.label}. Missing data feeds carry zero weight, for or against the merchant.</p>
               </div>
               <div className="flex items-center gap-1.5">
                 {fired.length > 0 && <Badge tone="bad">{fired.length} red flag{fired.length === 1 ? '' : 's'}</Badge>}
@@ -137,7 +142,7 @@ function InvestigationBody({ progressOnly = false }: { progressOnly?: boolean })
                 </div>
               ) : (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-sm text-emerald-800">
-                  <b>No red flags fired.</b> All available transaction, geography, timing, and refund feeds match the merchant’s declared {scenario.profile.category.toLowerCase()} profile.
+                  <b>No red flags fired.</b> Nothing measurable contradicts a {scenario.profile.category.toLowerCase()}. Payment data alone cannot prove what was sold.
                 </div>
               )}
 

@@ -9,7 +9,7 @@
 import type { Trace } from '../../frontend/src/engines/traceEngine';
 import { buildTrace } from '../../frontend/src/engines/traceEngine';
 import { templateSummary } from '../../engine/summary';
-import { getCase, isCaseId } from './store';
+import { assertCase, getCase, isCaseId } from './store';
 import type { ApiReply } from './workflow';
 import type { Actor } from './auth';
 
@@ -20,7 +20,7 @@ export { templateSummary };
 export function verifySummary(text: string, t: Trace): { ok: boolean; unsupported: string[] } {
   const hay = JSON.stringify(t) + ' ' + templateSummary(t);
   const norm = (s: string) => s.replace(/[₹,%\s]/g, '');
-  const hayNums = new Set((hay.match(/₹?\d[\d,]*(?:\.\d+)?%?/g) ?? []).map(norm));
+  const hayNums = new Set((hay.match(/\d[\d,]*(?:\.\d+)?/g) ?? []).map(norm));
   // Whole-rupee and 1-2 decimal roundings of every trace number (summaries quote ₹81,533, not 81533.42).
   for (const m of hay.match(/\d+\.\d+/g) ?? []) { const v = Number(m); hayNums.add(String(Math.round(v))); hayNums.add(v.toFixed(1)); hayNums.add(v.toFixed(2)); }
   // Percent/ratio forms present in the trace (e.g. 0.783 → "78", "78.3").
@@ -36,6 +36,7 @@ export async function summarise(id: string, _actor: Actor): Promise<ApiReply> {
   if (!isCaseId(id)) return { status: 400, body: { error: 'Invalid case id.' } };
   const rec = getCase(id);
   if (!rec) return { status: 404, body: { error: 'No case with that id.' } };
+  assertCase(id);
   const t = buildTrace(rec.result), text = templateSummary(t);
   return { status: 200, body: { source: 'template', text, verified: verifySummary(text, t) } };
 }

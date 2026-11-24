@@ -1,7 +1,7 @@
 /**
- * Pattern pack: the seven solution patterns (S1–S7) and two newer betting patterns (N1–N2),
+ * Pattern pack: the seven solution patterns (S1–S7) and three newer betting patterns (N1–N3),
  * computed from the same scenario data the core detectors use. They are shown on the
- * Pattern board next to the 21 core detectors.
+ * Pattern board next to the core detectors.
  *
  * These checks are transparent heuristics. They do not change the core fusion verdict
  * (L4); they add their own flags, and the trust ladder (S5) combines both.
@@ -10,7 +10,9 @@
 import type { InvestigationResult } from '../types/investigation';
 import type { PaymentEvent } from '../types/payment';
 import type { Label } from '../types/merchant';
+import { RULES } from '../../../rules/index';
 import { istDayKey, istHour, inrK } from '../utils/format';
+import { extent, hasBetween } from '../utils/num';
 
 export type PatternStatus = 'FLAGGED' | 'CLEAR' | 'UNKNOWN' | 'INPUT';
 export interface PatternResult {
@@ -32,7 +34,10 @@ export function features(sales: PaymentEvent[], refunds: number, local: string[]
   return {
     median: am[am.length >> 1] ?? 0,
     round: sales.filter(e => e.amount > 0 && e.amount % 500 === 0).length / n,
-    outState: sales.filter(e => !local.includes(e.payerState)).length / n,
+    outState: (() => {
+      const area = new Set(local.flatMap(s => [s, ...RULES.neighbours(s)])), known = sales.filter(e => e.payerState && e.payerState !== '—');
+      return known.length && area.size ? known.filter(e => !area.has(e.payerState)).length / known.length : 0; // no location is not "out of state"
+    })(),
     night: sales.filter(e => { const h = istHour(e.eventTime); return h >= 23 || h < 6; }).length / n,
     repeat: sales.filter(e => (perDay.get(e.payerHash + istDayKey(e.eventTime)) ?? 0) >= 3).length / n,
     refund: refunds / n,
@@ -80,31 +85,13 @@ export function classify(f: Features) {
   return d.map((x, i) => ({ id: x.p.id, name: x.p.name, prob: w[i] / z })).sort((a, b) => b.prob - a.prob);
 }
 
-/* ---------- context passport (S4) ---------- */
-export const PASSPORT_REASONS = [
-  { id: 'festival', label: 'Festival or seasonal rush', explains: ['H1'], evidence: 'Last year’s festival sales, GST filing for the period' },
-  { id: 'bulk', label: 'Bulk / catering order', explains: ['H1', 'A1'], evidence: 'Customer invoice and purchase order' },
-  { id: 'branch', label: 'Opened a new branch', explains: ['H1', 'B6'], evidence: 'Shop licence or rent agreement for the new outlet' },
-  { id: 'delivery', label: 'Started online delivery (Swiggy/Zomato/own site)', explains: ['H1', 'B6', 'C2'], evidence: 'Marketplace listing and order exports' },
-  { id: 'product', label: 'New product line', explains: ['H1', 'A1'], evidence: 'Updated menu or catalogue, supplier bills' },
-] as const;
-export type PassportReason = (typeof PASSPORT_REASONS)[number]['id'];
-const CHECKABLE = ['H1', 'A1', 'A4', 'B6', 'C2', 'C5', 'D7', 'D9', 'F5', 'G6', 'I2'];
-export function checkPassport(res: InvestigationResult, reason: PassportReason) {
-  const r = PASSPORT_REASONS.find(x => x.id === reason)!;
-  const flagged = res.evidence.filter(e => e.status === 'ILLICIT' && CHECKABLE.includes(e.id));
-  const covered = flagged.filter(e => (r.explains as readonly string[]).includes(e.id));
-  const open = flagged.filter(e => !(r.explains as readonly string[]).includes(e.id));
-  return { reason: r, flagged, covered, open, explained: open.length === 0 };
-}
-
 /* ---------- S5 trust ladder ---------- */
 export const LADDER = [
   { id: 'LOW', name: 'Low', action: 'Watch silently; refresh the profile if volume changed' },
   { id: 'MEDIUM', name: 'Medium', action: 'Context Passport request: ask the merchant to explain the change' },
-  { id: 'HIGH', name: 'High', action: 'Delayed settlement or rolling reserve; transaction caps on the suspect flow' },
-  { id: 'VERY_HIGH', name: 'Very high', action: 'Analyst review and a controlled test transaction' },
-  { id: 'CONFIRMED', name: 'Confirmed', action: 'Suspend the flow, report to FIU-IND, appeal path stays open' },
+  { id: 'HIGH', name: 'High', action: 'Analyst due diligence and a controlled test transaction; nothing restricted yet' },
+  { id: 'VERY_HIGH', name: 'Very high', action: 'Propose restricting the identified link only; a second person approves' },
+  { id: 'CONFIRMED', name: 'Confirmed', action: 'Principal Officer considers a report; any restriction follows legal approval, with an appeal path' },
 ] as const;
 export type LadderLevel = (typeof LADDER)[number]['id'];
 
@@ -115,7 +102,6 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
   const own = res.events, sales = own.filter(e => e.type === 'SALE');
   const f = features(sales, own.filter(e => e.type === 'REFUND').length, p.localStates);
   const out: PatternResult[] = [];
-  const g = (id: string) => res.evidence.find(e => e.id === id);
 
   // S1 — category mismatch
   const cats = classify(f), top = cats[0], declared = declaredProto(p.mcc, p.catchment);
@@ -123,7 +109,7 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
   const mismatch = top.id !== declared && top.prob >= 0.55;
   out.push({ id: 'S1', name: 'Does this still look like the declared business?', group: 'Solution pattern',
     status: sales.length < 20 ? 'UNKNOWN' : mismatch ? 'FLAGGED' : 'CLEAR',
-    observed: `Payments look like: ${top.name} (${pc(top.prob)} confidence)`, expected: `Declared: ${declName} (MCC ${p.mcc})`,
+    observed: `Payments look like: ${top.name} (${pc(top.prob)} similarity to an illustrative prototype)`, expected: `Declared: ${declName} (MCC ${p.mcc})`,
     why: 'Infers the business type from transactions alone (ticket size, round amounts, payer spread, night share, repeat payers, refunds) and compares it with the declared category.',
     data: 'Payment ledger', detail: cats.slice(0, 3).map(c => ({ label: c.name, value: pc(c.prob) })) });
 
@@ -131,7 +117,7 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
   const last = [...res.l2.rows].reverse().find(r => r.actual !== null);
   const self = last?.rAnchored ?? 0, selfHigh = self >= 0.5;
   const activePeers = sc.peers.filter(q => q.status === 'ACTIVE');
-  const peerSales = sc.events.filter(e => e.type === 'SALE' && activePeers.some(q => q.id === e.merchantId));
+  const activeIds = new Set(activePeers.map(q => q.id)), peerSales = sc.events.filter(e => e.type === 'SALE' && activeIds.has(e.merchantId));
   const ref = peerSales.length >= 20
     ? { ...features(peerSales, 0, p.localStates), src: `${activePeers.length} active peer(s) in the same category` }
     : { round: p.expectedRoundShare, outState: p.catchment === 'LOCAL' ? 0.05 : 0.8, src: 'declared profile (no peer data in this file)' };
@@ -164,16 +150,16 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
     data: 'Payment ledger across merchants + crawl + settlements', detail: [{ label: 'Merchants compared', value: String(others.length) }, { label: 'Links checked', value: String(myLinks.size) }] });
 
   // S4 — context passport
-  const flagged = res.evidence.filter(e => e.status === 'ILLICIT' && CHECKABLE.includes(e.id));
+  const open = res.evidence.filter(e => e.status === 'ILLICIT'), verified = (sc.passports ?? []).filter(x => x.status === 'VERIFIED');
   out.push({ id: 'S4', name: 'Context Passport (merchant explanation)', group: 'Solution pattern',
-    status: flagged.length ? 'INPUT' : 'CLEAR',
-    observed: flagged.length ? `${flagged.length} signal(s) need an explanation: ${flagged.map(e => e.id).join(', ')}` : 'Nothing to explain',
-    expected: 'A genuine reason should explain every flagged signal, not just the volume',
-    why: 'Before any restriction, the merchant is asked why the pattern changed, and the system checks which signals that reason can and cannot explain.',
-    data: 'Merchant response + detector results' });
+    status: res.fusion.followUp === 'ASK' ? 'INPUT' : 'CLEAR',
+    observed: res.passportsSuspended ? 'A verified passport exists, but it is not applied: a conduct signal fired' : verified.length ? `${verified.length} verified passport(s): ${verified.map(x => x.reason).join('; ')}` : open.length ? `${open.length} signal(s) fired; ${open.filter(e => e.signal === 'profile').length} could be explained by a change` : 'Nothing to explain',
+    expected: 'A verified change explains departures from normal. It never explains conduct.',
+    why: 'A change is a question first. The merchant names the QR, the date and the document, and a second person checks it before the engine uses it.',
+    data: 'Merchant document + detector results' });
 
   // S6 — business reality
-  const days = sales.length ? (Math.max(...own.map(e => e.eventTime)) - Math.min(...own.map(e => e.eventTime))) / (24 * H) : 0;
+  const span = extent(own, e => e.eventTime), days = sales.length && span ? (span[1] - span[0]) / (24 * H) : 0;
   const monthlyIn = days > 0 ? sales.reduce((s, e) => s + e.amount, 0) * (30 / Math.max(days, 7)) : 0;
   const fp = sc.footprint;
   if (fp) {
@@ -181,7 +167,7 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
     const bad = supplierShare < 0.15 || gstRatio > 1.5;
     out.push({ id: 'S6', name: 'Business-reality cross-check', group: 'Solution pattern', status: bad ? 'FLAGGED' : 'CLEAR',
       observed: `Collections ≈${inrK(monthlyIn)}/month; supplier spend ${pc(supplierShare)} of that; ${gstRatio.toFixed(1)}× the GST-declared turnover`,
-      expected: 'A real bakery spends roughly 25–60% of sales on inputs and collects close to what it declares for GST',
+      expected: 'A real shop spends a visible share of sales on inputs and collects close to what it declares for GST',
       why: 'Faking a business’s outgoings (flour, packaging, rent) costs real money, so a missing footprint is hard to hide.',
       data: 'Supplier payments + GST turnover feed (synthetic)', detail: [{ label: 'Supplier payments / month', value: inrK(fp.supplierPaymentsMonthly) }, { label: 'GST turnover / month', value: inrK(fp.gstTurnoverMonthly) }] });
   } else out.push({ id: 'S6', name: 'Business-reality cross-check', group: 'Solution pattern', status: 'UNKNOWN', observed: 'No supplier-payment or GST feed in this dataset', expected: 'Needs a businessFootprint feed', why: 'Missing data is shown as UNKNOWN, never as clean.', data: 'Not available' });
@@ -212,12 +198,12 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
     status: f.night >= 0.1 ? 'FLAGGED' : 'CLEAR',
     observed: `${pc(f.night)} of sales between 23:00 and 06:00`,
     expected: `Declared hours ${p.hours[0]}:00–${p.hours[1]}:00; under 2% at night`,
-    why: 'Live betting and casino play peak late at night, long after a bakery has closed.',
+    why: 'Live betting and casino play peak late at night, long after most shops have closed.',
     data: 'Payment ledger' });
 
   // N3 — rapid pass-through (settlement swept out to third parties)
   const st = own.filter(e => e.type === 'SETTLEMENT'), tr = own.filter(e => e.type === 'TRANSFER');
-  const fast = tr.filter(t => st.some(s => t.eventTime >= s.eventTime && t.eventTime - s.eventTime <= 24 * H));
+  const settledAt = st.map(s => s.eventTime).sort((a, b) => a - b), fast = tr.filter(t => hasBetween(settledAt, t.eventTime - 24 * H, t.eventTime));
   const bens = new Set(tr.map(t => t.beneficiaryHash)).size;
   out.push({ id: 'N3', name: 'Rapid pass-through after settlement', group: 'New pattern',
     status: !st.length ? 'UNKNOWN' : fast.length >= 3 && bens >= 3 ? 'FLAGGED' : 'CLEAR',
@@ -230,13 +216,13 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
   const nFlags = out.filter(r => r.status === 'FLAGGED').length;
   const fu = res.fusion;
   const ladder: LadderLevel = label === 'CONFIRMED_ILLICIT' ? 'CONFIRMED'
-    : fu.decision === 'OPEN_CASE' && fu.priority === 'HIGH' ? 'VERY_HIGH'
+    : fu.decision === 'OPEN_CASE' && res.review.recommended === 'L3' ? 'VERY_HIGH'
     : fu.decision === 'OPEN_CASE' ? 'HIGH'
-    : nFlags >= 2 || g('H1')?.status === 'ILLICIT' ? 'MEDIUM' : 'LOW';
+    : fu.followUp === 'ASK' ? 'MEDIUM' : 'LOW';
   const ladderWhy = `Core engine: ${fu.decision === 'OPEN_CASE' ? `case opened (${fu.priority})` : 'no case'}; ${nFlags} pattern flag(s)${label ? `; label ${label}` : ''}.`;
   const lv = LADDER.find(l => l.id === ladder)!;
   out.splice(4, 0, { id: 'S5', name: 'Graduated trust ladder', group: 'Solution pattern', status: ladder === 'LOW' ? 'CLEAR' : ladder === 'MEDIUM' ? 'INPUT' : 'FLAGGED',
-    observed: `Level: ${lv.name}. ${lv.action}`, expected: 'Proportionate, reversible steps: money is held, not seized', why: ladderWhy, data: 'Core verdict + pattern flags' });
+    observed: `Level: ${lv.name}. ${lv.action}`, expected: 'Proportionate, reversible steps, approved by people', why: ladderWhy, data: 'Core verdict + pattern flags' });
 
   return { results: out, ladder, ladderWhy, features: f, categories: cats, declared: declName };
 }

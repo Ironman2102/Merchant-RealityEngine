@@ -6,7 +6,7 @@ import { useInvestigation } from '../hooks/useInvestigation';
 import { verdictOf } from './PortfolioPage';
 import { BaselineChart, CusumChart, HourChart, StateBars, TicketHistogram } from '../components/charts/charts';
 import { PatternBoard } from '../components/common/PatternBoard';
-import { chasingSequences, LADDER, PASSPORT_REASONS, checkPassport, type PassportReason } from '../engines/patternPack';
+import { chasingSequences, LADDER } from '../engines/patternPack';
 import { RESPONSE_LEVELS } from '../data/evidence';
 import type { UserState } from '../types/investigation';
 import { planResponse } from '../engines/responseEngine';
@@ -156,20 +156,15 @@ function Reason({ t, e, n, defaultOpen }: { t: Theme; e: PortfolioEntry; n: numb
 }
 
 function Cleared({ e }: { e: PortfolioEntry }) {
-  const [reason, setReason] = useState<PassportReason>('festival');
   const benign = e.result.evidence.filter(x => x.status === 'BENIGN' && x.fakeDifficulty >= 0.6).sort((a, b) => b.fakeDifficulty - a.fakeDifficulty).slice(0, 6);
   const alarm = e.result.evidence.find(x => x.id === 'H1' && x.status === 'ILLICIT');
-  const pp = checkPassport(e.result, reason);
+  const ask = e.result.fusion.followUp === 'ASK';
   return (
     <div className="space-y-4">
-      {alarm && <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
-        <div className="font-semibold text-amber-900">The volume alarm fired, and was explained</div>
-        <p className="mt-1 text-sm text-mute">{alarm.observed}. Only one evidence family points that way, so no case opens. The merchant gets a Context Passport request instead of a restriction.</p>
-        <div className="mt-3 grid gap-3 lg:grid-cols-2"><ChartBox title="Weekly collections vs baselines"><BaselineChart rows={e.result.l2.rows} height={220} /></ChartBox>
-          <ChartBox title="Context Passport: the merchant says…">
-            <div className="flex flex-wrap gap-1.5">{PASSPORT_REASONS.map(r => <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2 py-1 text-xs', reason === r.id ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>)}</div>
-            <div className={cx('mt-3 text-sm font-medium', pp.explained ? 'text-emerald-700' : 'text-rose-700')}>{pp.explained ? 'Explained. Request: ' + pp.reason.evidence : `Not explained: ${pp.open.map(x => x.id).join(', ')} remain.`}</div>
-          </ChartBox></div>
+      {(alarm || ask) && <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+        <div className="font-semibold text-amber-900">{ask ? 'Change detected — ask the merchant before acting' : 'Profile change noted, no conduct signal'}</div>
+        <p className="mt-1 text-sm text-mute">{alarm ? `${alarm.observed}. ` : ''}Everything that fired is a departure from normal, not conduct. No case is opened and nothing is restricted; the merchant gets a Context Passport request.</p>
+        <div className="mt-3"><ChartBox title="Weekly collections vs baselines"><BaselineChart rows={e.result.l2.rows} height={220} /></ChartBox></div>
       </div>}
       <div className="rounded-lg border border-line bg-panel p-4">
         <div className="font-semibold text-ink">Why it behaves like the business it declared ({e.scenario.profile.category})</div>

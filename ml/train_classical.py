@@ -32,7 +32,7 @@ def main() -> None:
     use_portfolio = PORTFOLIO_DATA.exists()
     data_path = PORTFOLIO_DATA if use_portfolio else FALLBACK_DATA
     df = pd.read_csv(data_path)
-    drop = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total'}
+    drop = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
     cols = [c for c in df.columns if c not in drop and not c.startswith(('cov_', 'unk_'))]
 
     if use_portfolio and TEST_IDS_PATH.exists():
@@ -87,6 +87,7 @@ def main() -> None:
         'heldout_examples': int(len(yte)),
         'positive': int(ytr.sum()),
         'negative': int((1 - ytr).sum()),
+        'features': cols,
         'source': str(data_path.relative_to(ROOT)),
         'metrics': metrics_out,
         'note': 'Leakage-free behavioral training with 40% coverage-dropout augmentation and sigmoid calibration.',

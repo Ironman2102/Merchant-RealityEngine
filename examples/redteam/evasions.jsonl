@@ -1,24 +1,784 @@
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.7209393367214662,"decision":"OPEN_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.7209393367214662,"decision":"OPEN_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.7209393367214662,"decision":"OPEN_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.7209393367214662,"decision":"OPEN_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
-{"baseMerchantId":"M-KMS-077","operators":["thinSales"],"cost":5,"posterior":0.009216138619525105,"decision":"NO_CASE"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.137805,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.849975,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.213119,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.562774,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.219461,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.469735,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.207824,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.217404,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.234142,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.180443,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.373887,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"nudge round amounts","posterior":0.078434,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"nudge round amounts","posterior":0.042844,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"nudge round amounts","posterior":0.028667,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"nudge round amounts","posterior":0.036362,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"nudge round amounts","posterior":0.042919,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"nudge round amounts","posterior":0.025406,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"nudge round amounts","posterior":0.027115,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"nudge round amounts","posterior":0.018346,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"nudge round amounts","posterior":0.161638,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"nudge round amounts","posterior":0.220718,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"nudge round amounts","posterior":0.22125,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"nudge round amounts","posterior":0.306058,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"nudge round amounts","posterior":0.11591,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"nudge round amounts","posterior":0.57508,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"nudge round amounts","posterior":0.031293,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"nudge round amounts","posterior":0.348938,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"nudge round amounts","posterior":0.498152,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"nudge round amounts","posterior":0.249317,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"nudge round amounts","posterior":0.332095,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"nudge round amounts","posterior":0.223433,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.052034,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.051067,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.045449,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.021322,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.025089,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.02464,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.109013,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.131667,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.02153,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.029312,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"nudge round amounts","posterior":0.02782,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.22169,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.097048,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.26621,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.747245,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.136845,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.197211,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.13537,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.028946,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.164675,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.033602,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"nudge round amounts","posterior":0.028836,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.065526,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.043549,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.164162,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.113528,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.154802,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.096033,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.294747,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.076188,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.161643,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.129697,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.204861,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"nudge round amounts","posterior":0.211555,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.018635,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.034865,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.116228,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.129312,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.033472,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.068899,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.096496,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.142288,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.06826,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.014514,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"nudge round amounts","posterior":0.053362,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.052549,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.021108,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.421149,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.193171,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.177607,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.29444,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.134527,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.041344,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.078357,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.19281,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.036032,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"nudge round amounts","posterior":0.017062,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.210185,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.099261,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.151459,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.020345,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.02051,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.034017,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.071615,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.210185,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.075373,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"nudge round amounts","posterior":0.058097,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"move into shop hours","posterior":0.926389,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"move into shop hours","posterior":0.994643,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"move into shop hours","posterior":0.808431,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"move into shop hours","posterior":0.971243,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"move into shop hours","posterior":0.94976,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"move into shop hours","posterior":0.969174,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"move into shop hours","posterior":0.97249,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"move into shop hours","posterior":0.954545,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"move into shop hours","posterior":0.961365,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"move into shop hours","posterior":0.936723,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"move into shop hours","posterior":0.983942,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"move into shop hours","posterior":0.838206,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"move into shop hours","posterior":0.945191,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"move into shop hours","posterior":0.607294,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"move into shop hours","posterior":0.741018,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"move into shop hours","posterior":0.568508,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"move into shop hours","posterior":0.951334,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"move into shop hours","posterior":0.727679,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"move into shop hours","posterior":0.489564,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"move into shop hours","posterior":0.966372,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"move into shop hours","posterior":0.969928,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"move into shop hours","posterior":0.976076,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"move into shop hours","posterior":0.987212,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"move into shop hours","posterior":0.900087,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"move into shop hours","posterior":0.99228,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"move into shop hours","posterior":0.909367,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"move into shop hours","posterior":0.954877,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"move into shop hours","posterior":0.995773,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"move into shop hours","posterior":0.959611,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"move into shop hours","posterior":0.989327,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"move into shop hours","posterior":0.931142,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.915712,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.753312,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.920788,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.662021,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.784105,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.435349,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.613225,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.90142,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.025633,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.639975,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"move into shop hours","posterior":0.455952,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"move into shop hours","posterior":0.953709,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"move into shop hours","posterior":0.996497,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"move into shop hours","posterior":0.893401,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"move into shop hours","posterior":0.918593,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"move into shop hours","posterior":0.85058,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"move into shop hours","posterior":0.930639,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"move into shop hours","posterior":0.887049,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"move into shop hours","posterior":0.986163,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"move into shop hours","posterior":0.934207,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"move into shop hours","posterior":0.986796,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"move into shop hours","posterior":0.99264,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.746704,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.714432,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.883246,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.915908,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.93782,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.878832,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.97074,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.865955,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.932751,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.942561,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.956377,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"move into shop hours","posterior":0.957657,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.309327,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.561017,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.795262,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.497315,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.175565,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.346104,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.755469,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.718167,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.306649,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.455321,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"move into shop hours","posterior":0.23712,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.808517,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.591848,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.97821,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.949489,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.921188,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.984083,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.857682,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.641016,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.816685,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.942064,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.592719,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"move into shop hours","posterior":0.377408,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.647165,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.431668,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.604862,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.116513,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.182192,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.208232,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.347119,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.647165,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.199033,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"move into shop hours","posterior":0.287047,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"use local mules","posterior":0.654287,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"use local mules","posterior":0.979003,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"use local mules","posterior":0.494851,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"use local mules","posterior":0.85735,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"use local mules","posterior":0.770857,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"use local mules","posterior":0.913786,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"use local mules","posterior":0.881434,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"use local mules","posterior":0.804447,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"use local mules","posterior":0.82776,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"use local mules","posterior":0.724844,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"use local mules","posterior":0.915992,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"use local mules","posterior":0.714248,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"use local mules","posterior":0.052051,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"use local mules","posterior":0.034939,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"use local mules","posterior":0.044241,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"use local mules","posterior":0.052142,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"use local mules","posterior":0.030987,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"use local mules","posterior":0.033059,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"use local mules","posterior":0.016905,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"use local mules","posterior":0.824744,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"use local mules","posterior":0.840807,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"use local mules","posterior":0.756847,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"use local mules","posterior":0.756847,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"use local mules","posterior":0.576569,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"use local mules","posterior":0.872151,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"use local mules","posterior":0.06945,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"use local mules","posterior":0.898921,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"use local mules","posterior":0.89888,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"use local mules","posterior":0.8164,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"use local mules","posterior":0.917838,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"use local mules","posterior":0.898921,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"use local mules","posterior":0.060351,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"use local mules","posterior":0.065471,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"use local mules","posterior":0.070522,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"use local mules","posterior":0.022999,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"use local mules","posterior":0.032879,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"use local mules","posterior":0.030058,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"use local mules","posterior":0.280603,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"use local mules","posterior":0.177924,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"use local mules","posterior":0.02589,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"use local mules","posterior":0.039405,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"use local mules","posterior":0.034638,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"use local mules","posterior":0.933222,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"use local mules","posterior":0.160112,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"use local mules","posterior":0.615145,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"use local mules","posterior":0.935424,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"use local mules","posterior":0.93207,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"use local mules","posterior":0.903269,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"use local mules","posterior":0.555897,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"use local mules","posterior":0.040787,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"use local mules","posterior":0.933596,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"use local mules","posterior":0.065969,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"use local mules","posterior":0.035144,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"use local mules","posterior":0.127333,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"use local mules","posterior":0.171122,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"use local mules","posterior":0.489219,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"use local mules","posterior":0.454914,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"use local mules","posterior":0.510027,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"use local mules","posterior":0.355299,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"use local mules","posterior":0.696516,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"use local mules","posterior":0.298646,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"use local mules","posterior":0.464421,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"use local mules","posterior":0.522069,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"use local mules","posterior":0.61526,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"use local mules","posterior":0.613013,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"use local mules","posterior":0.11996,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"use local mules","posterior":0.160715,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"use local mules","posterior":0.367892,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"use local mules","posterior":0.129099,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"use local mules","posterior":0.05382,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"use local mules","posterior":0.075295,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"use local mules","posterior":0.316432,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"use local mules","posterior":0.419722,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"use local mules","posterior":0.070926,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"use local mules","posterior":0.137853,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"use local mules","posterior":0.045705,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"use local mules","posterior":0.633162,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"use local mules","posterior":0.124007,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"use local mules","posterior":0.870578,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"use local mules","posterior":0.751147,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"use local mules","posterior":0.778813,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"use local mules","posterior":0.830226,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"use local mules","posterior":0.552046,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"use local mules","posterior":0.348495,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"use local mules","posterior":0.493332,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"use local mules","posterior":0.743975,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"use local mules","posterior":0.307818,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"use local mules","posterior":0.153181,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"use local mules","posterior":0.201857,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"use local mules","posterior":0.0948,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"use local mules","posterior":0.193248,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"use local mules","posterior":0.034216,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"use local mules","posterior":0.04345,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"use local mules","posterior":0.054333,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"use local mules","posterior":0.068303,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"use local mules","posterior":0.201857,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"use local mules","posterior":0.069123,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"use local mules","posterior":0.064479,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.444568,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.996325,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.975718,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.972913,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.948099,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.982922,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.975827,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.964411,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.963095,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.940275,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.983391,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"never reuse a payer","posterior":0.964142,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"never reuse a payer","posterior":0.171682,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"never reuse a payer","posterior":0.963529,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"never reuse a payer","posterior":0.148737,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"never reuse a payer","posterior":0.154267,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"never reuse a payer","posterior":0.107706,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"never reuse a payer","posterior":0.114302,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"never reuse a payer","posterior":0.020114,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"never reuse a payer","posterior":0.885623,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"never reuse a payer","posterior":0.312437,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"never reuse a payer","posterior":0.77273,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"never reuse a payer","posterior":0.942232,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"never reuse a payer","posterior":0.865045,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"never reuse a payer","posterior":0.976538,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"never reuse a payer","posterior":0.738176,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"never reuse a payer","posterior":0.978992,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"never reuse a payer","posterior":0.991176,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"never reuse a payer","posterior":0.952168,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"never reuse a payer","posterior":0.818495,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"never reuse a payer","posterior":0.908323,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.955782,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.933555,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.589866,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.101319,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.918146,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.8313,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.951891,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.484716,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.025633,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.915309,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"never reuse a payer","posterior":0.933555,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.761514,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.85585,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.819235,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.884782,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.764563,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.849802,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.792289,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.147838,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.863875,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.23833,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"never reuse a payer","posterior":0.120872,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.072529,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.587933,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.105379,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.731629,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.800273,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.158523,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.897597,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.656439,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.772452,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.825877,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.836576,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"never reuse a payer","posterior":0.853066,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.005722,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.058503,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.158859,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.045895,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.045377,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.025743,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.130597,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.006692,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.00083,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.062642,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"never reuse a payer","posterior":0.00209,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.492193,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.342863,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.685811,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.494818,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.581154,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.613432,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.678481,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.038675,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.347859,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.585471,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.029644,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"never reuse a payer","posterior":0.341277,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.075844,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.032867,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.072124,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.001157,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.023236,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.052886,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.023236,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.075844,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.001134,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"never reuse a payer","posterior":0.037204,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.973798,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.998928,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.925718,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.990073,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.982403,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.994347,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.990771,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.983722,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.986574,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.977637,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.994504,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"hide in the main QR","posterior":0.966648,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"hide in the main QR","posterior":0.981038,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"hide in the main QR","posterior":0.602287,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"hide in the main QR","posterior":0.897762,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"hide in the main QR","posterior":0.838462,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"hide in the main QR","posterior":0.983605,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"hide in the main QR","posterior":0.810142,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"hide in the main QR","posterior":0.308062,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"hide in the main QR","posterior":0.996561,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"hide in the main QR","posterior":0.996513,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"hide in the main QR","posterior":0.976076,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"hide in the main QR","posterior":0.987496,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"hide in the main QR","posterior":0.901322,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"hide in the main QR","posterior":0.992452,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"hide in the main QR","posterior":0.988875,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"hide in the main QR","posterior":0.954877,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"hide in the main QR","posterior":0.995868,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"hide in the main QR","posterior":0.960896,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"hide in the main QR","posterior":0.989564,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"hide in the main QR","posterior":0.931142,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.627701,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.907917,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.973719,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.821933,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.94403,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.706911,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.104066,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.993104,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.025633,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.911775,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"hide in the main QR","posterior":0.407947,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.951431,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.996485,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.893401,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.922243,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.85058,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.928701,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.887049,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.994803,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.934207,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.994868,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"hide in the main QR","posterior":0.986376,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.742005,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.703422,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.934774,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.912996,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.93782,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.878832,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.97074,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.865955,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.932751,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.942561,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.956377,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"hide in the main QR","posterior":0.957657,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.354619,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.561017,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.795262,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.497315,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.197993,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.346104,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.755469,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.828395,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.324998,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.430158,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"hide in the main QR","posterior":0.192503,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.875808,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.401349,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.977991,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.949489,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.952421,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.970271,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.861647,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.641016,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.839283,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.942064,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.592719,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"hide in the main QR","posterior":0.385444,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.647165,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.431668,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.610346,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.128846,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.182192,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.203163,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.347119,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.647165,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.326251,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"hide in the main QR","posterior":0.287809,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.973798,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.998928,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.925718,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.990073,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.982403,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.994347,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.990771,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.983722,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.986574,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.977637,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.994504,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"rotate links every 20 payments","posterior":0.966648,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.962781,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.430909,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.814491,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.721855,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.967738,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.680873,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"rotate links every 20 payments","posterior":0.182077,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.993147,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.993049,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.976076,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.987496,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.901322,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.992452,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.977995,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.954877,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.995868,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.960896,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.989564,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"rotate links every 20 payments","posterior":0.931142,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.457408,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.831363,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.948783,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.697697,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.893993,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.546685,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.09441,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.986303,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.025633,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.837855,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"rotate links every 20 payments","posterior":0.256239,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.951431,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.992995,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.893401,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.922243,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.85058,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.928701,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.887049,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.989659,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.934207,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.989789,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"rotate links every 20 payments","posterior":0.973119,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.742005,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.703422,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.934774,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.912996,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.93782,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.878832,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.97074,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.865955,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.932751,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.942561,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.956377,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"rotate links every 20 payments","posterior":0.957657,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.354619,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.561017,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.795262,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.497315,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.197993,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.346104,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.755469,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.828395,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.324998,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.430158,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"rotate links every 20 payments","posterior":0.192503,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.875808,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.401349,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.977991,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.949489,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.952421,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.970271,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.861647,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.641016,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.839283,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.942064,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.592719,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"rotate links every 20 payments","posterior":0.385444,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.647165,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.431668,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.610346,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.128846,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.182192,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.203163,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.347119,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.647165,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.326251,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"rotate links every 20 payments","posterior":0.287809,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.367068,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.623876,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.733995,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.713723,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.431298,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.358283,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.332444,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.636833,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.415694,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.703281,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.828823,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"thin to a tenth","posterior":0.61624,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"thin to a tenth","posterior":0.000841,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"thin to a tenth","posterior":0.000547,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"thin to a tenth","posterior":0.000696,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"thin to a tenth","posterior":0.000841,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"thin to a tenth","posterior":0.0078,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"thin to a tenth","posterior":0.000488,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"thin to a tenth","posterior":0.000257,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"thin to a tenth","posterior":0.315045,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"thin to a tenth","posterior":0.000488,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"thin to a tenth","posterior":0.276867,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"thin to a tenth","posterior":0.473954,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"thin to a tenth","posterior":0.424888,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"thin to a tenth","posterior":0.568181,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"thin to a tenth","posterior":0.315045,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"thin to a tenth","posterior":0.586507,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"thin to a tenth","posterior":0.796876,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"thin to a tenth","posterior":0.654791,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"thin to a tenth","posterior":0.573135,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"thin to a tenth","posterior":0.567874,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.506323,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.260303,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.488339,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.570782,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.612659,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.000436,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.000389,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.512003,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.000389,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.519066,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"thin to a tenth","posterior":0.000436,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000512,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.001035,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.001592,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000488,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000488,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000488,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.012948,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000368,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000488,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000368,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"thin to a tenth","posterior":0.000547,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.016198,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.019254,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.013548,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.028223,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.201408,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.548754,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.462394,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.010295,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.026153,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.370598,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.343143,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"thin to a tenth","posterior":0.443748,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.001404,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.001404,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.002922,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.003098,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.002977,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.001638,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.004573,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.001102,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.002086,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.001102,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"thin to a tenth","posterior":0.003098,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.067255,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.073594,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.132119,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.072309,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.076804,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.186487,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.051287,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.106879,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.071728,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.058115,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.068985,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"thin to a tenth","posterior":0.005869,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.003981,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.002681,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.006112,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.001878,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.001878,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.003981,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.001878,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.003981,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.002681,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"thin to a tenth","posterior":0.001108,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-216","kind":"obvious deposits","operator":"all of the first four","posterior":0.000303,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-217","kind":"obvious deposits","operator":"all of the first four","posterior":0.111586,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-218","kind":"obvious deposits","operator":"all of the first four","posterior":0.057732,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-219","kind":"obvious deposits","operator":"all of the first four","posterior":0.051285,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-220","kind":"obvious deposits","operator":"all of the first four","posterior":0.011671,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-221","kind":"obvious deposits","operator":"all of the first four","posterior":0.01926,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-222","kind":"obvious deposits","operator":"all of the first four","posterior":0.017216,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-223","kind":"obvious deposits","operator":"all of the first four","posterior":0.017216,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-224","kind":"obvious deposits","operator":"all of the first four","posterior":0.016589,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-225","kind":"obvious deposits","operator":"all of the first four","posterior":0.009162,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-226","kind":"obvious deposits","operator":"all of the first four","posterior":0.024466,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-227","kind":"obvious deposits","operator":"all of the first four","posterior":0.006195,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-229","kind":"small side-stream","operator":"all of the first four","posterior":0.024935,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-230","kind":"small side-stream","operator":"all of the first four","posterior":0.01023,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-233","kind":"small side-stream","operator":"all of the first four","posterior":0.011252,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-234","kind":"small side-stream","operator":"all of the first four","posterior":0.013344,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-235","kind":"small side-stream","operator":"all of the first four","posterior":0.0078,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-236","kind":"small side-stream","operator":"all of the first four","posterior":0.008335,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-239","kind":"small side-stream","operator":"all of the first four","posterior":0.00421,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-240","kind":"large side-stream","operator":"all of the first four","posterior":0.090697,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-241","kind":"large side-stream","operator":"all of the first four","posterior":0.009542,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-242","kind":"large side-stream","operator":"all of the first four","posterior":0.007465,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-243","kind":"large side-stream","operator":"all of the first four","posterior":0.010433,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-244","kind":"large side-stream","operator":"all of the first four","posterior":0.071492,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-245","kind":"large side-stream","operator":"all of the first four","posterior":0.119269,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-246","kind":"large side-stream","operator":"all of the first four","posterior":0.045465,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-247","kind":"large side-stream","operator":"all of the first four","posterior":0.029243,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-248","kind":"large side-stream","operator":"all of the first four","posterior":0.276343,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-249","kind":"large side-stream","operator":"all of the first four","posterior":0.128294,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-250","kind":"large side-stream","operator":"all of the first four","posterior":0.014047,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-251","kind":"large side-stream","operator":"all of the first four","posterior":0.106107,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-252","kind":"grocer side-stream","operator":"all of the first four","posterior":0.056988,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-254","kind":"grocer side-stream","operator":"all of the first four","posterior":0.008185,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-255","kind":"grocer side-stream","operator":"all of the first four","posterior":0.038889,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-256","kind":"grocer side-stream","operator":"all of the first four","posterior":0.004119,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-257","kind":"grocer side-stream","operator":"all of the first four","posterior":0.006308,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-258","kind":"grocer side-stream","operator":"all of the first four","posterior":0.033653,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-259","kind":"grocer side-stream","operator":"all of the first four","posterior":0.030103,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-260","kind":"grocer side-stream","operator":"all of the first four","posterior":0.025395,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-261","kind":"grocer side-stream","operator":"all of the first four","posterior":0.006592,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-262","kind":"grocer side-stream","operator":"all of the first four","posterior":0.026126,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-263","kind":"grocer side-stream","operator":"all of the first four","posterior":0.008185,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-264","kind":"same-QR blend","operator":"all of the first four","posterior":0.016537,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-265","kind":"same-QR blend","operator":"all of the first four","posterior":0.129657,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-266","kind":"same-QR blend","operator":"all of the first four","posterior":0.132804,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-267","kind":"same-QR blend","operator":"all of the first four","posterior":0.077447,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-268","kind":"same-QR blend","operator":"all of the first four","posterior":0.054071,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-269","kind":"same-QR blend","operator":"all of the first four","posterior":0.061144,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-270","kind":"same-QR blend","operator":"all of the first four","posterior":0.046049,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-271","kind":"same-QR blend","operator":"all of the first four","posterior":0.006599,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-273","kind":"same-QR blend","operator":"all of the first four","posterior":0.061144,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-274","kind":"same-QR blend","operator":"all of the first four","posterior":0.008284,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-275","kind":"same-QR blend","operator":"all of the first four","posterior":0.008875,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-288","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.000522,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-289","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.013547,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-290","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.000409,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-291","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.025357,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-292","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.025357,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-293","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.001076,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-294","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.056164,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-295","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.011064,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-296","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.025357,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-297","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.020009,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-298","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.037239,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-299","kind":"camouflage: fuel","operator":"all of the first four","posterior":0.037239,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-300","kind":"camouflage: charity","operator":"all of the first four","posterior":0.000902,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-301","kind":"camouflage: charity","operator":"all of the first four","posterior":0.011018,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-302","kind":"camouflage: charity","operator":"all of the first four","posterior":0.038977,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-303","kind":"camouflage: charity","operator":"all of the first four","posterior":0.043795,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-304","kind":"camouflage: charity","operator":"all of the first four","posterior":0.042901,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-305","kind":"camouflage: charity","operator":"all of the first four","posterior":0.02431,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-306","kind":"camouflage: charity","operator":"all of the first four","posterior":0.031887,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-307","kind":"camouflage: charity","operator":"all of the first four","posterior":0.001466,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-308","kind":"camouflage: charity","operator":"all of the first four","posterior":0.000782,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-309","kind":"camouflage: charity","operator":"all of the first four","posterior":0.138964,"decision":"OPEN_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-310","kind":"camouflage: charity","operator":"all of the first four","posterior":0.001971,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-312","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.044291,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-313","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.048837,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-314","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.188426,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-315","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.085084,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-316","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.056605,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-317","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.114021,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-318","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.168618,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-319","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.003828,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-320","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.051539,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-321","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.117031,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-322","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.003524,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-323","kind":"camouflage: furniture","operator":"all of the first four","posterior":0.045337,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-324","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.075844,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-325","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.032867,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-326","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.072124,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-328","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.001157,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-329","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.023236,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-330","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.052886,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-331","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.023236,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-333","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.075844,"decision":"NO_CASE","followUp":"ASK"}
+{"merchantId":"M-SU-31-334","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.000599,"decision":"NO_CASE","followUp":"NONE"}
+{"merchantId":"M-SU-31-335","kind":"uncatalogued category front","operator":"all of the first four","posterior":0.037204,"decision":"NO_CASE","followUp":"ASK"}

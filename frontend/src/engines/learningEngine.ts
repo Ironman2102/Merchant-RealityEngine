@@ -18,10 +18,10 @@ export function profileUpdates(res: InvestigationResult, label: Label): string[]
   if (label === 'UNRESOLVED') return ['No labels applied. Unresolved cases are excluded from training and are not treated as negatives.', 'Case stays on the watchlist until the merchant responds or evidence changes.'];
   if (label === 'ADJUDICATED_BENIGN') {
     const obs = peak && peak.actual ? peak.actual / peak.anchored : sc.profile.seasonalPeak, next = 0.5 * sc.profile.seasonalPeak + 0.5 * obs;
-    return [`Seasonal peak expectation updated ${sc.profile.seasonalPeak.toFixed(1)}× → ${next.toFixed(1)}× (average of prior and adjudicated observation).`, 'Verified order, delivery and bank-reconciliation evidence now weigh more in future reviews.', 'Volume-only alarms for this merchant need a smaller extra margin before escalating.'];
+    return [`Suggested seasonal peak (not applied): ${sc.profile.seasonalPeak.toFixed(1)}× → ${next.toFixed(1)}× (average of prior and adjudicated observation).`, 'Candidate detector rates recorded. Scores change only after an approved calibration.', 'If the change is permanent, record a Context Passport so that the expectation for that QR is updated.'];
   }
   const host = sc.web.embeds.find(e => e.merchantId === sc.primaryMerchantId && e.category !== 'own');
   return [host ? `Add ${host.host} to the undeclared-host watchlist; flag every merchant link found on it.` : 'Add the merchant’s order and fulfilment gaps to the substantiation checklist.',
     res.cohort.some(c => c.beneficiaryMatch) ? `Link the settlement beneficiary shared with ${res.cohort.find(c => c.beneficiaryMatch)!.name} to the cohort watchlist; any new account settling to it is flagged on day one.` : 'Pattern signature saved for cohort search across similar merchants.',
-    'Detector reliabilities raised for the signals that fired (see table).', 'Merchant profile marked “under review”; automatic seasonal refresh suspended.'];
+    'Candidate detector rates recorded. Scores change only after an approved calibration.', 'Merchant profile marked “under review”; automatic seasonal refresh suspended.'];
 }

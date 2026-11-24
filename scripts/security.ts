@@ -4,13 +4,14 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AddressInfo } from 'node:net';
 process.env.MRE_CASE_STORE = 'memory';
+process.env.MRE_HASH_KEY = 'security-probe-hash-key-only';
 const { handle } = await import('../backend/src/http');
 const { createUser } = await import('../backend/src/auth');
 const { getDb } = await import('../backend/src/db');
 
 const ds = readFileSync('frontend/public/samples/01-sweet-crumbs-betting-front.json', 'utf8');
 const pw = 'security-probe-password-1';
-createUser('ana', pw, 'analyst'); createUser('rev', pw, 'reviewer');
+createUser('ana', pw, 'analyst'); createUser('rev', pw, 'reviewer'); createUser('adm', pw, 'admin');
 const srv = createServer((q, s) => void handle(q, s)).listen(0, '127.0.0.1');
 await new Promise(r => srv.once('listening', r));
 const base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}/api`;
@@ -83,14 +84,60 @@ const hook = createHook((q, s) => {
   });
 }).listen(0, '127.0.0.1');
 await new Promise(r => hook.once('listening', r));
-process.env.MRE_WEBHOOK_SECRET = 'hook-secret';
+process.env.MRE_WEBHOOK_SECRET = 'webhook-probe-signing-key';
 setSinks([{ type: 'webhook', url: `http://127.0.0.1:${(hook.address() as AddressInfo).port}/hook`, secretEnv: 'MRE_WEBHOOK_SECRET', events: ['case.opened'] }]);
 const openedV1 = await v1('/v1/cases', { method: 'POST', body: ds, key: caseKey.key });
 await whenIdle();
-probe('webhook signed', openedV1.status === 200 && signatureMatches(hooked, hookedSig, 'hook-secret'));
-probe('altered webhook body fails verification', hooked.length > 0 && !signatureMatches(hooked.replace('OPEN_CASE', 'NO_CASE'), hookedSig, 'hook-secret') && signBody(hooked, 'hook-secret') === hookedSig);
+probe('webhook signed', openedV1.status === 200 && signatureMatches(hooked, hookedSig, 'webhook-probe-signing-key'));
+probe('altered webhook body fails verification', hooked.length > 0 && !signatureMatches(hooked.replace('OPEN_CASE', 'NO_CASE'), hookedSig, 'webhook-probe-signing-key') && signBody(hooked, 'webhook-probe-signing-key') === hookedSig);
 hook.close();
 setSinks([]);
+
+// Audit of 22 Nov 2026: every hole found, probed.
+const post = (path: string, body: unknown, cookie?: string) => call(path, { method: 'POST', body: JSON.stringify(body), cookie });
+probe('persona switch is gone', (await post('/auth/demo-switch', { role: 'admin' }, ana)).status === 404);
+const me = await (await call('/auth/me', { cookie: ana })).json() as { user: { role: string } };
+probe('an analyst stays an analyst', me.user.role === 'analyst');
+probe('no persona account gets created', !getDb().prepare("SELECT 1 FROM users WHERE username LIKE 'demo-%'").get());
+probe('analyst cannot roll back rules', (await post('/rules/rollback', {}, ana)).status === 403);
+
+const fresh = await (await call('/investigations', { method: 'POST', body: ds, cookie: ana })).json() as { id: string };
+await post(`/investigations/${fresh.id}/response`, { chosenLevel: 'L3' }, ana);
+probe('someone else cannot overwrite a pending proposal', (await post(`/investigations/${fresh.id}/response`, { chosenLevel: 'L0' }, rev)).status === 409);
+const cleared = await (await post(`/investigations/${fresh.id}/label`, { label: 'ADJUDICATED_BENIGN' }, ana)).json() as { user: { label: string | null } };
+probe('one person cannot clear an opened case', cleared.user.label === null);
+probe('a different label cannot confirm a pending one', (await post(`/investigations/${fresh.id}/label`, { label: 'CONFIRMED_ILLICIT' }, rev)).status === 409);
+
+const changedRaw = JSON.parse(readFileSync('frontend/public/samples/11-moonlight-bakes-honest-change.json', 'utf8'));
+changedRaw.contextPassports[0].status = 'VERIFIED';
+changedRaw.contextPassports[0].submittedBy = 'somebody-else'; // a forged maker must be ignored
+const changed = await (await post('/investigations', changedRaw, rev)).json() as { id: string; result: { followUp: string }; scenario: { passports: { id: string; status: string }[] } };
+probe('an upload cannot verify its own passport', changed.result.followUp === 'ASK' && changed.scenario.passports[0].status === 'SUBMITTED');
+probe('uploader cannot verify the passport', (await post(`/investigations/${changed.id}/passport-review`, { passportId: changed.scenario.passports[0].id, verify: true }, rev)).status === 403);
+probe('analyst cannot verify a passport', (await post(`/investigations/${changed.id}/passport-review`, { passportId: changed.scenario.passports[0].id, verify: true }, ana)).status === 403);
+
+getDb().prepare('DELETE FROM audit WHERE case_id = ? AND seq = (SELECT MAX(seq) FROM audit WHERE case_id = ?)').run(fresh.id, fresh.id);
+probe('audit truncation detected', ((await (await call(`/investigations/${fresh.id}/audit`, { cookie: ana })).json()) as { ok: boolean }).ok === false);
+
+const batchKey = createServiceKey('batch-probe', ['batch']);
+const opened2 = await (await v1('/v1/batches', { method: 'POST', body: JSON.stringify({ mapping: '../../package.json', files: {} }), key: batchKey.key })).json() as { batchId: string };
+let state = '';
+for (let i = 0; i < 50 && state !== 'error' && state !== 'done'; i++) {
+  state = ((await (await v1(`/v1/batches/${opened2.batchId}`, { key: batchKey.key })).json()) as { status: string }).status;
+  if (state !== 'error' && state !== 'done') await new Promise(r => setTimeout(r, 20));
+}
+probe('batch mapping cannot be a path', state === 'error');
+
+await post('/auth/logout', {}, ana);
+probe('signing out revokes the cookie', (await (await call('/auth/me', { cookie: ana })).json() as { user: unknown }).user === null);
+
+process.env.MRE_STATELESS_SESSIONS = '1';
+process.env.MRE_SESSION_SECRET = 'security-probe-session-secret';
+process.env.MRE_BOOT_USERS = `boot-ana:${pw}:analyst`;
+const boot = await signIn('boot-ana');
+probe('signed cookie works for a boot account only', boot.includes('v2.') && ((await (await call('/auth/me', { cookie: boot })).json()) as { user: { role: string } | null }).user?.role === 'analyst');
+process.env.MRE_BOOT_USERS = `boot-ana:${pw}-rotated:analyst`;
+probe('password change revokes signed cookies', ((await (await call('/auth/me', { cookie: boot })).json()) as { user: unknown }).user === null);
 
 srv.close();
 let failed = 0;

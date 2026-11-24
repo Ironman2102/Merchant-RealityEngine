@@ -26,7 +26,7 @@
     ],
     "expectedRoundShare": 0.06,
     "seasonalPeak": 2,
-    "baselineWeekly": 160000,
+    "baselineWeekly": 36000,
     "accountAgeDays": 2410,
     "declaredDomains": [
       "anandsweets.example"
@@ -45,82 +45,82 @@
   "weeklySales": [
     {
       "week": "W1",
-      "actual": 163227,
+      "actual": 36968,
       "seasonalMultiplier": 1
     },
     {
       "week": "W2",
-      "actual": 156733,
+      "actual": 35020,
       "seasonalMultiplier": 1
     },
     {
       "week": "W3",
-      "actual": 155998,
+      "actual": 34799,
       "seasonalMultiplier": 1
     },
     {
       "week": "W4",
-      "actual": 162889,
+      "actual": 36867,
       "seasonalMultiplier": 1
     },
     {
       "week": "W5",
-      "actual": 161309,
+      "actual": 36393,
       "seasonalMultiplier": 1
     },
     {
       "week": "W6",
-      "actual": 159957,
+      "actual": 35987,
       "seasonalMultiplier": 1
     },
     {
       "week": "W7",
-      "actual": 160247,
+      "actual": 36074,
       "seasonalMultiplier": 1
     },
     {
       "week": "W8",
-      "actual": 158802,
+      "actual": 35641,
       "seasonalMultiplier": 1
     },
     {
       "week": "W9",
-      "actual": 161007,
+      "actual": 36302,
       "seasonalMultiplier": 1
     },
     {
       "week": "W10",
-      "actual": 162485,
+      "actual": 36745,
       "seasonalMultiplier": 1
     },
     {
       "week": "W11",
-      "actual": 157852,
+      "actual": 35356,
       "seasonalMultiplier": 1
     },
     {
       "week": "W12",
-      "actual": 155317,
+      "actual": 34595,
       "seasonalMultiplier": 1
     },
     {
       "week": "W13",
-      "actual": 200000,
+      "actual": 46705,
       "seasonalMultiplier": 1.2
     },
     {
       "week": "W14",
-      "actual": 288000,
+      "actual": 66544,
       "seasonalMultiplier": 1.6
     },
     {
       "week": "W15",
-      "actual": 464000,
+      "actual": 109363,
       "seasonalMultiplier": 2
     },
     {
       "week": "W16",
-      "actual": 480000,
+      "actual": 102752,
       "seasonalMultiplier": 2
     }
   ],

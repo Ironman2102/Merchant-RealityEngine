@@ -12,6 +12,9 @@ export interface PortfolioRow {
   expectedLoss: number;
   action: string;
   decision: string;
+  /** P × the money that moved through the flagged scope in the window. */
+  exposure?: number;
+  scope?: string;
 }
 
 export function scorePortfolio(rows: PortfolioRow[], q = RULES.engine.portfolio.fdrQ): { queue: PortfolioRow[]; opened: number; expectedFalseAlarms: number } {
@@ -25,6 +28,6 @@ export function scorePortfolio(rows: PortfolioRow[], q = RULES.engine.portfolio.
   }
   const opened = byP.slice(0, keep);
   const expectedFalseAlarms = opened.reduce((s, r) => s + (1 - r.posterior), 0);
-  const queue = [...opened].sort((a, b) => b.expectedLoss - a.expectedLoss || a.merchantId.localeCompare(b.merchantId));
+  const queue = [...opened].sort((a, b) => (b.exposure ?? b.expectedLoss) - (a.exposure ?? a.expectedLoss) || a.merchantId.localeCompare(b.merchantId));
   return { queue, opened: opened.length, expectedFalseAlarms };
 }

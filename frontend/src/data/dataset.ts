@@ -9,8 +9,11 @@
  * export the sample files.
  */
 import type { Channel, EventType, PaymentEvent } from '../types/payment';
-import type { CoverageKey, CoverageState, EmbedRecord, CatalogueItem, GraphSpec, MerchantProfile, OrderRecord, PeerInfo, Scenario, Sighting, WeeklyPoint } from '../types/merchant';
+import type { CoverageKey, CoverageState, EmbedRecord, CatalogueItem, GraphSpec, MerchantProfile, OrderRecord, PeerInfo, Scenario, Sighting, WeeklyPoint, ContextPassport } from '../types/merchant';
+import { RULES } from '../../../rules/index';
+import { passportErrors } from '../engines/passport';
 import { hashId } from '../utils/hash';
+import { instant } from '../utils/time';
 
 export const DATASET_FORMAT = 'mre-dataset/v1';
 
@@ -50,6 +53,8 @@ export interface MreDataset {
   purchaserVerification?: { contacted: number; confirmed: number } | null;
   businessFootprint?: { supplierPaymentsMonthly: number; gstTurnoverMonthly: number } | null;
   externalSightings?: Sighting[];
+  /** Uploads can only submit these. Verification happens on the server, by a second person. */
+  contextPassports?: ContextPassport[];
   graph?: GraphSpec;
 }
 
@@ -63,10 +68,14 @@ export function toIst(ms: number): string {
 /* ---------- export ---------- */
 export function scenarioToDataset(sc: Scenario, extra?: { title?: string; description?: string }): MreDataset {
   // Destination and beneficiary identifiers are stored hashed; give each a stable readable alias.
-  const alias = new Map<string, string>();
+  const alias = new Map<string, string>(), issued = new Map<string, number>();
   const name = (h: string | undefined, prefix: string) => {
     if (!h || h === '—') return undefined;
-    if (!alias.has(h)) alias.set(h, `${prefix}-${String([...alias.values()].filter(v => v.startsWith(prefix)).length + 1).padStart(3, '0')}`);
+    if (!alias.has(h)) {
+      const n = (issued.get(prefix) ?? 0) + 1;
+      issued.set(prefix, n);
+      alias.set(h, `${prefix}-${String(n).padStart(3, '0')}`);
+    }
     return alias.get(h)!;
   };
   const transactions: DatasetTransaction[] = sc.events.map(e => {
@@ -98,6 +107,7 @@ export function scenarioToDataset(sc: Scenario, extra?: { title?: string; descri
     purchaserVerification: sc.verification,
     businessFootprint: sc.footprint ?? null,
     externalSightings: sc.sightings ?? [],
+    ...(sc.passports?.length ? { contextPassports: sc.passports } : {}),
     graph: sc.graph,
   };
 }
@@ -110,11 +120,11 @@ export interface DatasetSummary {
   available: CoverageKey[]; missing: CoverageKey[];
 }
 
-const TYPES: EventType[] = ['SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT', 'CHARGEBACK'];
+export const TYPES: EventType[] = ['SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT', 'CHARGEBACK'];
 const CHANNELS: Channel[] = ['POS', 'UPI_LINK', 'UPI_COLLECT', 'ONLINE', 'PAYOUT', 'BANK'];
 /** Accept common input formatting and the legacy generic UPI value, but keep the
  * internal event channel restricted to the canonical Channel enum. */
-function normalizeChannel(value: unknown): Channel | undefined {
+export function normalizeChannel(value: unknown): Channel | undefined {
   if (typeof value !== 'string') return undefined;
   const key = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
   const canonical = key === 'UPI' ? 'UPI_LINK' : key;
@@ -125,18 +135,32 @@ const STATES: CoverageState[] = ['AVAILABLE', 'PARTIAL', 'MISSING'];
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const isStr = (x: unknown): x is string => typeof x === 'string' && x.length > 0;
 const strArr = (x: unknown) => Array.isArray(x) && x.every(isStr);
-const MAX_AMOUNT = 1_000_000;
+const { maxPaymentRupees, maxSettlementRupees } = RULES.engine.limits;
 
 function defaultSource(t: DatasetTransaction): string {
   return t.type === 'SETTLEMENT' ? 'settlement.ledger' : t.type === 'TRANSFER' ? 'payout.ledger' : t.type === 'REFUND' || t.type === 'CHARGEBACK' ? 'acquirer.refund' : 'acquirer.upi';
 }
 
+const GRAPH_LINKS = 60;
+const NODE_TYPES = ['merchant', 'payer', 'account', 'link', 'website', 'device', 'beneficiary', 'peer'];
+const EDGE_TYPES = ['ENTITY_RESOLUTION', 'BEHAVIOURAL_SIMILARITY', 'PAYMENT_FLOW', 'SHARED_INFRASTRUCTURE', 'WEBSITE_LINK', 'SETTLEMENT_RELATIONSHIP'];
+/** A supplied graph is drawn as it is, so it must be drawable. */
+function drawable(g: unknown): g is GraphSpec {
+  const { nodes, edges } = (g ?? {}) as Partial<GraphSpec>;
+  if (!Array.isArray(nodes) || !Array.isArray(edges) || !nodes.some(n => n?.type === 'merchant')) return false;
+  const ids = new Set(nodes.map(n => n?.id));
+  return nodes.every(n => isStr(n?.id) && isStr(n.label) && NODE_TYPES.includes(n.type) && (n.sub === undefined || typeof n.sub === 'string'))
+    && edges.every(e => isStr(e?.id) && ids.has(e.source) && ids.has(e.target) && EDGE_TYPES.includes(e.type) && Array.isArray(e.evidence));
+}
+
 /** Minimal evidence graph for datasets that do not supply one. */
-function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedRecord[], peers: PeerInfo[]): GraphSpec {
+export function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedRecord[], peers: PeerInfo[]): GraphSpec {
   const nodes: GraphSpec['nodes'] = [{ id: 'm1', type: 'merchant', label: p.name, sub: `MCC ${p.mcc} · ${p.city.split(',')[0]}` }];
   const edges: GraphSpec['edges'] = [];
   let k = 0; const edge = (source: string, target: string, type: GraphSpec['edges'][number]['type'], label: string, evidence: string[] = []) => edges.push({ id: `a${++k}`, source, target, type, label, evidence });
-  const links = [...new Set(events.filter(e => e.merchantId === p.id && e.linkId).map(e => e.linkId!))];
+  // Dynamic QRs mean one link per payment. The picture keeps the links that were seen on pages, then the first others.
+  const seen = new Set(embeds.map(e => e.linkId)), every = [...new Set(events.filter(e => e.merchantId === p.id && e.linkId).map(e => e.linkId!))];
+  const links = every.length > GRAPH_LINKS ? [...every.filter(l => seen.has(l)), ...every.filter(l => !seen.has(l))].slice(0, GRAPH_LINKS) : every;
   links.forEach((l, i) => { nodes.push({ id: `l${i}`, type: l.startsWith('TERM') ? 'device' : 'link', label: l }); edge('m1', `l${i}`, 'ENTITY_RESOLUTION', 'issued to merchant'); });
   [...new Set(embeds.map(e => e.host))].forEach((h, i) => {
     const em = embeds.filter(e => e.host === h), own = p.declaredDomains.includes(h);
@@ -149,7 +173,35 @@ function autoGraph(p: MerchantProfile, events: PaymentEvent[], embeds: EmbedReco
   return { nodes, edges };
 }
 
-export function datasetToScenario(raw: unknown): ParseResult {
+/**
+ * Do the last two weekly totals agree with the last 14 days of ledger? undefined = too little ledger to tell.
+ * Settlement and refund timestamps do not stretch the window; only sales count.
+ */
+function reconcile(own: PaymentEvent[], weekly: WeeklyPoint[]): boolean | undefined {
+  const { days, tolerance } = RULES.engine.reconcile, sales = own.filter(e => e.type === 'SALE');
+  const totals = weekly.slice(-days / 7).map(w => w.actual);
+  if (!sales.length || totals.length < days / 7 || totals.some(v => v === null)) return undefined;
+  const first = sales[0].eventTime, end = sales[sales.length - 1].eventTime, DAY = 86400000;
+  if (end - first < (days - 1.5) * DAY) return undefined;
+  const ledger = sales.reduce((s, e) => (e.eventTime > end - days * DAY ? s + e.amount : s), 0), stated = totals.reduce<number>((s, v) => s + (v ?? 0), 0);
+  return Math.abs(ledger - stated) <= tolerance * Math.max(ledger, stated);
+}
+
+const MERCHANT_LISTS = ['undeclared', 'declaredDomains', 'declaredChannels', 'declaredActivity', 'products'] as const;
+const TEXT_FIELDS = ['payerId', 'payerState', 'paymentLinkId', 'paidTo', 'beneficiaryAccount', 'payerMobile', 'destHolder'] as const;
+/** What a passport from a file is allowed to say about itself. */
+export const asSubmitted = (p: ContextPassport): ContextPassport => (p && typeof p === 'object' ? { ...p, status: 'SUBMITTED', submittedBy: undefined, reviewedBy: undefined, revokedBy: undefined, ref: undefined, client: undefined } : p);
+
+/**
+ * A file cannot vouch for itself: Context Passports arrive unverified, with no maker or checker, unless the caller says
+ * `trustPassports` (only code that got them from the server's registry may).
+ */
+export function datasetToScenario(raw: unknown, opts: { trustPassports?: boolean } = {}): ParseResult {
+  try { return readDataset(raw, !!opts.trustPassports); }
+  catch (e) { return { ok: false, errors: [`A field in this file has the wrong shape (${e instanceof Error ? e.message : String(e)}).`], warnings: [] }; }
+}
+
+function readDataset(raw: unknown, trustPassports: boolean): ParseResult {
   const errors: string[] = [], warnings: string[] = [];
   const fail = (m: string) => { errors.push(m); return { ok: false, errors, warnings }; };
   if (!raw || typeof raw !== 'object') return fail('The file is not a JSON object.');
@@ -168,10 +220,22 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (!Array.isArray(m.hours) || m.hours.length !== 2 || !m.hours.every(isNum)) errors.push('merchant.hours is required as [open, close] in 24h, e.g. [7, 22].');
   else if (!m.hours.every(h => Number.isInteger(h) && h >= 0 && h <= 24) || m.hours[0] === m.hours[1]) errors.push('merchant.hours must be two different whole hours between 0 and 24. Overnight businesses may close before they open, e.g. [22, 6].');
   if (isNum(m.ticketMin) && isNum(m.ticketMax) && !(m.ticketMin >= 0 && m.ticketMin < m.ticketMax)) errors.push('merchant.ticketMin must be at least 0 and below merchant.ticketMax.');
+  // An invisible character or stray space would make the same merchant look like one with no history.
+  if (isStr(m.id) && (m.id !== m.id.trim() || /[\p{Cc}\p{Cf}]/u.test(m.id))) errors.push('merchant.id cannot start or end with a space, or contain invisible characters.');
+  if (isStr(m.mcc) && !/^(\d{4}|UNKNOWN)$/.test(m.mcc)) errors.push('merchant.mcc must be four digits, or UNKNOWN.');
   if (isNum(m.accountAgeDays) && m.accountAgeDays < 0) errors.push('merchant.accountAgeDays cannot be negative.');
   if (isNum(m.baselineWeekly) && m.baselineWeekly <= 0) errors.push('merchant.baselineWeekly must be above 0.');
+  const undeclared = new Set(Array.isArray(m.undeclared) ? m.undeclared : []);
+  if (m.catchment === undefined) undeclared.add('catchment');
+  if (m.expectedRoundShare === undefined) undeclared.add('expectedRoundShare');
   const defaults = { products: [], catchment: 'LOCAL', expectedRoundShare: 0.06, seasonalPeak: 1, declaredDomains: [], declaredChannels: [], declaredActivity: [] } as Partial<MerchantProfile>;
-  const profile = { ...defaults, ...m } as MerchantProfile;
+  const profile = { ...defaults, ...m, ...(undeclared.size ? { undeclared: [...undeclared] } : {}) } as MerchantProfile;
+
+  // Optional fields: wrong shapes are refused here, because the browser runs the engine straight after this parser.
+  for (const k of MERCHANT_LISTS) if (m[k] !== undefined && !strArr(m[k])) errors.push(`merchant.${k} must be a list of text values.`);
+  const site = d.website as { embeds?: unknown; catalogue?: unknown } | null | undefined;
+  const rows: Record<string, unknown> = { peers: d.peers, orders: d.orders, bankCredits: d.bankCredits, externalSightings: d.externalSightings, 'website.embeds': site?.embeds, 'website.catalogue': site?.catalogue };
+  for (const [k, v] of Object.entries(rows)) if (v !== undefined && v !== null && !(Array.isArray(v) && v.every(x => !!x && typeof x === 'object'))) errors.push(`${k} must be a list of objects.`);
 
   // transactions
   if (!Array.isArray(d.transactions) || !d.transactions.length) errors.push('"transactions" must be a non-empty list.');
@@ -188,14 +252,19 @@ export function datasetToScenario(raw: unknown): ParseResult {
     if (!isStr(t.id)) errors.push(`${at}: "id" is required.`); else if (ids.has(t.id)) errors.push(`${at}: duplicate id.`); else ids.add(t.id);
     if (!TYPES.includes(t.type)) errors.push(`${at}: "type" must be one of ${TYPES.join(', ')}.`);
     if (!isNum(t.amount) || t.amount < 0) errors.push(`${at}: "amount" must be a positive number in rupees.`);
-    else if (t.amount > MAX_AMOUNT) errors.push(`${at}: "amount" is above ₹${MAX_AMOUNT.toLocaleString('en-IN')}; check the units (rupees, not paise).`);
+    else {
+      // A settlement or payout is a batch of payments, so it gets a batch-sized limit.
+      const cap = t.type === 'SETTLEMENT' || t.type === 'TRANSFER' ? maxSettlementRupees : maxPaymentRupees;
+      if (t.amount > cap) errors.push(`${at}: "amount" is above ₹${cap.toLocaleString('en-IN')}; check the units (rupees, not paise).`);
+    }
     const channel = normalizeChannel(t.channel);
     if (!channel) errors.push(`${at}: "channel" must be one of ${CHANNELS.join(', ')} (UPI is also accepted as UPI_LINK).`);
     if (!isStr(t.merchantId)) errors.push(`${at}: "merchantId" is required.`);
-    const time = Date.parse(t.time);
+    const time = instant(t.time);
     if (!isStr(t.time) || Number.isNaN(time)) errors.push(`${at}: "time" must be an ISO date-time, e.g. 2026-10-18T19:42:10+05:30.`);
+    for (const f of TEXT_FIELDS) if (t[f] !== undefined && t[f] !== null && typeof t[f] !== 'string') errors.push(`${at}: "${f}" must be text.`);
     if (errors.length > 25) return;
-    const settle = t.settledAt ? Date.parse(t.settledAt) : undefined;
+    const settle = t.settledAt ? instant(t.settledAt) : undefined;
     const payerRef = t.payerId ?? '—', payerHash = t.payerId ? hashId(t.payerId) : '—';
     const ev: PaymentEvent = {
       id: t.id, merchantId: t.merchantId, type: t.type, amount: t.amount, eventTime: time,
@@ -235,7 +304,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
   });
   if (weekly.length < 6) warnings.push('Fewer than 6 weeks of history: baselines and CUSUM will be less reliable.');
 
-  const fixtures = (d.matchFixtures ?? []).map(Date.parse).filter(x => !Number.isNaN(x));
+  const fixtures = (d.matchFixtures ?? []).map(instant).filter(x => !Number.isNaN(x));
   if ((d.matchFixtures ?? []).length !== fixtures.length) warnings.push('Some matchFixtures could not be read as dates and were skipped.');
 
   
@@ -249,15 +318,26 @@ export function datasetToScenario(raw: unknown): ParseResult {
   if (pv && !(isNum(pv.contacted) && isNum(pv.confirmed) && Number.isInteger(pv.contacted) && Number.isInteger(pv.confirmed) && pv.contacted > 0 && pv.confirmed >= 0 && pv.confirmed <= pv.contacted))
     errors.push('purchaserVerification needs whole numbers with 0 ≤ confirmed ≤ contacted and contacted > 0.');
   if (coverage.calendar === 'AVAILABLE' && !fixtures.length) warnings.push('The match calendar is marked AVAILABLE but has no fixtures; calendar checks will be UNKNOWN.');
+  const filed = Array.isArray(d.contextPassports) ? d.contextPassports : [];
+  filed.forEach((p, i) => passportErrors(p).forEach(e => errors.push(`contextPassports[${i}]: ${e}`)));
+  if (new Set(filed.map(p => p?.id)).size !== filed.length) errors.push('contextPassports: each passport needs its own id.');
+  const passports = trustPassports ? filed : filed.map(asSubmitted);
+  if (d.contextPassports !== undefined && !Array.isArray(d.contextPassports)) errors.push('contextPassports must be a list.');
   if (errors.length) return { ok: false, errors, warnings };
+  if (!RULES.knowsCategory(profile.mcc)) warnings.push(`MCC ${profile.mcc} has no category norm: category tests will abstain rather than guess. Only category-free tests run.`);
+  const weeklyReconciled = reconcile(own, weekly);
+  if (weeklyReconciled === false) warnings.push('weeklySales does not match the transaction ledger for the last 14 days, so volume evidence (H1, H2) will be UNKNOWN.');
 
   const web = {
     embeds: (d.website?.embeds ?? []).map((e, i) => ({ ...e, id: e.id || `EMB-${String(i + 1).padStart(3, '0')}` })),
     catalogue: d.website?.catalogue ?? [],
   };
   const peers = d.peers ?? [];
+  const supplied = drawable(d.graph) ? d.graph : undefined;
+  if (d.graph && !supplied) warnings.push('The supplied graph could not be drawn, so one was built from the ledger.');
   const sc: Scenario = {
     id: 'custom',
+    passports, weeklyReconciled,
     title: d.title ?? profile.name,
     subtitle: 'Uploaded dataset',
     blurb: d.description ?? `Dataset for ${profile.name}, ${profile.city}.`,
@@ -269,7 +349,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
     orders: d.orders ?? [],
     verification: d.purchaserVerification ?? null,
     bankCredits: (d.bankCredits ?? []).map(b => ({ amount: b.amount, beneficiaryHash: hashId(b.beneficiaryAccount) })),
-    graph: d.graph ?? autoGraph(profile, events, web.embeds, peers),
+    graph: supplied ?? autoGraph(profile, events, web.embeds, peers),
     synthetic: d.description ?? 'Uploaded dataset',
     footprint: d.businessFootprint ?? null,
     sightings: d.externalSightings ?? [],

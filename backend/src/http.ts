@@ -1,16 +1,18 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, openInvestigationWithStage2, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, switchDemoRole, userCount, type Actor, type Role } from './auth';
+import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigationWithStage2, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
+import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
 import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
 import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 import { detectRings } from '../../engine/ringDetector';
+import { listPassports, proposePassport, reviewPassport, revokePassport } from './passports';
 import { getCase } from './store';
+import { atomic } from './integrity';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
-const LIMIT = 2_000_000;
+const LIMIT = 6_000_000;
 
 /** Per-client token bucket: 60 requests per minute. ponytail: in-memory, per process; move to a shared store with >1 API process. */
 const buckets = new Map<string, { tokens: number; at: number }>();
@@ -27,7 +29,7 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
   for await (const chunk of req) {
     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     n += buf.length;
-    if (n > LIMIT) throw Object.assign(new Error('Body is larger than 2 MB.'), { status: 413 });
+    if (n > LIMIT) throw Object.assign(new Error('Body is larger than 6 MB. Use batch mode for bigger ledgers.'), { status: 413 });
     chunks.push(buf);
   }
   if (!n) return {};
@@ -46,7 +48,7 @@ function send(res: ServerResponse, reply: ApiReply, headers: Record<string, stri
   res.end(json);
 }
 
-/** One router for the local server and the Vercel function. */
+/** One router for the local server and the Vercel / Netlify function. */
 export async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const ip = req.socket.remoteAddress ?? 'local';
@@ -74,13 +76,6 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/auth/logout' && method === 'POST') { if (token) logout(token); return send(res, { status: 200, body: { ok: true } }, { 'set-cookie': clearCookie() }); }
     if (path === '/auth/me' && method === 'GET') return send(res, { status: 200, body: { user: actor } });
-    if (path === '/auth/demo-switch' && method === 'POST') {
-      if (!actor) return send(res, { status: 401, body: { error: 'Sign in first before switching demo roles.' } });
-      const b = await readBody(req) as { role?: unknown };
-      const switched = typeof b.role === 'string' ? switchDemoRole(b.role as Role) : null;
-      if (!switched) return send(res, { status: 400, body: { error: 'Role must be analyst, reviewer, legal, or admin.' } });
-      return send(res, { status: 200, body: { user: switched.actor } }, { 'set-cookie': sessionCookie(switched.token) });
-    }
     if (path === '/rules/status' && method === 'GET') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to view self-improvement status.' } });
       return send(res, getRulesStatus());
@@ -88,17 +83,18 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (path === '/rules/proposals/run' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to run the red-team improver.' } });
       const b = await readBody(req) as { mode?: string };
-      return send(res, runImproverProposal(actor, b.mode === 'self' ? 'self' : 'mre-improver'));
+      return send(res, runImproverProposal(actor, b.mode === 'calibration' ? 'calibration' : 'threshold'));
     }
     if (path === '/rules/rollback' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to roll back rules.' } });
-      return send(res, rollbackRulesLive(actor));
+      const b = await readBody(req);
+      return send(res, atomic(() => rollbackRulesLive(actor, b)));
     }
     const rulesMatch = path.match(/^\/rules\/proposals\/([^/]+)\/(approve|promote)$/);
     if (rulesMatch && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to approve or promote rule proposals.' } });
       const [, propId, propAction] = rulesMatch;
-      return send(res, propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor));
+      return send(res, atomic(() => (propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor))));
     }
     if (path === '/model' && method === 'GET') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to see the model sandbox.' } });
@@ -142,7 +138,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       return send(res, { status: 200, body: { count: results.length, rings, cases: results } });
     }
 
-    const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit))?)?$/);
+    const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit|passport|passport-review|passport-revoke))?)?$/);
     if (!match) return send(res, { status: 404, body: { error: 'Unknown route.' } });
     if (!actor) return send(res, { status: 401, body: { error: 'Sign in to use the investigation API.' } });
     const [, id, action] = match;
@@ -158,16 +154,20 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (action === 'trace') return send(res, await caseTrace(id));
       if (action === 'pack') return send(res, evidencePack(id, actor));
       if (action === 'audit') return send(res, auditStatus(id));
+      if (action === 'passport') return send(res, listPassports(id));
       return send(res, { status: 405, body: { error: 'Use POST for this step.' } });
     }
     if (method !== 'POST' || !action) return send(res, { status: 405, body: { error: 'Use GET for the case, or POST review, response, approve, label or summary.' } });
     const body = await readBody(req);
-    const reply = action === 'review' ? reviewInvestigation(id, body, actor)
+    // One transaction: a decision and its audit entry are written together or not at all.
+    const reply = action === 'summary' ? await summarise(id, actor) : atomic(() => action === 'review' ? reviewInvestigation(id, body, actor)
       : action === 'response' ? respondInvestigation(id, body, actor)
-      : action === 'approve' ? approveInvestigation(id, body, actor)
+      : action === 'approve' ? approveInvestigation(id, body, actor, true)
       : action === 'label' ? labelInvestigation(id, body, actor)
-      : action === 'summary' ? await summarise(id, actor)
-      : { status: 405, body: { error: 'Unknown step.' } };
+      : action === 'passport' ? proposePassport(id, body, actor)
+      : action === 'passport-review' ? reviewPassport(id, body, actor)
+      : action === 'passport-revoke' ? revokePassport(id, body, actor)
+      : { status: 405, body: { error: 'Unknown step.' } });
     send(res, reply);
   } catch (err) {
     const status = (err as { status?: number }).status ?? 500;

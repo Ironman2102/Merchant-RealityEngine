@@ -4,17 +4,17 @@ import { effWeight } from './evidenceFusion';
 
 const LEGIT: [string, string, string[]][] = [
   ['Seasonal or promotional demand explains the volume', 'Festival or campaign growth would sit near the seasonal expectation.', ['H1']],
-  ['Customers are genuine and local', 'Payers come from the service area, and independent purchasers recognise their orders.', ['B6', 'B9']],
+  ['Customers are genuine and local', 'Payers come from the service area, and independent purchasers recognise their orders.', ['B6', 'B9', 'B8', 'B10']],
   ['Baskets fit the declared products', 'Ticket sizes follow the menu or catalogue, without round-number heaping.', ['A1', 'A4', 'G2']],
   ['Orders and fulfilment are verified', 'Payments link to orders that were produced and delivered.', ['D10', 'F7']],
-  ['Funding follows business hours and demand', 'Collections track trading hours, not external event calendars.', ['C2', 'C5', 'H3']],
+  ['Funding follows business hours and demand', 'Collections track trading hours, not external event calendars.', ['C2', 'C5', 'H3', 'C6']],
   ['Refunds reconcile to original sales', 'Each refund returns to the payer who paid.', ['D7', 'D9']],
   ['Settlements are stable and explained', 'One beneficiary, reconciled to bank credits, no handoffs.', ['F5', 'F2', 'F8']],
   ['Payment links sit on declared channels only', 'Checkout appears only on the merchant’s own domain.', ['G6', 'E1']],
 ];
 const FRONT: [string, string, string[]][] = [
   ['Undeclared offering behind retail credentials', 'The merchant’s payment link is used on a page for a different business.', ['G6', 'E1']],
-  ['Coordinated funding events', 'Payments cluster around external triggers and form a joint off-profile population.', ['C5', 'H3']],
+  ['Coordinated funding events', 'Payments cluster around external triggers and form a joint off-profile population.', ['C5', 'H3', 'C6', 'B8', 'B10']],
   ['Disguised collection', 'Ticket sizes, payer geography and hours are off the declared profile.', ['A1', 'A4', 'B6', 'C2']],
   ['Refunds as a return or onward channel', 'Refunds without sales, to other destinations, or fan-out payouts.', ['D7', 'D9', 'I2']],
   ['Settlement or account manoeuvres', 'Beneficiary changes, lifecycle handoffs or continuity with a dormant peer.', ['F5', 'F2', 'E3']],
@@ -36,7 +36,7 @@ function verdictFor(ev: EvidenceItem[], mode: 'legit' | 'front'): ChainVerdict {
   return 'UNVERIFIED';
 }
 
-export function buildReview(evidence: EvidenceItem[], fusion: FusionResult): AnalystReview {
+export function buildReview(evidence: EvidenceItem[], fusion: FusionResult, suspectLinks: string[]): AnalystReview {
   const get = (ids: string[]) => evidence.filter(e => ids.includes(e.id));
   const mk = (rows: [string, string, string[]][], mode: 'legit' | 'front'): ChainItem[] => rows.map(([label, detail, evidenceIds]) => ({ label, detail, evidenceIds, verdict: verdictFor(get(evidenceIds), mode) }));
   const legit = mk(LEGIT, 'legit'), front = mk(FRONT, 'front');
@@ -57,5 +57,9 @@ export function buildReview(evidence: EvidenceItem[], fusion: FusionResult): Ana
   if (fusion.decision === 'OPEN_CASE' && legitStatus === 'INCONCLUSIVE' && recommended > 'L2') recommended = 'L2';
   if (fusion.decision === 'OPEN_CASE' && top.id === 'FABRICATED_SUBSTANCE' && recommended > 'L2') recommended = 'L2';
   reasoning.push(fusion.decisionAnalysis.reason);
+  if (recommended === 'L3' && !suspectLinks.length) {
+    recommended = 'L2';
+    reasoning.push('No single QR or link can be identified as the suspect flow. Disabling the main one would shut the shop, so the engine recommends due diligence (L2); anything stronger is for people to decide.');
+  }
   return { legit, front, legitStatus, frontFit, reasoning, recommended };
 }

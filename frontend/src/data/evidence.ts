@@ -1,19 +1,18 @@
 import type { Family, Mechanism } from '../types/evidence';
 import type { LayerId, ResponseLevel } from '../types/investigation';
 
-export const FAMILIES: { id: Family; name: string; short: string; patterns: number }[] = [
-  { id: 'A', name: 'Ticket size and menu fit', short: 'Ticket', patterns: 12 },
-  { id: 'B', name: 'Payer behaviour and geography', short: 'Payer / geo', patterns: 14 },
-  { id: 'C', name: 'Timing and seasonality', short: 'Timing', patterns: 12 },
-  { id: 'D', name: 'Money-flow shape and refunds', short: 'Money flow', patterns: 14 },
-  { id: 'E', name: 'Cross-merchant cohorts and networks', short: 'Networks', patterns: 12 },
-  { id: 'F', name: 'Settlement and lifecycle', short: 'Settlement', patterns: 12 },
-  { id: 'G', name: 'Catalogue, website and payment-link provenance', short: 'Provenance', patterns: 14 },
-  { id: 'H', name: 'Drift, blending and rotation', short: 'Drift', patterns: 12 },
-  { id: 'I', name: 'Other abuse', short: 'Other', patterns: 10 },
-  { id: 'K', name: 'Declared profile vs category norm', short: 'Declared', patterns: 1 },
+export const FAMILIES: { id: Family; name: string; short: string }[] = [
+  { id: 'A', name: 'Ticket size and menu fit', short: 'Ticket' },
+  { id: 'B', name: 'Payer behaviour and geography', short: 'Payer / geo' },
+  { id: 'C', name: 'Timing and seasonality', short: 'Timing' },
+  { id: 'D', name: 'Money-flow shape and refunds', short: 'Money flow' },
+  { id: 'E', name: 'Cross-merchant cohorts and networks', short: 'Networks' },
+  { id: 'F', name: 'Settlement and lifecycle', short: 'Settlement' },
+  { id: 'G', name: 'Catalogue, website and payment-link provenance', short: 'Provenance' },
+  { id: 'H', name: 'Drift, blending and rotation', short: 'Drift' },
+  { id: 'I', name: 'Other abuse', short: 'Other' },
+  { id: 'K', name: 'Declared profile vs category norm', short: 'Declared' },
 ];
-export const TOTAL_PATTERNS = FAMILIES.reduce((s, f) => s + f.patterns, 0); // 112
 
 export const MECHANISMS: { id: Mechanism; name: string; blurb: string }[] = [
   { id: 'ROTATION', name: 'Rotation', blurb: 'Collection moves between accounts or merchants to evade monitoring.' },

@@ -54,7 +54,7 @@ def main() -> None:
     y = df['label'].to_numpy()
     test_ids = set(pd.read_csv(ROOT / 'ml' / 'data' / 'test_ids.csv')['merchant_id'].astype(str))
     held = df['merchant_id'].astype(str).isin(test_ids).to_numpy()
-    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total'}
+    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
     cols = [c for c in df.columns if c not in drop_cols and not c.startswith('cov_') and not c.startswith('unk_')]
     X_df = df[cols].copy()
     train = ~held

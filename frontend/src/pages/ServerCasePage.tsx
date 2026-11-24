@@ -24,7 +24,7 @@ export const CASE_VIEWS = Object.keys(VIEWS);
 export function ServerCasePage() {
   const { id = '', view = 'investigations' } = useParams();
   const [params, setParams] = useSearchParams();
-  const { caseId, loadCase, syncError, running } = useInvestigation();
+  const { caseId, loadCase, syncError, running, user } = useInvestigation();
   const [item, setItem] = useState<PilotCase | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,12 +55,22 @@ export function ServerCasePage() {
       <Link to="/ai-engine" className="inline-flex items-center gap-2 text-sm font-medium text-mute hover:text-ink"><ArrowLeft size={14} />All investigations</Link>
       <div className="flex items-center gap-2">
         <span className="font-mono text-xs text-mute">{item.id} · saved {new Date(item.createdAt).toLocaleString()}</span>
-        {res && <Badge tone={res.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{res.decision === 'OPEN_CASE' ? `${res.priority} review` : 'No case opened'}</Badge>}
+        {res && (user.label === 'ADJUDICATED_BENIGN'
+          ? <Badge tone="ok">Cleared on review</Badge>
+          : <Badge tone={res.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{res.decision === 'OPEN_CASE' ? `${res.priority} review` : 'No case opened'}</Badge>)}
         <Btn size="sm" onClick={() => void load()} disabled={loading || running}><RefreshCw size={13} />Refresh</Btn>
       </div>
     </div>
     {syncError && <Callout tone="warn" title="Not saved">{syncError}</Callout>}
     <div className="no-print rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs leading-relaxed text-amber-900">Saved case: notes, responses and labels you record below are written to the case record and its audit history. Nothing here acts on payment rails.</div>
+    {!!item.history?.some(h => !h.label && (h.decision === 'OPEN_CASE' || h.followUp === 'ASK')) && <div role="status" className="no-print rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs text-amber-900">
+      <b>Still open on this merchant:</b>{' '}
+      {item.history.filter(h => !h.label && (h.decision === 'OPEN_CASE' || h.followUp === 'ASK')).map((h, i) => <span key={h.id}>{i > 0 && ' · '}<Link className="underline" to={`/ai-engine/cases/${h.id}`}>{h.id}</Link> {h.decision === 'OPEN_CASE' ? 'case' : 'question'}</span>)}. This file does not close them.
+    </div>}
+    {!!item.history?.some(h => h.label) && <div role="status" className="no-print rounded-lg border border-line bg-panel2 px-4 py-2.5 text-xs">
+      <b>Earlier decisions on this merchant:</b>{' '}
+      {item.history.filter(h => h.label).map((h, i) => <span key={h.id}>{i > 0 && ' · '}<Link className="underline" to={`/ai-engine/cases/${h.id}`}>{h.id}</Link> {h.label === 'ADJUDICATED_BENIGN' ? 'cleared on review' : h.label === 'CONFIRMED_ILLICIT' ? 'confirmed illicit' : 'unresolved'}</span>)}
+    </div>}
     <View />
   </div>;
 }

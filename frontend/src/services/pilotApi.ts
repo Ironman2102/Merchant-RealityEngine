@@ -4,16 +4,28 @@ export interface PilotCaseSummary {
   merchant: { id: string; name: string; category: string; city: string };
   result: { decision: string; priority: string; recommended: string; legitStatus: string; posterior?: number };
   user: { executed: boolean; label: string | null };
+  auditIntact?: boolean;
   workflow: { layer: number; code: string; name: string; state: 'done' | 'waiting' | 'blocked'; summary: string }[];
 }
 
 import type { Scenario } from '../types/merchant';
+import type { InvestigationResult } from '../types/investigation';
+
+/** The stored result, minus the scenario and events that travel beside it. */
+export type ServerInvestigation = Omit<InvestigationResult, 'scenario' | 'events'>;
 
 /** The server's view of the human side of a case. Local state is replaced by this after every write. */
 export interface ServerUser {
   user: { notes: string; clarification: string; chosenLevel: string | null; legalVerified: boolean; escrowConfirmed: boolean; executed: boolean; label: string | null };
   audit: { seq?: number; at: string; actor: string; action: string; detail: string; prevHash?: string; hash?: string }[];
   auditIntact?: boolean;
+  scenario?: Scenario;
+  investigation?: ServerInvestigation;
+  /** The action now in force. A proposal does not change it. */
+  inForce?: { id: string; level: string; actions: string[]; restricts: boolean } | null;
+  /** Every restriction in force on this merchant, from any of its cases. */
+  restrictions?: { caseId: string; id: string; level: string; actions: string[] }[];
+  history?: { id: string; createdAt: string; decision: string; followUp?: string; label: string | null }[];
   pending?: { response?: { level: string; by: { id: number; username: string }; at: string }; label?: { label: string; by: { id: number; username: string }; at: string } };
 }
 export type PilotCase = ServerUser & { id: string; createdAt: string; scenario: Scenario; [k: string]: unknown };
@@ -32,7 +44,7 @@ export async function getPilotCase(id: string): Promise<PilotCase> {
   return body;
 }
 
-export async function updatePilotCase(id: string, action: 'review' | 'response' | 'label' | 'approve', payload: Record<string, unknown>): Promise<Record<string, any>> {
+export async function updatePilotCase(id: string, action: 'review' | 'response' | 'label' | 'approve' | 'passport' | 'passport-review' | 'passport-revoke', payload: Record<string, unknown>): Promise<Record<string, any>> {
   const response = await fetch(`/api/investigations/${encodeURIComponent(id)}/${action}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
   });
@@ -55,7 +67,7 @@ export async function signIn(username: string, password: string): Promise<Sessio
 }
 export const signOut = () => fetch('/api/auth/logout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
 
-export async function approvePilotCase(id: string, approve: boolean, extra: { escrowConfirmed?: boolean; reason?: string } = {}) {
+export async function approvePilotCase(id: string, approve: boolean, extra: { escrowConfirmed?: boolean; reason?: string; proposedAt?: string; level?: string } = {}) {
   return updatePilotCase(id, 'approve', { approve, ...extra });
 }
 export async function getPilotJson(id: string, what: 'trace' | 'pack' | 'audit'): Promise<Record<string, any>> {

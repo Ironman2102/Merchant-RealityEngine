@@ -6,7 +6,7 @@ import { LayerFrame } from '../../components/common/LayerFrame';
 import { RecordPeek } from '../../components/common/RecordPeek';
 import { Badge, Bar, Callout, Panel, StatusBadge, Tabs, Mono, statusTone } from '../../components/ui/ui';
 import { CusumChart, HourChart, StateBars, TicketHistogram } from '../../components/charts/charts';
-import { FAMILIES, TOTAL_PATTERNS } from '../../data/evidence';
+import { FAMILIES } from '../../data/evidence';
 import { CUSUM_H, CUSUM_K } from '../../engines/cusumEngine';
 import { EPSILON } from '../../engines/residualEngine';
 import { inrK, pct, cx } from '../../utils/format';
@@ -27,14 +27,14 @@ export function L3View() {
     <LayerFrame
       n={3}
       brief={{
-        checks: 'Runs 25 behavioural checks across 10 areas (ticket amounts, customer states, payment hours, refunds, links, settlements, and drift). A check only flags when the gap is both statistically real and large enough to matter in practice.',
+        checks: `Runs ${r.evidence.length} behavioural checks across ${FAMILIES.length} areas (ticket amounts, customer states, payment hours, refunds, links, settlements, and drift) on the account and on each QR with 30+ payments. A check only flags when the gap is both statistically real and large enough to matter in practice.`,
         happened: (
           <>
             <b>{cnt('ILLICIT')} red flag(s)</b>, <b>{cnt('BENIGN')} normal check(s)</b>, and <b>{cnt('UNKNOWN')} skipped (no data)</b>.
             {fired.length > 0 ? <> Top red flags: <b>{fired.slice(0, 2).map(e => e.name).join(' & ')}</b>.</> : ' Every available check looked normal for this business.'}
           </>
         ),
-        whyItMatters: 'Individual checks only report observations—not guilt. Next, L4 combines these signals, removes double-counting within the same category, and tests whether independent proof agrees.',
+        whyItMatters: 'Individual checks only report observations—not guilt. Next, L4 combines these signals, reduces double-counting within the same category, and tests whether independent proof agrees.',
       }}
     >
       {quant && (
@@ -61,7 +61,7 @@ export function L3View() {
         {vis === 'timing' && <><HourChart sales={sales} fixtures={r.scenario.fixtures} profile={r.l2.profile} /><p className="text-xs text-mute">{r.scenario.fixtures.length ? 'Red bars mark payments in the 45 minutes before a cricket match starts, compared against the same clock time on non-match days.' : 'Green lines mark declared opening hours.'}</p></>}
         {vis === 'geo' && <><StateBars sales={sales} local={r.l2.profile.catchment === 'LOCAL' ? r.l2.profile.localStates : []} /><p className="text-xs text-mute">Green: customers in the merchant’s local service area. Red: customers from far-away states.</p></>}
       </Panel>
-      <Panel title="Filter checks by evidence family" subtitle={`25 live statistical checks across ${FAMILIES.length} families (${TOTAL_PATTERNS} total catalogued patterns). Click a family to filter the list below.`}>
+      <Panel title="Filter checks by evidence family" subtitle={`${r.evidence.length} live checks across ${FAMILIES.length} families, measured on: ${r.scope.label}. Click a family to filter the list below.`}>
         <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
           {FAMILIES.map(f => {
             const x = r.evidence.filter(e => e.family === f.id), il = x.filter(e => e.status === 'ILLICIT').length, be = x.filter(e => e.status === 'BENIGN').length, un = x.filter(e => e.status === 'UNKNOWN').length;
@@ -105,7 +105,7 @@ export function L3View() {
               </div>)}
           </div>))}
       </Panel>
-      <Callout tone="info" title="Why L3 does not open a case on its own">Checks here only gather facts. Combining them safely—without double-counting related signals or punishing missing feeds—happens next in L4.</Callout>
+      <Callout tone="info" title="Why L3 does not open a case on its own">Checks here only gather facts. Combining them safely—with less weight for related signals or punishing missing feeds—happens next in L4.</Callout>
     </LayerFrame>
   );
 }

@@ -13,7 +13,7 @@ const DIWALI = '04-anand-sweets-diwali-genuine.json', CHAI = '05-chai-corner-nig
 const KIRANA = '08-nandi-kirana-genuine.json';
 const own = (d: D, type?: string) => d.transactions.filter((t: D) => t.merchantId === d.merchant.id && (!type || t.type === type));
 
-interface Case { name: string; base: string; should: 'OPEN_CASE' | 'NO_CASE' | 'REJECT' | 'NO_CRASH'; mutate: (d: D) => void; known?: string }
+interface Case { name: string; base: string; should: 'OPEN_CASE' | 'ASK' | 'NO_CASE' | 'REJECT' | 'NO_CRASH'; mutate: (d: D) => void; known?: string }
 const CASES: Case[] = [
   { name: 'baseline: betting front unchanged', base: BET, should: 'OPEN_CASE', mutate: () => {} },
   { name: 'baseline: genuine sweets unchanged', base: GOOD, should: 'NO_CASE', mutate: () => {} },
@@ -32,7 +32,9 @@ const CASES: Case[] = [
     mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); } },
   { name: 'quiet launderer: + website feed missing', base: BET, should: 'OPEN_CASE',
     mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING' }; delete d.website; } },
-  { name: 'quiet launderer: + no match calendar', base: BET, should: 'OPEN_CASE',
+  // Changed 22 Nov 2026 from OPEN_CASE, openly: with no repeats, refunds, crawl or calendar, what is left (round amounts,
+  // distant payers) is indistinguishable from an honest change. The old case rested on counting the same traits twice.
+  { name: 'quiet launderer: + no match calendar (a question, not a case)', base: BET, should: 'ASK',
     mutate: d => { d.transactions = d.transactions.filter((t: D) => !(t.merchantId === d.merchant.id && (t.type === 'REFUND' || t.type === 'TRANSFER'))); own(d, 'SETTLEMENT').forEach((t: D) => { t.beneficiaryAccount = 'BEN-STABLE'; }); d.dataAvailability = { ...d.dataAvailability, website: 'MISSING' }; delete d.website; d.matchFixtures = []; d.dataAvailability.calendar = 'MISSING'; } },
   { name: 'acquirer-only feed: betting front, every non-acquiring source MISSING', base: BET, should: 'OPEN_CASE',
     mutate: d => { d.dataAvailability = { acquiring: 'AVAILABLE', website: 'MISSING', orders: 'MISSING', bank: 'MISSING', fulfillment: 'MISSING', calendar: 'MISSING', verification: 'MISSING' }; delete d.website; d.orders = []; d.bankCredits = []; d.purchaserVerification = null; d.matchFixtures = []; } },
@@ -99,7 +101,7 @@ for (const c of CASES) {
     else {
       const f = r.result.fusion;
       const nan = JSON.stringify(r.result.evidence.map(e => e.strength)).includes('null') || Number.isNaN(f.priorityScore);
-      got = f.decision; detail = `${f.priority} score=${f.priorityScore.toFixed(2)} P=${f.posterior.toExponential(1)} fam=${f.independentFamilies.join('')} sys=${f.systems.length} ill=${r.result.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id).join(',')}${nan ? ' NaN!' : ''}`;
+      got = c.should === 'ASK' && f.decision === 'NO_CASE' && f.followUp === 'ASK' ? 'ASK' : f.decision; detail = `${f.priority} score=${f.priorityScore.toFixed(2)} P=${f.posterior.toExponential(1)} fam=${f.independentFamilies.join('')} sys=${f.systems.length} ill=${r.result.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id).join(',')}${nan ? ' NaN!' : ''}`;
       if (nan) got = 'NAN';
     }
   } catch (e) { got = 'CRASH'; detail = (e as Error).message.slice(0, 120); }

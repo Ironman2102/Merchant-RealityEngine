@@ -19,8 +19,8 @@ def main() -> None:
     df = pd.read_csv(DATA)
     y = df['label'].to_numpy()
     ids = df['merchant_id']
-    # Drop Bayesian output leakage (posterior, prior, logodds_total) and missingness shortcuts (cov_*, unk_*)
-    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total'}
+    # Drop Bayesian output leakage (posterior, prior, logodds_total), account age, and missingness shortcuts (cov_*, unk_*)
+    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
     cols = [c for c in df.columns if c not in drop_cols and not c.startswith('cov_') and not c.startswith('unk_')]
     X = df[cols].copy()
     mono = [1 if c.startswith('llr_') or c.startswith('fired_') else 0 for c in cols]

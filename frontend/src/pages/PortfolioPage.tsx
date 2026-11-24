@@ -4,6 +4,7 @@ import { ChevronRight, Download, FileUp, GitFork, ShieldAlert, ShieldCheck, Slid
 import { usePortfolio, type PortfolioEntry } from '../hooks/usePortfolio';
 import { useInvestigation } from '../hooks/useInvestigation';
 import { MECHANISMS } from '../data/evidence';
+import { verdictKind } from '../engines/verdict';
 import { LADDER } from '../engines/patternPack';
 import { computeMerchantReality } from '../components/investigation/ClaimedVsReality';
 import { scorePortfolio } from '../../../engine/portfolio';
@@ -21,7 +22,9 @@ export const verdictOf = (e: PortfolioEntry) => {
   const f = e.result.fusion, top = [...f.mechanisms].sort((a, b) => b.score - a.score)[0];
   return e.suspicious
     ? { label: 'Suspicious', tone: 'bad' as const, reason: MECHANISMS.find(m => m.id === top.id)!.name, priority: f.priority }
-    : { label: 'Cleared', tone: 'ok' as const, reason: e.result.evidence.some(x => x.status === 'ILLICIT') ? 'Alarm explained by genuine activity' : 'Behaves like the declared business', priority: 'NONE' as const };
+    : verdictKind(e.result) === 'ask'
+      ? { label: 'Ask', tone: 'warn' as const, reason: 'A change that needs explaining', priority: 'NONE' as const }
+      : { label: 'No case', tone: 'ok' as const, reason: e.result.evidence.some(x => x.status === 'ILLICIT') ? 'Alarm explained by genuine activity' : 'Nothing contradicts the declared business', priority: 'NONE' as const };
 };
 
 export function PortfolioPage() {

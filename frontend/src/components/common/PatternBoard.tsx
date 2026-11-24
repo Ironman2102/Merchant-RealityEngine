@@ -4,7 +4,7 @@ import type { InvestigationResult } from '../../types/investigation';
 import type { Label } from '../../types/merchant';
 import type { EvidenceItem } from '../../types/evidence';
 import { FAMILIES } from '../../data/evidence';
-import { LADDER, PASSPORT_REASONS, checkPassport, runPatternPack, type PassportReason, type PatternResult, type PatternStatus } from '../../engines/patternPack';
+import { LADDER, runPatternPack, type PatternResult, type PatternStatus } from '../../engines/patternPack';
 import { Panel, Tabs } from '../ui/ui';
 import { cx } from '../../utils/format';
 
@@ -43,20 +43,13 @@ function Card({ r, children }: { r: Row; children?: React.ReactNode }) {
 }
 
 function Passport({ res }: { res: InvestigationResult }) {
-  const [reason, setReason] = useState<PassportReason | null>(null);
-  const out = reason ? checkPassport(res, reason) : null;
+  const conduct = res.evidence.filter(e => e.status === 'ILLICIT' && e.signal === 'conduct');
+  const change = res.evidence.filter(e => e.status === 'ILLICIT' && e.signal === 'profile');
   return (
-    <div className="mt-3 rounded-md border border-line bg-panel2 p-3">
-      <div className="text-xs font-medium text-ink">Try it: the merchant’s explanation is…</div>
-      <div className="mt-2 flex flex-wrap gap-1.5">{PASSPORT_REASONS.map(r => (
-        <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2.5 py-1 text-xs', reason === r.id ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>))}</div>
-      {out && (
-        <div className="mt-3 space-y-1.5 text-xs">
-          <div className={out.explained ? 'font-medium text-emerald-700' : 'font-medium text-rose-700'}>{out.explained ? 'Explained. Ask for the supporting document, then refresh the profile.' : `Not explained: this reason cannot account for ${out.open.length} signal(s). Escalate to analyst review.`}</div>
-          {out.covered.length > 0 && <div className="text-mute">Covered: {out.covered.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
-          {out.open.length > 0 && <div className="text-mute">Still unexplained: <span className="font-medium text-rose-700">{out.open.map(e => `${e.id} ${e.name}`).join(' · ')}</span></div>}
-          <div className="text-dim">Evidence to request: {out.reason.evidence}</div>
-        </div>)}
+    <div className="mt-3 rounded-md border border-line bg-panel2 p-3 text-xs text-mute">
+      {change.length > 0 && <div>A verified Context Passport could explain: {change.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
+      {conduct.length > 0 && <div className="font-medium text-rose-700">No passport can explain conduct signals: {conduct.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
+      {!change.length && !conduct.length && <div>No profile or conduct anomalies flagged.</div>}
     </div>
   );
 }

@@ -31,6 +31,8 @@ export interface EvidenceItem {
   effect: number | null;      // practical effect size (see test)
   effectLabel: string;        // what `effect` measures
   ci: [number, number] | null;// 90% interval for the observed rate / effect, where defined
+  signal: 'profile' | 'conduct'; // profile = an honest change could explain it; conduct = it could not
+  derived?: boolean;          // built from other detectors, so not independent
   n: number;                  // observations behind the test
   expectedSource: string;     // where the expectation came from (category norm, calendar, peers…)
 }

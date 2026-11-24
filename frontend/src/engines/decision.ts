@@ -11,7 +11,7 @@ import { fmtProb, probEq } from '../utils/format';
 
 const ORDER: ResponseKey[] = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
 
-export function decide(posterior: number, [lo, hi]: [number, number], caseOpen: boolean): DecisionAnalysis {
+export function decide(posterior: number, [lo, hi]: [number, number], caseOpen: boolean, followUp: 'ASK' | 'NONE' = 'NONE'): DecisionAnalysis {
   const C = RULES.costs, maxAuto = ORDER.indexOf(caseOpen ? C.autoRecommendMax : 'L1');
   const el = (a: ResponseKey, p: number) => (1 - p) * C.actions[a].falseAlarmCost + p * C.actions[a].missFactor * C.missCost;
   const actions = ORDER.map((level, i) => ({ level: level as ResponseLevel, label: C.actions[level].label, expectedLoss: el(level, posterior), expectedLossLow: el(level, lo), expectedLossHigh: el(level, hi), autoAllowed: i <= maxAuto }));
@@ -26,6 +26,12 @@ export function decide(posterior: number, [lo, hi]: [number, number], caseOpen: 
       pick = milder;
     }
   }
-  if (!caseOpen) reason += ' No case is open, so only watch-level actions are recommended.';
+  if (!caseOpen) {
+    const level = followUp === 'ASK' ? 'L1' : 'L0';
+    pick = actions.find(a => a.level === level)!;
+    reason = followUp === 'ASK'
+      ? 'No case is open. Ask the merchant what changed (Context Passport); restrict nothing.'
+      : 'No case is open and nothing needs explaining, so the merchant is not contacted.';
+  }
   return { actions, recommended: pick.level, reason };
 }

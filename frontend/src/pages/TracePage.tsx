@@ -34,7 +34,7 @@ export function TracePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h1 className="text-2xl font-semibold tracking-tight">Reasoning trace</h1>
-          <p className="mt-1 text-sm text-mute">{t.caseSummary.merchant} · MCC {t.caseSummary.mcc}. Every number here can be checked by hand from the rows below.</p></div>
+          <p className="mt-1 text-sm text-mute">{t.caseSummary.merchant} · MCC {t.caseSummary.mcc} · measured on {t.scope.label} ({t.scope.sales} sales, {Math.round(t.scope.share * 100)}%). Every number here can be checked by hand from the rows below.</p></div>
         <div className="flex gap-2 print:hidden">
           <Btn size="sm" onClick={() => window.print()}><Printer size={13} />Print</Btn>
           {caseId && <Btn size="sm" variant="primary" onClick={() => void download()}><Download size={13} />Evidence pack (JSON)</Btn>}
@@ -44,7 +44,7 @@ export function TracePage() {
 
       <Panel title="Verdict" subtitle="Probability that this merchant is not the business it declares, with a 90% interval from detector uncertainty.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div><div className="text-xs text-mute">Decision</div><div className="mt-1 flex flex-wrap items-center gap-1.5"><Badge tone={t.caseSummary.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{t.caseSummary.decision === 'OPEN_CASE' ? 'Case opened' : 'No case'}</Badge>{t.caseSummary.abstainRecommended && <Badge tone="warn">Review: [{t.caseSummary.conformalSet.join(' / ')}]</Badge>}</div></div>
+          <div><div className="text-xs text-mute">Decision</div><div className="mt-1 flex flex-wrap items-center gap-1.5"><Badge tone={t.caseSummary.decision === 'OPEN_CASE' ? 'bad' : result.fusion.followUp === 'ASK' ? 'warn' : 'ok'}>{t.caseSummary.decision === 'OPEN_CASE' ? 'Case opened' : result.fusion.followUp === 'ASK' ? 'Ask merchant' : 'No case'}</Badge>{t.caseSummary.abstainRecommended && <Badge tone="warn">Review: [{t.caseSummary.conformalSet.join(' / ')}]</Badge>}</div></div>
           <div><div className="text-xs text-mute">P(front)</div><div className="mt-1 font-mono text-xl">{fmtProb(t.caseSummary.posterior)}</div><div className="text-[11px] text-dim">{fmtInterval(t.caseSummary.ci)}</div></div>
           <div><div className="text-xs text-mute">Base rate</div><div className="mt-1 font-mono text-xl">{fmtProb(t.caseSummary.prior)}</div><div className="text-[11px] text-dim">before any evidence (rules/priors.json)</div></div>
           <div><div className="text-xs text-mute">Recommended</div><div className="mt-1 text-xl font-semibold">{t.caseSummary.action}</div><div className="text-[11px] text-dim">{RESPONSE_LEVELS.find(l => l.id === t.caseSummary.action)?.name}</div></div>

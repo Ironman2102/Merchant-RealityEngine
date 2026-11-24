@@ -1,5 +1,5 @@
 {
- "_note": "Expected behaviour per merchant category. EXPERT PRIORS (est.), not measurements: replaced by portfolio peer baselines when a peer group has >= 10 merchants (plan P9). ticket = lognormal(ln median, sigma). Shares are fractions of sales. offHoursShare = share of sales outside open\u2013close. reviewedOn = when a person last checked the row.",
+ "_note": "Expected behaviour per merchant category. EXPERT PRIORS (est.), not measurements: calibrate on portfolio peers in a shadow pilot. ticket = lognormal(ln median, sigma); shares are fractions of sales. A category that is not listed is UNKNOWN: category-norm tests abstain, and only category-free conduct tests run. The declaration selects this row, so calm results against it earn little credit (engine.json declaredCalmWeight) and can never switch off a conduct test.",
  "default": {
   "name": "Other retail",
   "ticket": {
@@ -23,12 +23,12 @@
  "5462": {
   "name": "Bakeries and sweet shops",
   "ticket": {
-   "median": 600,
-   "sigma": 0.5
+   "median": 550,
+   "sigma": 0.6
   },
   "open": 7,
   "close": 22,
-  "roundShare": 0.06,
+  "roundShare": 0.08,
   "offHoursShare": 0.03,
   "offAreaShare": 0.05,
   "catchment": "LOCAL",
@@ -43,12 +43,12 @@
  "5411": {
   "name": "Grocery and kirana",
   "ticket": {
-   "median": 700,
-   "sigma": 0.6
+   "median": 400,
+   "sigma": 0.9
   },
   "open": 7,
   "close": 22,
-  "roundShare": 0.06,
+  "roundShare": 0.08,
   "offHoursShare": 0.03,
   "offAreaShare": 0.04,
   "catchment": "LOCAL",
@@ -63,14 +63,14 @@
  "5812": {
   "name": "Restaurants",
   "ticket": {
-   "median": 650,
-   "sigma": 0.6
+   "median": 750,
+   "sigma": 0.7
   },
   "open": 7,
-  "close": 23,
+  "close": 24,
   "roundShare": 0.07,
   "offHoursShare": 0.03,
-  "offAreaShare": 0.08,
+  "offAreaShare": 0.2,
   "catchment": "LOCAL",
   "refundRate": 0.02,
   "heavyRepeatShare": 0.03,
@@ -83,11 +83,11 @@
  "5814": {
   "name": "Fast food and tiffin",
   "ticket": {
-   "median": 350,
-   "sigma": 0.5
+   "median": 150,
+   "sigma": 1.0
   },
-  "open": 7,
-  "close": 22,
+  "open": 5,
+  "close": 24,
   "roundShare": 0.04,
   "offHoursShare": 0.03,
   "offAreaShare": 0.06,
@@ -144,7 +144,7 @@
   "name": "Stationery and office supplies",
   "ticket": {
    "median": 350,
-   "sigma": 0.7
+   "sigma": 0.8
   },
   "open": 8,
   "close": 21,
@@ -159,5 +159,645 @@
   "beneficiaryChangesPerYear": 0.3,
   "festivalSector": "retail",
   "reviewedOn": "2026-11-19"
+ },
+ "4121": {
+  "name": "Taxis and cabs",
+  "ticket": {
+   "median": 400,
+   "sigma": 0.9
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.1,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.3,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "4131": {
+  "name": "Bus operators",
+  "ticket": {
+   "median": 700,
+   "sigma": 0.8
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.15,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.45,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.02,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "4814": {
+  "name": "Telecom recharge",
+  "ticket": {
+   "median": 280,
+   "sigma": 0.7
+  },
+  "open": 7,
+  "close": 23,
+  "roundShare": 0.02,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.06,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.55,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "4900": {
+  "name": "Utility bill collection",
+  "ticket": {
+   "median": 1100,
+   "sigma": 1.0
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.1,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.1,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5045": {
+  "name": "Computers and peripherals",
+  "ticket": {
+   "median": 6000,
+   "sigma": 1.2
+  },
+  "open": 9,
+  "close": 22,
+  "roundShare": 0.15,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.2,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.04,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "durables",
+  "reviewedOn": "2026-11-22"
+ },
+ "5122": {
+  "name": "Pharma distribution",
+  "ticket": {
+   "median": 5000,
+   "sigma": 1.2
+  },
+  "open": 7,
+  "close": 22,
+  "roundShare": 0.12,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.15,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.04,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5251": {
+  "name": "Hardware shops",
+  "ticket": {
+   "median": 900,
+   "sigma": 1.1
+  },
+  "open": 8,
+  "close": 21,
+  "roundShare": 0.15,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.06,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5311": {
+  "name": "Department stores",
+  "ticket": {
+   "median": 1200,
+   "sigma": 0.9
+  },
+  "open": 9,
+  "close": 23,
+  "roundShare": 0.12,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.1,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.02,
+  "bonusShare": 0.08,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5422": {
+  "name": "Meat shops",
+  "ticket": {
+   "median": 500,
+   "sigma": 0.7
+  },
+  "open": 6,
+  "close": 22,
+  "roundShare": 0.15,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.04,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.04,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "grocery",
+  "reviewedOn": "2026-11-22"
+ },
+ "5451": {
+  "name": "Dairies",
+  "ticket": {
+   "median": 150,
+   "sigma": 0.9
+  },
+  "open": 5,
+  "close": 22,
+  "roundShare": 0.04,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.03,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.1,
+  "bonusShare": 0.01,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "grocery",
+  "reviewedOn": "2026-11-22"
+ },
+ "5499": {
+  "name": "Food speciality shops",
+  "ticket": {
+   "median": 400,
+   "sigma": 0.8
+  },
+  "open": 6,
+  "close": 23,
+  "roundShare": 0.1,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.06,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.05,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "food",
+  "reviewedOn": "2026-11-22"
+ },
+ "5541": {
+  "name": "Fuel stations",
+  "ticket": {
+   "median": 650,
+   "sigma": 0.9
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.45,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.35,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5542": {
+  "name": "Automated fuel dispensers",
+  "ticket": {
+   "median": 650,
+   "sigma": 0.9
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.45,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.35,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5651": {
+  "name": "Family clothing",
+  "ticket": {
+   "median": 1200,
+   "sigma": 0.7
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.1,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.8,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.5,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-22"
+ },
+ "5691": {
+  "name": "Clothing shops",
+  "ticket": {
+   "median": 1200,
+   "sigma": 0.8
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.12,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.7,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.35,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-22"
+ },
+ "5661": {
+  "name": "Footwear",
+  "ticket": {
+   "median": 1300,
+   "sigma": 0.6
+  },
+  "open": 9,
+  "close": 23,
+  "roundShare": 0.12,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.1,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.25,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-22"
+ },
+ "5732": {
+  "name": "Electronics",
+  "ticket": {
+   "median": 6000,
+   "sigma": 1.1
+  },
+  "open": 9,
+  "close": 22,
+  "roundShare": 0.15,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.12,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.05,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "durables",
+  "reviewedOn": "2026-11-22"
+ },
+ "5813": {
+  "name": "Bars",
+  "ticket": {
+   "median": 1300,
+   "sigma": 0.8
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.12,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.2,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.03,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "food",
+  "reviewedOn": "2026-11-22"
+ },
+ "5912": {
+  "name": "Chemists",
+  "ticket": {
+   "median": 350,
+   "sigma": 1.0
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.07,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.08,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.04,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "5944": {
+  "name": "Jewellers",
+  "ticket": {
+   "median": 30000,
+   "sigma": 1.2
+  },
+  "open": 9,
+  "close": 22,
+  "roundShare": 0.35,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.15,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-22"
+ },
+ "5977": {
+  "name": "Cosmetics",
+  "ticket": {
+   "median": 900,
+   "sigma": 0.8
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.08,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.6,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.25,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-22"
+ },
+ "7011": {
+  "name": "Hotels",
+  "ticket": {
+   "median": 2800,
+   "sigma": 0.8
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.35,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.75,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.05,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "7230": {
+  "name": "Salons",
+  "ticket": {
+   "median": 550,
+   "sigma": 0.7
+  },
+  "open": 8,
+  "close": 22,
+  "roundShare": 0.35,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.05,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.03,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "gifts",
+  "reviewedOn": "2026-11-22"
+ },
+ "7832": {
+  "name": "Cinemas",
+  "ticket": {
+   "median": 450,
+   "sigma": 0.7
+  },
+  "open": 8,
+  "close": 24,
+  "roundShare": 0.18,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.08,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "7941": {
+  "name": "Sports venues",
+  "ticket": {
+   "median": 1100,
+   "sigma": 0.6
+  },
+  "open": 5,
+  "close": 24,
+  "roundShare": 0.55,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.1,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.02,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "7997": {
+  "name": "Gyms and clubs",
+  "ticket": {
+   "median": 2500,
+   "sigma": 0.8
+  },
+  "open": 5,
+  "close": 23,
+  "roundShare": 0.55,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.08,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.06,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "8011": {
+  "name": "Doctors",
+  "ticket": {
+   "median": 700,
+   "sigma": 0.7
+  },
+  "open": 7,
+  "close": 23,
+  "roundShare": 0.5,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.12,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "8062": {
+  "name": "Hospitals",
+  "ticket": {
+   "median": 2000,
+   "sigma": 1.3
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.3,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.25,
+  "catchment": "LOCAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.02,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "8220": {
+  "name": "Colleges",
+  "ticket": {
+   "median": 15000,
+   "sigma": 1.1
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.55,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.4,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.02,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "8299": {
+  "name": "Coaching and education",
+  "ticket": {
+   "median": 5500,
+   "sigma": 1.0
+  },
+  "open": 7,
+  "close": 23,
+  "roundShare": 0.7,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.35,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.005,
+  "bonusShare": 0.06,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "8398": {
+  "name": "Charities",
+  "ticket": {
+   "median": 900,
+   "sigma": 1.3
+  },
+  "open": 0,
+  "close": 24,
+  "roundShare": 0.55,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.8,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.01,
+  "bonusShare": 0.03,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
+ },
+ "8661": {
+  "name": "Religious organisations",
+  "ticket": {
+   "median": 600,
+   "sigma": 1.3
+  },
+  "open": 4,
+  "close": 24,
+  "roundShare": 0.4,
+  "offHoursShare": 0.03,
+  "offAreaShare": 0.45,
+  "catchment": "NATIONAL",
+  "refundRate": 0.03,
+  "heavyRepeatShare": 0.02,
+  "bonusShare": 0.03,
+  "payoutBeneficiaries": 4,
+  "beneficiaryChangesPerYear": 0.3,
+  "festivalSector": "retail",
+  "reviewedOn": "2026-11-22"
  }
 }

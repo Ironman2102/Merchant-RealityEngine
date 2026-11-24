@@ -23,7 +23,7 @@ export function L4View() {
     <LayerFrame
       n={4}
       brief={{
-        checks: 'Combines all L3 checks into a single probability, shrinks correlated red flags inside the same family so they cannot be double-counted, ignores missing feeds (UNKNOWN = 0), and enforces the 2-independent-source / 3-family safety gate.',
+        checks: 'Combines all L3 checks into a single probability, shrinks correlated red flags inside the same family so they count for less, ignores missing feeds (UNKNOWN = 0), and opens a case only when independent evidence includes conduct that a change of business cannot explain.',
         happened: (
           <>
             Started from a <b>{P(f.prior)}</b> category base rate → moved to <b>{P(f.posterior)} front likelihood</b> across <b>{f.independentFamilies.length} evidence families</b> ({f.systems.length} independent data source{f.systems.length === 1 ? '' : 's'}).{' '}
@@ -35,12 +35,12 @@ export function L4View() {
           : 'Without independent corroboration across multiple families, the safety gate protects this merchant from a false alarm.',
       }}
     >
-      <Panel title="How the engine reached this verdict (step by step)" subtitle="Why correlated alerts aren't double-counted and how the safety gate works.">
+      <Panel title="How the engine reached this verdict (step by step)" subtitle="How correlated alerts count for less and how the safety gate works.">
         <div className="grid gap-3 md:grid-cols-3">
           <div className="rounded border border-line bg-panel2 p-3.5 text-sm">
             <div className="text-xs font-medium text-mute">Step 1 · Starting guess (Base rate)</div>
             <div className="mt-1 font-mono text-xl font-semibold">{P(f.prior)}</div>
-            <p className="mt-1 text-xs text-mute">Before seeing any payments, less than {P(Math.max(f.prior, 0.01))} of shops in this category and age group are fake fronts.</p>
+            <p className="mt-1 text-xs text-mute">Before seeing any payments, the expert prior is that {P(f.prior)} of merchants like this are fronts. It is not measured.</p>
           </div>
           <div className="rounded border border-line bg-panel2 p-3.5 text-sm">
             <div className="text-xs font-medium text-mute">Step 2 · Independent evidence added</div>
@@ -55,7 +55,7 @@ export function L4View() {
             <div className="text-xs font-medium text-mute">Step 3 · Safety gate &amp; final likelihood</div>
             <div className="mt-1 font-mono text-xl font-semibold">{P(f.posterior)} · {f.decision === 'OPEN_CASE' ? 'OPEN CASE' : 'NO CASE'}</div>
             <p className="mt-1 text-xs text-mute">
-              Requires ≥ 10% likelihood AND either ≥ 2 independent data sources or ≥ 3 evidence families. Here: {f.systems.length} source(s), {f.independentFamilies.length} families.
+              Requires ≥ 10% likelihood, at least one conduct signal, and independence (2 data sources, 3 families, or 2 different behaviours). Here: {f.systems.length} source(s), {f.independentFamilies.length} families, {f.conductSignals.length} conduct signal(s).
             </p>
           </div>
         </div>
@@ -119,7 +119,7 @@ export function L4View() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">{f.decision === 'OPEN_CASE' ? <XCircle className="mt-0.5 text-neutral-300" size={22} /> : <CheckCircle2 className="mt-0.5 text-gray-300" size={22} />}
             <div><div className="text-base font-semibold">{f.decision === 'OPEN_CASE' ? `Investigation case opened for ${r.scenario.profile.name}` : `No case opened for ${r.scenario.profile.name}`}</div>
-              <p className="mt-1 max-w-2xl text-sm text-mute">{f.decision === 'OPEN_CASE' ? `Hypotheses are ranked, not proven. Next in L5, a human analyst compares the legitimate story against the front story.` : `Not enough independent evidence to open a case. Volume drift is simply logged.`}</p></div></div>
+              <p className="mt-1 max-w-2xl text-sm text-mute">{f.decision === 'OPEN_CASE' ? `Hypotheses are ranked, not proven. Next in L5, a human analyst compares the legitimate story against the front story.` : f.followUp === 'ASK' ? 'The merchant is asked to explain. Nothing is restricted.' : 'Not enough evidence to open a case or to ask.'}</p></div></div>
           <div className="flex gap-6 text-right"><div><div className="text-xs text-mute">Priority</div><div className="text-xl font-semibold">{f.priority}</div></div><div><div className="text-xs text-mute">Front likelihood</div><div className="font-mono text-xl">{P(f.posterior)}</div></div></div>
         </div>
       </Card>

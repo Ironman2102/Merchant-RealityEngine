@@ -7,7 +7,9 @@
  */
 import type { Scenario } from '../types/merchant';
 import type { WeeklyRow } from '../types/investigation';
-import { RULES } from '../../../rules/index';
+import { own, RULES } from '../../../rules/index';
+import { passportUplift } from './passport';
+import { extent } from '../utils/num';
 
 export const EPSILON = 1;
 const DAY = 86400000;
@@ -17,7 +19,7 @@ export interface VolumeModel { rows: WeeklyRow[]; z: (number | null)[]; mult: nu
 export function festivalMultiplier(end: number, sector: string): { mult: number; festival: string | null } {
   let best = { mult: 1, festival: null as string | null };
   for (const f of RULES.calendar.festivals) {
-    const ramp = (RULES.calendar.sectorRamps as Record<string, Record<string, number[]>>)[f.name]?.[sector];
+    const ramp = own(own(RULES.calendar.sectorRamps as Record<string, Record<string, number[]>>, f.name), sector);
     if (!ramp) continue;
     const date = Date.parse(f.date + 'T12:00:00+05:30');
     const k = end >= date ? (end - 7 * DAY < date ? 0 : -1) : Math.ceil((date - end) / (7 * DAY));
@@ -29,10 +31,12 @@ export function festivalMultiplier(end: number, sector: string): { mult: number;
 export function volumeModel(sc: Scenario): VolumeModel {
   const cfg = RULES.engine.volume, sector = RULES.mcc(sc.profile.mcc).festivalSector, sigmaF = RULES.calendar.sigma;
   const own = sc.events.filter(e => e.merchantId === sc.primaryMerchantId);
-  const last = own.length ? Math.max(...own.map(e => e.eventTime)) : Date.now();
+  const last = extent(own, e => e.eventTime)?.[1] ?? Date.now();
   const N = sc.weekly.length, weekEnd = sc.weekly.map((_, i) => last - 7 * DAY * (N - 1 - i));
-  const mult = weekEnd.map(e => festivalMultiplier(e, sector).mult);
-  const base0 = sc.weekly.slice(0, cfg.baselineWeeks).map((w, i) => ({ v: w.actual, m: mult[i] })).filter(x => x.v !== null && x.v > 0 && x.m === 1);
+  const festival = weekEnd.map(e => festivalMultiplier(e, sector).mult);
+  const mult = festival.map((m, i) => m * passportUplift(sc, weekEnd[i]));
+  // The weeks being tested are never part of their own baseline.
+  const base0 = sc.weekly.slice(0, Math.max(0, Math.min(cfg.baselineWeeks, N - cfg.recentWeeks))).map((w, i) => ({ v: w.actual, m: mult[i] })).filter(x => x.v !== null && x.v > 0 && x.m === 1);
   const fitted = base0.length >= 3;
   const logs = base0.map(x => Math.log(x.v!)), mean = logs.length ? logs.reduce((s, v) => s + v, 0) / logs.length : Math.log(sc.profile.baselineWeekly);
   const cv = logs.length > 1 ? Math.max(0.05, Math.sqrt(logs.reduce((s, v) => s + (v - mean) ** 2, 0) / (logs.length - 1))) : 0.15;
@@ -46,5 +50,5 @@ export function volumeModel(sc: Scenario): VolumeModel {
       rAnchored: v === null ? null : (v - base) / Math.max(base, EPSILON), rSeasonal: v === null ? null : (v - exp) / Math.max(exp, EPSILON), rRolling: v === null ? null : (v - rolling) / Math.max(rolling, EPSILON) });
     z.push(v === null || v <= 0 ? null : (Math.log(v) - Math.log(exp)) / Math.sqrt(cv * cv + (mult[i] > 1 ? sigmaF * sigmaF : 0)));
   });
-  return { rows, z, mult, weekEnd, base, cv, fitted, note: fitted ? `Baseline from ${base0.length} non-festival weeks; festival multipliers from the ${sector} calendar.` : 'Too few clean baseline weeks: the declared baseline is used and volume evidence is weak.' };
+  return { rows, z, mult, weekEnd, base, cv, fitted, note: fitted ? `Baseline from ${base0.length} non-festival weeks; festival multipliers from the ${sector} calendar.` : 'Too few clean baseline weeks: the declared baseline is drawn for reference only, so volume evidence is UNKNOWN.' };
 }

@@ -1,6 +1,8 @@
 import { AlertTriangle, CheckCircle2, Clock, CreditCard, Globe, IndianRupee, RefreshCcw } from 'lucide-react';
 import type { InvestigationResult } from '../../types/investigation';
 import { Badge, Card } from '../ui/ui';
+import { outsideHours } from '../../engines/detectors';
+import { RULES } from '../../../../rules/index';
 import { cx, inr, pct } from '../../utils/format';
 
 export interface RealitySnapshot {
@@ -18,9 +20,11 @@ export interface RealitySnapshot {
   windowDays: number;
 }
 
-export function computeMerchantReality(result: InvestigationResult): RealitySnapshot {
-  const sales = result.events.filter(e => e.type === 'SALE');
-  const refunds = result.events.filter(e => e.type === 'REFUND');
+/** `linkId` narrows the snapshot to one QR or link. */
+export function computeMerchantReality(result: InvestigationResult, linkId?: string): RealitySnapshot {
+  const sales = result.events.filter(e => e.type === 'SALE' && (!linkId || e.linkId === linkId));
+  const saleIds = new Set(sales.map(e => e.id));
+  const refunds = result.events.filter(e => e.type === 'REFUND' && (!linkId || e.linkId === linkId || (!!e.linkedSaleId && saleIds.has(e.linkedSaleId))));
   const p = result.scenario.profile;
 
   const amounts = sales.map(s => s.amount).sort((a, b) => a - b);
@@ -39,8 +43,9 @@ export function computeMerchantReality(result: InvestigationResult): RealitySnap
   const roundCount = sales.filter(s => s.amount >= 500 && s.amount % 500 === 0).length;
   const roundShare = sales.length ? roundCount / sales.length : 0;
 
-  const localSet = new Set(p.localStates.map(s => s.toUpperCase()));
-  const geoKnown = sales.filter(s => s.payerState && s.payerState !== 'UNKNOWN');
+  // Same service area as the detectors: home state and its neighbours.
+  const localSet = new Set(p.localStates.flatMap(s => [s.toUpperCase(), ...RULES.neighbours(s.toUpperCase())]));
+  const geoKnown = sales.filter(s => s.payerState && s.payerState !== 'UNKNOWN' && s.payerState !== '—');
   const outOfStateCount = geoKnown.filter(s => !localSet.has(s.payerState.toUpperCase())).length;
   const outOfStateShare = geoKnown.length ? outOfStateCount / geoKnown.length : 0;
 
@@ -51,7 +56,7 @@ export function computeMerchantReality(result: InvestigationResult): RealitySnap
     // Convert UTC epoch to IST (UTC+5:30)
     const istHour = new Date(s.eventTime + 19_800_000).getUTCHours();
     hourlyCounts[istHour]++;
-    const isOpen = closeH === 24 ? true : (istHour >= openH && istHour < closeH);
+    const isOpen = !outsideHours(istHour, [openH, closeH]);
     if (!isOpen) offHoursCount++;
   }
   const offHoursShare = sales.length ? offHoursCount / sales.length : 0;
@@ -94,63 +99,63 @@ function MatchPill({ mismatch, warn }: { mismatch: boolean; warn?: boolean }) {
   }
   return (
     <Badge tone="ok">
-      <CheckCircle2 size={11} />Matches KYC
+      <CheckCircle2 size={11} />Not flagged
     </Badge>
   );
 }
 
 export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
   const p = result.scenario.profile;
-  const r = computeMerchantReality(result);
+  const r = computeMerchantReality(result, result.scope.kind === 'link' ? result.scope.id : undefined);
   const maxHour = Math.max(1, ...r.hourlyCounts);
   const [openH, closeH] = p.hours;
 
-  const ticketMismatch = r.medianTicket > p.ticketMax * 1.4 || r.roundShare > 0.45;
-  const geoMismatch = p.catchment === 'LOCAL' && r.outOfStateShare > 0.4;
-  const hoursMismatch = closeH < 24 && r.offHoursShare > 0.25;
-  const refundMismatch = r.refundRate > 0.08 && result.l1.refundLinkage.orphan > 0;
-  const channelWarn = p.catchment === 'LOCAL' && r.upiLinkShare > 0.65;
+  // One source of truth: a row is marked only when the engine's own test on it fired.
+  const status = (...ids: string[]) => {
+    const fired = result.evidence.filter(e => ids.includes(e.id) && e.status === 'ILLICIT');
+    const flagged = fired.length > 0;
+    return { mismatch: flagged && result.fusion.decision === 'OPEN_CASE', warn: flagged };
+  };
+  const declared = (k: NonNullable<typeof p.undeclared>[number]) => !p.undeclared?.includes(k);
+  const hoursKnown = declared('hours');
+  const geoKnown = result.events.some(e => e.type === 'SALE' && !!e.payerState && e.payerState !== '—');
 
   const rows = [
     {
       icon: IndianRupee,
       label: 'Ticket Size & Round Bills',
-      claimed: `${inr(p.ticketMin)} – ${inr(p.ticketMax)} typical bill`,
+      claimed: declared('ticketMax') ? `${inr(p.ticketMin)} – ${inr(p.ticketMax)} typical bill` : 'Not declared',
       observed: `Median ${inr(Math.round(r.medianTicket))} · P90 ${inr(Math.round(r.p90Ticket))} · ${pct(r.roundShare)} exact ₹500+ multiples`,
       barValue: r.roundShare,
       barLabel: 'Exact round-number share',
-      mismatch: ticketMismatch,
-      warn: !ticketMismatch && r.roundShare > 0.25,
+      ...status('A1', 'A4', 'A5'),
     },
     {
       icon: Globe,
       label: 'Customer Geography',
-      claimed: p.catchment === 'LOCAL' ? `Local walk-ins (${p.localStates.join(', ')})` : 'Pan-India / National customers',
-      observed: `${pct(r.outOfStateShare)} of payers outside ${p.localStates.join(', ')}`,
+      claimed: !declared('catchment') ? 'Not declared' : p.catchment === 'LOCAL' ? `Local walk-ins (${p.localStates.join(', ')})` : 'Pan-India / National customers',
+      observed: geoKnown ? `${pct(r.outOfStateShare)} of payers outside ${p.localStates.join(', ')} and its neighbours` : 'No payer location in this data',
       barValue: r.outOfStateShare,
-      barLabel: 'Out-of-state payer share',
-      mismatch: geoMismatch,
-      warn: !geoMismatch && p.catchment === 'LOCAL' && r.outOfStateShare > 0.2,
+      barLabel: 'Out-of-area payer share',
+      ...status('B6', 'B10'),
     },
     {
       icon: Clock,
       label: 'Operating Hours (IST)',
-      claimed: closeH === 24 ? 'Open 24 hours' : `Open ${String(openH).padStart(2, '0')}:00 – ${String(closeH).padStart(2, '0')}:00`,
-      observed: closeH === 24 ? 'Active across all hours' : `${pct(r.offHoursShare)} of payments processed while shop is closed`,
+      claimed: !hoursKnown ? 'Not declared' : openH === 0 && closeH === 24 ? 'Open 24 hours' : `Open ${String(openH).padStart(2, '0')}:00 – ${String(closeH).padStart(2, '0')}:00`,
+      observed: !hoursKnown || (openH === 0 && closeH === 24) ? 'No closed hours to compare' : `${pct(r.offHoursShare)} of payments processed while shop is closed`,
       barValue: r.offHoursShare,
       barLabel: 'Off-hours transaction share',
-      mismatch: hoursMismatch,
-      warn: !hoursMismatch && closeH < 24 && r.offHoursShare > 0.12,
+      ...status('C2', 'C5'),
     },
     {
       icon: CreditCard,
-      label: 'Payment Channel Mix',
-      claimed: p.catchment === 'LOCAL' ? `In-store POS / counter QR (${p.category})` : `Online checkout (${p.category})`,
+      label: 'Payment Links & Channels',
+      claimed: p.declaredChannels.length ? p.declaredChannels.join(', ') : 'Not declared',
       observed: `${pct(r.upiLinkShare)} via remote UPI links / collect requests`,
       barValue: r.upiLinkShare,
       barLabel: 'Remote UPI link share',
-      mismatch: channelWarn && result.fusion.decision === 'OPEN_CASE',
-      warn: channelWarn && result.fusion.decision !== 'OPEN_CASE',
+      ...status('G6', 'E1'),
     },
     {
       icon: RefreshCcw,
@@ -159,8 +164,7 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
       observed: `${pct(r.refundRate)} refund rate · ${result.l1.refundLinkage.orphan} unlinked / orphan refund(s)`,
       barValue: Math.min(1, r.refundRate * 4),
       barLabel: 'Refund intensity',
-      mismatch: refundMismatch,
-      warn: !refundMismatch && result.l1.refundLinkage.orphan > 0,
+      ...status('D7', 'D9'),
     },
   ];
 
@@ -171,10 +175,10 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-slate-50/80 px-5 py-3.5">
           <div>
             <h3 className="text-sm font-semibold text-ink">Declared KYC Profile vs. Observed Payment Reality</h3>
-            <p className="text-xs text-mute">Side-by-side contrast across {r.salesCount.toLocaleString()} observed sales ({Math.round(r.windowDays)} days)</p>
+            <p className="text-xs text-mute">{result.scope.kind === 'link' ? `${result.scope.label}: ` : 'Whole account: '}{r.salesCount.toLocaleString()} observed sales ({Math.round(r.windowDays)} days)</p>
           </div>
-          <Badge tone={result.fusion.decision === 'OPEN_CASE' ? 'bad' : 'ok'}>
-            {rows.filter(x => x.mismatch).length} mismatch{rows.filter(x => x.mismatch).length === 1 ? '' : 'es'}
+          <Badge tone={result.fusion.decision === 'OPEN_CASE' ? 'bad' : rows.some(x => x.warn) ? 'warn' : 'ok'}>
+            {rows.filter(x => x.warn).length} difference{rows.filter(x => x.warn).length === 1 ? '' : 's'}
           </Badge>
         </div>
 
@@ -215,8 +219,8 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
         <div className="border-b border-line bg-slate-50/80 px-5 py-3.5">
           <h3 className="text-sm font-semibold text-ink">24-Hour Payment Activity (IST)</h3>
           <p className="text-xs text-mute">
-            {closeH === 24
-              ? 'Declared open 24 hours · bars show hourly transaction volume'
+            {!hoursKnown || (openH === 0 && closeH === 24)
+              ? 'Bars show hourly transaction volume'
               : `Declared open ${String(openH).padStart(2, '0')}:00–${String(closeH).padStart(2, '0')}:00 · rose bars = payments while closed`}
           </p>
         </div>
@@ -224,7 +228,7 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
         <div className="flex flex-1 flex-col justify-between p-5">
           <div className="flex h-44 items-end gap-1 pt-2" role="img" aria-label="24-hour transaction distribution">
             {r.hourlyCounts.map((count, hour) => {
-              const isOpen = closeH === 24 ? true : (hour >= openH && hour < closeH);
+              const isOpen = !hoursKnown || !outsideHours(hour, [openH, closeH]);
               const heightPct = count === 0 ? 3 : Math.max(8, Math.round((count / maxHour) * 100));
               const isOffSpike = !isOpen && count > 0;
               return (
@@ -259,8 +263,8 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
               <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-indigo-500/80" />Open hours</span>
               <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />Closed hours</span>
             </div>
-            <span className={cx('font-semibold', hoursMismatch ? 'text-rose-700' : 'text-emerald-700')}>
-              {pct(r.offHoursShare)} off-hours
+            <span className={cx('font-semibold', status('C2').warn ? 'text-rose-700' : 'text-emerald-700')}>
+              {hoursKnown ? `${pct(r.offHoursShare)} outside declared hours` : 'Hours not declared'}
             </span>
           </div>
         </div>

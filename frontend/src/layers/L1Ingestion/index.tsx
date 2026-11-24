@@ -35,7 +35,7 @@ export function L1View() {
         ),
         whyItMatters: missing.length > 0
           ? `Any missing feed (${missing.join(', ')}) is marked UNKNOWN—it will NEVER be guessed or held against the merchant in L3/L4. Next, L2 builds what normal sales should look like for this business.`
-          : 'Clean timestamps and hashed IDs ensure timing and geography checks in L3 measure real customer behaviour without storing PII.',
+          : 'Clean timestamps and hashed IDs ensure timing and geography checks in L3 measure customer behaviour. Saved cases keep keyed pseudonyms for identifiers and mask phone, PAN, card and UPI patterns elsewhere.',
       }}
     >
       <Panel title="Incoming data sources" subtitle="Each source reports its own coverage and record count.">
@@ -66,9 +66,9 @@ export function L1View() {
           </dl>
           <p className="mt-3 text-xs text-mute">Three clocks stay separate so timing detectors use when the payer paid, not when the data arrived.</p>
         </Panel>
-        <Panel title="Identifier hashing" subtitle="Raw payer identifiers never enter the store.">
+        <Panel title="Identifier hashing" subtitle="Payer identifiers are replaced before a case is saved.">
           <div className="space-y-1.5">{l1.hashSamples.map(h => <div key={h.raw} className="flex items-center gap-2 text-[12px]"><Mono className="text-mute">{h.raw}</Mono><ArrowRight size={12} className="text-dim" /><Fingerprint size={12} className="text-zinc-400" /><Mono>{h.hash}</Mono></div>)}</div>
-          <p className="mt-3 text-xs text-dim">Demo uses a simple hash. Production design: salted HMAC-SHA256 with managed keys.</p>
+          <p className="mt-3 text-xs text-dim">The browser demo uses a simple hash. Saved cases replace identifiers with keyed HMAC-SHA256 pseudonyms and drop fields outside the format. A name typed into free text is not detected.</p>
         </Panel>
       </div>
       <Panel title="Merchant coverage map" subtitle="Which evidence exists for this merchant.">

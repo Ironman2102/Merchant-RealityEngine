@@ -1,39 +1,39 @@
 {
   "synthetic": true,
-  "heldOut": 300,
+  "heldOut": 180,
   "models": [
     {
       "name": "Neural network",
       "version": "nn-v0",
       "kind": "Two hidden layers, 32 and 16 units",
-      "averagePrecision": 1.0,
-      "ece": 0.0,
-      "recall": "22/22",
-      "genuineFp": "0/278"
+      "averagePrecision": 0.9970685852276508,
+      "ece": 0.019956249775318152,
+      "recall": "60/60",
+      "genuineFp": "5/120"
     },
     {
       "name": "LightGBM tree model",
       "version": "m1-v0",
       "kind": "Gradient-boosted trees",
-      "averagePrecision": 1.0,
-      "ece": 0.0,
-      "recall": "22/22",
-      "genuineFp": "0/278"
+      "averagePrecision": 0.999462365591398,
+      "ece": 0.023381938767078832,
+      "recall": "60/60",
+      "genuineFp": "8/120"
     },
     {
       "name": "Bayesian engine",
       "version": "rules",
       "kind": "The decision maker (with governance gate)",
-      "averagePrecision": 0.9962121212121209,
-      "ece": 0.014700010914942056,
-      "recall": "18/22",
-      "genuineFp": "0/278"
+      "averagePrecision": 0.8399479133263914,
+      "ece": 0.23643953138159174,
+      "recall": "14/60",
+      "genuineFp": "0/120"
     }
   ],
   "rsi": {
     "definition": "Relative score improvement on held-out synthetic fronts (including stealth split-account evasions before rule promotion). Positive means the challenger catches or ranks held-out fronts higher than the baseline.",
-    "versusLightGBM": 0.0,
-    "versusBayesian": 0.22222222222222215,
-    "apVersusBayesian": 0.003802281368821625
+    "versusLightGBM": -0.0023950680347335713,
+    "versusBayesian": 3.2857142857142856,
+    "apVersusBayesian": 0.1870600181373445
   }
 }

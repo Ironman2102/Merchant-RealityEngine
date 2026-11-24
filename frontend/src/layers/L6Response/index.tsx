@@ -10,7 +10,7 @@ import { me } from '../../services/pilotApi';
 import { useState } from 'react';
 
 export function L6View() {
-  const { result: r, user, patch, setLevel, execute, audit, caseId, pending, approve, syncError } = useInvestigation();
+  const { result: r, user, patch, setLevel, execute, audit, caseId, pending, restrictions, approve, syncError } = useInvestigation();
   const { quant } = useQuantMode();
   const [escrow, setEscrow] = useState(false);
   const [selfRefusal, setSelfRefusal] = useState('');
@@ -23,10 +23,12 @@ export function L6View() {
         return;
       }
     }
-    approve(ok, { escrowConfirmed: escrow });
+    approve(ok, { escrowConfirmed: escrow, proposedAt: proposal?.at, level: proposal?.level });
   };
   const plan = planResponse(r, user), meta = RESPONSE_LEVELS.find(l => l.id === plan.level)!;
-  const proposal = pending?.response, needsTwo = ['L3', 'L4', 'L5'].includes(plan.level);
+  const least = Math.max(Number(r.review.recommended.slice(1)), r.fusion.decision === 'OPEN_CASE' ? 2 : 0, r.fusion.followUp === 'ASK' ? 1 : 0, user.label === 'CONFIRMED_ILLICIT' ? 2 : 0);
+  const standsDown = user.label !== 'ADJUDICATED_BENIGN' && Number(plan.level.slice(1)) < least;
+  const proposal = pending?.response, held = caseId ? restrictions : [], lifting = ['L0', 'L1', 'L2'].includes(proposal?.level ?? ''), needsTwo = held.length > 0 || standsDown || ['L3', 'L4', 'L5'].includes(plan.level);
   const log = caseId ? audit.filter(a => /^L\d/.test(a.action)) : audit.filter(a => a.actor === 'MRE response engine');
   const isFlow = plan.level === 'L3' || plan.level === 'L4';
   return (
@@ -40,10 +42,11 @@ export function L6View() {
             {isFlow && plan.keepsRunning.length > 0
               ? <>Targets only <b>{plan.suspectLinks.join(', ')}</b> while keeping <b>{plan.keepsRunning.join(', ')}</b> live.</>
               : meta.blurb}
+            {held.length > 0 && <> <b>{[...new Set(held.map(h => h.level))].join(', ')} is in force.</b></>}
             {proposal ? <> Waiting for a second person to approve {proposal.by.username}’s proposal.</> : user.executed ? ' Action recorded.' : ' Not executed yet.'}
           </>
         ),
-        whyItMatters: 'No single person can freeze a merchant alone—use the sidebar persona switcher (analyst → reviewer/legal) to test two-person approval live. Every action is written to the tamper-proof audit trail in L7.',
+        whyItMatters: 'No single person can freeze a merchant alone: a different person signs in with their own account to approve. On a saved case every action is written to the audit trail in L7, which shows later edits made without the server key. MRE records actions. It does not message merchants, disable links or move money.',
       }}
     >
       {quant && (
@@ -76,11 +79,13 @@ export function L6View() {
         <Panel title={caseId ? 'Approval (maker / checker)' : 'Legal-authority verification'} subtitle={caseId ? 'Nobody approves their own proposal.' : 'A separate step from the risk decision.'}>
           {caseId ? (
             <div className="space-y-3 text-sm">
-              <p className="text-xs text-mute">L0–L2 apply at once. L3 needs approval by a different reviewer. L4 and L5 need approval by a different user with the legal role; L5 also needs a confirmed-illicit label from two people.</p>
+              <p className="text-xs text-mute">L0–L2 apply at once only at or above what the engine recommends. Anything lower closes a case or question, so a different reviewer, admin or legal user approves it, until two people have cleared the case. While the merchant has a restriction in force on any case, changing it needs the approval of the more severe level. L3 needs approval by a different reviewer. L4 and L5 need approval by a different user with the legal role; L5 also needs a confirmed-illicit label from two people.</p>
+              {held.map(h => <p key={h.caseId} role="status" className="rounded border border-line2 bg-panel2 px-3 py-2 text-xs"><b>{h.level} in force</b>{h.caseId !== caseId && <> (from case <Mono>{h.caseId}</Mono>)</>}<b>:</b> {h.actions.join('; ')}. It follows the merchant to every case and stays until a different person approves a change.</p>)}
               {proposal ? (<div className="rounded border border-stone-400/30 bg-stone-400/5 p-3">
                 <div className="text-sm"><b>{proposal.level}</b> proposed by <b>{proposal.by.username}</b> · {new Date(proposal.at).toLocaleString()}</div>
+                {lifting && held.length > 0 && <p className="mt-2 text-xs"><b>Approving lifts:</b> {held.map(h => `${h.level} in ${h.caseId}`).join(', ')}.</p>}
                 {proposal.level === 'L4' && <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" className="accent-zinc-300" checked={escrow} onChange={e => setEscrow(e.target.checked)} />Escrow or reserve clause confirmed in the merchant agreement</label>}
-                <div className="mt-3 flex gap-2"><Btn size="sm" variant="primary" onClick={() => void onApprove(true)}>Approve</Btn><Btn size="sm" onClick={() => void onApprove(false)}>Reject</Btn></div>
+                <div className="mt-3 flex gap-2"><Btn size="sm" variant="primary" onClick={() => void onApprove(true)}>Approve</Btn><Btn size="sm" onClick={() => void onApprove(false)}>Reject or withdraw</Btn></div>
               </div>) : <div className="text-xs text-mute">No proposal is waiting for approval.</div>}
               {(syncError || selfRefusal) && <div role="alert" className="flex gap-2 rounded border border-stone-400/30 bg-stone-400/5 px-3 py-2 text-xs text-stone-200"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{selfRefusal || syncError}</div>}
             </div>
@@ -89,7 +94,7 @@ export function L6View() {
               <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 accent-zinc-300" checked={user.legalVerified} onChange={e => patch({ legalVerified: e.target.checked, executed: false })} /><span><span className="block">Legal authority verified (simulated)</span><span className="text-xs text-mute">In practice: confirmation from legal or compliance that the action rests on a valid order, regulation or contract term.</span></span></label>
               {plan.level === 'L4' && <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 accent-zinc-300" checked={user.escrowConfirmed} onChange={e => patch({ escrowConfirmed: e.target.checked, executed: false })} /><span><span className="block">Escrow or reserve clause confirmed (simulated)</span><span className="text-xs text-mute">The merchant agreement permits holding the identified funds.</span></span></label>}
               {plan.blocked.map(b => <div key={b} className="flex gap-2 rounded border border-stone-400/30 bg-stone-400/5 px-3 py-2 text-xs text-stone-200"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{b}</div>)}
-            </div>) : <div className="text-sm text-mute">{plan.level} does not restrict funds, so no legal-authority gate applies. L4 and L5 always require it.</div>}
+            </div>) : <div className="space-y-2 text-sm text-mute"><p>{plan.level} does not restrict funds, so no legal-authority gate applies. L4 and L5 always require it.</p>{plan.blocked.map(b => <p key={b} className="text-xs text-amber-700">{b}</p>)}</div>}
         </Panel>
         <Panel title={`Proposed response: ${plan.level}`} subtitle={meta.blurb}>
           <ul className="space-y-2 text-[13px]">{plan.actions.map(a => <li key={a} className="flex gap-2"><Power size={14} className="mt-0.5 shrink-0 text-zinc-300" />{a}</li>)}</ul>

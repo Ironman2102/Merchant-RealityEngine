@@ -22,7 +22,7 @@ export interface LearnedRate {
 }
 
 export function effectiveRates(detectorId: string, events: LabelEvent[], mcc?: string): LearnedRate {
-  const c = RULES.detector(detectorId);
+  const c = RULES.baseDetector(detectorId);
   const k = RULES.engine.detectorPriorStrength;
   const poolKappa = 20;
   const analystCap = 0.2;

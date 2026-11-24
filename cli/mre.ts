@@ -5,20 +5,26 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadHashKey } from '../adapters/pseudonym';
+import { toCsv } from '../adapters/csv';
 import { mapExport } from '../adapters/mapExport';
-import { createUser, ROLES, type Role } from '../backend/src/auth';
+import { createUser, linkSsoIdentity, ROLES, type Role } from '../backend/src/auth';
 import { createServiceKey } from '../backend/src/serviceKeys';
 import { verifyAudit } from '../backend/src/store';
 import { openInvestigation } from '../backend/src/workflow';
 import { analyze, FEATURE_COLUMNS, features } from '../engine/index';
 import { loadWorkflow, validateWorkflow } from '../engine/workflowConfig';
-import { demoLearn, rollbackRules } from '../scripts/demo-learn';
+import { demoLearn } from '../scripts/demo-learn';
+import { rollbackRulesEmergency } from '../backend/src/improverApi';
+import { analyseCanonical } from '../backend/src/algorithms/analyze';
+import { syncLiveRules } from '../backend/src/rulesState';
+import { sealExistingDatabase, verifyDatabase } from '../backend/src/integrity';
+import { appendRulesAudit } from '../backend/src/improverApi';
 import { runBatch } from './batch';
 
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd || cmd === '--help') {
-  console.log('mre batch | features | serve | demo | demo:learn | rollback | validate-config | verify-audit | user:add | key:create');
+  console.log('mre batch | features | serve | demo | demo:learn | rollback | validate-config | verify-audit | verify-db | seal-db | user:add | user:link-sso | key:create');
   process.exit(cmd ? 0 : 2);
 }
 
@@ -31,8 +37,10 @@ if (cmd === 'batch') {
   if (!values.in || !values.mapping || !values.out) { console.error('mre batch --in <dir> --mapping <file> --out <dir> [--ml]'); process.exit(2); }
   let key: Buffer;
   try { key = loadHashKey(); } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
-  const { merchants, opened } = runBatch({ inDir: values.in, mappingPath: values.mapping, outDir: values.out, key, ml: !!values.ml });
+  const { merchants, opened, failed } = runBatch({ inDir: values.in, mappingPath: values.mapping, outDir: values.out, key, ml: !!values.ml });
   console.log(`scored ${merchants} merchants, opened ${opened}${values.ml ? ' (with ML second opinion)' : ''}`);
+  // A merchant that could not be scored is not a merchant with no case.
+  if (failed) console.error(`${failed} merchants could not be scored: see the ERROR rows in scores.csv`);
 } else if (cmd === 'features') {
   const { values } = parseArgs({
     args: rest,
@@ -49,13 +57,14 @@ if (cmd === 'batch') {
     if (id) truth.set(id.trim(), Number(label));
   }
   const { datasets } = mapExport(values.in, values.mapping, loadHashKey());
+  // Training features always come from the committed rules, not from whatever is promoted on this machine.
   const lines = [`merchant_id,label,${FEATURE_COLUMNS.join(',')}`];
   for (const d of datasets) {
     const ran = analyze(d);
     if (!ran.ok) continue;
     const row = features(ran.result);
     const label = truth.get(d.merchant.id) ?? 0;
-    lines.push([d.merchant.id, label, ...FEATURE_COLUMNS.map(c => row[c])].join(','));
+    lines.push(toCsv([[d.merchant.id, label, ...FEATURE_COLUMNS.map(c => row[c])]]).trimEnd());
   }
   mkdirSync(dirname(values.out), { recursive: true });
   writeFileSync(values.out, lines.join('\n') + '\n');
@@ -74,8 +83,9 @@ if (cmd === 'batch') {
     const { datasets, warnings } = mapExport(values.in, values.mapping, loadHashKey());
     const sample = datasets.slice(0, 3);
     let opened = 0;
+    syncLiveRules();
     for (const d of sample) {
-      const ran = analyze(d);
+      const ran = analyseCanonical(d);
       if (!ran.ok) { console.error(ran.errors.join(' ')); process.exit(1); }
       if (ran.result.fusion.decision === 'OPEN_CASE') opened++;
       console.log(`${d.merchant.id} ${ran.result.fusion.decision} P=${ran.result.fusion.posterior.toFixed(4)}`);
@@ -91,11 +101,8 @@ if (cmd === 'batch') {
   });
   child.on('exit', code => process.exit(code ?? 0));
 } else if (cmd === 'demo') {
-  let analyst = { id: 1, username: 'dev-analyst', role: 'analyst' as Role };
-  try { analyst = createUser('dev-analyst', 'dev-analyst-demo-2026', 'analyst'); } catch { /* already exists */ }
-  try { createUser('dev-reviewer', 'dev-reviewer-demo-2026', 'reviewer'); } catch { /* already exists */ }
-  try { createUser('dev-legal', 'dev-legal-demo-2026', 'legal'); } catch { /* already exists */ }
-  try { createUser('dev-admin', 'dev-admin-demo-2026', 'admin'); } catch { /* already exists */ }
+  const { ensureDevUsers } = await import('../scripts/dev-users');
+  const analyst = ensureDevUsers();
   const showcase = [
     'frontend/public/samples/01-sweet-crumbs-betting-front.json',
     'frontend/public/samples/09-telegram-betting-no-website.json',
@@ -112,19 +119,42 @@ if (cmd === 'batch') {
 } else if (cmd === 'demo:learn') {
   process.exit(demoLearn());
 } else if (cmd === 'rollback') {
-  rollbackRules();
+  const { values } = parseArgs({ args: rest, options: { reason: { type: 'string' } }, strict: true });
+  if (!values.reason?.trim()) { console.error('mre rollback --reason "<why>"   (emergency stop; a normal rollback takes two reviewers, in the console)'); process.exit(2); }
+  const done = rollbackRulesEmergency(values.reason);
+  if (done.status !== 200) { console.error(done.body.error); process.exit(1); }
+  console.log('live rules rolled back to the committed base; the emergency stop is in the rules audit');
 } else if (cmd === 'verify-audit') {
   const { values } = parseArgs({ args: rest, options: { case: { type: 'string' } }, strict: true });
   if (!values.case) { console.error('mre verify-audit --case <INV-id>'); process.exit(2); }
   const status = verifyAudit(values.case);
   console.log(JSON.stringify(status));
   process.exit(status.ok ? 0 : 1);
+} else if (cmd === 'verify-db') {
+  const { problems, checkpoint } = verifyDatabase();
+  console.log(JSON.stringify({ ok: !problems.length, problems, checkpoint }, null, 2));
+  process.exit(problems.length ? 1 : 0);
+} else if (cmd === 'seal-db') {
+  const { values } = parseArgs({ args: rest, options: { reason: { type: 'string' } }, strict: true });
+  if (!values.reason?.trim()) { console.error('mre seal-db --reason "<why>"   (once, to upgrade a database from before seals; it vouches for the rows as found)'); process.exit(2); }
+  try {
+    const rows = sealExistingDatabase();
+    appendRulesAudit('Database sealed as found', `${rows} rows vouched for by an operator at the server: ${values.reason.trim()}`, { id: 0, username: 'cli-operator' });
+    console.log(`sealed ${rows} rows as found`);
+  } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
 } else if (cmd === 'user:add') {
   const username = rest[0], role = rest[1] as Role;
   if (!username || !ROLES.includes(role)) { console.error(`mre user:add <username> <${ROLES.join('|')}>`); process.exit(2); }
   const password = randomBytes(15).toString('base64url');
   const actor = createUser(username, password, role);
   console.log(`created ${actor.username} (${actor.role}) password: ${password}`);
+} else if (cmd === 'user:link-sso') {
+  const [username, issuer, sub] = rest;
+  if (!username || !issuer || !sub) { console.error('mre user:link-sso <username> <issuer> <subject>'); process.exit(2); }
+  try {
+    linkSsoIdentity(username, issuer, sub);
+    console.log(`${username} now signs in as that identity`);
+  } catch (e) { console.error(e instanceof Error ? e.message : e); process.exit(1); }
 } else if (cmd === 'key:create') {
   const name = rest[0], scopes = (rest[1] ?? '').split(',').filter(Boolean);
   if (!name || !scopes.length) { console.error('mre key:create <name> <scopes,comma>'); process.exit(2); }

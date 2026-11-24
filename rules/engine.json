@@ -1,12 +1,22 @@
 {
  "_note": "Fusion, gate and model settings. Change only through the approval loop (plan P11); every result records this version.",
- "version": "mre-bayes-0.2.0",
+ "version": "mre-bayes-0.3.0",
  "gate": {
   "openPosterior": 0.1,
   "minNats": 0.5,
   "minProvenances": 2,
   "minFamiliesSingleProvenance": 3,
-  "_why": "Cost break-even for asking the merchant (L2 vs L1) is ~0.8% with rules/costs.json; raised to 10% to respect analyst capacity until portfolio FDR control (plan P9). Honest adversarial variants score <= 0.004%."
+  "minConductLineages": 2,
+  "supportingOnlyFamilies": [
+   "H",
+   "K"
+  ],
+  "nonIndependentProvenances": [
+   "kyc"
+  ],
+  "askPosterior": 0.01,
+  "askFamilies": 2,
+  "_why": "A case needs (1) P >= openPosterior, (2) at least one conduct signal, and (3) independence: two data sources, or three families, or two different conduct behaviours. Departures from normal on their own lead to a Context Passport question (ASK), never a case. Volume, the declaration and derived signals do not count towards independence. openPosterior is above the ~0.8% cost break-even to respect analyst capacity."
  },
  "priority": {
   "high": 0.8,
@@ -16,7 +26,9 @@
  "benignLlrFloor": -1.5,
  "posteriorDraws": 1000,
  "detectorPriorStrength": 20,
- "portfolio": { "fdrQ": 0.10 },
+ "portfolio": {
+  "fdrQ": 0.1
+ },
  "mechanismPrior": {
   "TRANSACTION_LAUNDERING": 0.4,
   "ROTATION": 0.2,
@@ -36,5 +48,64 @@
  "permutationDraws": 2000,
  "preMatchMinutes": 45,
  "heavyRepeatPerWeek": 8,
- "sweepHours": 24
+ "sweepHours": 24,
+ "declaredCalmWeight": 0.25,
+ "streams": {
+  "minSales": 30,
+  "maxShare": 0.95,
+  "maxStreams": 50,
+  "repeatCohortMaxShare": 0.8,
+  "repeatCohortMaxRoundNorm": 0.2
+ },
+ "conduct": {
+  "windowDays": 14,
+  "minPayments": 4,
+  "depositMin": 200,
+  "depositStep": 100,
+  "depositNorm": 0.05,
+  "remoteNorm": 0.04,
+  "burstHours": 2,
+  "burstNorm": 0.01
+ },
+ "ticketShift": {
+  "low": 0.3333,
+  "high": 1.8
+ },
+ "passport": {
+  "maxDays": 180,
+  "maxUplift": 3,
+  "maxHoursSpan": 12,
+  "maxTicketRatio": 10,
+  "maxStates": 10,
+  "_why": "A passport explains one change. These limits stop one document covering the whole day, every price or most of the country. They are not what protects against misconduct: passports are set aside entirely when any conduct signal fires."
+ },
+ "reconcile": {
+  "days": 14,
+  "tolerance": 0.25
+ },
+ "limits": {
+  "maxPaymentRupees": 20000000,
+  "maxSettlementRupees": 10000000000
+ },
+ "learning": {
+  "minLabels": 10
+ },
+ "bands": {
+  "minN": [
+   8,
+   40
+  ],
+  "alpha": [
+   0.0005,
+   0.05
+  ],
+  "sensitivity": [
+   0.05,
+   0.99
+  ],
+  "falsePositive": [
+   0.005,
+   0.5
+  ]
+ }
 }

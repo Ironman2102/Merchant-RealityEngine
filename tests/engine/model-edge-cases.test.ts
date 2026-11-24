@@ -93,6 +93,7 @@ function mkEvidenceItem(id: string, overrides: Partial<EvidenceItem> = {}): Evid
     records: [],
     llr: 0,
     provenance: cfg.provenance as Provenance,
+    signal: cfg.class,
     test: cfg.test,
     p: null,
     effect: null,
@@ -178,10 +179,10 @@ export default function (): number {
     const d = validRawDataset();
     d.transactions[0].amount = 0;
     check('accepts amount === 0', datasetToScenario(d).ok);
-    d.transactions[0].amount = 1_000_000;
-    check('accepts amount === 1,000,000 boundary', datasetToScenario(d).ok);
-    d.transactions[0].amount = 1_000_001;
-    check('rejects amount > 1,000,000', !datasetToScenario(d).ok);
+    d.transactions[0].amount = 20_000_000;
+    check('accepts amount === 20,000,000 boundary', datasetToScenario(d).ok);
+    d.transactions[0].amount = 20_000_001;
+    check('rejects amount > 20,000,000', !datasetToScenario(d).ok);
     d.transactions[0].amount = Number.NaN;
     check('rejects amount === NaN', !datasetToScenario(d).ok);
   }

@@ -143,6 +143,8 @@ function evalDetectors(sc: Scenario): Map<string, EvidenceItem> {
     rows: vol.rows,
     cusum: cs,
     cohort,
+    scope: 'account',
+    covered: () => false,
   });
   return new Map(ev.map(e => [e.id, e]));
 }
@@ -154,9 +156,9 @@ export default function (): number {
     else console.log(`  ✓ ${name}`);
   };
 
-  // 1. Coverage gating across all 25 detectors: MISSING -> UNKNOWN & LLR=0; PARTIAL -> 0.7× LLR
+  // 1. Coverage gating across all 28 detectors: MISSING -> UNKNOWN & LLR=0; PARTIAL -> 0.7× LLR
   const baseEv = evalDetectors(mkBaseScenario());
-  check('all 25 detectors emitted', baseEv.size === 25, `got ${baseEv.size}`);
+  check('all 28 detectors emitted', baseEv.size === 28, `got ${baseEv.size}`);
 
   const covKeys: CoverageKey[] = ['acquiring', 'website', 'orders', 'bank', 'fulfillment', 'calendar', 'verification'];
   for (const key of covKeys) {
@@ -598,20 +600,19 @@ export default function (): number {
     });
     check('H3 traits on separate transactions -> BENIGN', evalDetectors(scDisjoint).get('H3')!.status === 'BENIGN');
 
-    // Same sales have round + distant + night -> joint >= 2 traits
+    // Embedded cluster: 25% of sales combine round + distant while 75% are clean
     const scJoint = mkBaseScenario({
-      events: Array.from({ length: 40 }, (_, i) => mkSale(i, {
+      events: Array.from({ length: 100 }, (_, i) => mkSale(i, i < 25 ? {
         amount: 1000,
         payerState: 'DL',
-        eventTime: nightIst + i * 1000,
-      })),
+      } : {})),
     });
     check('H3 co-occurring traits in same sales -> ILLICIT', evalDetectors(scJoint).get('H3')!.status === 'ILLICIT');
   }
 
   // 23. I2 & I3: Payouts & 24h sweep window boundary
   {
-    check('I2 0 transfers -> BENIGN', baseEv.get('I2')!.status === 'BENIGN');
+    check('I2 0 transfers -> UNKNOWN', baseEv.get('I2')!.status === 'UNKNOWN');
 
     const scManyPayouts = mkBaseScenario();
     for (let i = 0; i < 12; i++) {

@@ -101,3 +101,23 @@ expected seasonal lift (2 = festival weeks are normally twice a normal week).
 plus two new synthetic datasets (Chai Corner Café, Shree Ganesh Sweets). All data is synthetic.
 Edit any sample and re-upload it to see how the flags change, e.g. set the betting embed's
 `category` to `"own"`, or remove the out-of-state payers.
+
+## Context Passports, limits and honesty rules (22 Nov 2026)
+
+- `contextPassports`: `[{ id, reason, linkId, from, until?, document, hours?, states?, ticketBand?, volumeUplift?, status }]`.
+  `status`, `submittedBy` and `reviewedBy` in a file are never trusted: every passport arrives `SUBMITTED`, and a second person verifies it on the server.
+  Limits: unique ids, at most 180 days, hours up to 12 a day, highest price up to 10x the lowest (above 0), up to 10 states or `*`,
+  volume up to 3x, and at least one of these set. A file with a passport outside the limits is refused.
+  Passports for the same QR cannot be verified for overlapping periods. One that arrives through the API needs a person to take it on first.
+- `merchant.id`: no leading or trailing space and no invisible characters. Restrictions and decisions follow this id.
+- `merchant.mcc`: four digits as text (keep a leading zero, as in `"0742"`), or `UNKNOWN`.
+- Identifiers (`payerId`, `paidTo`, `beneficiaryAccount`, `payerMobile`, `destHolder`) are text.
+- `merchant.undeclared`: any of `ticketMax`, `hours`, `catchment`, `expectedRoundShare`. Those fields are then not tested.
+- `weeklySales` must agree with the last 14 days of the ledger within 25%, or volume evidence is UNKNOWN.
+- Payments may be up to ₹2 crore; settlements and payouts up to ₹1,000 crore.
+- Times are ISO 8601. One with no offset is read as Indian time on every host.
+- On the server, fields outside this format are dropped, and phone, PAN, card, e-mail and UPI patterns in the rest are masked.
+  Merchant ids and QR / link ids are kept as they are.
+- A batch export is more forgiving than this JSON format: bad rows are skipped and counted in `rows_skipped`, a bad merchant field
+  is treated as not declared, and an unusable `context.json` entry is ignored (`context_ignored`).
+- `orderId: null` means "checked, none found". Leave it out when it was never checked.

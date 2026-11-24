@@ -1,1 +1,1 @@
-{"params": {"num_leaves": 7, "min_child_samples": 10, "learning_rate": 0.05, "n_estimators": 200, "reg_lambda": 1.0, "colsample_bytree": 0.5, "subsample": 0.8, "subsample_freq": 1, "max_depth": 4}, "cv_average_precision": 1.0}
+{"params": {"num_leaves": 7, "min_child_samples": 30, "learning_rate": 0.05, "n_estimators": 200, "reg_lambda": 1.0, "colsample_bytree": 0.5, "subsample": 0.8, "subsample_freq": 1, "max_depth": 4}, "cv_average_precision": 1.0000000000000002}

@@ -53,7 +53,15 @@ export interface FusionResult {
   provenances: { provenance: string; nats: number }[];
   mechanismPosterior: Record<Mechanism, number>;
   decisionAnalysis: DecisionAnalysis;
+  /** ASK = no case; ask the merchant for a Context Passport. */
+  followUp: 'ASK' | 'NONE';
+  conductSignals: string[];
+  /** Log-odds added to the prior because several streams were tested. */
+  priorShift: number;
 }
+/** What the headline evidence and probability refer to: the whole account, one QR / link, or its repeat payers. */
+export interface Scope { kind: 'account' | 'link' | 'repeat-payers'; id: string; label: string; sales: number; share: number }
+export interface StreamResult { scope: Scope; posterior: number; decision: 'OPEN_CASE' | 'NO_CASE'; followUp: 'ASK' | 'NONE'; fired: string[] }
 export interface DecisionAnalysis {
   actions: { level: ResponseLevel; label: string; expectedLoss: number; expectedLossLow: number; expectedLossHigh: number; autoAllowed: boolean }[];
   recommended: ResponseLevel;
@@ -95,6 +103,14 @@ export interface InvestigationResult {
   cohort: CohortMatch[];
   fusion: FusionResult;
   review: AnalystReview;
+  scope: Scope;
+  streams: StreamResult[];
+  /** Flows narrow enough to disable on their own. Empty means no flow may be auto-recommended for restriction. */
+  suspectLinks: string[];
+  /** Verified passports exist but were not applied, because a conduct signal fired. */
+  passportsSuspended?: boolean;
+  /** Passports that answered a question the merchant would otherwise be asked. */
+  passportAnswered?: string[];
   timelines: Record<LayerId, Timeline[]>;
 }
 export type { Mechanism };

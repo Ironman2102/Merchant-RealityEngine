@@ -10,7 +10,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 
 const KEY = Buffer.from('adapter-test-key', 'utf8');
 
-const SAMPLES = readdirSync('frontend/public/samples').filter(f => /^0[1-9]-/.test(f)).sort();
+const SAMPLES = readdirSync('frontend/public/samples').filter(f => /^\d\d-/.test(f)).sort();
 
 export default function (): number {
   const prev = process.env.MRE_HASH_KEY;
@@ -56,7 +56,7 @@ export default function (): number {
   writeFileSync(join(dir, 'weekly.csv'), readFileSync('examples/alt-pa/weekly.csv', 'utf8'));
   const noCtx = mapExport(dir, 'adapters/mappings/alt-pa-example.json', KEY);
   const sweetNoCtx = noCtx.datasets.find(d => d.merchant.id === 'M-SCB-001');
-  check('alt-pa scales merchant paise amounts without context.json', !!sweetNoCtx && sweetNoCtx.merchant.ticketMin === 150 && sweetNoCtx.merchant.ticketMax === 1200 && sweetNoCtx.merchant.baselineWeekly === 180000);
+  check('alt-pa scales merchant paise amounts without context.json', !!sweetNoCtx && sweetNoCtx.merchant.ticketMin === 150 && sweetNoCtx.merchant.ticketMax === 1200 && sweetNoCtx.merchant.baselineWeekly === 45000);
   if (prev === undefined) delete process.env.MRE_HASH_KEY;
   else process.env.MRE_HASH_KEY = prev;
   return bad;
