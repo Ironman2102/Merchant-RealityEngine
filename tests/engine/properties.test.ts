@@ -51,7 +51,10 @@ export default function (): number {
   check('uploaded seasonal multiplier ignored', h1(run(declared)) === h1(front));
 
   // 7. Posterior interval contains the point estimate and sits in [0, 1].
-  for (const r of [front, genuine]) { const [lo, hi] = r.fusion.posteriorCi; check('interval sane', lo >= 0 && hi <= 1 && lo <= hi + 1e-12, `${lo} ${hi}`); }
+  for (const r of [front, genuine]) {
+    const [lo, hi] = r.fusion.posteriorCi;
+    check('interval sane', lo >= 0 && hi <= 1 && lo <= r.fusion.posterior + 1e-12 && r.fusion.posterior <= hi + 1e-12, `${lo} <= ${r.fusion.posterior} <= ${hi}`);
+  }
 
   // 8. Decision theory: the recommended action never exceeds the automatic ceiling, and no case → watch-level only.
   check('no case → L0/L1', ['L0', 'L1'].includes(genuine.review.recommended), genuine.review.recommended);

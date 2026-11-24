@@ -47,18 +47,25 @@ function rateTest(x: number, n: number, normRate: number, strength = 200) {
 const PRE = RULES.engine.preMatchMinutes;
 function matchWindows(c: Ctx) {
   const fx = [...c.sc.fixtures, ...RULES.calendar.cricketFixtures.map(f => Date.parse(String(f)))].filter(Number.isFinite);
-  const fixDays = new Set(fx.map(istDayKey));
+  const fixDays = new Set(fx.map(f => istDayKey(istMinuteOfDay(f) < PRE ? f - PRE * 60_000 : f)));
   const wins = [...new Set(fx.map(istMinuteOfDay))].map(m => [m - PRE, m] as const);
-  return { fx, fixDays, inWin: (m: number) => wins.some(([a, b]) => m >= a && m < b) };
+  const inWin = (m: number) => wins.some(([a, b]) => (a >= 0 ? m >= a && m < b : m >= a + 1440 || m < b));
+  return { fx, fixDays, inWin };
 }
 
 export const DETECTORS: Def[] = [
   { id: 'A1', run: c => {
-    const n = c.sales.length, t = ksOneSample(c.sales.map(s => s.amount), x => lognormalCdf(x, c.norm.ticket.median, c.norm.ticket.sigma));
-    const sorted = c.sales.map(s => s.amount).sort((a, b) => a - b), med = sorted[Math.floor(n / 2)] ?? 0;
-    return { p: t.p, effect: t.statistic, n, effectLabel: 'KS distance D', ci: null, expectedSource: normSrc(c),
+    const amounts = c.sales.map(s => s.amount), n = amounts.length;
+    const t = ksOneSample(amounts, x => lognormalCdf(x, c.norm.ticket.median, c.norm.ticket.sigma));
+    const sorted = [...amounts].sort((a, b) => a - b), med = sorted[Math.floor(n / 2)] ?? 0;
+    const counts = new Map<number, number>();
+    for (const a of amounts) counts.set(a, (counts.get(a) ?? 0) + 1);
+    const maxTie = counts.size ? Math.max(...counts.values()) / Math.max(n, 1) : 0;
+    const discreteMenu = n >= 20 && counts.size <= 15 && maxTie >= 0.08 && med >= c.norm.ticket.median * 0.2 && med <= c.norm.ticket.median * 3;
+    return { p: discreteMenu ? 1 : t.p, effect: discreteMenu ? 0 : t.statistic, n, effectLabel: 'KS distance D', ci: null, expectedSource: normSrc(c),
       observed: `Median ticket ${inr(med)}; distribution distance D = ${t.statistic.toFixed(2)}`, expected: `Median about ${inr(c.norm.ticket.median)}, spread like the category`,
-      explanation: 'Compares the whole ticket-size distribution with what this kind of business normally takes.', metrics: { D: t.statistic.toFixed(3), p: t.p.toExponential(2), median: inr(med) } };
+      explanation: discreteMenu ? 'Discrete menu pricing within normal category ticket bounds.' : 'Compares the whole ticket-size distribution with what this kind of business normally takes.',
+      metrics: { D: t.statistic.toFixed(3), p: t.p.toExponential(2), median: inr(med) } };
   } },
   { id: 'A4', run: c => {
     const r = c.sales.filter(e => isRound(e.amount)), n = c.sales.length, t = rateTest(r.length, n, c.norm.roundShare);
@@ -68,7 +75,8 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'A5', run: c => {
     const tiers = new Set(RULES.amounts.bonusTiers), catalogue = new Set(c.sc.web.catalogue.map(i => Math.round(i.price)));
-    const hit = c.sales.filter(e => tiers.has(e.amount) && !catalogue.has(e.amount)), n = c.sales.length, t = rateTest(hit.length, n, c.norm.bonusShare);
+    const offlineNoCat = c.sc.coverage.website === 'MISSING' && c.sc.web.catalogue.length === 0;
+    const hit = c.sales.filter(e => tiers.has(e.amount) && !catalogue.has(e.amount) && !(offlineNoCat && e.amount % 100 === 99)), n = c.sales.length, t = rateTest(hit.length, n, c.norm.bonusShare);
     return { ...t, n, effectLabel: 'excess share at deposit/bonus-tier amounts', expectedSource: `${normSrc(c)}; tiers in rules/amounts.json`, records: ids(hit),
       observed: `${pct(share(hit.length, n))} of tickets at deposit-tier amounts not in the catalogue`, expected: `about ${pct(c.norm.bonusShare)}`,
       explanation: 'Amounts like ₹199, ₹999, ₹1,999 that are not catalogue prices match betting deposit tiers.', metrics: { tier: hit.length, p: t.p.toExponential(2) } };
@@ -84,12 +92,22 @@ export const DETECTORS: Def[] = [
       metrics: { outOfArea: off.length, states: new Set(off.map(e => e.payerState)).size, p: t.p.toExponential(2) } };
   } },
   { id: 'B7', run: c => {
-    const per = new Map<string, number>(), wk = (e: PaymentEvent) => `${e.payerHash}|${Math.floor(e.eventTime / (7 * 86400000))}`;
     const known = c.sales.filter(e => e.payerHash && e.payerHash !== '—');
-    known.forEach(e => per.set(wk(e), (per.get(wk(e)) ?? 0) + 1));
-    const heavy = known.filter(e => (per.get(wk(e)) ?? 0) >= RULES.engine.heavyRepeatPerWeek), t = rateTest(heavy.length, known.length, c.norm.heavyRepeatShare);
+    const byPayer = new Map<string, PaymentEvent[]>();
+    known.forEach(e => byPayer.set(e.payerHash, [...(byPayer.get(e.payerHash) ?? []), e]));
+    const heavyIds = new Set<string>(), winMs = 7 * 86400000, bar = RULES.engine.heavyRepeatPerWeek;
+    for (const evs of byPayer.values()) {
+      if (evs.length < bar) continue;
+      const sorted = [...evs].sort((a, b) => a.eventTime - b.eventTime);
+      let l = 0;
+      for (let r = 0; r < sorted.length; r++) {
+        while (sorted[r].eventTime - sorted[l].eventTime > winMs) l++;
+        if (r - l + 1 >= bar) for (let k = l; k <= r; k++) heavyIds.add(sorted[k].id);
+      }
+    }
+    const heavy = known.filter(e => heavyIds.has(e.id)), t = rateTest(heavy.length, known.length, c.norm.heavyRepeatShare);
     return { ...t, n: known.length, effectLabel: 'excess share from heavy repeat payers', expectedSource: normSrc(c), records: ids(heavy),
-      observed: `${pct(share(heavy.length, known.length))} of sales from payers paying ${RULES.engine.heavyRepeatPerWeek}+ times in a week`, expected: `about ${pct(c.norm.heavyRepeatShare)}`,
+      observed: `${pct(share(heavy.length, known.length))} of sales from payers paying ${bar}+ times in a week`, expected: `about ${pct(c.norm.heavyRepeatShare)}`,
       explanation: 'Betting depositors top up again and again within days; regular customers of most shops do not.', metrics: { heavySales: heavy.length, p: t.p.toExponential(2) } };
   } },
   { id: 'B9', run: c => {
@@ -140,9 +158,11 @@ export const DETECTORS: Def[] = [
       explanation: 'Refunds routed to accounts that never paid. Refunds to the payer\'s own other account are not counted.', metrics: { other: bad.length, value: inr(value), p: t.p.toExponential(2) } };
   } },
   { id: 'D10', run: c => {
-    const n = c.sales.length, un = c.sales.filter(s => !s.orderId), p = binomSf(un.length, n, 0.05);
-    return { p, effect: share(un.length, n) - 0.05, n, effectLabel: 'excess unmatched share', ci: ci90(un.length, n), expectedSource: 'Norm: ≤ 5% of payments lack an order', records: ids(un),
-      observed: `${pct(1 - share(un.length, n))} of payments match an order`, expected: '≥ 95% match', explanation: 'Payments with no corresponding order in the merchant\'s order system.', metrics: { unmatched: un.length, p: p.toExponential(2) } };
+    const online = c.sales.filter(s => s.channel !== 'POS');
+    if (!online.length) return unknown('Only POS walk-in sales in window; order matching applies to online/link sales.');
+    const n = online.length, un = online.filter(s => !s.orderId), p = binomSf(un.length, n, 0.05);
+    return { p, effect: share(un.length, n) - 0.05, n, effectLabel: 'excess unmatched share', ci: ci90(un.length, n), expectedSource: 'Norm: ≤ 5% of online payments lack an order', records: ids(un),
+      observed: `${pct(1 - share(un.length, n))} of online payments match an order`, expected: '≥ 95% match', explanation: 'Payments with no corresponding order in the merchant\'s order system.', metrics: { unmatched: un.length, p: p.toExponential(2) } };
   } },
   { id: 'E1', run: c => {
     const mine = c.sc.web.embeds.filter(e => e.merchantId === c.p.id && e.category !== 'own');
@@ -201,7 +221,9 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'G6', run: c => {
     const mine = c.sc.web.embeds.filter(e => e.merchantId === c.p.id); if (!mine.length) return unknown('No embeds captured for this merchant\'s links.');
-    const known = new Set(RULES.hosts.known.map(h => h.host)), ext = mine.filter(e => !c.p.declaredDomains.includes(e.host)), bet = ext.filter(e => e.category === 'gambling' || known.has(e.host));
+    const normHost = (h: string) => h.trim().toLowerCase().replace(/^www\./, '');
+    const declared = new Set(c.p.declaredDomains.map(normHost));
+    const known = new Set(RULES.hosts.known.map(h => normHost(h.host))), ext = mine.filter(e => !declared.has(normHost(e.host))), bet = ext.filter(e => e.category === 'gambling' || known.has(normHost(e.host)));
     const place = (e: { host: string; path?: string; pageType?: string }) => `${e.host ?? ''}${e.path ?? ''}${e.pageType ? ` (${e.pageType})` : ''}`;
     if (bet.length) return { p: null, effect: 1.25, n: mine.length, effectLabel: 'betting-host embed', force: 'ILLICIT', observed: `Link ${bet[0].linkId} embedded on ${place(bet[0])}`, expected: 'Links only on declared domains', explanation: 'A merchant payment link on an undeclared betting deposit page.', expectedSource: 'Crawler snapshot + rules/hosts.json', records: embedIds(bet), metrics: { host: bet[0].host } };
     if (ext.length) return { p: null, effect: 0.6, n: mine.length, effectLabel: 'undeclared embed', force: 'ILLICIT', observed: `Link ${ext[0].linkId} embedded on undeclared ${place(ext[0])}`, expected: 'Links only on declared domains', explanation: 'A payment link used on a page unrelated to the declared business.', expectedSource: 'Crawler snapshot', records: embedIds(ext) };

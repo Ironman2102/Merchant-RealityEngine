@@ -7,7 +7,7 @@ import { handle } from '../../backend/src/http.ts';
 if (!process.env.MRE_DB_FILE) process.env.MRE_DB_FILE = '/tmp/mre.db';
 
 function publishEnv(): void {
-  for (const name of ['MRE_BOOT_USERS', 'MRE_BOOT_USER', 'MRE_BOOT_PASSWORD', 'MRE_HASH_KEY', 'MRE_SESSION_SECRET', 'MRE_ML_URL', 'MRE_ML_TIMEOUT', 'DAYTONA_API_KEY', 'DAYTONA_API_URL', 'DAYTONA_SANDBOX_ID']) {
+  for (const name of ['MRE_BOOT_USERS', 'MRE_BOOT_USER', 'MRE_BOOT_PASSWORD', 'MRE_HASH_KEY', 'MRE_SESSION_SECRET', 'MRE_ML_URL', 'MRE_ML_TIMEOUT', 'DAYTONA_API_KEY', 'DAYTONA_API_URL', 'DAYTONA_SANDBOX_ID', 'DAYTONA_ORGANIZATION_ID']) {
     const value = boot(name);
     if (value) process.env[name] = value;
   }

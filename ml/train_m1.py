@@ -19,19 +19,32 @@ def main() -> None:
     df = pd.read_csv(DATA)
     y = df['label'].to_numpy()
     ids = df['merchant_id']
-    X = df.drop(columns=['merchant_id', 'label'])
-    cols = list(X.columns)
+    # Drop Bayesian output leakage (posterior, prior, logodds_total) and missingness shortcuts (cov_*, unk_*)
+    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total'}
+    cols = [c for c in df.columns if c not in drop_cols and not c.startswith('cov_') and not c.startswith('unk_')]
+    X = df[cols].copy()
     mono = [1 if c.startswith('llr_') or c.startswith('fired_') else 0 for c in cols]
     idx = np.arange(len(df))
     train_i, test_i = train_test_split(idx, test_size=0.3, random_state=SEED, stratify=y)
-    Xtr, ytr = X.iloc[train_i], y[train_i]
-    grid = []
+    Xtr_base, ytr_base = X.iloc[train_i].copy(), y[train_i]
+    # Coverage-dropout augmentation: mask optional non-acquiring detectors on 40% of rows so M1 cannot collapse onto B9/D10 availability
     rng = np.random.default_rng(SEED)
+    opt_dets = ['B9', 'D7', 'D9', 'D10', 'E1', 'E3', 'F2', 'F5', 'F7', 'F8', 'G2', 'G6', 'C5']
+    Xtr_aug = Xtr_base.copy()
+    for det in opt_dets:
+        mask = rng.random(len(Xtr_aug)) < 0.4
+        for prefix in ('llr_', 'eff_', 'fired_'):
+            col = f'{prefix}{det}'
+            if col in Xtr_aug.columns:
+                Xtr_aug.loc[mask, col] = 0.0
+    Xtr = pd.concat([Xtr_base, Xtr_aug], ignore_index=True)
+    ytr = np.concatenate([ytr_base, ytr_base])
+    grid = []
     for leaves, child, lr, trees, reg in rng.choice(
-        [(a, b, c, d, e) for a in (7, 15, 31) for b in (5, 10, 20) for c in (0.03, 0.05, 0.1) for d in (100, 200, 400) for e in (0, 1, 5)],
-        size=30, replace=False,
+        [(a, b, c, d, e) for a in (7, 15) for b in (10, 20, 30) for c in (0.03, 0.05, 0.1) for d in (100, 200) for e in (1, 5, 10)],
+        size=24, replace=False,
     ):
-        grid.append(dict(num_leaves=int(leaves), min_child_samples=int(child), learning_rate=float(lr), n_estimators=int(trees), reg_lambda=float(reg)))
+        grid.append(dict(num_leaves=int(leaves), min_child_samples=int(child), learning_rate=float(lr), n_estimators=int(trees), reg_lambda=float(reg), colsample_bytree=0.5, subsample=0.8, subsample_freq=1, max_depth=4))
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
     pos = max(int((ytr == 1).sum()), 1)
     neg = max(int((ytr == 0).sum()), 1)

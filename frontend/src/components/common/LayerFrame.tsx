@@ -39,7 +39,7 @@ export function LayerFrame({
     <div className="space-y-4">
       <Card>
         <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-          <span className="flex h-8 w-10 items-center justify-center rounded border border-zinc-400/40 bg-zinc-400/10 font-mono text-sm font-semibold text-zinc-300">{m.code}</span>
+          <span className="flex h-8 w-10 items-center justify-center rounded border border-indigo-200 bg-indigo-50 font-mono text-sm font-semibold text-indigo-700">{m.code}</span>
           <div className="min-w-0 flex-1">
             <div className="text-base font-semibold">{m.name}</div>
             <div className="text-xs text-mute">{m.tagline}</div>

@@ -42,5 +42,5 @@ export function bocpdRecentChange(z: readonly number[], hazard = 1 / 52, tau2 = 
     mus = [0, ...nm]; vars = [tau2, ...nv];
     if (R.length > 260) { R = R.slice(0, 260); mus = mus.slice(0, 260); vars = vars.slice(0, 260); }
   }
-  return Math.min(1, R.slice(0, window).reduce((s, v) => s + v, 0));
+  return Math.min(1, R.slice(0, window + 1).reduce((s, v) => s + v, 0));
 }

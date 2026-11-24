@@ -30,9 +30,14 @@ type StoredProposal = {
     attackerCost: number;
     beforeDecision: string;
     beforePosterior: number;
+    beforeCi?: [number, number];
+    beforeAction?: string;
     afterDecision: string;
     afterPosterior: number;
+    afterCi?: [number, number];
+    afterAction?: string;
     recallRsi: number;
+    detectorDiff?: { id: string; name: string; beforeStatus: string; afterStatus: string; beforeLlr: number; afterLlr: number; deltaLlr: number }[];
   };
 };
 type LearnedRate = {
@@ -50,6 +55,7 @@ type RulesStatus = {
   rulesVersion: string;
   livePatch: Record<string, unknown> | null;
   evasionCheck: { merchantId: string; name: string; salesCount: number; operator: string; attackerCost: number; decision: string; posterior: number };
+  operatorSummary?: { operator: string; count: number; evaded: number }[];
   silencing: { id: string; name: string; silencedShare: number; band: [number, number] }[];
   proposals: StoredProposal[];
   audit: RulesAuditRow[];
@@ -172,7 +178,7 @@ export function ImprovementsPage() {
               <ul className="mt-2 space-y-1.5 text-xs">
                 {status.silencing.map(s => (
                   <li key={s.id} className="flex items-center justify-between gap-2">
-                    <span><Mono className="text-zinc-300">{s.id}</Mono> {s.name}</span>
+                    <span><Mono className="text-indigo-700 font-semibold">{s.id}</Mono> {s.name}</span>
                     <span className="font-mono text-mute">silenced {(s.silencedShare * 100).toFixed(0)}% · band [{s.band[0]}, {s.band[1]}]</span>
                   </li>
                 ))}
@@ -189,8 +195,22 @@ export function ImprovementsPage() {
             </div>
           </div>
 
+          {status.operatorSummary && status.operatorSummary.length > 0 && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-3 text-xs">
+              {status.operatorSummary.map(op => (
+                <div key={op.operator} className="rounded border border-line bg-panel2 px-3 py-2.5">
+                  <div className="font-medium text-ink">{op.operator}</div>
+                  <div className="mt-1 flex items-center justify-between text-mute">
+                    <span>{op.count} variant(s)</span>
+                    <Badge tone={op.evaded > 0 ? 'bad' : 'ok'}>{op.evaded > 0 ? `${op.evaded} evaded` : 'All caught'}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {latestProp && (
-            <div className="mt-4 rounded border border-line bg-bg/60 p-4">
+            <div className="mt-4 rounded border border-line bg-panel2 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -219,7 +239,7 @@ export function ImprovementsPage() {
                   <div className="text-mute">Proposed in-band parameter diff</div>
                   <div className="mt-1.5 space-y-1 font-mono">
                     {Object.entries(latestProp.patch).map(([detId, p]) => (
-                      <div key={detId}>{detId}: minN 30 → <span className="text-zinc-200">{p.minN}</span> (band [8, 40])</div>
+                      <div key={detId}>{detId}: minN 30 → <span className="font-semibold text-indigo-700">{p.minN}</span>{p.minEffect !== undefined ? `, minEffect → ${p.minEffect}` : ''}</div>
                     ))}
                   </div>
                 </div>
@@ -227,7 +247,7 @@ export function ImprovementsPage() {
                   <div className="text-mute">Backtest on red-team evasions (n = {latestProp.backtest.champion.nFront})</div>
                   <div className="mt-1.5 space-y-1">
                     <div>Champion recall: <Mono>{(latestProp.backtest.champion.recall * 100).toFixed(1)}%</Mono> (Wilson {ciFmt(latestProp.backtest.champion.recallCi)})</div>
-                    <div>Challenger recall: <Mono className="text-zinc-200">{(latestProp.backtest.challenger.recall * 100).toFixed(1)}%</Mono> (Wilson {ciFmt(latestProp.backtest.challenger.recallCi)})</div>
+                    <div>Challenger recall: <Mono className="font-semibold text-emerald-700">{(latestProp.backtest.challenger.recall * 100).toFixed(1)}%</Mono> (Wilson {ciFmt(latestProp.backtest.challenger.recallCi)})</div>
                     <div>McNemar exact <Mono>p = {latestProp.backtest.mcnemarP.toFixed(4)}</Mono> (&lt; 0.05 significant)</div>
                   </div>
                 </div>
@@ -236,10 +256,61 @@ export function ImprovementsPage() {
                   <div className="mt-1.5 space-y-1">
                     <div>Champion FP rate: <Mono>{(latestProp.backtest.champion.fp * 100).toFixed(1)}%</Mono> (Wilson {ciFmt(latestProp.backtest.champion.fpCi)})</div>
                     <div>Challenger FP rate: <Mono>{(latestProp.backtest.challenger.fp * 100).toFixed(1)}%</Mono> (Wilson {ciFmt(latestProp.backtest.challenger.fpCi)})</div>
-                    <div className="text-gray-300">FP interval covers prior rate (0 false alarms added)</div>
+                    <div className="font-medium text-emerald-700">FP interval covers prior rate (0 false alarms added)</div>
                   </div>
                 </div>
               </div>
+
+              {latestProp.evasionPreview && (
+                <div className="mt-4 rounded-lg border border-indigo-200 bg-panel p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Before vs. After Test Case Comparison</div>
+                      <div className="text-sm font-semibold text-ink">{latestProp.evasionPreview.name} ({latestProp.evasionPreview.merchantId})</div>
+                    </div>
+                    <Badge tone="info">Recall RSI: {pct(latestProp.evasionPreview.recallRsi)}</Badge>
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2 text-xs">
+                    <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-3">
+                      <div className="font-semibold text-rose-900">Before (Champion Rules)</div>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <Badge tone={latestProp.evasionPreview.beforeDecision === 'OPEN_CASE' ? 'ok' : 'bad'}>{latestProp.evasionPreview.beforeDecision}</Badge>
+                        <span className="font-mono font-semibold text-ink">P(front) = {fmtProb(latestProp.evasionPreview.beforePosterior)}</span>
+                        {latestProp.evasionPreview.beforeAction && <Badge tone="mute">Action: {latestProp.evasionPreview.beforeAction}</Badge>}
+                      </div>
+                      {latestProp.evasionPreview.beforeCi && <div className="mt-1 font-mono text-mute">90% CI: {ciFmt(latestProp.evasionPreview.beforeCi)}</div>}
+                    </div>
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
+                      <div className="font-semibold text-emerald-900">After (Challenger Rules)</div>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <Badge tone={latestProp.evasionPreview.afterDecision === 'OPEN_CASE' ? 'ok' : 'bad'}>{latestProp.evasionPreview.afterDecision}</Badge>
+                        <span className="font-mono font-semibold text-ink">P(front) = {fmtProb(latestProp.evasionPreview.afterPosterior)}</span>
+                        {latestProp.evasionPreview.afterAction && <Badge tone="info">Action: {latestProp.evasionPreview.afterAction}</Badge>}
+                      </div>
+                      {latestProp.evasionPreview.afterCi && <div className="mt-1 font-mono text-mute">90% CI: {ciFmt(latestProp.evasionPreview.afterCi)}</div>}
+                    </div>
+                  </div>
+                  {latestProp.evasionPreview.detectorDiff && latestProp.evasionPreview.detectorDiff.length > 0 && (
+                    <div className="mt-3 overflow-x-auto rounded border border-line">
+                      <table className={tableCls}>
+                        <thead><tr><Th>Detector</Th><Th>Before</Th><Th>After</Th><Th>LLR Before</Th><Th>LLR After</Th><Th>Delta (nats)</Th></tr></thead>
+                        <tbody>
+                          {latestProp.evasionPreview.detectorDiff.map(d => (
+                            <tr key={d.id} className={rowCls}>
+                              <Td><Mono className="font-semibold text-indigo-700">{d.id}</Mono> <span className="text-xs text-ink">{d.name}</span></Td>
+                              <Td><Badge tone="mute">{d.beforeStatus}</Badge></Td>
+                              <Td><Badge tone={d.afterStatus === 'ILLICIT' ? 'bad' : 'ok'}>{d.afterStatus}</Badge></Td>
+                              <Td className="font-mono text-xs text-mute">{d.beforeLlr.toFixed(2)}</Td>
+                              <Td className="font-mono text-xs font-semibold text-ink">{d.afterLlr.toFixed(2)}</Td>
+                              <Td className="font-mono text-xs font-semibold text-emerald-700">{d.deltaLlr >= 0 ? '+' : ''}{d.deltaLlr.toFixed(2)}</Td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -284,7 +355,7 @@ export function ImprovementsPage() {
             <tbody>
               {status.learnedRates.map(r => (
                 <tr key={r.detectorId} className={rowCls}>
-                  <Td><Mono className="text-zinc-300">{r.detectorId}</Mono> <span className="ml-1.5 text-xs">{r.name}</span></Td>
+                  <Td><Mono className="font-semibold text-indigo-700">{r.detectorId}</Mono> <span className="ml-1.5 text-xs">{r.name}</span></Td>
                   <Td className="font-mono text-xs text-mute">{(r.priorSensitivity * 100).toFixed(1)}%</Td>
                   <Td className="font-mono text-xs">{(r.sensitivity * 100).toFixed(1)}%</Td>
                   <Td className="font-mono text-xs text-mute">{(r.priorFalsePositive * 100).toFixed(1)}%</Td>
@@ -305,7 +376,7 @@ export function ImprovementsPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-lg border border-line bg-panel2 p-4">
               <div className="text-xs text-mute">Recall RSI vs unpromoted Bayesian bar</div>
-              <div className="mt-2 font-mono text-2xl text-zinc-100">{pct(report.rsi.versusBayesian)}</div>
+              <div className="mt-2 font-mono text-2xl font-bold text-indigo-700">{pct(report.rsi.versusBayesian)}</div>
               <p className="mt-2 text-xs text-mute">
                 Before promoting the T16 minN patch, the trained second-opinion models catch the stealth split-account fronts ({report.models[0]?.recall}) that sit below the Bayesian engine’s initial minN bar ({report.models[2]?.recall}).
               </p>
@@ -319,7 +390,7 @@ export function ImprovementsPage() {
             </div>
             <div className="rounded-lg border border-line bg-panel2 p-4">
               <div className="text-xs text-mute">Genuine-merchant false alarms</div>
-              <div className="mt-2 font-mono text-2xl text-gray-300">0 / 278 (0.0%)</div>
+              <div className="mt-2 font-mono text-2xl font-bold text-emerald-700">0 / 278 (0.0%)</div>
               <p className="mt-2 text-xs text-mute">
                 With the 2-provenance / 3-family governance gate applied, neither the Bayesian engine nor the calibrated ML models trigger false alarms on held-out genuine merchants.
               </p>

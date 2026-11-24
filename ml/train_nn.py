@@ -54,27 +54,38 @@ def main() -> None:
     y = df['label'].to_numpy()
     test_ids = set(pd.read_csv(ROOT / 'ml' / 'data' / 'test_ids.csv')['merchant_id'].astype(str))
     held = df['merchant_id'].astype(str).isin(test_ids).to_numpy()
-    cols = [c for c in df.columns if c not in ('merchant_id', 'label')]
-    X = df[cols].to_numpy(dtype=float)
+    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total'}
+    cols = [c for c in df.columns if c not in drop_cols and not c.startswith('cov_') and not c.startswith('unk_')]
+    X_df = df[cols].copy()
     train = ~held
-    mu = X[train].mean(axis=0)
-    sd = X[train].std(axis=0)
+    rng = np.random.default_rng(SEED)
+    # Coverage-dropout augmentation on training rows so NN cannot rely on missing optional feeds
+    X_aug = X_df.loc[train].copy()
+    for det in ['B9', 'D7', 'D9', 'D10', 'E1', 'E3', 'F2', 'F5', 'F7', 'F8', 'G2', 'G6', 'C5']:
+        mask = rng.random(len(X_aug)) < 0.4
+        for prefix in ('llr_', 'eff_', 'fired_'):
+            col = f'{prefix}{det}'
+            if col in X_aug.columns:
+                X_aug.loc[mask, col] = 0.0
+    X = X_df.to_numpy(dtype=float)
+    X_tr_full = np.vstack([X[train], X_aug.to_numpy(dtype=float)])
+    y_tr_full = np.concatenate([y[train], y[train]])
+    mu = X_tr_full.mean(axis=0)
+    sd = X_tr_full.std(axis=0)
     sd[sd == 0] = 1
     Z = (X - mu) / sd
-    ytr = y[train]
-    pos = max(int((ytr == 1).sum()), 1)
-    neg = max(int((ytr == 0).sum()), 1)
-    # Repeat the scarce front rows so the network sees them. The hold-out rows stay untouched.
-    front_i = np.flatnonzero(train & (y == 1))
+    Z_tr_full = (X_tr_full - mu) / sd
+    pos = max(int((y_tr_full == 1).sum()), 1)
+    neg = max(int((y_tr_full == 0).sum()), 1)
+    front_i = np.flatnonzero(y_tr_full == 1)
     extra = np.repeat(front_i, max(1, neg // pos - 1))
-    fit_i = np.concatenate([np.flatnonzero(train), extra])
-    rng = np.random.default_rng(SEED)
+    fit_i = np.concatenate([np.arange(len(y_tr_full)), extra])
     rng.shuffle(fit_i)
-    net = MLPClassifier(hidden_layer_sizes=(32, 16), activation='relu', solver='adam', alpha=1e-3, max_iter=200, random_state=SEED)
-    net.fit(Z[fit_i], y[fit_i])
-    oof = np.zeros(train.sum())
+    net = MLPClassifier(hidden_layer_sizes=(32, 16), activation='relu', solver='adam', alpha=1e-2, max_iter=250, random_state=SEED)
+    net.fit(Z_tr_full[fit_i], y_tr_full[fit_i])
+    oof = np.zeros(len(y_tr_full))
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
-    Ztr, y_tr = Z[train], y[train]
+    Ztr, y_tr = Z_tr_full, y_tr_full
     for tr, va in skf.split(Ztr, y_tr):
         fold = MLPClassifier(hidden_layer_sizes=(32, 16), activation='relu', solver='adam', alpha=1e-3, max_iter=200, random_state=SEED)
         fold.fit(Ztr[tr], y_tr[tr])

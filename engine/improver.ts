@@ -76,17 +76,57 @@ function binom(n: number, k: number): number {
   return c;
 }
 
-/** A small-sample evasion hides behind minN. The only in-band fix tried here is lowering minN to the band floor for the silenced detectors. */
+/** Dynamically diagnose silenced detectors on red-team evasions and search in-band parameter fixes. */
 export function propose(fronts: MreDataset[], genuine: MreDataset[], evasions: MreDataset[]): Proposal | null {
+  const silencedCounts = new Map<string, number>();
+  const baselineDetectors = new Set<string>();
+  for (const f of fronts) {
+    const r = analyze(f);
+    if (!r.ok) continue;
+    for (const e of r.result.evidence) if (e.status === 'ILLICIT') baselineDetectors.add(e.id);
+  }
+  const targetPool = baselineDetectors.size > 0 ? [...baselineDetectors] : ['A1', 'A4', 'B6', 'H3'];
+  for (const ev of evasions) {
+    const r = analyze(ev);
+    if (!r.ok) continue;
+    for (const e of r.result.evidence) {
+      if (targetPool.includes(e.id) && e.status !== 'ILLICIT') {
+        silencedCounts.set(e.id, (silencedCounts.get(e.id) ?? 0) + 1);
+      }
+    }
+  }
+  const rankedSilenced = [...silencedCounts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([id]) => id);
+  const candidates = rankedSilenced.length > 0 ? rankedSilenced : ['A1', 'A4', 'B6', 'H3'];
+
   const patch: Proposal['patch'] = {};
-  for (const id of ['A1', 'A4', 'B6', 'H3']) {
-    const floor = bandOf(id).minN[0];
-    if (floor < RULES.detector(id).minN && insideBand(id, { minN: floor })) patch[id] = { minN: floor };
+  for (const id of candidates) {
+    const cfg = RULES.detector(id);
+    const band = bandOf(id);
+    const p: Partial<Pick<DetectorCfg, 'minEffect' | 'alpha' | 'minN'>> = {};
+    if (band.minN[0] < cfg.minN && insideBand(id, { minN: band.minN[0] })) p.minN = band.minN[0];
+    if (Object.keys(p).length) patch[id] = p;
   }
   if (!Object.keys(patch).length) return null;
-  const champion = metrics(evasions, genuine);
-  const challenger = metrics(evasions, genuine, patch);
-  const mcnemarP = mcnemar(evasions, patch);
+
+  let champion = metrics(evasions, genuine);
+  let challenger = metrics(evasions, genuine, patch);
+  let mcnemarP = mcnemar(evasions, patch);
+
+  // If minN alone doesn't lift recall enough, also try in-band minEffect floor on silenced detectors
+  if (!(challenger.recall > champion.recall && mcnemarP < 0.05)) {
+    for (const id of candidates) {
+      const cfg = RULES.detector(id);
+      const band = bandOf(id);
+      if (band.minEffect[0] < cfg.minEffect && insideBand(id, { minEffect: band.minEffect[0] })) {
+        patch[id] = { ...patch[id], minEffect: Number(band.minEffect[0].toFixed(4)) };
+      }
+    }
+    challenger = metrics(evasions, genuine, patch);
+    mcnemarP = mcnemar(evasions, patch);
+  }
+
   const fpOk = challenger.fpCi[1] <= champion.fpCi[1] + 0.005;
   const recallUp = challenger.recall > champion.recall;
   const significant = mcnemarP < 0.05;
@@ -96,7 +136,7 @@ export function propose(fronts: MreDataset[], genuine: MreDataset[], evasions: M
     createdAt: new Date().toISOString(),
     createdBy: 'mre-improver',
     patch,
-    rationale: 'Small-sample fronts were UNKNOWN because n was below minN. The band floor still clears the genuine-merchant false-positive bound.',
+    rationale: `Red-team search diagnosed ${Object.keys(patch).join(', ')} as silenced on evasion variants and tuned in-band bounds while clearing the genuine-merchant FP bound.`,
     backtest: { champion, challenger, mcnemarP },
     status: 'proposed',
   };

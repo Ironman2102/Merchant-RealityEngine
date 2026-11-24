@@ -6,6 +6,7 @@ import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
 import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
+import { detectRings } from '../../engine/ringDetector';
 import { scoreWithHost } from './ml';
 import { getCase, putCase } from './store';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
@@ -119,6 +120,27 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (path.startsWith('/v1')) {
       const v1 = await v1FromNode(method, path, req, method === 'GET' ? {} : await readBody(req));
       if (v1) return send(res, v1);
+    }
+
+    if (path === '/investigations/bulk' && method === 'POST') {
+      if (!actor) return send(res, { status: 401, body: { error: 'Sign in to use the investigation API.' } });
+      const raw = await readBody(req);
+      const list = Array.isArray(raw) ? raw : Array.isArray((raw as { datasets?: unknown[] })?.datasets) ? (raw as { datasets: unknown[] }).datasets : null;
+      if (!list || !list.length) return send(res, { status: 400, body: { error: 'Send a non-empty array of merchant datasets.' } });
+      if (list.length > 100) return send(res, { status: 400, body: { error: 'Bulk upload is capped at 100 merchants per request.' } });
+      const results: Record<string, unknown>[] = [];
+      const scenarios = [];
+      for (const ds of list) {
+        const opened = openInvestigation(ds, actor);
+        const caseId = typeof opened.body.id === 'string' ? opened.body.id : '';
+        if (opened.status === 200 && caseId) {
+          const rec = getCase(caseId);
+          if (rec) scenarios.push(rec.result.scenario);
+        }
+        results.push({ status: opened.status, ...opened.body });
+      }
+      const rings = detectRings(scenarios);
+      return send(res, { status: 200, body: { count: results.length, rings, cases: results } });
     }
 
     const match = path.match(/^\/investigations(?:\/([^/]+)(?:\/(review|response|approve|label|trace|pack|summary|audit))?)?$/);

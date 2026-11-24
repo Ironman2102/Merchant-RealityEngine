@@ -153,6 +153,8 @@ export function buildDatasetFromCsv(
       if (mapping.payerId && r[mapping.payerId]) t.payerId = r[mapping.payerId];
       if (mapping.payerState && r[mapping.payerState]) t.payerState = r[mapping.payerState].toUpperCase().slice(0, 2);
       if (mapping.paymentLinkId && r[mapping.paymentLinkId]) t.paymentLinkId = r[mapping.paymentLinkId];
+      const beneCol = findHeader(parsed.headers, [/beneficiary/, /bene_acct/, /settlement_account/, /bank_acct/]);
+      if (beneCol && r[beneCol]) t.beneficiaryAccount = r[beneCol];
       return t;
     })
     .filter(t => t.amount > 0);
@@ -221,4 +223,51 @@ export function buildSampleGatewayCsv(): string {
     rows.push(`PG-${1001 + i},${amt},${ts},SALE,user${100 + (i % 28)}@upi,${st},UPI_LINK,PL-9942`);
   }
   return rows.join('\n');
+}
+
+/** Group a multi-merchant CSV by merchant_id / mid column into one MreDataset per merchant. */
+export function buildDatasetsFromMultiCsv(
+  parsed: ParsedCsv,
+  mapping: CsvColumnMapping,
+  defaultMeta: CsvMerchantMeta,
+): { datasets: MreDataset[]; isMulti: boolean } {
+  const midCol = findHeader(parsed.headers, [/^merchant_id$/, /^mid$/, /merchant/, /seller_id/]);
+  if (!midCol) {
+    return { datasets: [buildDatasetFromCsv(parsed, mapping, defaultMeta)], isMulti: false };
+  }
+  const nameCol = findHeader(parsed.headers, [/merchant_name/, /business_name/, /dba/]);
+  const mccCol = findHeader(parsed.headers, [/^mcc$/, /category_code/]);
+  const stateCol = findHeader(parsed.headers, [/merchant_state/, /home_state/]);
+  const groups = new Map<string, Record<string, string>[]>();
+  for (const r of parsed.rows) {
+    const id = (r[midCol] ?? '').trim() || defaultMeta.id;
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id)!.push(r);
+  }
+  if (groups.size <= 1) {
+    const onlyId = [...groups.keys()][0] ?? defaultMeta.id;
+    const first = groups.get(onlyId)?.[0] ?? {};
+    return {
+      datasets: [buildDatasetFromCsv(parsed, mapping, {
+        ...defaultMeta,
+        id: onlyId,
+        name: (nameCol && first[nameCol]) || defaultMeta.name,
+        mcc: (mccCol && first[mccCol]) || defaultMeta.mcc,
+        state: (stateCol && first[stateCol]) || defaultMeta.state,
+      })],
+      isMulti: false,
+    };
+  }
+  const datasets: MreDataset[] = [];
+  for (const [mid, rows] of groups.entries()) {
+    const first = rows[0] ?? {};
+    datasets.push(buildDatasetFromCsv({ headers: parsed.headers, rows }, mapping, {
+      ...defaultMeta,
+      id: mid,
+      name: (nameCol && first[nameCol]) || `Merchant ${mid}`,
+      mcc: (mccCol && first[mccCol]) || defaultMeta.mcc,
+      state: (stateCol && first[stateCol]) || defaultMeta.state,
+    }));
+  }
+  return { datasets, isMulti: true };
 }

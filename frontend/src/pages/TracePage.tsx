@@ -58,8 +58,8 @@ export function TracePage() {
         <table className={tableCls}><thead><tr><Th>Step</Th><Th>Weight</Th><Th>Running P(front)</Th></tr></thead><tbody>
           {t.waterfall.map((s, i) => (
             <tr key={i} className={rowCls}><Td className="max-w-[28rem] text-[13px]">{s.label}</Td>
-              <Td className={cx('font-mono text-xs', i === 0 ? 'text-mute' : s.delta > 0 ? 'text-neutral-300' : 'text-gray-300')}>{i === 0 ? `logit ${s.delta.toFixed(2)}` : nats(s.delta)}</Td>
-              <Td><div className="flex items-center gap-2"><div className="h-2 w-40 rounded bg-line" aria-hidden><div className="h-2 rounded bg-zinc-300" style={{ width: `${Math.max(1, s.probability * 100)}%` }} /></div><span className="font-mono text-xs">{fmtProb(s.probability)}</span></div></Td></tr>))}
+              <Td className={cx('font-mono text-xs font-medium', i === 0 ? 'text-mute' : s.delta > 0 ? 'text-rose-700' : 'text-emerald-700')}>{i === 0 ? `logit ${s.delta.toFixed(2)}` : nats(s.delta)}</Td>
+              <Td><div className="flex items-center gap-2"><div className="h-2 w-40 rounded bg-slate-200" aria-hidden><div className="h-2 rounded bg-indigo-600" style={{ width: `${Math.max(1, s.probability * 100)}%` }} /></div><span className="font-mono text-xs">{fmtProb(s.probability)}</span></div></Td></tr>))}
         </tbody></table>
         <p className="border-t border-line px-4 py-3 text-xs text-mute">Within one family the strongest signal counts fully and the others are shrunk, because they read related data. Missing data counts as zero. {t.gate.reason}</p>
       </Panel>
@@ -68,7 +68,7 @@ export function TracePage() {
         <table className={tableCls}><thead><tr><Th>Detector</Th><Th>Observed / expected</Th><Th>Test</Th><Th>n</Th><Th>p</Th><Th>Effect</Th><Th>Weight</Th></tr></thead><tbody>
           {rows.map(d => (
             <tr key={d.id} className={rowCls}>
-              <Td><div className="flex items-center gap-2"><Mono className="text-zinc-300">{d.id}</Mono><StatusBadge s={d.status} /></div><div className="mt-1 text-[13px]">{d.name}</div><div className="text-[11px] text-dim">{d.provenance}{d.records.length ? ` · ${d.records.length} source records` : ''}</div></Td>
+              <Td><div className="flex items-center gap-2"><Mono className="font-semibold text-indigo-700">{d.id}</Mono><StatusBadge s={d.status} /></div><div className="mt-1 text-[13px]">{d.name}</div><div className="text-[11px] text-dim">{d.provenance}{d.records.length ? ` · ${d.records.length} source records` : ''}</div></Td>
               <Td className="max-w-[22rem] text-[12px]"><div>{d.observed}</div><div className="mt-1 text-mute">Expected: {d.expected}</div><div className="mt-1 text-dim">{d.expectedSource}</div></Td>
               <Td className="max-w-[16rem] text-[11px] text-mute">{d.test}</Td>
               <Td className="font-mono text-xs">{d.n}</Td>

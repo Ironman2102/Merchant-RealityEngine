@@ -162,18 +162,18 @@ function Cleared({ e }: { e: PortfolioEntry }) {
   const pp = checkPassport(e.result, reason);
   return (
     <div className="space-y-4">
-      {alarm && <div className="rounded-lg border border-stone-400/40 bg-panel p-4">
-        <div className="font-semibold text-stone-200">The volume alarm fired, and was explained</div>
+      {alarm && <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+        <div className="font-semibold text-amber-900">The volume alarm fired, and was explained</div>
         <p className="mt-1 text-sm text-mute">{alarm.observed}. Only one evidence family points that way, so no case opens. The merchant gets a Context Passport request instead of a restriction.</p>
         <div className="mt-3 grid gap-3 lg:grid-cols-2"><ChartBox title="Weekly collections vs baselines"><BaselineChart rows={e.result.l2.rows} height={220} /></ChartBox>
           <ChartBox title="Context Passport: the merchant says…">
-            <div className="flex flex-wrap gap-1.5">{PASSPORT_REASONS.map(r => <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2 py-1 text-xs', reason === r.id ? 'border-zinc-400 bg-zinc-400/10 text-zinc-200' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>)}</div>
-            <div className={cx('mt-3 text-sm', pp.explained ? 'text-gray-300' : 'text-neutral-300')}>{pp.explained ? 'Explained. Request: ' + pp.reason.evidence : `Not explained: ${pp.open.map(x => x.id).join(', ')} remain.`}</div>
+            <div className="flex flex-wrap gap-1.5">{PASSPORT_REASONS.map(r => <button key={r.id} onClick={() => setReason(r.id)} className={cx('rounded border px-2 py-1 text-xs', reason === r.id ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-line2 text-mute hover:text-ink')}>{r.label}</button>)}</div>
+            <div className={cx('mt-3 text-sm font-medium', pp.explained ? 'text-emerald-700' : 'text-rose-700')}>{pp.explained ? 'Explained. Request: ' + pp.reason.evidence : `Not explained: ${pp.open.map(x => x.id).join(', ')} remain.`}</div>
           </ChartBox></div>
       </div>}
-      <div className="rounded-lg border border-gray-400/30 bg-panel p-4">
-        <div className="font-semibold text-gray-200">Why it behaves like the business it declared ({e.scenario.profile.category})</div>
-        <div className="mt-3 grid gap-2 md:grid-cols-2">{benign.map(x => <div key={x.id} className="rounded border border-line bg-panel2/60 p-2.5 text-[12.5px]"><div className="font-medium"><span className="mr-1.5 font-mono text-xs text-zinc-300">{x.id}</span>{x.name}</div><div className="mt-0.5 text-gray-100">{x.observed}</div><div className="text-[11px] text-dim">Hard to fake: {pct(x.fakeDifficulty)}</div></div>)}</div>
+      <div className="rounded-lg border border-line bg-panel p-4">
+        <div className="font-semibold text-ink">Why it behaves like the business it declared ({e.scenario.profile.category})</div>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">{benign.map(x => <div key={x.id} className="rounded border border-line bg-panel2 p-2.5 text-[12.5px]"><div className="font-medium"><span className="mr-1.5 font-mono text-xs font-semibold text-indigo-700">{x.id}</span>{x.name}</div><div className="mt-0.5 text-ink">{x.observed}</div><div className="text-[11px] text-dim">Hard to fake: {pct(x.fakeDifficulty)}</div></div>)}</div>
         <div className="mt-3 grid gap-3 lg:grid-cols-2"><ChartBox title="Ticket sizes"><TicketHistogram sales={sales(e)} profile={e.scenario.profile} height={200} /></ChartBox><ChartBox title="Payer states"><StateBars sales={sales(e)} local={e.scenario.profile.localStates} height={200} /></ChartBox></div>
       </div>
     </div>);
@@ -188,7 +188,7 @@ export function CasePage() {
   const e = get(key);
   const portfolioPath = mode === 'user' ? '/ai-engine/portfolio' : '/demo/portfolio';
   const investigationPath = mode === 'user' ? '/ai-engine/investigations' : '/demo/investigations';
-  if (!e) return <div className="py-16 text-center text-mute">{loading ? 'Loading merchant…' : <>Merchant not found. <Link to={portfolioPath} className="text-zinc-300">Back to the portfolio</Link></>}</div>;
+  if (!e) return <div className="py-16 text-center text-mute">{loading ? 'Loading merchant…' : <>Merchant not found. <Link to={portfolioPath} className="font-medium text-indigo-700 hover:underline">Back to the portfolio</Link></>}</div>;
 
   const p = e.scenario.profile, f = e.result.fusion, v = verdictOf(e);
   const reasons = THEMES.filter(t => items(e, t.ids).some(i => i.flagged));
@@ -201,9 +201,9 @@ export function CasePage() {
     <>
       <Link to={portfolioPath} className="inline-flex items-center gap-1.5 text-sm text-mute hover:text-ink"><ArrowLeft size={15} />Portfolio</Link>
 
-      <div className={cx('rounded-lg border p-5', e.suspicious ? 'border-neutral-400/50 bg-neutral-400/[0.05]' : 'border-gray-400/50 bg-gray-400/[0.05]')}>
+      <div className={cx('rounded-lg border p-5', e.suspicious ? 'border-rose-200 bg-rose-50/50' : 'border-emerald-200 bg-emerald-50/50')}>
         <div className="flex flex-wrap items-start gap-4">
-          {e.suspicious ? <ShieldAlert className="text-neutral-300" size={36} /> : <ShieldCheck className="text-gray-300" size={36} />}
+          {e.suspicious ? <ShieldAlert className="text-rose-600" size={36} /> : <ShieldCheck className="text-emerald-600" size={36} />}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">{p.name}</h1><Badge tone={v.tone}>{v.label}{e.suspicious ? ` · ${f.priority} priority` : ''}</Badge></div>
             <div className="mt-0.5 text-sm text-mute">{p.city} · {p.category} (MCC {p.mcc}) · account {p.accountAgeDays.toLocaleString('en-IN')} days old · <span className="font-mono">{p.id}</span></div>
@@ -217,7 +217,7 @@ export function CasePage() {
             </div>
           </div>
         </div>
-        {e.suspicious && <div className="mt-4 rounded border border-line bg-bg/40 px-3 py-2.5 text-sm"><span className="text-mute">Proposed action: </span>{plan.actions[0]}{plan.keepsRunning.length > 0 && <span className="text-gray-300"> · keeps running: {plan.keepsRunning.join(', ')}</span>}</div>}
+        {e.suspicious && <div className="mt-4 rounded border border-line bg-panel px-3 py-2.5 text-sm"><span className="text-mute">Proposed action: </span>{plan.actions[0]}{plan.keepsRunning.length > 0 && <span className="font-medium text-emerald-700"> · keeps running: {plan.keepsRunning.join(', ')}</span>}</div>}
         <div className="mt-4 flex flex-wrap gap-2"><Btn variant="primary" onClick={open7}>Investigate in the 7-layer console <ArrowRight size={14} /></Btn></div>
       </div>
 

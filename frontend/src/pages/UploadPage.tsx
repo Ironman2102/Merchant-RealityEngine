@@ -13,6 +13,7 @@ import { cx } from '../utils/format';
 import {
   autoDetectMapping,
   buildDatasetFromCsv,
+  buildDatasetsFromMultiCsv,
   buildSampleGatewayCsv,
   parseCsvText,
   type CsvColumnMapping,
@@ -38,11 +39,25 @@ const TEST_DATASETS = [
   { file: '09-telegram-betting-no-website.json', title: 'Kaveri Mithai Stores · Telegram betting link, no website' },
 ];
 
+const ALL_BULK_SAMPLES = [
+  '01-sweet-crumbs-betting-front.json',
+  '02-merchant-rotation.json',
+  '03-fabricated-online-store.json',
+  '04-anand-sweets-diwali-genuine.json',
+  '05-chai-corner-night-betting.json',
+  '06-shree-ganesh-sweets-genuine.json',
+  '07-udupi-tiffin-steady.json',
+  '08-nandi-kirana-genuine.json',
+  '09-telegram-betting-no-website.json',
+];
+
 export function UploadPage() {
   const { loadCustom, clearCustom, custom, scenarioId, result, user, started, allDone, detailsOpen, setDetailsOpen } = useInvestigation();
-  const { addUploaded, clearUploaded } = usePortfolio();
+  const { addUploaded, setUploadedBatch, clearUploaded } = usePortfolio();
   const [caseKey, setCaseKey] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParseResult | null>(null);
+  const [bulkScenarios, setBulkScenarios] = useState<NonNullable<ParseResult['scenario']>[]>([]);
+  const [bulkErrors, setBulkErrors] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>('');
   const [over, setOver] = useState(false);
   const [analysed, setAnalysed] = useState(false);
@@ -74,7 +89,21 @@ export function UploadPage() {
   useEffect(() => { clearCustom(); clearUploaded(); setCaseKey(null); }, [clearCustom, clearUploaded]);
 
   const applyCsv = (data: ParsedCsv, mapping: CsvColumnMapping, meta: CsvMerchantMeta, name: string) => {
-    const ds = buildDatasetFromCsv(data, mapping, meta);
+    const { datasets, isMulti } = buildDatasetsFromMultiCsv(data, mapping, meta);
+    if (isMulti && datasets.length > 1) {
+      const results = datasets.map(d => datasetToScenario(d));
+      const valid = results.filter(r => r.ok && r.scenario).map(r => r.scenario!);
+      const errs = results.filter(r => !r.ok).flatMap(r => r.errors);
+      setBulkScenarios(valid);
+      setBulkErrors(errs);
+      setRaw('');
+      setFileName(name);
+      setParsed(null);
+      return;
+    }
+    setBulkScenarios([]);
+    setBulkErrors([]);
+    const ds = datasets[0];
     const jsonText = JSON.stringify(ds);
     setRaw(jsonText);
     setFileName(name);
@@ -83,12 +112,13 @@ export function UploadPage() {
 
   const read = (name: string, text: string) => {
     clearCustom();
-    clearUploaded();
     setCaseKey(null);
+    setBulkScenarios([]);
+    setBulkErrors([]);
     setServerCase(null); setServerError(''); setLegalVerified(false); setEscrowConfirmed(false);
     setFileName(name); setAnalysed(false);
 
-    const looksCsv = name.toLowerCase().endsWith('.csv') || (!text.trim().startsWith('{') && text.includes(','));
+    const looksCsv = name.toLowerCase().endsWith('.csv') || (!text.trim().startsWith('{') && !text.trim().startsWith('[') && text.includes(','));
     if (looksCsv) {
       const parsedCsv = parseCsvText(text);
       if (parsedCsv.headers.length === 0 || parsedCsv.rows.length === 0) {
@@ -106,8 +136,53 @@ export function UploadPage() {
     setCsvData(null);
     setCsvMap(null);
     setRaw(text);
-    try { setParsed(datasetToScenario(JSON.parse(text))); }
+    try {
+      const trimmed = text.trim();
+      let items: unknown[] | null = null;
+      if (trimmed.startsWith('[')) {
+        const arr = JSON.parse(trimmed);
+        if (Array.isArray(arr)) items = arr;
+      } else if (trimmed.includes('\n') && !trimmed.endsWith('}')) {
+        items = trimmed.split('\n').map(l => l.trim()).filter(Boolean).map(l => JSON.parse(l));
+      } else if (trimmed.split('\n').filter(l => l.trim().startsWith('{')).length > 1) {
+        try { JSON.parse(trimmed); } catch {
+          items = trimmed.split('\n').map(l => l.trim()).filter(Boolean).map(l => JSON.parse(l));
+        }
+      }
+      if (items && items.length > 1) {
+        const results = items.map(item => datasetToScenario(item));
+        const valid = results.filter(r => r.ok && r.scenario).map(r => r.scenario!);
+        const errs = results.filter(r => !r.ok).flatMap(r => r.errors);
+        setBulkScenarios(valid);
+        setBulkErrors(errs);
+        setParsed(null);
+        return;
+      }
+      setParsed(datasetToScenario(JSON.parse(text)));
+    }
     catch (e) { setParsed({ ok: false, errors: [`Could not read the file as JSON: ${(e as Error).message}`], warnings: [] }); }
+  };
+  const loadBulkPortfolio = async () => {
+    setLoadingSample(true);
+    setBulkErrors([]);
+    try {
+      const jsons = await Promise.all(ALL_BULK_SAMPLES.map(f => fetch(`${BASE}samples/${f}`).then(r => r.json())));
+      const results = jsons.map(j => datasetToScenario(j));
+      const valid = results.filter(r => r.ok && r.scenario).map(r => r.scenario!);
+      setBulkScenarios(valid);
+      setParsed(null);
+      setCsvData(null);
+      setFileName('9-Merchant Synthetic Portfolio (Bulk)');
+    } catch (e) {
+      setBulkErrors([(e as Error).message]);
+    } finally {
+      setLoadingSample(false);
+    }
+  };
+  const runBulkAnalysis = () => {
+    if (!bulkScenarios.length) return;
+    setUploadedBatch(bulkScenarios);
+    navigate('/ai-engine/portfolio');
   };
   const loadSampleCsv = () => {
     read('gateway-export-sample.csv', buildSampleGatewayCsv());
@@ -357,17 +432,37 @@ export function UploadPage() {
         </Panel>
       )}
 
-      <Panel title="Use a built-in test file" subtitle="Choose one of our curated sample datasets if you do not have a file of your own.">
+      <Panel title="Use a built-in test file or bulk portfolio" subtitle="Choose a single merchant dataset or load all 9 synthetic merchants together for an overall portfolio report.">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <select value={sampleFile} onChange={e => setSampleFile(e.target.value)} disabled={loadingSample} className="min-h-10 min-w-0 flex-1 rounded-lg border border-line2 bg-panel px-3 text-sm text-ink outline-none focus:border-indigo-500 disabled:opacity-50">
             <option value="">Choose a test file</option>
             {TEST_DATASETS.map(sample => <option key={sample.file} value={sample.file}>{sample.title}</option>)}
           </select>
           <Btn variant="outline" disabled={!sampleFile || loadingSample} onClick={loadSample}><FileJson size={14} />{loadingSample ? 'Loading file…' : 'Load test file'}</Btn>
+          <Btn variant="primary" disabled={loadingSample} onClick={loadBulkPortfolio}><Play size={14} />Load 9-merchant bulk portfolio</Btn>
         </div>
-        <p className="mt-3 text-xs text-dim">The selected file will appear below for review. Press “Run all seven layers” when you are ready.</p>
+        <p className="mt-3 text-xs text-dim">Supports single-merchant JSON, multi-merchant JSON arrays / JSONL, and multi-merchant CSVs (grouped by <code className="font-mono">merchant_id</code>).</p>
       </Panel>
       </>}
+
+      {bulkScenarios.length > 0 && (
+        <Panel
+          title={`Bulk Portfolio Ready · ${bulkScenarios.length} merchants`}
+          subtitle={fileName}
+          right={<Btn variant="primary" onClick={runBulkAnalysis}><Play size={14} />Score all {bulkScenarios.length} &amp; open overall report</Btn>}
+        >
+          {bulkErrors.length > 0 && <div className="mb-3 text-xs text-rose-700">{bulkErrors.slice(0, 3).join(' ')}</div>}
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 text-xs">
+            {bulkScenarios.slice(0, 9).map(sc => (
+              <div key={sc.profile.id} className="rounded-lg border border-line bg-panel2 px-3 py-2">
+                <div className="font-semibold text-ink truncate">{sc.profile.name}</div>
+                <div className="text-mute">{sc.profile.id} · MCC {sc.profile.mcc} · {sc.events.length} events</div>
+              </div>
+            ))}
+          </div>
+          {bulkScenarios.length > 9 && <div className="mt-2 text-xs text-mute">…and {bulkScenarios.length - 9} more merchants</div>}
+        </Panel>
+      )}
 
       {!analysed && datasetPanel}
 
@@ -390,11 +485,11 @@ export function UploadPage() {
 
         {detailsOpen && pack && <div id="analysis-evidence" className="scroll-mt-20 space-y-6">
           {datasetPanel}
-          <div className={cx('rounded-lg border p-5', fu.decision === 'OPEN_CASE' ? 'border-neutral-400/50 bg-neutral-400/[0.06]' : 'border-gray-400/50 bg-gray-400/[0.06]')}>
+          <div className={cx('rounded-lg border p-5', fu.decision === 'OPEN_CASE' ? 'border-rose-200 bg-rose-50/70' : 'border-emerald-200 bg-emerald-50/70')}>
             <div className="flex flex-wrap items-start gap-4">
-              {fu.decision === 'OPEN_CASE' ? <ShieldAlert className="text-neutral-300" size={34} /> : <ShieldCheck className="text-gray-300" size={34} />}
+              {fu.decision === 'OPEN_CASE' ? <ShieldAlert className="text-rose-600" size={34} /> : <ShieldCheck className="text-emerald-600" size={34} />}
               <div className="min-w-0 flex-1">
-                <div className={cx('text-xl font-semibold', fu.decision === 'OPEN_CASE' ? 'text-neutral-200' : 'text-gray-200')}>{fu.decision === 'OPEN_CASE' ? `Case opened · ${fu.priority} priority` : 'No case opened'}</div>
+                <div className={cx('text-xl font-semibold', fu.decision === 'OPEN_CASE' ? 'text-rose-900' : 'text-emerald-900')}>{fu.decision === 'OPEN_CASE' ? `Case opened · ${fu.priority} priority` : 'No case opened'}</div>
                 <div className="mt-1 text-sm text-mute">{fu.gateReason}</div>
                 <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                   <div><div className="text-xs text-mute">Leading hypothesis</div><div className="font-medium">{fu.decision === 'OPEN_CASE' && top ? `${MECHANISMS.find(m => m.id === top.id)?.name ?? top.id} (${top.score.toFixed(2)})` : 'None: alarm explained'}</div></div>

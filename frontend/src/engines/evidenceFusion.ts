@@ -14,7 +14,7 @@ import type { MerchantProfile } from '../types/merchant';
 import { FAMILIES } from '../data/evidence';
 import { RULES } from '../../../rules/index';
 import { calmLlr, fireLlr } from './judge';
-import { beta, rng, seedOf } from '../stats/rng';
+import { normal, rng, seedOf } from '../stats/rng';
 import { quantile } from '../stats/intervals';
 import { decide } from './decision';
 import { fmtProb, fmtInterval, probEq } from '../utils/format';
@@ -50,19 +50,20 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: {
     .map(r => ({ id: r.id, llr: r.llr, when: r.when }));
   const total = priorLogOdds + famRows.reduce((s, f) => s + f.llr, 0) + overrides.reduce((s, o) => s + o.llr, 0);
 
-  // Monte-Carlo interval: redraw each fired/calm detector's LLR from Beta(s), Beta(f), and the base rate.
+  // Monte-Carlo interval: redraw each fired/calm detector's s, f, and the base rate on the logit scale so medians match point estimates.
   const r = rng(seedOf(profile.id + '|fusion')), k = E.detectorPriorStrength, draws: number[] = [];
+  const drawProb = (p: number, strength: number) => sigmoid(logit(p) + normal(r) / Math.sqrt(1 + strength * p * (1 - p)));
   for (let d = 0; d < (opts.draws ?? E.posteriorDraws); d++) {
     const sampled = new Map<string, number>();
     evidence.forEach(e => {
       if (e.status === 'UNKNOWN') return;
-      const cfg = RULES.detector(e.id), s = beta(r, cfg.sensitivity * k, (1 - cfg.sensitivity) * k), f = beta(r, cfg.falsePositive * k, (1 - cfg.falsePositive) * k);
+      const cfg = RULES.detector(e.id), s = drawProb(cfg.sensitivity, k), f = drawProb(cfg.falsePositive, k);
       // Keep the item's grade / fake-difficulty / coverage factor (e.llr ÷ point LLR) and redraw only s and f.
       const point = e.status === 'ILLICIT' ? fireLlr(cfg.sensitivity, cfg.falsePositive) : calmLlr(cfg.sensitivity, cfg.falsePositive);
       const now = e.status === 'ILLICIT' ? fireLlr(s, f) : calmLlr(s, f);
       sampled.set(e.id, Math.max(E.benignLlrFloor, e.llr * (now / point)));
     });
-    const rate = beta(r, pr.rate * pr.strength, (1 - pr.rate) * pr.strength);
+    const rate = drawProb(pr.rate, pr.strength);
     const lo = logit(rate) + Math.log(pr.odds) + [...byFam.values()].reduce((s, xs) => s + familyLlr(xs, e => sampled.get(e.id) ?? e.llr, rho), 0) + overrides.reduce((s, o) => s + o.llr, 0);
     draws.push(sigmoid(lo));
   }

@@ -241,7 +241,7 @@ export function datasetToScenario(raw: unknown): ParseResult {
   
   const coverage = { acquiring: 'AVAILABLE', website: 'MISSING', orders: 'MISSING', bank: 'MISSING', fulfillment: 'MISSING', calendar: fixtures.length ? 'AVAILABLE' : 'MISSING', verification: 'MISSING', ...(d.dataAvailability ?? {}) } as Record<CoverageKey, CoverageState>;
   COVERAGE.forEach(k => { if (!STATES.includes(coverage[k])) { errors.push(`dataAvailability.${k} must be AVAILABLE, PARTIAL or MISSING.`); } });
-  if (d.website && !d.dataAvailability?.website) coverage.website = 'AVAILABLE';
+  if ((d.website?.embeds?.length || d.website?.catalogue?.length) && !d.dataAvailability?.website) coverage.website = 'AVAILABLE';
   if (d.orders?.length && !d.dataAvailability?.orders) coverage.orders = 'AVAILABLE';
   if (d.bankCredits?.length && !d.dataAvailability?.bank) coverage.bank = 'AVAILABLE';
   if (d.purchaserVerification && !d.dataAvailability?.verification) coverage.verification = 'AVAILABLE';

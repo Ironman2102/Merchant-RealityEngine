@@ -24,6 +24,16 @@ import udupiSample from '../../frontend/public/samples/07-udupi-tiffin-steady.js
 import nandiSample from '../../frontend/public/samples/08-nandi-kirana-genuine.json';
 import telegramSample from '../../frontend/public/samples/09-telegram-betting-no-website.json';
 
+export interface DetectorDiffRow {
+  id: string;
+  name: string;
+  beforeStatus: string;
+  afterStatus: string;
+  beforeLlr: number;
+  afterLlr: number;
+  deltaLlr: number;
+}
+
 export interface StoredProposal extends Proposal {
   status: 'proposed' | 'approved' | 'rejected' | 'live' | 'rolled_back';
   createdBy: 'mre-improver' | string;
@@ -36,9 +46,14 @@ export interface StoredProposal extends Proposal {
     attackerCost: number;
     beforeDecision: string;
     beforePosterior: number;
+    beforeCi?: [number, number];
+    beforeAction?: string;
     afterDecision: string;
     afterPosterior: number;
+    afterCi?: [number, number];
+    afterAction?: string;
     recallRsi: number;
+    detectorDiff?: DetectorDiffRow[];
   };
 }
 
@@ -143,10 +158,46 @@ function loadSample(fallback: unknown, path: string): MreDataset {
   catch { return structuredClone(fallback) as MreDataset; }
 }
 
-function buildRedTeamSuite(): { evasions: MreDataset[]; genuine: MreDataset[]; silencing: { id: string; name: string; silencedShare: number; band: [number, number] }[] } {
+function nudgeRoundEvasion(ds: MreDataset, id: string): MreDataset {
+  const d = structuredClone(ds);
+  const old = d.merchant.id;
+  d.merchant = { ...d.merchant, id, name: `${ds.merchant.name} (nudgeRound)` };
+  d.transactions.forEach(t => {
+    if (t.merchantId === old) t.merchantId = id;
+    if (t.type === 'SALE' && t.amount % 100 === 0) t.amount = Math.max(10, t.amount - 7);
+  });
+  return d;
+}
+
+function spreadHoursEvasion(ds: MreDataset, id: string): MreDataset {
+  const d = structuredClone(ds);
+  const old = d.merchant.id;
+  d.merchant = { ...d.merchant, id, name: `${ds.merchant.name} (spreadHours)` };
+  d.transactions.forEach(t => {
+    if (t.merchantId === old) t.merchantId = id;
+    if (t.type === 'SALE') {
+      const dt = new Date(t.time);
+      const h = dt.getUTCHours();
+      if (h >= 17 || h < 1) { dt.setUTCHours(15, 30, 0, 0); t.time = dt.toISOString(); }
+    }
+  });
+  return d;
+}
+
+function buildRedTeamSuite(): {
+  fronts: MreDataset[];
+  evasions: MreDataset[];
+  genuine: MreDataset[];
+  silencing: { id: string; name: string; silencedShare: number; band: [number, number] }[];
+  operatorSummary: { operator: string; count: number; evaded: number }[];
+} {
   const tg = loadSample(telegramSample, 'frontend/public/samples/09-telegram-betting-no-website.json');
   const sweet = loadSample(sweetSample, 'frontend/public/samples/01-sweet-crumbs-betting-front.json');
-  const evasions = Array.from({ length: 6 }, (_, i) => thinEvasion(tg, `M-EV-${i + 1}`, 0.1));
+  const fronts = [tg, sweet];
+  const thin = Array.from({ length: 6 }, (_, i) => thinEvasion(tg, `M-EV-${i + 1}`, 0.1));
+  const nudged = nudgeRoundEvasion(sweet, 'M-EV-NUDGE');
+  const spread = spreadHoursEvasion(sweet, 'M-EV-HOURS');
+  const evasions = [...thin, nudged, spread];
   const genuine = [
     loadSample(diwaliSample, 'frontend/public/samples/04-anand-sweets-diwali-genuine.json'),
     loadSample(ganeshSample, 'frontend/public/samples/06-shree-ganesh-sweets-genuine.json'),
@@ -154,11 +205,11 @@ function buildRedTeamSuite(): { evasions: MreDataset[]; genuine: MreDataset[]; s
     loadSample(nandiSample, 'frontend/public/samples/08-nandi-kirana-genuine.json'),
   ];
 
-  // Compare original Telegram front vs thinned evasions to measure per-detector silencing rate
+  // Compare original fronts vs evasions to measure per-detector silencing rate
   const baseRun = withDetectorOverrides({}, () => analyze(tg));
   const baseFired = new Set(baseRun.ok ? baseRun.result.evidence.filter(e => e.status === 'ILLICIT').map(e => e.id) : []);
   const silenceCounts = new Map<string, number>();
-  for (const ev of evasions) {
+  for (const ev of thin) {
     const r = withDetectorOverrides({}, () => analyze(ev));
     if (!r.ok) continue;
     for (const e of r.result.evidence) {
@@ -167,14 +218,22 @@ function buildRedTeamSuite(): { evasions: MreDataset[]; genuine: MreDataset[]; s
       }
     }
   }
-  void sweet;
   const silencing = [...baseFired].map(id => ({
     id,
     name: RULES.detector(id).name,
-    silencedShare: (silenceCounts.get(id) ?? 0) / evasions.length,
+    silencedShare: (silenceCounts.get(id) ?? 0) / thin.length,
     band: bandOf(id).minN,
   }));
-  return { evasions, genuine, silencing };
+  const countEvaded = (dsList: MreDataset[]) => dsList.filter(d => {
+    const r = analyze(d);
+    return !r.ok || r.result.fusion.decision !== 'OPEN_CASE';
+  }).length;
+  const operatorSummary = [
+    { operator: 'splitMerchant / thinSales (14 sales/MID)', count: thin.length, evaded: countEvaded(thin) },
+    { operator: 'nudgeRound (non-round ₹493/₹993)', count: 1, evaded: countEvaded([nudged]) },
+    { operator: 'spreadHours (shift to 21:00 IST)', count: 1, evaded: countEvaded([spread]) },
+  ];
+  return { fronts, evasions, genuine, silencing, operatorSummary };
 }
 
 function saveProposal(p: StoredProposal): void {
@@ -194,7 +253,7 @@ export function listProposals(): StoredProposal[] {
 
 export function getRulesStatus(): ApiReply {
   const { patch, version } = getLiveDetectorPatch();
-  const { evasions, silencing } = buildRedTeamSuite();
+  const { evasions, silencing, operatorSummary } = buildRedTeamSuite();
   const sampleEvasion = evasions[0];
   const currentEval = analyze(sampleEvasion);
   const events = getAllLabelEvents();
@@ -213,6 +272,7 @@ export function getRulesStatus(): ApiReply {
         decision: currentEval.ok ? currentEval.result.fusion.decision : 'ERROR',
         posterior: currentEval.ok ? currentEval.result.fusion.posterior : 0,
       },
+      operatorSummary,
       silencing,
       proposals: listProposals(),
       audit: readRulesAudit(),
@@ -228,8 +288,8 @@ export function runImproverProposal(actor: Actor, createdByMode: 'mre-improver' 
   const prev = getLiveDetectorPatch();
   setLiveDetectorPatch(null, null);
   try {
-    const { evasions, genuine } = buildRedTeamSuite();
-    const rawProp = propose(evasions, genuine, evasions);
+    const { fronts, evasions, genuine } = buildRedTeamSuite();
+    const rawProp = propose(fronts, genuine, evasions);
     if (!rawProp) {
       return { status: 422, body: { error: 'No in-band proposal satisfied the false-positive bound, recall gain, and McNemar p < 0.05.' } };
     }
@@ -240,6 +300,26 @@ export function runImproverProposal(actor: Actor, createdByMode: 'mre-improver' 
     const after = withDetectorOverrides(rawProp.patch, () => analyze(evasions[0]));
     const champRecall = rawProp.backtest.champion.recall;
     const chalRecall = rawProp.backtest.challenger.recall;
+    const detectorDiff: DetectorDiffRow[] = [];
+    if (before.ok && after.ok) {
+      const afterById = new Map(after.result.evidence.map(e => [e.id, e]));
+      for (const b of before.result.evidence) {
+        const a = afterById.get(b.id);
+        if (!a) continue;
+        if (b.status !== a.status || Math.abs(a.llr - b.llr) > 0.01) {
+          detectorDiff.push({
+            id: b.id,
+            name: b.name,
+            beforeStatus: b.status,
+            afterStatus: a.status,
+            beforeLlr: b.llr,
+            afterLlr: a.llr,
+            deltaLlr: a.llr - b.llr,
+          });
+        }
+      }
+      detectorDiff.sort((x, y) => Math.abs(y.deltaLlr) - Math.abs(x.deltaLlr));
+    }
     const stored: StoredProposal = {
       ...rawProp,
       createdBy: createdByMode === 'self' ? actor.username : 'mre-improver',
@@ -251,9 +331,14 @@ export function runImproverProposal(actor: Actor, createdByMode: 'mre-improver' 
         attackerCost: 5,
         beforeDecision: before.ok ? before.result.fusion.decision : 'NO_CASE',
         beforePosterior: before.ok ? before.result.fusion.posterior : 0,
+        beforeCi: before.ok ? before.result.fusion.posteriorCi : [0, 0],
+        beforeAction: before.ok ? before.result.fusion.decisionAnalysis.recommended : 'L0',
         afterDecision: after.ok ? after.result.fusion.decision : 'OPEN_CASE',
         afterPosterior: after.ok ? after.result.fusion.posterior : 0,
+        afterCi: after.ok ? after.result.fusion.posteriorCi : [0, 0],
+        afterAction: after.ok ? after.result.fusion.decisionAnalysis.recommended : 'L3',
         recallRsi: champRecall > 0 ? (chalRecall - champRecall) / champRecall : chalRecall,
+        detectorDiff,
       },
     };
     saveProposal(stored);

@@ -7,9 +7,12 @@ const sandboxName = () => process.env.DAYTONA_SANDBOX_ID || 'mre-m1';
 export function modelHostConfigured(): boolean { return key().length > 0; }
 
 async function daytona(path: string, method = 'GET', body?: unknown): Promise<{ status: number; json: Record<string, unknown> }> {
+  const headers: Record<string, string> = { authorization: `Bearer ${key()}`, 'content-type': 'application/json' };
+  const org = process.env.DAYTONA_ORGANIZATION_ID;
+  if (org) headers['X-Daytona-Organization-ID'] = org;
   const res = await fetch(`${api()}${path}`, {
     method,
-    headers: { authorization: `Bearer ${key()}`, 'content-type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(20000),
   });

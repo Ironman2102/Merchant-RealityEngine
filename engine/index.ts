@@ -12,7 +12,7 @@ export { runInvestigation } from '../frontend/src/engines/investigationEngine';
 export { buildTrace, type Trace } from '../frontend/src/engines/traceEngine';
 export { DETECTORS } from '../frontend/src/engines/detectors';
 export { buildPack } from './pack';
-export { features, FEATURE_COLUMNS } from './features';
+export { features, FEATURE_COLUMNS, behavioralFeatures, BEHAVIORAL_FEATURE_COLUMNS } from './features';
 
 export function analyze(dataset: unknown):
   | { ok: true; result: InvestigationResult; trace: Trace; warnings: string[] }
