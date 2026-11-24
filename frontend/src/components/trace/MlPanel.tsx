@@ -13,6 +13,10 @@ interface Opinion {
   synthetic?: boolean;
   drivers: Driver[];
   nn?: { p: number; modelVersion: string; drivers: Driver[] };
+  classical?: { p: number; modelVersion: string }[];
+  ensemble?: { p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean };
+  encoder?: { label: string | null; score: number | null; modelVersion: string };
+  assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
 }
 
 function words(feature: string): string {
@@ -40,7 +44,7 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
   }, [caseId, reload]);
   const both = ml && ((ml.p >= 0.1 && posterior >= 0.1) || (ml.p < 0.1 && posterior < 0.1));
   return (
-    <Panel title="AI model (second opinion)" subtitle="Trained models on the 112 detector features (LightGBM M1 + Neural Network challenger). They never override the Bayesian decision.">
+    <Panel title="Stage 2 AI/ML assessment" subtitle="Predictive models and optional text understanding add a confidence-gated assessment. The statistical independence gate still governs case opening.">
       {ml === undefined && <p className="text-sm text-mute">Asking the model…</p>}
       {ml === null && <div className="space-y-2"><p className="text-sm">AI model offline. The decision does not depend on it.</p><ModelSandbox onReady={() => setReload(n => n + 1)} /></div>}
       {ml && (
@@ -70,6 +74,10 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
             )}
           </div>
           <p className="text-xs text-mute">{both ? 'Both the Bayesian engine and the trained model agree on the 10% opening bar.' : 'They disagree on the 10% bar: review both the statistical waterfall and the SHAP drivers.'}</p>
+          {ml.ensemble && <p className="text-xs text-mute">Stage 2 ensemble: {fmtProb(ml.ensemble.p)} · {ml.ensemble.confidence.toLowerCase()} confidence · model spread {ml.ensemble.disagreement.toFixed(3)}{ml.ensemble.review ? ' · analyst review suggested' : ''}.</p>}
+          {ml.assessment && <p className="text-xs font-medium text-ink">Combined assessment: {ml.assessment.classification.replace('_', ' ')} · {fmtProb(ml.assessment.combinedP)} (Stage 1 {fmtProb(ml.assessment.statisticalP)}).{ml.assessment.review ? ' Human review required.' : ''}</p>}
+          {ml.classical?.length ? <ul className="text-xs text-mute">{ml.classical.map(x => <li key={x.modelVersion}>{x.modelVersion}: {fmtProb(x.p)}</li>)}</ul> : null}
+          {ml.encoder && <p className="text-xs text-mute">Context encoder ({ml.encoder.modelVersion}): {ml.encoder.label} ({ml.encoder.score == null ? 'no score' : fmtProb(ml.encoder.score)}). Treat as supporting context.</p>}
         </div>
       )}
     </Panel>

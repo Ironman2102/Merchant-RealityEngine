@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "training_examples": 9,
+  "positive": 5,
+  "negative": 4,
+  "source": "ml/data/synthetic_features.csv",
+  "warning": "Small synthetic fixture set; low confidence and analyst review required."
+}

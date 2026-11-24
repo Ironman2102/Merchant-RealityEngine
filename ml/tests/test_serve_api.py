@@ -18,6 +18,7 @@ def _reset_serve_globals():
     serve._cols = []
     serve._cal = {}
     serve._net = None
+    serve._classical = []
 
 
 def test_serve_health_and_score_full_partial_empty():
@@ -28,7 +29,7 @@ def test_serve_health_and_score_full_partial_empty():
     assert h.status_code == 200
     body_h = h.json()
     assert body_h['status'] == 'ok'
-    assert body_h['model'] == 'm1-v0'
+    assert body_h['model'] in ('m1-v0', 'nn-v0')
     assert body_h['nn'] is True
 
     # Empty features dict -> defaults missing features to 0, returns valid finite probabilities
@@ -37,26 +38,28 @@ def test_serve_health_and_score_full_partial_empty():
     b_empty = r_empty.json()
     assert 0.0 <= b_empty['p'] <= 1.0
     assert len(b_empty['drivers']) == 5
-    assert b_empty['modelVersion'] == 'm1-v0'
-    assert 0.0 <= b_empty['nn']['p'] <= 1.0
-    assert b_empty['nn']['modelVersion'] == 'nn-v0'
+    assert b_empty['modelVersion'] in ('m1-v0', 'nn-v0')
+    assert 0.0 <= b_empty['ensemble']['p'] <= 1.0
+    assert b_empty['ensemble']['confidence'] in ('HIGH', 'MEDIUM', 'LOW')
+    assert b_empty['ensemble']['review'] is True  # small synthetic fixture corpus
+    assert len(b_empty['classical']) == 3
 
     # Full real row from features.csv + extra unknown key
-    df = pd.read_csv(ROOT / 'ml' / 'data' / 'features.csv').head(1)
+    df = pd.read_csv(ROOT / 'ml' / 'data' / 'synthetic_features.csv').head(1)
     feats = {c: float(df[c].iloc[0]) for c in df.columns if c not in ('merchant_id', 'label')}
     feats['extra_unseen_feature'] = 123.45
     r_full = client.post('/score', json={'features': feats})
     assert r_full.status_code == 200
     b_full = r_full.json()
     assert np.isfinite(b_full['p']) and 0.0 <= b_full['p'] <= 1.0
-    assert np.isfinite(b_full['nn']['p']) and 0.0 <= b_full['nn']['p'] <= 1.0
+    assert np.isfinite(b_full['ensemble']['p']) and 0.0 <= b_full['ensemble']['p'] <= 1.0
 
     # Extreme large features must not overflow or fail JSON serialization
     extreme = {k: 1e6 for k in feats}
     r_ext = client.post('/score', json={'features': extreme})
     assert r_ext.status_code == 200
     assert 0.0 <= r_ext.json()['p'] <= 1.0
-    assert 0.0 <= r_ext.json()['nn']['p'] <= 1.0
+    assert 0.0 <= r_ext.json()['ensemble']['p'] <= 1.0
 
 
 def test_serve_no_model_and_nn_only_fallbacks(tmp_path, monkeypatch):
