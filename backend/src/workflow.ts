@@ -12,6 +12,7 @@ import { emit } from './events';
 import { getAllLabelEvents, recordLabelEvents } from './improverApi';
 import { effectiveRates } from '../../engine/learnedRates';
 import { engineLevelOf, loadWorkflow } from '../../engine/workflowConfig';
+import { scoreWithHost, type MlOpinion } from './ml';
 
 export interface ApiReply { status: number; body: Record<string, unknown> }
 
@@ -78,6 +79,7 @@ function view(rec: CaseRecord): ApiReply {
         topMechanism: mechanism,
         evidence: { illicit: n('ILLICIT'), benign: n('BENIGN'), unknown: n('UNKNOWN') },
       },
+      stage2: rec.ml?.assessment ?? null,
       coverage: result.l1.sources.map(source => ({ name: source.name, state: source.state, records: source.records, note: source.note })),
       evidenceItems: result.evidence.map(item => ({
         id: item.id, name: item.name, family: item.family, status: item.status,
@@ -103,20 +105,57 @@ function ensure(id: string): CaseRecord | ApiReply {
   return getCase(id) ?? fail(404, 'No case with that id.');
 }
 
-export function openInvestigation(raw: unknown, actor: Actor): ApiReply {
+function saveAnalysis(raw: unknown, actor: Actor, analysis: ReturnType<typeof analyzeDataset>, ml?: MlOpinion | null): ApiReply {
   if (!can(actor, wf().approvals.actions.open ?? [])) return fail(403, 'Your role cannot open cases.');
-  const id = `INV-${randomBytes(4).toString('hex')}`;
-  const analysis = analyzeDataset(raw);
   if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
+  const id = `INV-${randomBytes(4).toString('hex')}`;
+  if (ml?.ensemble) {
+    const statP = analysis.result.fusion.posterior;
+    const trust = ml.ensemble.confidence === 'HIGH' ? 0.3 : ml.ensemble.confidence === 'MEDIUM' ? 0.15 : 0.05;
+    const clamp = (p: number) => Math.max(1e-6, Math.min(1 - 1e-6, p));
+    const logit = (p: number) => Math.log(clamp(p) / (1 - clamp(p)));
+    const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
+    const combinedP = sigmoid((1 - trust) * logit(statP) + trust * logit(ml.ensemble.p));
+    ml.assessment = { statisticalP: statP, combinedP,
+      classification: ml.ensemble.review ? 'REVIEW' : combinedP >= 0.8 ? 'HIGH_RISK' : combinedP <= 0.1 ? 'LOW_RISK' : 'REVIEW',
+      review: ml.ensemble.review || (combinedP > 0.1 && combinedP < 0.8) };
+  }
   const rec: CaseRecord = {
     id, createdAt: new Date().toISOString(), createdBy: actor.id > 0 ? actor.id : null, engineVersion: analysis.engineVersion, datasetSha256: sha256(JSON.stringify(raw)),
     result: analysis.result, user: emptyUser(), response: null, learning: null, pending: {},
+    ...(ml ? { ml } : {}),
   };
   putCase(rec);
   const f = analysis.result.fusion;
-  appendAudit(id, [{ action: 'Case analysed', detail: `${f.decision} · P(front) ${f.posterior.toFixed(4)} [${f.posteriorCi.map(x => x.toFixed(4)).join(', ')}] · rules ${f.rulesVersion} · dataset ${rec.datasetSha256.slice(0, 16)}` }], actor);
+  const stage2 = ml?.assessment ? ` · Stage 2 ${ml.assessment.classification}, combined P=${ml.assessment.combinedP.toFixed(3)}, ${ml.ensemble?.confidence.toLowerCase()} confidence${ml.assessment.review ? ', analyst review suggested' : ''}` : ' · Stage 2 unavailable';
+  appendAudit(id, [{ action: 'Case analysed', detail: `${f.decision} · P(front) ${f.posterior.toFixed(4)} [${f.posteriorCi.map(x => x.toFixed(4)).join(', ')}] · rules ${f.rulesVersion}${stage2} · dataset ${rec.datasetSha256.slice(0, 16)}` }], actor);
   void emit('case.opened', id, { decision: f.decision, posterior: f.posterior });
   return view(getCase(id)!);
+}
+
+function liveLearnedRatesForMcc(mcc: string): Map<string, { sensitivity: number; falsePositive: number }> | undefined {
+  let events;
+  try { events = getAllLabelEvents(); } catch { return undefined; }
+  if (!events.length) return undefined;
+  const map = new Map<string, { sensitivity: number; falsePositive: number }>();
+  for (const id of new Set(events.map(e => e.detectorId))) {
+    const r = effectiveRates(id, events, mcc);
+    map.set(id, { sensitivity: r.sensitivity, falsePositive: r.falsePositive });
+  }
+  return map.size ? map : undefined;
+}
+
+export function openInvestigation(raw: unknown, actor: Actor, suppliedMl?: MlOpinion | null): ApiReply {
+  return saveAnalysis(raw, actor, analyzeDataset(raw, { learnedRatesForMcc: liveLearnedRatesForMcc }), suppliedMl);
+}
+
+/** Stage 2 runs after Stage 1 evidence exists and before the governed case decision is persisted. */
+export async function openInvestigationWithStage2(raw: unknown, actor: Actor, precomputed?: ReturnType<typeof analyzeDataset>, suppliedMl?: MlOpinion | null): Promise<ApiReply> {
+  if (!can(actor, wf().approvals.actions.open ?? [])) return fail(403, 'Your role cannot open cases.');
+  const analysis = precomputed ?? analyzeDataset(raw, { learnedRatesForMcc: liveLearnedRatesForMcc });
+  if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
+  const ml = suppliedMl === undefined ? await scoreWithHost(analysis.result) : suppliedMl;
+  return saveAnalysis(raw, actor, analysis, ml);
 }
 
 export function getInvestigation(id: string): ApiReply {

@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
+import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, openInvestigationWithStage2, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
 import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, switchDemoRole, userCount, type Actor, type Role } from './auth';
 import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
@@ -7,8 +7,7 @@ import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
 import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 import { detectRings } from '../../engine/ringDetector';
-import { scoreWithHost } from './ml';
-import { getCase, putCase } from './store';
+import { getCase } from './store';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
 const LIMIT = 2_000_000;
@@ -131,7 +130,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       const results: Record<string, unknown>[] = [];
       const scenarios = [];
       for (const ds of list) {
-        const opened = openInvestigation(ds, actor);
+        const opened = await openInvestigationWithStage2(ds, actor);
         const caseId = typeof opened.body.id === 'string' ? opened.body.id : '';
         if (opened.status === 200 && caseId) {
           const rec = getCase(caseId);
@@ -151,15 +150,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (!id) {
       if (method === 'GET') { const caseId = url.searchParams.get('id'); return send(res, caseId ? getInvestigation(caseId) : listInvestigations()); }
       if (method !== 'POST') return send(res, { status: 405, body: { error: 'POST a dataset to open a case.' } });
-      const opened = openInvestigation(await readBody(req), actor);
-      const caseId = typeof opened.body.id === 'string' ? opened.body.id : '';
-      if (opened.status === 200 && caseId) {
-        const rec = getCase(caseId);
-        if (rec && !rec.ml) {
-          const ml = await scoreWithHost(rec.result);
-          if (ml) { rec.ml = ml; putCase(rec); }
-        }
-      }
+      const opened = await openInvestigationWithStage2(await readBody(req), actor);
       return send(res, opened);
     }
     if (method === 'GET') {

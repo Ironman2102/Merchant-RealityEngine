@@ -16,7 +16,7 @@ export const FEATURE_COLUMNS: string[] = [
 export const BEHAVIORAL_FEATURE_COLUMNS: string[] = [
   ...DETECTORS.flatMap(d => [`llr_${d.id}`, `eff_${d.id}`, `fired_${d.id}`]),
   'n_sales', 'account_age_days',
-  'night_share', 'refund_ratio', 'payer_hhi', 'ticket_cv',
+  'night_share', 'weekend_share', 'refund_ratio', 'payer_hhi', 'ticket_cv', 'sweep_lag_median_h',
 ];
 
 export function behavioralFeatures(result: InvestigationResult): Record<string, number> {
@@ -28,21 +28,56 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
     row[`eff_${d.id}`] = e?.effect ?? 0;
     row[`fired_${d.id}`] = e?.status === 'ILLICIT' ? 1 : 0;
   }
-  const sales = result.events.filter(e => e.type === 'SALE');
-  const refunds = result.events.filter(e => e.type === 'REFUND');
+  const sales = [], refunds = [], settlements = [], transfers = [];
+  for (const e of result.events) {
+    if (e.type === 'SALE') sales.push(e);
+    else if (e.type === 'REFUND') refunds.push(e);
+    else if (e.type === 'SETTLEMENT') settlements.push(e.eventTime);
+    else if (e.type === 'TRANSFER') transfers.push(e.eventTime);
+  }
   row.n_sales = sales.length;
   row.account_age_days = result.scenario.profile.accountAgeDays;
-  const night = sales.filter(e => { const h = new Date(e.eventTime).getHours(); return h >= 23 || h < 6; }).length;
-  row.night_share = sales.length ? night / sales.length : 0;
-  row.refund_ratio = sales.length ? refunds.length / sales.length : 0;
+  const IST = 19_800_000;
+  let night = 0, weekend = 0, sum = 0;
   const payerCounts = new Map<string, number>();
-  for (const s of sales) if (s.payerHash) payerCounts.set(s.payerHash, (payerCounts.get(s.payerHash) ?? 0) + 1);
+  for (const s of sales) {
+    const d = new Date(s.eventTime + IST);
+    const h = d.getUTCHours(), wd = d.getUTCDay();
+    if (h >= 23 || h < 6) night++;
+    if (wd === 0 || wd === 6) weekend++;
+    sum += s.amount;
+    if (s.payerHash) payerCounts.set(s.payerHash, (payerCounts.get(s.payerHash) ?? 0) + 1);
+  }
+  row.night_share = sales.length ? night / sales.length : 0;
+  row.weekend_share = sales.length ? weekend / sales.length : 0;
+  row.refund_ratio = sales.length ? refunds.length / sales.length : 0;
   let hhi = 0;
   if (sales.length) for (const c of payerCounts.values()) hhi += (c / sales.length) ** 2;
   row.payer_hhi = hhi;
-  const mean = sales.length ? sales.reduce((s, e) => s + e.amount, 0) / sales.length : 0;
+  const mean = sales.length ? sum / sales.length : 0;
   const variance = sales.length && mean > 0 ? sales.reduce((s, e) => s + (e.amount - mean) ** 2, 0) / sales.length : 0;
   row.ticket_cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
+
+  // Median hours from settlement to next onward payout (capped at 72 h if un-swept or missing).
+  let sweepLagMedian = 72;
+  if (settlements.length && transfers.length) {
+    transfers.sort((a, b) => a - b);
+    const lagsH: number[] = [];
+    for (const st of settlements) {
+      let lo = 0, hi = transfers.length;
+      while (lo < hi) { const mid = (lo + hi) >>> 1; if (transfers[mid] < st) lo = mid + 1; else hi = mid; }
+      if (lo < transfers.length) {
+        const h = (transfers[lo] - st) / 3_600_000;
+        if (h >= 0 && h <= 72) lagsH.push(h);
+      }
+    }
+    if (lagsH.length) {
+      lagsH.sort((a, b) => a - b);
+      const m = Math.floor(lagsH.length / 2);
+      sweepLagMedian = lagsH.length % 2 ? lagsH[m] : (lagsH[m - 1] + lagsH[m]) / 2;
+    }
+  }
+  row.sweep_lag_median_h = sweepLagMedian;
   return row;
 }
 

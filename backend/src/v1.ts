@@ -35,7 +35,7 @@ async function scoreOf(raw: unknown): Promise<ApiReply> {
       decision: f.decision, posterior: f.posterior, ci: f.posteriorCi, prior: f.prior,
       recommended: f.decisionAnalysis.recommended, mechanism: top?.id ?? null, topEvidence,
       rulesVersion: f.rulesVersion,
-      ml: ml ? { p: ml.p, pRaw: ml.pRaw, drivers: ml.drivers, modelVersion: ml.modelVersion, synthetic: true } : null,
+      ml: ml ? { ...ml, synthetic: true } : null,
     },
   };
 }
@@ -67,7 +67,7 @@ export async function handleV1(req: V1Req): Promise<ApiReply | null> {
     const raw = JSON.stringify(req.body);
     const idem = req.header('idempotency-key');
     return idempotent(idem, createHash('sha256').update(raw).digest('hex'), () => {
-      const opened = openInvestigation(req.body, serviceActor(principal));
+      const opened = openInvestigation(req.body, serviceActor(principal), (score.body.ml as import('./ml').MlOpinion | null) ?? null);
       if (opened.status !== 200) return opened;
       const id = (opened.body as { id?: string }).id;
       return { status: 200, body: { id, ...score.body } };

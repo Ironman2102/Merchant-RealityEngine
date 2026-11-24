@@ -1,0 +1,2077 @@
+{
+  "generatedAt": "2026-11-24T06:54:42.807Z",
+  "rulesVersion": "mre-bayes-0.2.0",
+  "dir": "tests/datasets",
+  "summary": {
+    "total": 100,
+    "suspicious": 60,
+    "cleared": 40,
+    "tp": 60,
+    "fp": 0,
+    "fn": 0,
+    "tn": 40,
+    "fdrOpened": 60,
+    "expectedFalseAlarms": 3.0671297656593173
+  },
+  "rows": [
+    {
+      "file": "001-front-gambling-host-bakery.json",
+      "merchantId": "M-001-FRONT-GAMBLING-HOST-BAKE",
+      "name": "gambling host bakery (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999958008408683,
+      "ci": [
+        0.9998383008244702,
+        0.9999999239745962
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "C5",
+        "G6",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "002-front-gambling-host-cafe.json",
+      "merchantId": "M-002-FRONT-GAMBLING-HOST-CAFE",
+      "name": "gambling host cafe (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999958008408683,
+      "ci": [
+        0.9998341423350995,
+        0.9999999088822428
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "C5",
+        "G6",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "003-front-undeclared-bet-host-kirana.json",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "name": "undeclared bet host kirana (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999619442379724,
+      "ci": [
+        0.998353806336989,
+        0.9999990300556727
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "D10",
+        "E1",
+        "G6",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "004-front-shared-hub-5-merchants.json",
+      "merchantId": "M-004-FRONT-SHARED-HUB-5-MERCH",
+      "name": "shared hub 5 merchants (5999)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.999984821324718,
+      "ci": [
+        0.999454091008738,
+        0.9999996991377934
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "D10",
+        "E1",
+        "G6",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "005-front-telegram-vip-tiffin.json",
+      "merchantId": "M-005-FRONT-TELEGRAM-VIP-TIFFI",
+      "name": "telegram vip tiffin (5814)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9994264340399189,
+      "ci": [
+        0.9912274659476603,
+        0.9999725046196137
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "B7",
+        "C2",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "006-front-whatsapp-bet-stationery.json",
+      "merchantId": "M-006-FRONT-WHATSAPP-BET-STATI",
+      "name": "whatsapp bet stationery (5943)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9994264340399189,
+      "ci": [
+        0.9921803358675172,
+        0.99997894178559
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "B7",
+        "C2",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "007-front-discord-upi-collect-gifts.json",
+      "merchantId": "M-007-FRONT-DISCORD-UPI-COLLEC",
+      "name": "discord upi collect gifts (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999786423692535,
+      "ci": [
+        0.9993934543100673,
+        0.9999992475427206
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "B7",
+        "C2",
+        "D10",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "008-front-inplay-cricket-prematch-rest.json",
+      "merchantId": "M-008-FRONT-INPLAY-CRICKET-PRE",
+      "name": "inplay cricket prematch rest (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999355112773538,
+      "ci": [
+        0.9975721398964784,
+        0.9999978984435958
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C5",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "009-front-bonus-tiers-fantasy-kirana.json",
+      "merchantId": "M-009-FRONT-BONUS-TIERS-FANTAS",
+      "name": "bonus tiers fantasy kirana (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9941263086523673,
+      "ci": [
+        0.836303028473902,
+        0.9997503583654972
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A5",
+        "B6",
+        "C5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "010-front-loss-chasing-20x-repeat-bakery.json",
+      "merchantId": "M-010-FRONT-LOSS-CHASING-20X-R",
+      "name": "loss chasing 20x repeat bakery (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9984578424044722,
+      "ci": [
+        0.9741734351600594,
+        0.9999393744875694
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "B7",
+        "C2",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "011-front-stealth-threshold-hug-495.json",
+      "merchantId": "M-011-FRONT-STEALTH-THRESHOLD-",
+      "name": "stealth threshold hug 495 (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9982840475572116,
+      "ci": [
+        0.967670334051703,
+        0.9999077946412503
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "B6",
+        "B9",
+        "C2",
+        "D10",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "012-front-stealth-daytime-21h-shift.json",
+      "merchantId": "M-012-FRONT-STEALTH-DAYTIME-21",
+      "name": "stealth daytime 21h shift (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999886529107227,
+      "ci": [
+        0.9993829532822659,
+        0.9999997063998142
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "D10",
+        "G6",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "013-front-stealth-split-payers-under-8.json",
+      "merchantId": "M-013-FRONT-STEALTH-SPLIT-PAYE",
+      "name": "stealth split payers under 8 (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9998230753768993,
+      "ci": [
+        0.995032177090699,
+        0.9999938929350702
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "C2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "014-front-stealth-acquirer-only-no-opt.json",
+      "merchantId": "M-014-FRONT-STEALTH-ACQUIRER-O",
+      "name": "stealth acquirer only no opt (5814)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999807022588577,
+      "ci": [
+        0.9996530070211789,
+        0.9999995331494258
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "B7",
+        "C2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "015-front-stealth-kyc-shield-national.json",
+      "merchantId": "M-015-FRONT-STEALTH-KYC-SHIELD",
+      "name": "stealth kyc shield national (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999807271633888,
+      "ci": [
+        0.9989979384571166,
+        0.9999995162706226
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H3",
+        "I3",
+        "K1"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "016-front-stealth-seasonal-mult-inflate.json",
+      "merchantId": "M-016-FRONT-STEALTH-SEASONAL-M",
+      "name": "stealth seasonal mult inflate (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999995251804087,
+      "ci": [
+        0.9999859523810742,
+        0.9999999872216254
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "C2",
+        "D10",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "017-front-stealth-hybrid-70-30-rest.json",
+      "merchantId": "M-017-FRONT-STEALTH-HYBRID-70-",
+      "name": "stealth hybrid 70 30 rest (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9819204109056998,
+      "ci": [
+        0.749151493096527,
+        0.9982562476466404
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "018-front-stealth-hybrid-80-20-kirana.json",
+      "merchantId": "M-018-FRONT-STEALTH-HYBRID-80-",
+      "name": "stealth hybrid 80 20 kirana (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9804283517728094,
+      "ci": [
+        0.7833195524978146,
+        0.9978153325606827
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "D10",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "019-front-stealth-partial-feeds-dups.json",
+      "merchantId": "M-019-FRONT-STEALTH-PARTIAL-FE",
+      "name": "stealth partial feeds dups (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9907328535998092,
+      "ci": [
+        0.9105347199909084,
+        0.9992573252062821
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "B9",
+        "C2",
+        "D10",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "020-front-stealth-quiet-no-refund-payout.json",
+      "merchantId": "M-020-FRONT-STEALTH-QUIET-NO-R",
+      "name": "stealth quiet no refund payout (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9992600505935653,
+      "ci": [
+        0.9864239704482349,
+        0.9999587771329601
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "B9",
+        "C2",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "021-front-rotation-phoenix-1d-gap.json",
+      "merchantId": "M-021-FRONT-ROTATION-PHOENIX-1",
+      "name": "rotation phoenix 1d gap (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999994758208427,
+      "ci": [
+        0.9999762167104216,
+        0.9999999774909674
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "022-front-rotation-phoenix-3d-gap.json",
+      "merchantId": "M-022-FRONT-ROTATION-PHOENIX-3",
+      "name": "rotation phoenix 3d gap (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999993434524556,
+      "ci": [
+        0.9999699996652309,
+        0.9999999793883496
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "023-front-rotation-phoenix-7d-boundary.json",
+      "merchantId": "M-023-FRONT-ROTATION-PHOENIX-7",
+      "name": "rotation phoenix 7d boundary (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999994758208427,
+      "ci": [
+        0.9999782638519865,
+        0.999999985262809
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "024-front-rotation-no-shared-ben-44d.json",
+      "merchantId": "M-024-FRONT-ROTATION-NO-SHARED",
+      "name": "rotation no shared ben 44d (5814)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999949107687791,
+      "ci": [
+        0.9998290112583473,
+        0.99999986552474
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "025-front-rotation-cross-city-gifts.json",
+      "merchantId": "M-025-FRONT-ROTATION-CROSS-CIT",
+      "name": "rotation cross city gifts (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999997405577221,
+      "ci": [
+        0.9999903107261757,
+        0.9999999938637779
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "026-front-rotation-stationery-shell.json",
+      "merchantId": "M-026-FRONT-ROTATION-STATIONER",
+      "name": "rotation stationery shell (5943)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999998052338841,
+      "ci": [
+        0.9999904490735458,
+        0.9999999960442139
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "027-front-rotation-retail-otc.json",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "name": "rotation retail otc (5999)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999996523120801,
+      "ci": [
+        0.9999800915564302,
+        0.9999999884891176
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "028-front-rotation-multi-hop-chain.json",
+      "merchantId": "M-028-FRONT-ROTATION-MULTI-HOP",
+      "name": "rotation multi hop chain (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999994758208427,
+      "ci": [
+        0.999979582404332,
+        0.9999999892848213
+      ],
+      "action": "L3",
+      "mechanism": "ROTATION",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "E3",
+        "F2",
+        "F5",
+        "H3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "029-front-mule-5-ben-hops-12-payouts.json",
+      "merchantId": "M-029-FRONT-MULE-5-BEN-HOPS-12",
+      "name": "mule 5 ben hops 12 payouts (5943)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9881888995282767,
+      "ci": [
+        0.8750526221645836,
+        0.9992909523430566
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "F5",
+        "F8",
+        "H1",
+        "H2",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "030-front-mule-8-ben-hops-sweep-1h.json",
+      "merchantId": "M-030-FRONT-MULE-8-BEN-HOPS-SW",
+      "name": "mule 8 ben hops sweep 1h (5999)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9933939436063698,
+      "ci": [
+        0.9475536235802042,
+        0.9996422620028739
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "F5",
+        "F8",
+        "H1",
+        "H2",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "031-front-payout-fanout-20-accounts.json",
+      "merchantId": "M-031-FRONT-PAYOUT-FANOUT-20-A",
+      "name": "payout fanout 20 accounts (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "LOW",
+      "posterior": 0.10803341945810925,
+      "ci": [
+        0.011032062195332579,
+        0.5211320200786997
+      ],
+      "action": "L2",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "F8",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "032-front-rapid-sweep-all-settlements.json",
+      "merchantId": "M-032-FRONT-RAPID-SWEEP-ALL-SE",
+      "name": "rapid sweep all settlements (5814)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9992627184755196,
+      "ci": [
+        0.9825772972979687,
+        0.9999646242830259
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "D10",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "033-front-shadow-settlement-100pct-gap.json",
+      "merchantId": "M-033-FRONT-SHADOW-SETTLEMENT-",
+      "name": "shadow settlement 100pct gap (5943)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9815033299714866,
+      "ci": [
+        0.7644395422641932,
+        0.9985104805226855
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "D10",
+        "F5",
+        "F8",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "034-front-shadow-settlement-partial-gap.json",
+      "merchantId": "M-034-FRONT-SHADOW-SETTLEMENT-",
+      "name": "shadow settlement partial gap (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.990758753069154,
+      "ci": [
+        0.8878811473351209,
+        0.9990212647954595
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "D10",
+        "F5",
+        "F8",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "035-front-orphan-refund-factory.json",
+      "merchantId": "M-035-FRONT-ORPHAN-REFUND-FACT",
+      "name": "orphan refund factory (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "LOW",
+      "posterior": 0.48031542102945424,
+      "ci": [
+        0.08297103526948756,
+        0.8812973020162381
+      ],
+      "action": "L2",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "D7",
+        "D10",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "036-front-third-party-refund-diversion.json",
+      "merchantId": "M-036-FRONT-THIRD-PARTY-REFUND",
+      "name": "third party refund diversion (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "LOW",
+      "posterior": 0.18171931618017226,
+      "ci": [
+        0.018286045985792206,
+        0.7124445046359333
+      ],
+      "action": "L2",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "D9",
+        "D10",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "037-front-combined-refund-and-mule-ring.json",
+      "merchantId": "M-037-FRONT-COMBINED-REFUND-AN",
+      "name": "combined refund and mule ring (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "LOW",
+      "posterior": 0.3987337958687061,
+      "ci": [
+        0.06517244776317656,
+        0.8623468561175359
+      ],
+      "action": "L2",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "D7",
+        "D9",
+        "D10",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "038-front-p2p-otc-liquidity-desk.json",
+      "merchantId": "M-038-FRONT-P2P-OTC-LIQUIDITY-",
+      "name": "p2p otc liquidity desk (5999)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999996490358943,
+      "ci": [
+        0.9999916258337693,
+        0.999999991960442
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A1",
+        "A4",
+        "B6",
+        "B7",
+        "C2",
+        "D10",
+        "H3",
+        "I2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "039-front-shell-furniture-total-fake.json",
+      "merchantId": "M-039-FRONT-SHELL-FURNITURE-TO",
+      "name": "shell furniture total fake (5712)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999959795299512,
+      "ci": [
+        0.9998701343761327,
+        0.9999999207245402
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "A4",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "040-front-shell-stationery-reused-trk.json",
+      "merchantId": "M-040-FRONT-SHELL-STATIONERY-R",
+      "name": "shell stationery reused trk (5943)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999291916559898,
+      "ci": [
+        0.997242568897488,
+        0.9999979427833359
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "041-front-shell-gifts-dup-catalogue.json",
+      "merchantId": "M-041-FRONT-SHELL-GIFTS-DUP-CA",
+      "name": "shell gifts dup catalogue (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999353415089421,
+      "ci": [
+        0.9984637132769942,
+        0.9999982838719755
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "042-front-shell-bakery-zero-confirm.json",
+      "merchantId": "M-042-FRONT-SHELL-BAKERY-ZERO-",
+      "name": "shell bakery zero confirm (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999442166670067,
+      "ci": [
+        0.9978284720786889,
+        0.9999988355826321
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "043-front-shell-kirana-undelivered.json",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "name": "shell kirana undelivered (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999449566614642,
+      "ci": [
+        0.9984893772002751,
+        0.9999987012899207
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "044-front-shell-restaurant-fake-online.json",
+      "merchantId": "M-044-FRONT-SHELL-RESTAURANT-F",
+      "name": "shell restaurant fake online (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999101200838884,
+      "ci": [
+        0.9971181059741464,
+        0.9999969594622822
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "045-front-shell-tiffin-no-fulfillment.json",
+      "merchantId": "M-045-FRONT-SHELL-TIFFIN-NO-FU",
+      "name": "shell tiffin no fulfillment (5814)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.999956053621057,
+      "ci": [
+        0.9984039936965732,
+        0.9999992250549486
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "046-front-shell-retail-high-ticket.json",
+      "merchantId": "M-046-FRONT-SHELL-RETAIL-HIGH-",
+      "name": "shell retail high ticket (5999)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999708499503176,
+      "ci": [
+        0.999213448852352,
+        0.9999994131843788
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "047-front-shell-online-channel-only.json",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "name": "shell online channel only (5712)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999935218832324,
+      "ci": [
+        0.9998093249340273,
+        0.9999998620868424
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "A4",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "048-front-shell-sudden-volume-fake.json",
+      "merchantId": "M-048-FRONT-SHELL-SUDDEN-VOLUM",
+      "name": "shell sudden volume fake (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999723892896208,
+      "ci": [
+        0.998944764653273,
+        0.9999993332597311
+      ],
+      "action": "L2",
+      "mechanism": "FABRICATED_SUBSTANCE",
+      "fired": [
+        "A1",
+        "B9",
+        "D10",
+        "F7",
+        "G2",
+        "H1",
+        "H2"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "049-front-takeover-bakery-3wk-surge.json",
+      "merchantId": "M-049-FRONT-TAKEOVER-BAKERY-3W",
+      "name": "takeover bakery 3wk surge (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999542624370041,
+      "ci": [
+        0.9987171516963602,
+        0.999998218411673
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "050-front-takeover-kirana-3wk-surge.json",
+      "merchantId": "M-050-FRONT-TAKEOVER-KIRANA-3W",
+      "name": "takeover kirana 3wk surge (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999171558181793,
+      "ci": [
+        0.997490252042589,
+        0.9999966650970238
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "051-front-takeover-restaurant-night-shift.json",
+      "merchantId": "M-051-FRONT-TAKEOVER-RESTAURAN",
+      "name": "takeover restaurant night shift (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999338571694439,
+      "ci": [
+        0.9982902907166123,
+        0.9999976738312778
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "052-front-takeover-tiffin-geo-explosion.json",
+      "merchantId": "M-052-FRONT-TAKEOVER-TIFFIN-GE",
+      "name": "takeover tiffin geo explosion (5814)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999542624370041,
+      "ci": [
+        0.9987151428846434,
+        0.9999987343469003
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "053-front-takeover-gifts-gradual-drift.json",
+      "merchantId": "M-053-FRONT-TAKEOVER-GIFTS-GRA",
+      "name": "takeover gifts gradual drift (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999773616933549,
+      "ci": [
+        0.9994274253436832,
+        0.9999990359803334
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "054-front-takeover-stationery-round-shift.json",
+      "merchantId": "M-054-FRONT-TAKEOVER-STATIONER",
+      "name": "takeover stationery round shift (5943)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999542624370041,
+      "ci": [
+        0.9988291316647063,
+        0.9999987662462093
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "055-front-takeover-retail-payout-drift.json",
+      "merchantId": "M-055-FRONT-TAKEOVER-RETAIL-PA",
+      "name": "takeover retail payout drift (5999)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999696618226611,
+      "ci": [
+        0.9992208534985332,
+        0.9999989156629169
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "056-front-takeover-diwali-camouflaged-surge.json",
+      "merchantId": "M-056-FRONT-TAKEOVER-DIWALI-CA",
+      "name": "takeover diwali camouflaged surge (5462)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999542595110219,
+      "ci": [
+        0.998703678383984,
+        0.9999988594343742
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "057-front-takeover-xmas-camouflaged-gifts.json",
+      "merchantId": "M-057-FRONT-TAKEOVER-XMAS-CAMO",
+      "name": "takeover xmas camouflaged gifts (5947)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999773616933549,
+      "ci": [
+        0.9994275119059987,
+        0.9999993170069938
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "058-front-takeover-eid-camouflaged-food.json",
+      "merchantId": "M-058-FRONT-TAKEOVER-EID-CAMOU",
+      "name": "takeover eid camouflaged food (5812)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999338571694439,
+      "ci": [
+        0.9981160877920376,
+        0.9999976910795768
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "059-front-takeover-furniture-payout-ring.json",
+      "merchantId": "M-059-FRONT-TAKEOVER-FURNITURE",
+      "name": "takeover furniture payout ring (5712)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.8702850921248843,
+      "ci": [
+        0.37381598266865634,
+        0.9896131693119934
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "H1",
+        "H2",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "060-front-takeover-multi-signal-late-ramp.json",
+      "merchantId": "M-060-FRONT-TAKEOVER-MULTI-SIG",
+      "name": "takeover multi signal late ramp (5411)",
+      "decision": "OPEN_CASE",
+      "priority": "HIGH",
+      "posterior": 0.9999171558181793,
+      "ci": [
+        0.9980109376909233,
+        0.9999968749824435
+      ],
+      "action": "L3",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4",
+        "B6",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "I3"
+      ],
+      "expectedDecision": "OPEN_CASE"
+    },
+    {
+      "file": "061-genuine-bakery-diwali-3x.json",
+      "merchantId": "M-061-GENUINE-BAKERY-DIWALI-3X",
+      "name": "bakery diwali 3x (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000003365601708388035,
+      "ci": [
+        8.411989421529817e-7,
+        0.000009540543236065962
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "062-genuine-bakery-holi-16x.json",
+      "merchantId": "M-062-GENUINE-BAKERY-HOLI-16X",
+      "name": "bakery holi 16x (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000003365601708388035,
+      "ci": [
+        8.250371182059961e-7,
+        0.000010301567806262998
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "063-genuine-kirana-diwali-16x.json",
+      "merchantId": "M-063-GENUINE-KIRANA-DIWALI-16",
+      "name": "kirana diwali 16x (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000026870548001558096,
+      "ci": [
+        6.389122636253926e-7,
+        0.00000808970829229639
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "064-genuine-gifts-diwali-25x.json",
+      "merchantId": "M-064-GENUINE-GIFTS-DIWALI-25X",
+      "name": "gifts diwali 25x (5947)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000067998658132329615,
+      "ci": [
+        0.0000019560187652380876,
+        0.000017774589601959875
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "065-genuine-gifts-rakhi-18x.json",
+      "merchantId": "M-065-GENUINE-GIFTS-RAKHI-18X",
+      "name": "gifts rakhi 18x (5947)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000067998658132329615,
+      "ci": [
+        0.0000018755299251579235,
+        0.000018974000144400566
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "066-genuine-gifts-christmas-16x.json",
+      "merchantId": "M-066-GENUINE-GIFTS-CHRISTMAS-",
+      "name": "gifts christmas 16x (5947)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000067998658132329615,
+      "ci": [
+        0.000001952346047706689,
+        0.000017018215268223154
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "067-genuine-restaurant-eid-13x.json",
+      "merchantId": "M-067-GENUINE-RESTAURANT-EID-1",
+      "name": "restaurant eid 13x (5812)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000003365601708388035,
+      "ci": [
+        8.957368595131837e-7,
+        0.000010092875905422335
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "068-genuine-furniture-diwali-15x.json",
+      "merchantId": "M-068-GENUINE-FURNITURE-DIWALI",
+      "name": "furniture diwali 15x (5712)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000378910982766442,
+      "ci": [
+        0.000008274946843692604,
+        0.0001311083216393035
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "069-genuine-kirana-border-neighbours.json",
+      "merchantId": "M-069-GENUINE-KIRANA-BORDER-NE",
+      "name": "kirana border neighbours (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000026870548001558096,
+      "ci": [
+        7.29344688872356e-7,
+        0.000008384463574075243
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "070-genuine-bakery-college-outofstate.json",
+      "merchantId": "M-070-GENUINE-BAKERY-COLLEGE-O",
+      "name": "bakery college outofstate (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000012865766317144487,
+      "ci": [
+        0.0000027820038155947833,
+        0.00004282800560691465
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "B6"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "071-genuine-furniture-national-wide-geo.json",
+      "merchantId": "M-071-GENUINE-FURNITURE-NATION",
+      "name": "furniture national wide geo (5712)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000378910982766442,
+      "ci": [
+        0.00000848178751557319,
+        0.00013368068308343024
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "072-genuine-kirana-daily-regulars-5x.json",
+      "merchantId": "M-072-GENUINE-KIRANA-DAILY-REG",
+      "name": "kirana daily regulars 5x (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000026870548001558096,
+      "ci": [
+        6.633342787479503e-7,
+        0.000008882804418454711
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "073-genuine-stationery-repeat-b2b-4x.json",
+      "merchantId": "M-073-GENUINE-STATIONERY-REPEA",
+      "name": "stationery repeat b2b 4x (5943)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000003365601708388035,
+      "ci": [
+        8.647913278657138e-7,
+        0.000009059589100522096
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "074-genuine-tiffin-border-regulars.json",
+      "merchantId": "M-074-GENUINE-TIFFIN-BORDER-RE",
+      "name": "tiffin border regulars (5814)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000003365601708388035,
+      "ci": [
+        9.070277934716351e-7,
+        0.000010509079376285484
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "075-genuine-gifts-catalogue-499-999.json",
+      "merchantId": "M-075-GENUINE-GIFTS-CATALOGUE-",
+      "name": "gifts catalogue 499 999 (5947)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000067998658132329615,
+      "ci": [
+        0.000001923544943370483,
+        0.000018596364362864932
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "076-genuine-bakery-giftbox-500-1000.json",
+      "merchantId": "M-076-GENUINE-BAKERY-GIFTBOX-5",
+      "name": "bakery giftbox 500 1000 (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00007907824778861564,
+      "ci": [
+        0.000011026297375567732,
+        0.00033905611712518673
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "077-genuine-stationery-mobile-self-refunds.json",
+      "merchantId": "M-077-GENUINE-STATIONERY-MOBIL",
+      "name": "stationery mobile self refunds (5943)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000026610780106720015,
+      "ci": [
+        7.111021202254047e-7,
+        0.0000074473822611092986
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "078-genuine-bakery-small-3p-refund-under-5k.json",
+      "merchantId": "M-078-GENUINE-BAKERY-SMALL-3P-",
+      "name": "bakery small 3p refund under 5k (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000026610780106720015,
+      "ci": [
+        6.909896228465282e-7,
+        0.000007530174818141066
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "079-genuine-restaurant-single-bank-switch.json",
+      "merchantId": "M-079-GENUINE-RESTAURANT-SINGL",
+      "name": "restaurant single bank switch (5812)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000003859848769112943,
+      "ci": [
+        0.0000010429226179473013,
+        0.000011953955231918674
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "080-genuine-kirana-own-account-sweeps.json",
+      "merchantId": "M-080-GENUINE-KIRANA-OWN-ACCOU",
+      "name": "kirana own account sweeps (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00005525260458338157,
+      "ci": [
+        0.000007589825498623041,
+        0.0002604424309606576
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "I3"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "081-genuine-bakery-wide-kyc-honest-tx.json",
+      "merchantId": "M-081-GENUINE-BAKERY-WIDE-KYC-",
+      "name": "bakery wide kyc honest tx (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000626393273283859,
+      "ci": [
+        0.00000858155327265401,
+        0.000405224290964534
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "K1"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "082-genuine-retail-80pct-exact-verification.json",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "name": "retail 80pct exact verification (5999)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000005074020302934546,
+      "ci": [
+        0.0000014881635111404189,
+        0.000015258459415313457
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "083-genuine-overnight-honest-5812.json",
+      "merchantId": "M-083-GENUINE-OVERNIGHT-HONEST",
+      "name": "Genuine overnight Restaurants (5812)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00006451420830549919,
+      "ci": [
+        0.000009681853757270897,
+        0.0003731029830627807
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "C2"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "084-genuine-overnight-honest-5814.json",
+      "merchantId": "M-084-GENUINE-OVERNIGHT-HONEST",
+      "name": "Genuine overnight Fast food and tiffin (5814)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00006451420830549919,
+      "ci": [
+        0.000009114262195294723,
+        0.0003448936073304495
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "C2"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "085-genuine-bakery-late-night-delivery-2230.json",
+      "merchantId": "M-085-GENUINE-BAKERY-LATE-NIGH",
+      "name": "Genuine late-night delivery 22:30 (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000028621371355931777,
+      "ci": [
+        0.000005595315643279979,
+        0.00011075333068453333
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "C2"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "086-genuine-young-cafe-15d-clean.json",
+      "merchantId": "M-086-GENUINE-YOUNG-CAFE-15D-C",
+      "name": "Clean young 15d shop (5812)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000007697871974462336,
+      "ci": [
+        0.000001988022606397092,
+        0.000021891703746826782
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "087-genuine-young-kirana-45d-clean.json",
+      "merchantId": "M-087-GENUINE-YOUNG-KIRANA-45D",
+      "name": "Clean young 45d shop (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000006145891195394028,
+      "ci": [
+        0.000001423003809473817,
+        0.00001838936699232965
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "088-genuine-young-gifts-90d-clean.json",
+      "merchantId": "M-088-GENUINE-YOUNG-GIFTS-90D-",
+      "name": "Clean young 90d shop (5947)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000015552721210794562,
+      "ci": [
+        0.000004625097827546085,
+        0.000040599061786896456
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "089-genuine-young-retail-180d-clean.json",
+      "merchantId": "M-089-GENUINE-YOUNG-RETAIL-180",
+      "name": "Clean young 180d shop (5999)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000007543524944379979,
+      "ci": [
+        0.000002270253544175266,
+        0.000019864274528932185
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "090-genuine-acquirer-only-clean-5462.json",
+      "merchantId": "M-090-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Bakeries and sweet shops (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00021115247269816253,
+      "ci": [
+        0.0000645497159752912,
+        0.00041518406518954075
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "091-genuine-acquirer-only-clean-5411.json",
+      "merchantId": "M-091-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Grocery and kirana (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00016858858664952885,
+      "ci": [
+        0.000045633446153803506,
+        0.0003581462580625524
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "092-genuine-acquirer-only-clean-5812.json",
+      "merchantId": "M-092-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Restaurants (5812)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00021115247269816253,
+      "ci": [
+        0.00006640646124278647,
+        0.00042245943828020556
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "093-genuine-acquirer-only-clean-5814.json",
+      "merchantId": "M-093-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Fast food and tiffin (5814)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00021115247269816253,
+      "ci": [
+        0.00006257393699702887,
+        0.0004365706522033905
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "094-genuine-acquirer-only-clean-5947.json",
+      "merchantId": "M-094-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Gift, card and novelty (5947)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00042652228031450244,
+      "ci": [
+        0.00015214724448436994,
+        0.0007892499407329725
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "095-genuine-acquirer-only-clean-5712.json",
+      "merchantId": "M-095-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Furniture and home furnishings (5712)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.002647553816902958,
+      "ci": [
+        0.0007005967326978536,
+        0.006370398356971804
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [
+        "A4"
+      ],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "096-genuine-acquirer-only-clean-5943.json",
+      "merchantId": "M-096-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Stationery and office supplies (5943)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00021115247269816253,
+      "ci": [
+        0.00006256939444250741,
+        0.0004313200526099563
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "097-genuine-acquirer-only-clean-5999.json",
+      "merchantId": "M-097-GENUINE-ACQUIRER-ONLY-CL",
+      "name": "Clean acquirer-only Other retail (5999)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.00031830235207352096,
+      "ci": [
+        0.00011026963921639021,
+        0.0005993763819670605
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "098-genuine-partial-feeds-clean-bakery.json",
+      "merchantId": "M-098-GENUINE-PARTIAL-FEEDS-CL",
+      "name": "Clean bakery with PARTIAL feeds (5462)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.000034877810050020224,
+      "ci": [
+        0.000010779779500629586,
+        0.000082376128394509
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "099-genuine-all-weekly-null-clean-kirana.json",
+      "merchantId": "M-099-GENUINE-ALL-WEEKLY-NULL-",
+      "name": "Clean kirana with all weeklySales null (5411)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.0000033333750227763247,
+      "ci": [
+        8.727648495762131e-7,
+        0.00001108229012977925
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    },
+    {
+      "file": "100-genuine-anonymous-pos-1sale-minimum.json",
+      "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+      "name": "Clean single-sale anonymous shop (5814)",
+      "decision": "NO_CASE",
+      "priority": "NONE",
+      "posterior": 0.001602366747220573,
+      "ci": [
+        0.0005680396771215621,
+        0.003313056857041256
+      ],
+      "action": "L0",
+      "mechanism": "TRANSACTION_LAUNDERING",
+      "fired": [],
+      "expectedDecision": "NO_CASE"
+    }
+  ]
+}

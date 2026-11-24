@@ -39,32 +39,92 @@ function familyLlr(items: EvidenceItem[], llrOf: (e: EvidenceItem) => number, rh
   return part(pos) + part(neg);
 }
 
-export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: { draws?: number } = {}): FusionResult {
+function sumFamiliesDamped(famLlrs: number[]): number {
+  const pos = famLlrs.filter(v => v > 0).sort((a, b) => b - a);
+  let total = 0;
+  for (let i = 0; i < pos.length; i++) total += i < 3 ? pos[i] : 0.85 * pos[i];
+  for (let i = 0; i < famLlrs.length; i++) if (famLlrs[i] < 0) total += famLlrs[i];
+  return total;
+}
+
+export function fuse(
+  evidence: EvidenceItem[],
+  profile: MerchantProfile,
+  opts: { draws?: number; learnedRates?: Map<string, { sensitivity: number; falsePositive: number }> } = {},
+): FusionResult {
   const E = RULES.engine, rho = E.familyRho, pr = priorFor(profile);
   const priorLogOdds = logit(pr.rate) + Math.log(pr.odds);
   const byFam = new Map<Family, EvidenceItem[]>();
   evidence.filter(e => e.status !== 'UNKNOWN').forEach(e => byFam.set(e.family, [...(byFam.get(e.family) ?? []), e]));
 
-  const famRows = [...byFam.entries()].map(([family, xs]) => ({ family, llr: familyLlr(xs, e => e.llr, rho), items: xs.map(e => e.id) }));
+  const rawFamRows = [...byFam.entries()].map(([family, xs]) => ({ family, llr: familyLlr(xs, e => e.llr, rho), items: xs.map(e => e.id) }));
+  const posFamOrder = rawFamRows.filter(f => f.llr > 0).sort((a, b) => b.llr - a.llr);
+  const dampedSet = new Set(posFamOrder.slice(3).map(f => f.family));
+  const famRows = rawFamRows.map(f => (dampedSet.has(f.family) ? { ...f, llr: f.llr * 0.85 } : f));
   const overrides = RULES.overrides.rules.filter(r => evidence.some(e => e.id === r.detector && e.status === 'ILLICIT' && (r.id !== 'R-01' || (e.effect ?? 0) >= 1.25)))
     .map(r => ({ id: r.id, llr: r.llr, when: r.when }));
-  const total = priorLogOdds + famRows.reduce((s, f) => s + f.llr, 0) + overrides.reduce((s, o) => s + o.llr, 0);
+  const overrideSum = overrides.reduce((s, o) => s + o.llr, 0);
+  const total = priorLogOdds + famRows.reduce((s, f) => s + f.llr, 0) + overrideSum;
 
-  // Monte-Carlo interval: redraw each fired/calm detector's s, f, and the base rate on the logit scale so medians match point estimates.
+  // Hoist detector configs, logit SDs, and family bucket indices out of the Monte-Carlo loop.
   const r = rng(seedOf(profile.id + '|fusion')), k = E.detectorPriorStrength, draws: number[] = [];
-  const drawProb = (p: number, strength: number) => sigmoid(logit(p) + normal(r) / Math.sqrt(1 + strength * p * (1 - p)));
-  for (let d = 0; d < (opts.draws ?? E.posteriorDraws); d++) {
-    const sampled = new Map<string, number>();
-    evidence.forEach(e => {
-      if (e.status === 'UNKNOWN') return;
-      const cfg = RULES.detector(e.id), s = drawProb(cfg.sensitivity, k), f = drawProb(cfg.falsePositive, k);
-      // Keep the item's grade / fake-difficulty / coverage factor (e.llr ÷ point LLR) and redraw only s and f.
-      const point = e.status === 'ILLICIT' ? fireLlr(cfg.sensitivity, cfg.falsePositive) : calmLlr(cfg.sensitivity, cfg.falsePositive);
-      const now = e.status === 'ILLICIT' ? fireLlr(s, f) : calmLlr(s, f);
-      sampled.set(e.id, Math.max(E.benignLlrFloor, e.llr * (now / point)));
+  const activeMeta: { illicit: boolean; llr: number; sMu: number; sSd: number; fMu: number; fSd: number; point: number }[] = [];
+  const famIndexMap = new Map<Family, number[]>();
+  for (const e of evidence) {
+    if (e.status === 'UNKNOWN') continue;
+    const base = RULES.detector(e.id), lr = opts.learnedRates?.get(e.id);
+    const s0 = lr ? lr.sensitivity : base.sensitivity, f0 = lr ? lr.falsePositive : base.falsePositive;
+    const idx = activeMeta.length;
+    const illicit = e.status === 'ILLICIT';
+    activeMeta.push({
+      illicit,
+      llr: e.llr,
+      sMu: logit(s0),
+      sSd: 1 / Math.sqrt(1 + k * s0 * (1 - s0)),
+      fMu: logit(f0),
+      fSd: 1 / Math.sqrt(1 + k * f0 * (1 - f0)),
+      point: illicit ? fireLlr(s0, f0) : calmLlr(s0, f0),
     });
-    const rate = drawProb(pr.rate, pr.strength);
-    const lo = logit(rate) + Math.log(pr.odds) + [...byFam.values()].reduce((s, xs) => s + familyLlr(xs, e => sampled.get(e.id) ?? e.llr, rho), 0) + overrides.reduce((s, o) => s + o.llr, 0);
+    const bucket = famIndexMap.get(e.family);
+    if (bucket) bucket.push(idx);
+    else famIndexMap.set(e.family, [idx]);
+  }
+  const famBuckets = [...famIndexMap.values()];
+  const prMu = logit(pr.rate), prSd = 1 / Math.sqrt(1 + pr.strength * pr.rate * (1 - pr.rate)), prLogOdds = Math.log(pr.odds);
+  const sampledLlr = new Float64Array(activeMeta.length);
+  const drawCount = opts.draws ?? E.posteriorDraws;
+  for (let d = 0; d < drawCount; d++) {
+    for (let i = 0; i < activeMeta.length; i++) {
+      const m = activeMeta[i];
+      const s = sigmoid(m.sMu + normal(r) * m.sSd);
+      const f = sigmoid(m.fMu + normal(r) * m.fSd);
+      const now = m.illicit ? fireLlr(s, f) : calmLlr(s, f);
+      sampledLlr[i] = Math.max(E.benignLlrFloor, m.llr * (now / m.point));
+    }
+    const famLlrs: number[] = new Array(famBuckets.length);
+    for (let fi = 0; fi < famBuckets.length; fi++) {
+      const idxs = famBuckets[fi];
+      const pos: number[] = [], neg: number[] = [];
+      for (let j = 0; j < idxs.length; j++) {
+        const v = sampledLlr[idxs[j]];
+        if (v > 0) pos.push(v);
+        else if (v < 0) neg.push(v);
+      }
+      let fl = 0;
+      if (pos.length) {
+        pos.sort((a, b) => b - a);
+        fl += pos[0];
+        for (let j = 1; j < pos.length; j++) fl += rho * pos[j];
+      }
+      if (neg.length) {
+        neg.sort((a, b) => a - b);
+        fl += neg[0];
+        for (let j = 1; j < neg.length; j++) fl += rho * neg[j];
+      }
+      famLlrs[fi] = fl;
+    }
+    const rate = sigmoid(prMu + normal(r) * prSd);
+    const lo = logit(rate) + prLogOdds + sumFamiliesDamped(famLlrs) + overrideSum;
     draws.push(sigmoid(lo));
   }
   draws.sort((a, b) => a - b);
@@ -99,11 +159,15 @@ export function fuse(evidence: EvidenceItem[], profile: MerchantProfile, opts: {
 
   const illicitMass = famRows.reduce((s, f) => s + Math.max(0, f.llr), 0), benignMass = famRows.reduce((s, f) => s + Math.max(0, -f.llr), 0);
   const decisionAnalysis = decide(posterior, posteriorCi, gatePassed);
+  const tau = E.gate.openPosterior;
+  const conformalSet: ('GENUINE' | 'FRONT')[] =
+    posteriorCi[1] < tau ? ['GENUINE'] : posteriorCi[0] >= tau ? ['FRONT'] : ['GENUINE', 'FRONT'];
+  const abstainRecommended = conformalSet.length > 1 || (!gatePassed && posterior >= tau);
   const priority = !gatePassed ? 'NONE' : posterior >= E.priority.high ? 'HIGH' : posterior >= E.priority.medium ? 'MEDIUM' : 'LOW';
   return {
     items, families, independentFamilies: strongFam.map(f => f.family), systems: strongProv.map(p => p.provenance), gatePassed, gateReason, illicitMass, benignMass, mechanisms,
     decision: gatePassed ? 'OPEN_CASE' : 'NO_CASE', priority, priorityScore: posterior, unknownIds: evidence.filter(e => e.status === 'UNKNOWN').map(e => e.id),
-    rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi,
+    rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi, conformalSet, abstainRecommended,
     logOdds: { prior: priorLogOdds, families: famRows, overrides, total }, provenances, mechanismPosterior, decisionAnalysis,
   };
 }
