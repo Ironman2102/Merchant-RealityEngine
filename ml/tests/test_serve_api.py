@@ -45,7 +45,10 @@ def test_serve_health_and_score_full_partial_empty():
     assert len(b_empty['classical']) == 3
 
     # Full real row from features.csv + extra unknown key
-    df = pd.read_csv(ROOT / 'ml' / 'data' / 'synthetic_features.csv').head(1)
+    csv_path = ROOT / 'ml' / 'data' / 'synthetic_features.csv'
+    if not csv_path.exists():
+        csv_path = ROOT / 'ml' / 'data' / 'features.csv'
+    df = pd.read_csv(csv_path).head(1)
     feats = {c: float(df[c].iloc[0]) for c in df.columns if c not in ('merchant_id', 'label')}
     feats['extra_unseen_feature'] = 123.45
     r_full = client.post('/score', json={'features': feats})

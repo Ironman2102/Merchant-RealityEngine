@@ -74,10 +74,35 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
             )}
           </div>
           <p className="text-xs text-mute">{both ? 'Both the Bayesian engine and the trained model agree on the 10% opening bar.' : 'They disagree on the 10% bar: review both the statistical waterfall and the SHAP drivers.'}</p>
-          {ml.ensemble && <p className="text-xs text-mute">Stage 2 ensemble: {fmtProb(ml.ensemble.p)} · {ml.ensemble.confidence.toLowerCase()} confidence · model spread {ml.ensemble.disagreement.toFixed(3)}{ml.ensemble.review ? ' · analyst review suggested' : ''}.</p>}
-          {ml.assessment && <p className="text-xs font-medium text-ink">Combined assessment: {ml.assessment.classification.replace('_', ' ')} · {fmtProb(ml.assessment.combinedP)} (Stage 1 {fmtProb(ml.assessment.statisticalP)}).{ml.assessment.review ? ' Human review required.' : ''}</p>}
-          {ml.classical?.length ? <ul className="text-xs text-mute">{ml.classical.map(x => <li key={x.modelVersion}>{x.modelVersion}: {fmtProb(x.p)}</li>)}</ul> : null}
-          {ml.encoder && <p className="text-xs text-mute">Context encoder ({ml.encoder.modelVersion}): {ml.encoder.label} ({ml.encoder.score == null ? 'no score' : fmtProb(ml.encoder.score)}). Treat as supporting context.</p>}
+          {ml.ensemble && (
+            <div className="rounded border border-line bg-panel2 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-semibold text-ink">Stage 2 Multi-Model Ensemble: <span className="font-mono text-sm">{fmtProb(ml.ensemble.p)}</span></div>
+                <div className="flex items-center gap-1.5">
+                  <Badge tone={ml.ensemble.confidence === 'HIGH' ? 'ok' : ml.ensemble.confidence === 'MEDIUM' ? 'info' : 'bad'}>
+                    {ml.ensemble.confidence} confidence
+                  </Badge>
+                  <Badge tone="mute">Spread {ml.ensemble.disagreement.toFixed(3)}</Badge>
+                </div>
+              </div>
+              {ml.assessment && (
+                <div className="mt-1.5 text-xs text-mute">
+                  Combined assessment: <b className="text-ink">{ml.assessment.classification.replace('_', ' ')}</b> · {fmtProb(ml.assessment.combinedP)} (Stage 1 {fmtProb(ml.assessment.statisticalP)}){ml.assessment.review ? ' · Human review recommended' : ''}
+                </div>
+              )}
+              {ml.classical?.length ? (
+                <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                  {ml.classical.map(x => (
+                    <div key={x.modelVersion} className="rounded border border-line bg-panel px-2.5 py-1.5 text-xs">
+                      <div className="text-[11px] text-mute truncate">{x.modelVersion}</div>
+                      <div className="font-mono font-semibold text-ink">{fmtProb(x.p)}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
+          {ml.encoder && <p className="text-xs text-mute">Context encoder ({ml.encoder.modelVersion}): <b className="text-ink">{ml.encoder.label}</b> ({ml.encoder.score == null ? 'no score' : fmtProb(ml.encoder.score)}). Supporting context only.</p>}
         </div>
       )}
     </Panel>

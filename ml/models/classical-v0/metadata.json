@@ -1,8 +1,26 @@
 {
   "synthetic": true,
-  "training_examples": 9,
-  "positive": 5,
-  "negative": 4,
-  "source": "ml/data/synthetic_features.csv",
-  "warning": "Small synthetic fixture set; low confidence and analyst review required."
+  "training_examples": 1400,
+  "heldout_examples": 300,
+  "positive": 100,
+  "negative": 1300,
+  "source": "ml/data/features.csv",
+  "metrics": {
+    "logistic-regression-v0": {
+      "heldout_ap": 1.0,
+      "recall_at_0_10": 1.0,
+      "genuine_fp_at_0_10": 0.0
+    },
+    "decision-tree-v0": {
+      "heldout_ap": 1.0,
+      "recall_at_0_10": 1.0,
+      "genuine_fp_at_0_10": 0.0
+    },
+    "random-forest-v0": {
+      "heldout_ap": 1.0,
+      "recall_at_0_10": 1.0,
+      "genuine_fp_at_0_10": 0.0
+    }
+  },
+  "note": "Leakage-free behavioral training with 40% coverage-dropout augmentation and sigmoid calibration."
 }
