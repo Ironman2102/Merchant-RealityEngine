@@ -7,6 +7,8 @@ import { MECHANISMS } from '../data/evidence';
 import { LADDER } from '../engines/patternPack';
 import { computeMerchantReality } from '../components/investigation/ClaimedVsReality';
 import { scorePortfolio } from '../../../engine/portfolio';
+import { computeBatchDrift } from '../../../engine/driftMonitor';
+import { computePeerBaselines } from '../../../engine/peerBaselines';
 import { Badge, Btn, Card, Mono, Panel, Tabs, Td, Th, rowCls, tableCls } from '../components/ui/ui';
 import { cx, fmtInterval, fmtProb, inr } from '../utils/format';
 
@@ -61,7 +63,9 @@ export function PortfolioPage() {
       action: e.result.fusion.decisionAnalysis.recommended,
       decision: e.result.fusion.decision,
     })));
-    return { totalGmv, gmvAtRisk, gmvPreserved, mechanisms: [...mechCounts.values()].sort((a, b) => b.count - a.count), fdr };
+    const drift = computeBatchDrift(entries.map(e => e.result));
+    const peerBaselines = computePeerBaselines(entries.map(e => e.scenario), 3);
+    return { totalGmv, gmvAtRisk, gmvPreserved, mechanisms: [...mechCounts.values()].sort((a, b) => b.count - a.count), fdr, drift, peerBaselines };
   }, [entries]);
 
   const downloadBlob = (filename: string, content: string, mime: string) => {
@@ -224,6 +228,58 @@ export function PortfolioPage() {
                           <Badge tone={r.severity === 'HIGH' ? 'bad' : 'info'}>{r.metricLabel}</Badge>
                         </div>
                         <div className="mt-1 text-rose-800">{r.merchants.map(m => `${m.name} (${m.id})`).join(' · ')}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Panel>
+            </div>
+          )}
+
+          {entries.length > 2 && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Panel
+                title="Calibration Drift & Conformal Abstention Monitor"
+                subtitle="Population Stability Index (PSI) on P(front) and detector false-positive drift on cleared accounts."
+                right={<Badge tone={batchReport.drift.psiStatus === 'OK' ? 'ok' : batchReport.drift.psiStatus === 'MODERATE' ? 'warn' : 'bad'}>PSI {batchReport.drift.psi.toFixed(3)} · {batchReport.drift.psiStatus}</Badge>}
+              >
+                <div className="space-y-2 text-xs text-mute">
+                  <div>
+                    Uncertain boundary cases (90% conformal set spans open threshold):{' '}
+                    <span className="font-mono font-semibold text-ink">{batchReport.drift.abstainCount} / {batchReport.drift.n}</span>{' '}
+                    ({(batchReport.drift.abstainShare * 100).toFixed(1)}%)
+                  </div>
+                  {batchReport.drift.detectorDrifts.length > 0 ? (
+                    <div className="space-y-1.5 pt-1">
+                      {batchReport.drift.detectorDrifts.map(d => (
+                        <div key={d.id} className="flex items-center justify-between rounded border border-amber-200 bg-amber-50/60 px-2.5 py-1.5 text-amber-900">
+                          <span><Mono>{d.id}</Mono> {d.name}</span>
+                          <span className="font-mono">{(d.observedFireRate * 100).toFixed(1)}% vs prior {(d.priorFalsePositive * 100).toFixed(1)}% ({d.ratio.toFixed(1)}×)</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-emerald-700">All evaluated detectors match prior false-positive calibration within bounds.</div>
+                  )}
+                </div>
+              </Panel>
+
+              <Panel
+                title="Portfolio-Empirical MCC Peer Baselines"
+                subtitle="Observed batch medians vs static MCC priors (shown for MCC cohorts with ≥ 3 merchants)."
+              >
+                {batchReport.peerBaselines.length === 0 ? (
+                  <p className="text-xs text-mute">Upload ≥ 3 merchants sharing an MCC to inspect live empirical peer baselines.</p>
+                ) : (
+                  <div className="space-y-2 text-xs">
+                    {batchReport.peerBaselines.slice(0, 5).map(b => (
+                      <div key={b.mcc} className="flex flex-wrap items-center justify-between gap-2 rounded border border-line bg-panel2 px-3 py-2">
+                        <div>
+                          <span className="font-semibold text-ink">MCC {b.mcc}</span> <span className="text-mute">· {b.category} ({b.n})</span>
+                        </div>
+                        <div className="font-mono text-[11px] text-mute">
+                          Ticket {inr(Math.round(b.medianTicket))} (prior {inr(Math.round(b.priorTicket))}) · Off-hrs {(b.offHoursShare * 100).toFixed(1)}% (prior {(b.priorOffHoursShare * 100).toFixed(1)}%)
+                        </div>
                       </div>
                     ))}
                   </div>

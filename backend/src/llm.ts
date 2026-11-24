@@ -20,7 +20,7 @@ export { templateSummary };
 export function verifySummary(text: string, t: Trace): { ok: boolean; unsupported: string[] } {
   const hay = JSON.stringify(t) + ' ' + templateSummary(t);
   const norm = (s: string) => s.replace(/[₹,%\s]/g, '');
-  const hayNums = new Set((hay.match(/\d+(?:\.\d+)?/g) ?? []).map(norm));
+  const hayNums = new Set((hay.match(/₹?\d[\d,]*(?:\.\d+)?%?/g) ?? []).map(norm));
   // Whole-rupee and 1-2 decimal roundings of every trace number (summaries quote ₹81,533, not 81533.42).
   for (const m of hay.match(/\d+\.\d+/g) ?? []) { const v = Number(m); hayNums.add(String(Math.round(v))); hayNums.add(v.toFixed(1)); hayNums.add(v.toFixed(2)); }
   // Percent/ratio forms present in the trace (e.g. 0.783 → "78", "78.3").

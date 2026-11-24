@@ -47,6 +47,8 @@ export interface FusionResult {
   prior: number;                          // base rate P(front) before evidence
   posterior: number;                      // P(front | evidence), median of draws
   posteriorCi: [number, number];          // 90% interval from detector-uncertainty draws
+  conformalSet: ('GENUINE' | 'FRONT')[];  // 90% prediction set wrt gate.openPosterior
+  abstainRecommended: boolean;            // true when CI straddles decision gate or lacks corroboration
   logOdds: { prior: number; families: { family: Family; llr: number; items: string[] }[]; overrides: { id: string; llr: number; when: string }[]; total: number };
   provenances: { provenance: string; nats: number }[];
   mechanismPosterior: Record<Mechanism, number>;

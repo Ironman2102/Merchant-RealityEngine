@@ -42,7 +42,7 @@ async function modelUpToDate(): Promise<boolean> {
   } catch { return false; }
 }
 
-const RAW_GH = 'https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/hackathon-impl';
+const RAW_GH = `https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/${process.env.MRE_RAW_GH_BRANCH || 'main'}`;
 
 async function launchServer(id: string): Promise<void> {
   const info = await daytona(`/sandbox/${encodeURIComponent(id)}`);
@@ -50,15 +50,19 @@ async function launchServer(id: string): Promise<void> {
   const base = String(info.json.toolboxProxyUrl || '');
   if (!base) return;
   const cmd = [
-    'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 &&',
-    `curl -sf http://127.0.0.1:8790/health | grep -q '"nn":true' || (`,
+    'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 /tmp/mre/ml/models/classical-v0 &&',
+    `curl -sf http://127.0.0.1:8790/health | grep -q '"classical":true' || (`,
     `curl -fsSL ${RAW_GH}/ml/serve.py -o /tmp/mre/ml/serve.py &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/model.txt -o /tmp/mre/ml/models/m1-v0/model.txt &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/calibrator.json -o /tmp/mre/ml/models/m1-v0/calibrator.json &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/features.json -o /tmp/mre/ml/models/m1-v0/features.json &&`,
     `curl -fsSL ${RAW_GH}/ml/models/nn-v0/network.json -o /tmp/mre/ml/models/nn-v0/network.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/classical-v0/logistic-regression-v0.joblib -o /tmp/mre/ml/models/classical-v0/logistic-regression-v0.joblib &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/classical-v0/decision-tree-v0.joblib -o /tmp/mre/ml/models/classical-v0/decision-tree-v0.joblib &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/classical-v0/random-forest-v0.joblib -o /tmp/mre/ml/models/classical-v0/random-forest-v0.joblib &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/classical-v0/metadata.json -o /tmp/mre/ml/models/classical-v0/metadata.json &&`,
     `(pkill -f "uvicorn ml.serve:app" || true) &&`,
-    `cd /tmp/mre && nohup python3 -m uvicorn ml.serve:app --host 0.0.0.0 --port 8790 >/tmp/m1.log 2>&1 &`,
+    `cd /tmp/mre && setsid python3 -m uvicorn ml.serve:app --host 0.0.0.0 --port 8790 </dev/null >/tmp/m1.log 2>&1 &`,
     ')',
   ].join(' ');
   await fetch(`${base.replace(/\/$/, '')}/${realId}/process/execute`, {

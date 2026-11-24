@@ -100,7 +100,12 @@ class ScoreIn(BaseModel):
 @app.get('/health')
 def health():
     ok = ready()
-    return {'status': 'ok' if ok else 'no-model', 'model': 'm1-v0' if _booster is not None else ('nn-v0' if _net is not None else None), 'nn': _net is not None}
+    return {
+        'status': 'ok' if ok else 'no-model',
+        'model': 'm1-v0' if _booster is not None else ('nn-v0' if _net is not None else None),
+        'nn': _net is not None,
+        'classical': bool(_classical),
+    }
 
 @app.post('/score')
 def score(body: ScoreIn):

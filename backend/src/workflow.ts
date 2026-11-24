@@ -133,14 +133,26 @@ function saveAnalysis(raw: unknown, actor: Actor, analysis: ReturnType<typeof an
   return view(getCase(id)!);
 }
 
+function liveLearnedRatesForMcc(mcc: string): Map<string, { sensitivity: number; falsePositive: number }> | undefined {
+  let events;
+  try { events = getAllLabelEvents(); } catch { return undefined; }
+  if (!events.length) return undefined;
+  const map = new Map<string, { sensitivity: number; falsePositive: number }>();
+  for (const id of new Set(events.map(e => e.detectorId))) {
+    const r = effectiveRates(id, events, mcc);
+    map.set(id, { sensitivity: r.sensitivity, falsePositive: r.falsePositive });
+  }
+  return map.size ? map : undefined;
+}
+
 export function openInvestigation(raw: unknown, actor: Actor, suppliedMl?: MlOpinion | null): ApiReply {
-  return saveAnalysis(raw, actor, analyzeDataset(raw), suppliedMl);
+  return saveAnalysis(raw, actor, analyzeDataset(raw, { learnedRatesForMcc: liveLearnedRatesForMcc }), suppliedMl);
 }
 
 /** Stage 2 runs after Stage 1 evidence exists and before the governed case decision is persisted. */
 export async function openInvestigationWithStage2(raw: unknown, actor: Actor, precomputed?: ReturnType<typeof analyzeDataset>, suppliedMl?: MlOpinion | null): Promise<ApiReply> {
   if (!can(actor, wf().approvals.actions.open ?? [])) return fail(403, 'Your role cannot open cases.');
-  const analysis = precomputed ?? analyzeDataset(raw);
+  const analysis = precomputed ?? analyzeDataset(raw, { learnedRatesForMcc: liveLearnedRatesForMcc });
   if (!analysis.ok) return fail(400, analysis.errors.join(' ') || 'Dataset could not be read.');
   const ml = suppliedMl === undefined ? await scoreWithHost(analysis.result) : suppliedMl;
   return saveAnalysis(raw, actor, analysis, ml);

@@ -9,10 +9,21 @@ import { runDetectors } from './detectors';
 import { fuse } from './evidenceFusion';
 import { buildReview } from './analystEngine';
 
-function layer1(sc: Scenario, ev: PaymentEvent[]): L1Result {
-  const types = ['SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT', 'CHARGEBACK'];
-  const counts = Object.fromEntries(types.map(t => { const x = ev.filter(e => e.type === t); return [t, { n: x.length, value: x.reduce((s, e) => s + e.amount, 0) }]; }));
-  const sid = new Set(ev.filter(e => e.type === 'SALE').map(e => e.id)), refunds = ev.filter(e => e.type === 'REFUND'), linked = refunds.filter(r => r.linkedSaleId && sid.has(r.linkedSaleId)).length;
+function layer1(
+  sc: Scenario,
+  ev: PaymentEvent[],
+  pre?: { sales: PaymentEvent[]; refunds: PaymentEvent[]; settlements: PaymentEvent[]; transfers: PaymentEvent[]; chargebacks: PaymentEvent[] },
+): L1Result {
+  const byType: Record<string, PaymentEvent[]> = pre
+    ? { SALE: pre.sales, REFUND: pre.refunds, TRANSFER: pre.transfers, SETTLEMENT: pre.settlements, CHARGEBACK: pre.chargebacks }
+    : { SALE: [], REFUND: [], TRANSFER: [], SETTLEMENT: [], CHARGEBACK: [] };
+  if (!pre) {
+    for (const e of ev) { const bucket = byType[e.type]; if (bucket) bucket.push(e); }
+  }
+  const counts = Object.fromEntries(
+    Object.entries(byType).map(([t, x]) => [t, { n: x.length, value: x.reduce((s, e) => s + e.amount, 0) }]),
+  );
+  const sid = new Set(byType.SALE.map(e => e.id)), refunds = byType.REFUND, linked = refunds.filter(r => r.linkedSaleId && sid.has(r.linkedSaleId)).length;
   const seen = new Set<string>(), hashSamples: { raw: string; hash: string }[] = [];
   for (const e of ev) if (e.type === 'SALE' && !seen.has(e.payerRef) && hashSamples.length < 4) { seen.add(e.payerRef); hashSamples.push({ raw: e.payerRef, hash: e.payerHash }); }
   const c = sc.coverage;
@@ -39,11 +50,23 @@ const TL: Record<LayerId, Timeline[]> = {
 };
 
 /** Pure, deterministic. Same scenario in → same result out. */
-export function runInvestigation(sc: Scenario, options: { posteriorDraws?: number } = {}): InvestigationResult {
-  const events = sc.events.filter(e => e.merchantId === sc.primaryMerchantId);
+export type LearnedRateOverride = Map<string, { sensitivity: number; falsePositive: number }>;
+
+export function runInvestigation(sc: Scenario, options: { posteriorDraws?: number; learnedRates?: LearnedRateOverride } = {}): InvestigationResult {
+  const events: PaymentEvent[] = [];
+  const sales: PaymentEvent[] = [], refunds: PaymentEvent[] = [], settlements: PaymentEvent[] = [], transfers: PaymentEvent[] = [], chargebacks: PaymentEvent[] = [];
+  for (const e of sc.events) {
+    if (e.merchantId !== sc.primaryMerchantId) continue;
+    events.push(e);
+    if (e.type === 'SALE') sales.push(e);
+    else if (e.type === 'REFUND') refunds.push(e);
+    else if (e.type === 'SETTLEMENT') settlements.push(e);
+    else if (e.type === 'TRANSFER') transfers.push(e);
+    else if (e.type === 'CHARGEBACK') chargebacks.push(e);
+  }
   const vol = volumeModel(sc), rows = vol.rows, cs = cusum(rows, vol.z), cohort = cohortContinuity(sc);
-  const evidence = runDetectors({ sc, p: sc.profile, norm: RULES.mcc(sc.profile.mcc), vol, all: events, sales: events.filter(e => e.type === 'SALE'), refunds: events.filter(e => e.type === 'REFUND'),
-    settlements: events.filter(e => e.type === 'SETTLEMENT'), transfers: events.filter(e => e.type === 'TRANSFER'), rows, cusum: cs, cohort });
-  const fusion = fuse(evidence, sc.profile, { draws: options.posteriorDraws }), review = buildReview(evidence, fusion), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
-  return { scenario: sc, events, l1: layer1(sc, events), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, timelines: TL };
+  const evidence = runDetectors({ sc, p: sc.profile, norm: RULES.mcc(sc.profile.mcc), vol, all: events, sales, refunds,
+    settlements, transfers, rows, cusum: cs, cohort, learnedRates: options.learnedRates });
+  const fusion = fuse(evidence, sc.profile, { draws: options.posteriorDraws, learnedRates: options.learnedRates }), review = buildReview(evidence, fusion), peak = [...rows].reverse().find(r => r.actual !== null) ?? null;
+  return { scenario: sc, events, l1: layer1(sc, events, { sales, refunds, settlements, transfers, chargebacks }), l2: { profile: sc.profile, rows, cusum: cs, peak }, evidence, cohort, fusion, review, timelines: TL };
 }
