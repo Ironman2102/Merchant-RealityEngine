@@ -59,9 +59,9 @@ export default function App() {
             <Route path="cases/:id" element={<ServerCasePage />} />
             <Route path="cases/:id/:view" element={<ServerCasePage />} />
             <Route path="portfolio" element={<PortfolioPage />} />
+            <Route path="portfolio/:key" element={<CasePage />} />
             <Route path="improvements" element={<ImprovementsPage />} />
             <Route element={<RequireUserDataset />}>
-              <Route path="portfolio/:key" element={<CasePage />} />
               <Route path="investigations" element={<InvestigationPage />} />
               <Route path="trace" element={<TracePage />} />
               <Route path="patterns" element={<PatternsPage />} />

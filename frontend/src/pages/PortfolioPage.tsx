@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Download, FileUp, GitFork, ShieldAlert, ShieldCheck, Sliders } from 'lucide-react';
 import { usePortfolio, type PortfolioEntry } from '../hooks/usePortfolio';
+import { useInvestigation } from '../hooks/useInvestigation';
 import { MECHANISMS } from '../data/evidence';
 import { LADDER } from '../engines/patternPack';
 import { computeMerchantReality } from '../components/investigation/ClaimedVsReality';
@@ -23,6 +24,7 @@ export const verdictOf = (e: PortfolioEntry) => {
 
 export function PortfolioPage() {
   const { entries, rings, loading, mode } = usePortfolio();
+  const { loadCustom } = useInvestigation();
   const nav = useNavigate();
   const [view, setView] = useState<View>('all');
   const sus = entries.filter(e => e.suspicious), clear = entries.filter(e => !e.suspicious);
@@ -240,7 +242,7 @@ export function PortfolioPage() {
                 const v = verdictOf(e), p = e.scenario.profile, step = LADDER.find(l => l.id === e.pack.ladder)!;
                 const reality = computeMerchantReality(e.result);
                 return (
-                  <tr key={e.key} onClick={() => nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`)} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-slate-50', e.suspicious && 'bg-rose-50/30')}>
+                  <tr key={e.key} onClick={() => { if (userMode) loadCustom(e.scenario, true); nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`); }} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-slate-50', e.suspicious && 'bg-rose-50/30')}>
                     <td className="px-4 py-3"><div className="flex items-center gap-2.5">{e.suspicious ? <ShieldAlert size={17} className="shrink-0 text-rose-600" /> : <ShieldCheck size={17} className="shrink-0 text-emerald-600" />}
                       <div><div className="font-semibold text-ink">{p.name}</div><div className="text-xs text-mute">{p.city.split(',')[0]} · <span className="font-mono">{p.id}</span>{e.source === 'uploaded' && <span className="ml-1.5 font-medium text-indigo-600">uploaded</span>}</div></div></div></td>
                     <td className="px-4 py-3"><div className="text-ink">{p.category}</div><div className="text-xs text-mute">MCC {p.mcc}</div></td>
