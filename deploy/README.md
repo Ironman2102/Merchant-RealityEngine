@@ -1,22 +1,22 @@
 # Run
 
-Development, on this machine:
-
 ```bash
-npm install
+npm ci
+npm run dev:users
 npm run api          # http://127.0.0.1:8787
-npm run dev          # website on http://localhost:5173
-npm run mre -- demo:learn
-npm run mre -- rollback
+npm run dev          # http://localhost:5173
 ```
 
-Docker, when the daemon is available:
+Docker (one container; the model runs inside the API process):
 
 ```bash
-cp deploy/.env.example deploy/.env
+cp deploy/.env.example deploy/.env   # then set MRE_HASH_KEY to the output of: openssl rand -hex 32
 docker compose -f deploy/docker-compose.yml up --build
 ```
 
-`/v1/health` does not need a service key. Scoring does: `npm run mre -- key:create demo score,cases,read`.
-
-If a pinned Python package has no wheel for the image, the Dockerfile records that the install is best-effort (`|| true`) and the API still serves the Bayesian engine.
+Netlify needs `MRE_HASH_KEY`, `MRE_SESSION_SECRET` (16+ characters) and `MRE_BOOT_USERS` as `name:password:role,...` with one
+account per person. The server refuses to start, and the function refuses to serve, with a missing key on a host, a short, guessable or
+placeholder secret, or a placeholder password. Webhook secrets need 16+ characters too, or nothing is sent. Changing `MRE_HASH_KEY`
+changes every pseudonym and invalidates every seal (the server will then refuse to start on that database), so set it before
+there is data to keep. The Daytona and `MRE_ML_URL` variables are no longer used and should be removed. Cases on that host live in
+a temporary database and can vanish between requests: demo from a laptop.

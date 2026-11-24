@@ -1,0 +1,11 @@
+.git
+node_modules
+**/dist
+dist-console
+backend/data
+backend/bundle.js
+deploy/.env
+.env
+.venv
+examples/portfolio
+*.log
