@@ -1,0 +1,1385 @@
+{
+  "format": "mre-dataset/v1",
+  "title": "retail 80pct exact verification",
+  "description": "Genuine Single-Signal & Exemption Traps: retail 80pct exact verification",
+  "merchant": {
+    "id": "M-082-GENUINE-RETAIL-80PCT-EXA",
+    "name": "retail 80pct exact verification (5999)",
+    "city": "Bengaluru, KA",
+    "mcc": "5999",
+    "category": "Other retail",
+    "products": [
+      "Standard item A",
+      "Standard item B"
+    ],
+    "ticketMin": 20,
+    "ticketMax": 3000,
+    "hours": [
+      9,
+      21
+    ],
+    "catchment": "LOCAL",
+    "localStates": [
+      "KA"
+    ],
+    "expectedRoundShare": 0.08,
+    "seasonalPeak": 1,
+    "baselineWeekly": 100000,
+    "accountAgeDays": 450,
+    "declaredDomains": [
+      "clean-shop.example"
+    ],
+    "declaredChannels": [
+      "UPI_LINK"
+    ],
+    "declaredActivity": [
+      "Other retail"
+    ]
+  },
+  "weeklySales": [
+    {
+      "week": "W1",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W2",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W3",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W4",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W5",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W6",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W7",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W8",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W9",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W10",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W11",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W12",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TX-5999-0",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-15T09:00:00+05:30",
+      "settledAt": "2026-06-15T21:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-0",
+      "payerState": "KA",
+      "orderId": "ORD-0"
+    },
+    {
+      "id": "TX-5999-1",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-14T10:07:00+05:30",
+      "settledAt": "2026-06-14T22:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-1",
+      "payerState": "KA",
+      "orderId": "ORD-1"
+    },
+    {
+      "id": "TX-5999-2",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-13T11:14:00+05:30",
+      "settledAt": "2026-06-13T23:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-2",
+      "payerState": "KA",
+      "orderId": "ORD-2"
+    },
+    {
+      "id": "TX-5999-3",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-12T12:21:00+05:30",
+      "settledAt": "2026-06-13T00:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-3",
+      "payerState": "KA",
+      "orderId": "ORD-3"
+    },
+    {
+      "id": "TX-5999-4",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-11T13:28:00+05:30",
+      "settledAt": "2026-06-12T01:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-4",
+      "payerState": "KA",
+      "orderId": "ORD-4"
+    },
+    {
+      "id": "TX-5999-5",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-10T14:35:00+05:30",
+      "settledAt": "2026-06-11T02:35:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-5",
+      "payerState": "KA",
+      "orderId": "ORD-5"
+    },
+    {
+      "id": "TX-5999-6",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-09T15:42:00+05:30",
+      "settledAt": "2026-06-10T03:42:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-6",
+      "payerState": "KA",
+      "orderId": "ORD-6"
+    },
+    {
+      "id": "TX-5999-7",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-08T16:49:00+05:30",
+      "settledAt": "2026-06-09T04:49:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-7",
+      "payerState": "KA",
+      "orderId": "ORD-7"
+    },
+    {
+      "id": "TX-5999-8",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-07T17:01:00+05:30",
+      "settledAt": "2026-06-08T05:01:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-8",
+      "payerState": "KA",
+      "orderId": "ORD-8"
+    },
+    {
+      "id": "TX-5999-9",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-06T18:08:00+05:30",
+      "settledAt": "2026-06-07T06:08:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-9",
+      "payerState": "KA",
+      "orderId": "ORD-9"
+    },
+    {
+      "id": "TX-5999-10",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-05T19:15:00+05:30",
+      "settledAt": "2026-06-06T07:15:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-10",
+      "payerState": "KA",
+      "orderId": "ORD-10"
+    },
+    {
+      "id": "TX-5999-11",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-04T20:22:00+05:30",
+      "settledAt": "2026-06-05T08:22:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-11",
+      "payerState": "KA",
+      "orderId": "ORD-11"
+    },
+    {
+      "id": "TX-5999-12",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-03T09:29:00+05:30",
+      "settledAt": "2026-06-03T21:29:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-12",
+      "payerState": "KA",
+      "orderId": "ORD-12"
+    },
+    {
+      "id": "TX-5999-13",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-02T10:36:00+05:30",
+      "settledAt": "2026-06-02T22:36:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-13",
+      "payerState": "KA",
+      "orderId": "ORD-13"
+    },
+    {
+      "id": "TX-5999-14",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-15T11:43:00+05:30",
+      "settledAt": "2026-06-15T23:43:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-14",
+      "payerState": "KA",
+      "orderId": "ORD-14"
+    },
+    {
+      "id": "TX-5999-15",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-14T12:50:00+05:30",
+      "settledAt": "2026-06-15T00:50:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-15",
+      "payerState": "KA",
+      "orderId": "ORD-15"
+    },
+    {
+      "id": "TX-5999-16",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-13T13:02:00+05:30",
+      "settledAt": "2026-06-14T01:02:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-16",
+      "payerState": "KA",
+      "orderId": "ORD-16"
+    },
+    {
+      "id": "TX-5999-17",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-12T14:09:00+05:30",
+      "settledAt": "2026-06-13T02:09:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-17",
+      "payerState": "KA",
+      "orderId": "ORD-17"
+    },
+    {
+      "id": "TX-5999-18",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-11T15:16:00+05:30",
+      "settledAt": "2026-06-12T03:16:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-18",
+      "payerState": "KA",
+      "orderId": "ORD-18"
+    },
+    {
+      "id": "TX-5999-19",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-10T16:23:00+05:30",
+      "settledAt": "2026-06-11T04:23:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-19",
+      "payerState": "KA",
+      "orderId": "ORD-19"
+    },
+    {
+      "id": "TX-5999-20",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-09T17:30:00+05:30",
+      "settledAt": "2026-06-10T05:30:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-20",
+      "payerState": "KA",
+      "orderId": "ORD-20"
+    },
+    {
+      "id": "TX-5999-21",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-08T18:37:00+05:30",
+      "settledAt": "2026-06-09T06:37:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-21",
+      "payerState": "KA",
+      "orderId": "ORD-21"
+    },
+    {
+      "id": "TX-5999-22",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-07T19:44:00+05:30",
+      "settledAt": "2026-06-08T07:44:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-22",
+      "payerState": "KA",
+      "orderId": "ORD-22"
+    },
+    {
+      "id": "TX-5999-23",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-06T20:51:00+05:30",
+      "settledAt": "2026-06-07T08:51:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-23",
+      "payerState": "KA",
+      "orderId": "ORD-23"
+    },
+    {
+      "id": "TX-5999-24",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-05T09:03:00+05:30",
+      "settledAt": "2026-06-05T21:03:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-24",
+      "payerState": "KA",
+      "orderId": "ORD-24"
+    },
+    {
+      "id": "TX-5999-25",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-04T10:10:00+05:30",
+      "settledAt": "2026-06-04T22:10:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-25",
+      "payerState": "KA",
+      "orderId": "ORD-25"
+    },
+    {
+      "id": "TX-5999-26",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-03T11:17:00+05:30",
+      "settledAt": "2026-06-03T23:17:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-26",
+      "payerState": "KA",
+      "orderId": "ORD-26"
+    },
+    {
+      "id": "TX-5999-27",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-02T12:24:00+05:30",
+      "settledAt": "2026-06-03T00:24:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-27",
+      "payerState": "KA",
+      "orderId": "ORD-27"
+    },
+    {
+      "id": "TX-5999-28",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-15T13:31:00+05:30",
+      "settledAt": "2026-06-16T01:31:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-28",
+      "payerState": "KA",
+      "orderId": "ORD-28"
+    },
+    {
+      "id": "TX-5999-29",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-14T14:38:00+05:30",
+      "settledAt": "2026-06-15T02:38:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-29",
+      "payerState": "KA",
+      "orderId": "ORD-29"
+    },
+    {
+      "id": "TX-5999-30",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-13T15:45:00+05:30",
+      "settledAt": "2026-06-14T03:45:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-30",
+      "payerState": "KA",
+      "orderId": "ORD-30"
+    },
+    {
+      "id": "TX-5999-31",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-12T16:52:00+05:30",
+      "settledAt": "2026-06-13T04:52:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-31",
+      "payerState": "KA",
+      "orderId": "ORD-31"
+    },
+    {
+      "id": "TX-5999-32",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-11T17:04:00+05:30",
+      "settledAt": "2026-06-12T05:04:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-32",
+      "payerState": "KA",
+      "orderId": "ORD-32"
+    },
+    {
+      "id": "TX-5999-33",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-10T18:11:00+05:30",
+      "settledAt": "2026-06-11T06:11:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-33",
+      "payerState": "KA",
+      "orderId": "ORD-33"
+    },
+    {
+      "id": "TX-5999-34",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-09T19:18:00+05:30",
+      "settledAt": "2026-06-10T07:18:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-34",
+      "payerState": "KA",
+      "orderId": "ORD-34"
+    },
+    {
+      "id": "TX-5999-35",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-08T20:25:00+05:30",
+      "settledAt": "2026-06-09T08:25:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-35",
+      "payerState": "KA",
+      "orderId": "ORD-35"
+    },
+    {
+      "id": "TX-5999-36",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-07T09:32:00+05:30",
+      "settledAt": "2026-06-07T21:32:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-36",
+      "payerState": "KA",
+      "orderId": "ORD-36"
+    },
+    {
+      "id": "TX-5999-37",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-06T10:39:00+05:30",
+      "settledAt": "2026-06-06T22:39:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-37",
+      "payerState": "KA",
+      "orderId": "ORD-37"
+    },
+    {
+      "id": "TX-5999-38",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-05T11:46:00+05:30",
+      "settledAt": "2026-06-05T23:46:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-38",
+      "payerState": "KA",
+      "orderId": "ORD-38"
+    },
+    {
+      "id": "TX-5999-39",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-04T12:53:00+05:30",
+      "settledAt": "2026-06-05T00:53:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-39",
+      "payerState": "KA",
+      "orderId": "ORD-39"
+    },
+    {
+      "id": "TX-5999-40",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-03T13:05:00+05:30",
+      "settledAt": "2026-06-04T01:05:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-40",
+      "payerState": "KA",
+      "orderId": "ORD-40"
+    },
+    {
+      "id": "TX-5999-41",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-02T14:12:00+05:30",
+      "settledAt": "2026-06-03T02:12:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-41",
+      "payerState": "KA",
+      "orderId": "ORD-41"
+    },
+    {
+      "id": "TX-5999-42",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-15T15:19:00+05:30",
+      "settledAt": "2026-06-16T03:19:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-42",
+      "payerState": "KA",
+      "orderId": "ORD-42"
+    },
+    {
+      "id": "TX-5999-43",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-14T16:26:00+05:30",
+      "settledAt": "2026-06-15T04:26:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-43",
+      "payerState": "KA",
+      "orderId": "ORD-43"
+    },
+    {
+      "id": "TX-5999-44",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-13T17:33:00+05:30",
+      "settledAt": "2026-06-14T05:33:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-44",
+      "payerState": "KA",
+      "orderId": "ORD-44"
+    },
+    {
+      "id": "TX-5999-45",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-12T18:40:00+05:30",
+      "settledAt": "2026-06-13T06:40:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-45",
+      "payerState": "KA",
+      "orderId": "ORD-45"
+    },
+    {
+      "id": "TX-5999-46",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-11T19:47:00+05:30",
+      "settledAt": "2026-06-12T07:47:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-46",
+      "payerState": "KA",
+      "orderId": "ORD-46"
+    },
+    {
+      "id": "TX-5999-47",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-10T20:54:00+05:30",
+      "settledAt": "2026-06-11T08:54:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-47",
+      "payerState": "KA",
+      "orderId": "ORD-47"
+    },
+    {
+      "id": "TX-5999-48",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-09T09:06:00+05:30",
+      "settledAt": "2026-06-09T21:06:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-48",
+      "payerState": "KA",
+      "orderId": "ORD-48"
+    },
+    {
+      "id": "TX-5999-49",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-08T10:13:00+05:30",
+      "settledAt": "2026-06-08T22:13:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-49",
+      "payerState": "KA",
+      "orderId": "ORD-49"
+    },
+    {
+      "id": "TX-5999-50",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-07T11:20:00+05:30",
+      "settledAt": "2026-06-07T23:20:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-50",
+      "payerState": "KA",
+      "orderId": "ORD-50"
+    },
+    {
+      "id": "TX-5999-51",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-06T12:27:00+05:30",
+      "settledAt": "2026-06-07T00:27:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-51",
+      "payerState": "KA",
+      "orderId": "ORD-51"
+    },
+    {
+      "id": "TX-5999-52",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-05T13:34:00+05:30",
+      "settledAt": "2026-06-06T01:34:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-52",
+      "payerState": "KA",
+      "orderId": "ORD-52"
+    },
+    {
+      "id": "TX-5999-53",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-04T14:41:00+05:30",
+      "settledAt": "2026-06-05T02:41:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-53",
+      "payerState": "KA",
+      "orderId": "ORD-53"
+    },
+    {
+      "id": "TX-5999-54",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-03T15:48:00+05:30",
+      "settledAt": "2026-06-04T03:48:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-54",
+      "payerState": "KA",
+      "orderId": "ORD-54"
+    },
+    {
+      "id": "TX-5999-55",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 390,
+      "time": "2026-06-02T16:00:00+05:30",
+      "settledAt": "2026-06-03T04:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-55",
+      "payerState": "KA",
+      "orderId": "ORD-55"
+    },
+    {
+      "id": "TX-5999-56",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 510,
+      "time": "2026-06-15T17:07:00+05:30",
+      "settledAt": "2026-06-16T05:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-56",
+      "payerState": "KA",
+      "orderId": "ORD-56"
+    },
+    {
+      "id": "TX-5999-57",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 600,
+      "time": "2026-06-14T18:14:00+05:30",
+      "settledAt": "2026-06-15T06:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-57",
+      "payerState": "KA",
+      "orderId": "ORD-57"
+    },
+    {
+      "id": "TX-5999-58",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 690,
+      "time": "2026-06-13T19:21:00+05:30",
+      "settledAt": "2026-06-14T07:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-58",
+      "payerState": "KA",
+      "orderId": "ORD-58"
+    },
+    {
+      "id": "TX-5999-59",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SALE",
+      "amount": 870,
+      "time": "2026-06-12T20:28:00+05:30",
+      "settledAt": "2026-06-13T08:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5999-59",
+      "payerState": "KA",
+      "orderId": "ORD-59"
+    },
+    {
+      "id": "SET-5999-0",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SETTLEMENT",
+      "amount": 25000,
+      "time": "2026-06-06T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5999-1",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SETTLEMENT",
+      "amount": 25050,
+      "time": "2026-06-09T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5999-2",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SETTLEMENT",
+      "amount": 25100,
+      "time": "2026-06-12T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5999-3",
+      "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+      "type": "SETTLEMENT",
+      "amount": 25150,
+      "time": "2026-06-15T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "matchFixtures": [],
+  "dataAvailability": {
+    "acquiring": "AVAILABLE",
+    "website": "AVAILABLE",
+    "orders": "AVAILABLE",
+    "bank": "AVAILABLE",
+    "fulfillment": "AVAILABLE",
+    "calendar": "MISSING",
+    "verification": "AVAILABLE"
+  },
+  "website": {
+    "embeds": [
+      {
+        "id": "EMB-1",
+        "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+        "linkId": "PL-01",
+        "host": "clean-shop.example",
+        "path": "/checkout",
+        "category": "own",
+        "pageType": "checkout",
+        "firstSeen": "2026-05-01"
+      }
+    ],
+    "catalogue": [
+      {
+        "sku": "SKU-0",
+        "name": "Item 0",
+        "price": 420,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-1",
+        "name": "Item 1",
+        "price": 480,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-2",
+        "name": "Item 2",
+        "price": 540,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-3",
+        "name": "Item 3",
+        "price": 600,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-4",
+        "name": "Item 4",
+        "price": 660,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-5",
+        "name": "Item 5",
+        "price": 720,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-6",
+        "name": "Item 6",
+        "price": 780,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-7",
+        "name": "Item 7",
+        "price": 840,
+        "inCategory": true,
+        "dupImage": false
+      }
+    ]
+  },
+  "orders": [
+    {
+      "orderId": "ORD-0",
+      "saleId": "TX-5999-0",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-0"
+    },
+    {
+      "orderId": "ORD-1",
+      "saleId": "TX-5999-1",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-1"
+    },
+    {
+      "orderId": "ORD-2",
+      "saleId": "TX-5999-2",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-2"
+    },
+    {
+      "orderId": "ORD-3",
+      "saleId": "TX-5999-3",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-3"
+    },
+    {
+      "orderId": "ORD-4",
+      "saleId": "TX-5999-4",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-4"
+    },
+    {
+      "orderId": "ORD-5",
+      "saleId": "TX-5999-5",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-5"
+    },
+    {
+      "orderId": "ORD-6",
+      "saleId": "TX-5999-6",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-6"
+    },
+    {
+      "orderId": "ORD-7",
+      "saleId": "TX-5999-7",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-7"
+    },
+    {
+      "orderId": "ORD-8",
+      "saleId": "TX-5999-8",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-8"
+    },
+    {
+      "orderId": "ORD-9",
+      "saleId": "TX-5999-9",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-9"
+    },
+    {
+      "orderId": "ORD-10",
+      "saleId": "TX-5999-10",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-10"
+    },
+    {
+      "orderId": "ORD-11",
+      "saleId": "TX-5999-11",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-11"
+    },
+    {
+      "orderId": "ORD-12",
+      "saleId": "TX-5999-12",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-12"
+    },
+    {
+      "orderId": "ORD-13",
+      "saleId": "TX-5999-13",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-13"
+    },
+    {
+      "orderId": "ORD-14",
+      "saleId": "TX-5999-14",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-14"
+    },
+    {
+      "orderId": "ORD-15",
+      "saleId": "TX-5999-15",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-15"
+    },
+    {
+      "orderId": "ORD-16",
+      "saleId": "TX-5999-16",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-16"
+    },
+    {
+      "orderId": "ORD-17",
+      "saleId": "TX-5999-17",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-17"
+    },
+    {
+      "orderId": "ORD-18",
+      "saleId": "TX-5999-18",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-18"
+    },
+    {
+      "orderId": "ORD-19",
+      "saleId": "TX-5999-19",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-19"
+    },
+    {
+      "orderId": "ORD-20",
+      "saleId": "TX-5999-20",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-20"
+    },
+    {
+      "orderId": "ORD-21",
+      "saleId": "TX-5999-21",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-21"
+    },
+    {
+      "orderId": "ORD-22",
+      "saleId": "TX-5999-22",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-22"
+    },
+    {
+      "orderId": "ORD-23",
+      "saleId": "TX-5999-23",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-23"
+    },
+    {
+      "orderId": "ORD-24",
+      "saleId": "TX-5999-24",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-24"
+    },
+    {
+      "orderId": "ORD-25",
+      "saleId": "TX-5999-25",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-25"
+    },
+    {
+      "orderId": "ORD-26",
+      "saleId": "TX-5999-26",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-26"
+    },
+    {
+      "orderId": "ORD-27",
+      "saleId": "TX-5999-27",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-27"
+    },
+    {
+      "orderId": "ORD-28",
+      "saleId": "TX-5999-28",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-28"
+    },
+    {
+      "orderId": "ORD-29",
+      "saleId": "TX-5999-29",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-29"
+    },
+    {
+      "orderId": "ORD-30",
+      "saleId": "TX-5999-30",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-30"
+    },
+    {
+      "orderId": "ORD-31",
+      "saleId": "TX-5999-31",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-31"
+    },
+    {
+      "orderId": "ORD-32",
+      "saleId": "TX-5999-32",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-32"
+    },
+    {
+      "orderId": "ORD-33",
+      "saleId": "TX-5999-33",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-33"
+    },
+    {
+      "orderId": "ORD-34",
+      "saleId": "TX-5999-34",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-34"
+    },
+    {
+      "orderId": "ORD-35",
+      "saleId": "TX-5999-35",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-35"
+    },
+    {
+      "orderId": "ORD-36",
+      "saleId": "TX-5999-36",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-36"
+    },
+    {
+      "orderId": "ORD-37",
+      "saleId": "TX-5999-37",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-37"
+    },
+    {
+      "orderId": "ORD-38",
+      "saleId": "TX-5999-38",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-38"
+    },
+    {
+      "orderId": "ORD-39",
+      "saleId": "TX-5999-39",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-39"
+    },
+    {
+      "orderId": "ORD-40",
+      "saleId": "TX-5999-40",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-40"
+    },
+    {
+      "orderId": "ORD-41",
+      "saleId": "TX-5999-41",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-41"
+    },
+    {
+      "orderId": "ORD-42",
+      "saleId": "TX-5999-42",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-42"
+    },
+    {
+      "orderId": "ORD-43",
+      "saleId": "TX-5999-43",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-43"
+    },
+    {
+      "orderId": "ORD-44",
+      "saleId": "TX-5999-44",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-44"
+    },
+    {
+      "orderId": "ORD-45",
+      "saleId": "TX-5999-45",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-45"
+    },
+    {
+      "orderId": "ORD-46",
+      "saleId": "TX-5999-46",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-46"
+    },
+    {
+      "orderId": "ORD-47",
+      "saleId": "TX-5999-47",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-47"
+    },
+    {
+      "orderId": "ORD-48",
+      "saleId": "TX-5999-48",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-48"
+    },
+    {
+      "orderId": "ORD-49",
+      "saleId": "TX-5999-49",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-49"
+    },
+    {
+      "orderId": "ORD-50",
+      "saleId": "TX-5999-50",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-50"
+    },
+    {
+      "orderId": "ORD-51",
+      "saleId": "TX-5999-51",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-51"
+    },
+    {
+      "orderId": "ORD-52",
+      "saleId": "TX-5999-52",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-52"
+    },
+    {
+      "orderId": "ORD-53",
+      "saleId": "TX-5999-53",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-53"
+    },
+    {
+      "orderId": "ORD-54",
+      "saleId": "TX-5999-54",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-54"
+    },
+    {
+      "orderId": "ORD-55",
+      "saleId": "TX-5999-55",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-55"
+    },
+    {
+      "orderId": "ORD-56",
+      "saleId": "TX-5999-56",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-56"
+    },
+    {
+      "orderId": "ORD-57",
+      "saleId": "TX-5999-57",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-57"
+    },
+    {
+      "orderId": "ORD-58",
+      "saleId": "TX-5999-58",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-58"
+    },
+    {
+      "orderId": "ORD-59",
+      "saleId": "TX-5999-59",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5999-59"
+    }
+  ],
+  "bankCredits": [
+    {
+      "amount": 25000,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25050,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25100,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25150,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "purchaserVerification": {
+    "contacted": 10,
+    "confirmed": 8
+  }
+}

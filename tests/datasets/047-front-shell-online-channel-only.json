@@ -1,0 +1,1115 @@
+{
+  "format": "mre-dataset/v1",
+  "title": "shell online channel only",
+  "description": "Fabricated Substance Shells: shell online channel only",
+  "merchant": {
+    "id": "M-047-FRONT-SHELL-ONLINE-CHANN",
+    "name": "shell online channel only (5712)",
+    "city": "Bengaluru, KA",
+    "mcc": "5712",
+    "category": "Furniture and home furnishings",
+    "products": [
+      "Standard item A",
+      "Standard item B"
+    ],
+    "ticketMin": 20,
+    "ticketMax": 22500,
+    "hours": [
+      0,
+      24
+    ],
+    "catchment": "NATIONAL",
+    "localStates": [
+      "KA"
+    ],
+    "expectedRoundShare": 0.05,
+    "seasonalPeak": 1,
+    "baselineWeekly": 100000,
+    "accountAgeDays": 450,
+    "declaredDomains": [
+      "clean-shop.example"
+    ],
+    "declaredChannels": [
+      "UPI_LINK"
+    ],
+    "declaredActivity": [
+      "Furniture and home furnishings"
+    ]
+  },
+  "weeklySales": [
+    {
+      "week": "W1",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W2",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W3",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W4",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W5",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W6",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W7",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W8",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W9",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W10",
+      "actual": 340000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W11",
+      "actual": 340000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W12",
+      "actual": 340000,
+      "seasonalMultiplier": 1
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TX-5712-0",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-15T00:00:00+05:30",
+      "settledAt": "2026-06-15T12:00:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-0",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-1",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-14T01:07:00+05:30",
+      "settledAt": "2026-06-14T13:07:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-1",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-2",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-13T02:14:00+05:30",
+      "settledAt": "2026-06-13T14:14:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-2",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-3",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-12T03:21:00+05:30",
+      "settledAt": "2026-06-12T15:21:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-3",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-4",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-11T04:28:00+05:30",
+      "settledAt": "2026-06-11T16:28:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-4",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-5",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-10T05:35:00+05:30",
+      "settledAt": "2026-06-10T17:35:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-5",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-6",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-09T06:42:00+05:30",
+      "settledAt": "2026-06-09T18:42:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-6",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-7",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-08T07:49:00+05:30",
+      "settledAt": "2026-06-08T19:49:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-7",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-8",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-07T08:01:00+05:30",
+      "settledAt": "2026-06-07T20:01:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-8",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-9",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-06T09:08:00+05:30",
+      "settledAt": "2026-06-06T21:08:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-9",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-10",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-05T10:15:00+05:30",
+      "settledAt": "2026-06-05T22:15:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-10",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-11",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-04T11:22:00+05:30",
+      "settledAt": "2026-06-04T23:22:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-11",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-12",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-03T12:29:00+05:30",
+      "settledAt": "2026-06-04T00:29:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-12",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-13",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-02T13:36:00+05:30",
+      "settledAt": "2026-06-03T01:36:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-13",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-14",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-15T14:43:00+05:30",
+      "settledAt": "2026-06-16T02:43:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-14",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-15",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-14T15:50:00+05:30",
+      "settledAt": "2026-06-15T03:50:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-15",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-16",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-13T16:02:00+05:30",
+      "settledAt": "2026-06-14T04:02:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-16",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-17",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-12T17:09:00+05:30",
+      "settledAt": "2026-06-13T05:09:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-17",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-18",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-11T18:16:00+05:30",
+      "settledAt": "2026-06-12T06:16:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-18",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-19",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-10T19:23:00+05:30",
+      "settledAt": "2026-06-11T07:23:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-19",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-20",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-09T20:30:00+05:30",
+      "settledAt": "2026-06-10T08:30:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-20",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-21",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-08T21:37:00+05:30",
+      "settledAt": "2026-06-09T09:37:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-21",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-22",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-07T22:44:00+05:30",
+      "settledAt": "2026-06-08T10:44:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-22",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-23",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-06T23:51:00+05:30",
+      "settledAt": "2026-06-07T11:51:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-23",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-24",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-05T00:03:00+05:30",
+      "settledAt": "2026-06-05T12:03:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-24",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-25",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-04T01:10:00+05:30",
+      "settledAt": "2026-06-04T13:10:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-25",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-26",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-03T02:17:00+05:30",
+      "settledAt": "2026-06-03T14:17:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-26",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-27",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-02T03:24:00+05:30",
+      "settledAt": "2026-06-02T15:24:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-27",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-28",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-15T04:31:00+05:30",
+      "settledAt": "2026-06-15T16:31:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-28",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-29",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-14T05:38:00+05:30",
+      "settledAt": "2026-06-14T17:38:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-29",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-30",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-13T06:45:00+05:30",
+      "settledAt": "2026-06-13T18:45:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-30",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-31",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-12T07:52:00+05:30",
+      "settledAt": "2026-06-12T19:52:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-31",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-32",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-11T08:04:00+05:30",
+      "settledAt": "2026-06-11T20:04:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-32",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-33",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-10T09:11:00+05:30",
+      "settledAt": "2026-06-10T21:11:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-33",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-34",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-09T10:18:00+05:30",
+      "settledAt": "2026-06-09T22:18:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-34",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-35",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-08T11:25:00+05:30",
+      "settledAt": "2026-06-08T23:25:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-35",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-36",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-07T12:32:00+05:30",
+      "settledAt": "2026-06-08T00:32:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-36",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-37",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-06T13:39:00+05:30",
+      "settledAt": "2026-06-07T01:39:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-37",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-38",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-05T14:46:00+05:30",
+      "settledAt": "2026-06-06T02:46:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-38",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-39",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-04T15:53:00+05:30",
+      "settledAt": "2026-06-05T03:53:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-39",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-40",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-03T16:05:00+05:30",
+      "settledAt": "2026-06-04T04:05:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-40",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-41",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-02T17:12:00+05:30",
+      "settledAt": "2026-06-03T05:12:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-41",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5712-42",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-15T18:19:00+05:30",
+      "settledAt": "2026-06-16T06:19:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-42",
+      "payerState": "KA",
+      "orderId": "ORD-42"
+    },
+    {
+      "id": "TX-5712-43",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-14T19:26:00+05:30",
+      "settledAt": "2026-06-15T07:26:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-43",
+      "payerState": "KA",
+      "orderId": "ORD-43"
+    },
+    {
+      "id": "TX-5712-44",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-13T20:33:00+05:30",
+      "settledAt": "2026-06-14T08:33:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-44",
+      "payerState": "KA",
+      "orderId": "ORD-44"
+    },
+    {
+      "id": "TX-5712-45",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-12T21:40:00+05:30",
+      "settledAt": "2026-06-13T09:40:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-45",
+      "payerState": "KA",
+      "orderId": "ORD-45"
+    },
+    {
+      "id": "TX-5712-46",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-11T22:47:00+05:30",
+      "settledAt": "2026-06-12T10:47:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-46",
+      "payerState": "KA",
+      "orderId": "ORD-46"
+    },
+    {
+      "id": "TX-5712-47",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-10T23:54:00+05:30",
+      "settledAt": "2026-06-11T11:54:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-47",
+      "payerState": "KA",
+      "orderId": "ORD-47"
+    },
+    {
+      "id": "TX-5712-48",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-09T00:06:00+05:30",
+      "settledAt": "2026-06-09T12:06:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-48",
+      "payerState": "KA",
+      "orderId": "ORD-48"
+    },
+    {
+      "id": "TX-5712-49",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-08T01:13:00+05:30",
+      "settledAt": "2026-06-08T13:13:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-49",
+      "payerState": "KA",
+      "orderId": "ORD-49"
+    },
+    {
+      "id": "TX-5712-50",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-07T02:20:00+05:30",
+      "settledAt": "2026-06-07T14:20:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-50",
+      "payerState": "KA",
+      "orderId": "ORD-50"
+    },
+    {
+      "id": "TX-5712-51",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-06T03:27:00+05:30",
+      "settledAt": "2026-06-06T15:27:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-51",
+      "payerState": "KA",
+      "orderId": "ORD-51"
+    },
+    {
+      "id": "TX-5712-52",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-05T04:34:00+05:30",
+      "settledAt": "2026-06-05T16:34:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-52",
+      "payerState": "KA",
+      "orderId": "ORD-52"
+    },
+    {
+      "id": "TX-5712-53",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-04T05:41:00+05:30",
+      "settledAt": "2026-06-04T17:41:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-53",
+      "payerState": "KA",
+      "orderId": "ORD-53"
+    },
+    {
+      "id": "TX-5712-54",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-03T06:48:00+05:30",
+      "settledAt": "2026-06-03T18:48:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-54",
+      "payerState": "KA",
+      "orderId": "ORD-54"
+    },
+    {
+      "id": "TX-5712-55",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-02T07:00:00+05:30",
+      "settledAt": "2026-06-02T19:00:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-55",
+      "payerState": "KA",
+      "orderId": "ORD-55"
+    },
+    {
+      "id": "TX-5712-56",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-15T08:07:00+05:30",
+      "settledAt": "2026-06-15T20:07:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-56",
+      "payerState": "KA",
+      "orderId": "ORD-56"
+    },
+    {
+      "id": "TX-5712-57",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-14T09:14:00+05:30",
+      "settledAt": "2026-06-14T21:14:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-57",
+      "payerState": "KA",
+      "orderId": "ORD-57"
+    },
+    {
+      "id": "TX-5712-58",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-13T10:21:00+05:30",
+      "settledAt": "2026-06-13T22:21:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-58",
+      "payerState": "KA",
+      "orderId": "ORD-58"
+    },
+    {
+      "id": "TX-5712-59",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SALE",
+      "amount": 18000,
+      "time": "2026-06-12T11:28:00+05:30",
+      "settledAt": "2026-06-12T23:28:00+05:30",
+      "channel": "ONLINE",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5712-59",
+      "payerState": "KA",
+      "orderId": "ORD-59"
+    },
+    {
+      "id": "SET-5712-0",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SETTLEMENT",
+      "amount": 25000,
+      "time": "2026-06-06T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5712-1",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SETTLEMENT",
+      "amount": 25050,
+      "time": "2026-06-09T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5712-2",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SETTLEMENT",
+      "amount": 25100,
+      "time": "2026-06-12T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5712-3",
+      "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+      "type": "SETTLEMENT",
+      "amount": 25150,
+      "time": "2026-06-15T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "matchFixtures": [],
+  "dataAvailability": {
+    "acquiring": "AVAILABLE",
+    "website": "AVAILABLE",
+    "orders": "AVAILABLE",
+    "bank": "AVAILABLE",
+    "fulfillment": "AVAILABLE",
+    "calendar": "MISSING",
+    "verification": "AVAILABLE"
+  },
+  "website": {
+    "embeds": [
+      {
+        "id": "EMB-1",
+        "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+        "linkId": "PL-01",
+        "host": "clean-shop.example",
+        "path": "/checkout",
+        "category": "own",
+        "pageType": "checkout",
+        "firstSeen": "2026-05-01"
+      }
+    ],
+    "catalogue": [
+      {
+        "sku": "SKU-0",
+        "name": "Item 0",
+        "price": 3150,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-1",
+        "name": "Item 1",
+        "price": 3600,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-2",
+        "name": "Item 2",
+        "price": 4050,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-3",
+        "name": "Item 3",
+        "price": 4500,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-4",
+        "name": "Item 4",
+        "price": 4950,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-5",
+        "name": "Item 5",
+        "price": 5400,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-6",
+        "name": "Item 6",
+        "price": 5850,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-7",
+        "name": "Item 7",
+        "price": 6300,
+        "inCategory": false,
+        "dupImage": true
+      }
+    ]
+  },
+  "orders": [
+    {
+      "orderId": "ORD-0",
+      "saleId": "TX-5712-0",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-1",
+      "saleId": "TX-5712-1",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-2",
+      "saleId": "TX-5712-2",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-3",
+      "saleId": "TX-5712-3",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-4",
+      "saleId": "TX-5712-4",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-5",
+      "saleId": "TX-5712-5",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-6",
+      "saleId": "TX-5712-6",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-7",
+      "saleId": "TX-5712-7",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-8",
+      "saleId": "TX-5712-8",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-9",
+      "saleId": "TX-5712-9",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-10",
+      "saleId": "TX-5712-10",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-11",
+      "saleId": "TX-5712-11",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-12",
+      "saleId": "TX-5712-12",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-13",
+      "saleId": "TX-5712-13",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-14",
+      "saleId": "TX-5712-14",
+      "status": "SHIPPED",
+      "trackingId": "DUP-TRK-999"
+    }
+  ],
+  "bankCredits": [
+    {
+      "amount": 25000,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25050,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25100,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25150,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "purchaserVerification": {
+    "contacted": 15,
+    "confirmed": 1
+  }
+}

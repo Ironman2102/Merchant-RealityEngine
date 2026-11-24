@@ -1,0 +1,1115 @@
+{
+  "format": "mre-dataset/v1",
+  "title": "shell kirana undelivered",
+  "description": "Fabricated Substance Shells: shell kirana undelivered",
+  "merchant": {
+    "id": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+    "name": "shell kirana undelivered (5411)",
+    "city": "Bengaluru, KA",
+    "mcc": "5411",
+    "category": "Grocery and kirana",
+    "products": [
+      "Standard item A",
+      "Standard item B"
+    ],
+    "ticketMin": 20,
+    "ticketMax": 3500,
+    "hours": [
+      7,
+      22
+    ],
+    "catchment": "LOCAL",
+    "localStates": [
+      "KA"
+    ],
+    "expectedRoundShare": 0.06,
+    "seasonalPeak": 1,
+    "baselineWeekly": 100000,
+    "accountAgeDays": 450,
+    "declaredDomains": [
+      "clean-shop.example"
+    ],
+    "declaredChannels": [
+      "UPI_LINK"
+    ],
+    "declaredActivity": [
+      "Grocery and kirana"
+    ]
+  },
+  "weeklySales": [
+    {
+      "week": "W1",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W2",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W3",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W4",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W5",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W6",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W7",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W8",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W9",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W10",
+      "actual": 340000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W11",
+      "actual": 340000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W12",
+      "actual": 340000,
+      "seasonalMultiplier": 1
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TX-5411-0",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-15T07:00:00+05:30",
+      "settledAt": "2026-06-15T19:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-0",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-1",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-14T08:07:00+05:30",
+      "settledAt": "2026-06-14T20:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-1",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-2",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-13T09:14:00+05:30",
+      "settledAt": "2026-06-13T21:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-2",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-3",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-12T10:21:00+05:30",
+      "settledAt": "2026-06-12T22:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-3",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-4",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-11T11:28:00+05:30",
+      "settledAt": "2026-06-11T23:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-4",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-5",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-10T12:35:00+05:30",
+      "settledAt": "2026-06-11T00:35:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-5",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-6",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-09T13:42:00+05:30",
+      "settledAt": "2026-06-10T01:42:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-6",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-7",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-08T14:49:00+05:30",
+      "settledAt": "2026-06-09T02:49:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-7",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-8",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-07T15:01:00+05:30",
+      "settledAt": "2026-06-08T03:01:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-8",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-9",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-06T16:08:00+05:30",
+      "settledAt": "2026-06-07T04:08:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-9",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-10",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-05T17:15:00+05:30",
+      "settledAt": "2026-06-06T05:15:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-10",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-11",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-04T18:22:00+05:30",
+      "settledAt": "2026-06-05T06:22:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-11",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-12",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-03T19:29:00+05:30",
+      "settledAt": "2026-06-04T07:29:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-12",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-13",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-02T20:36:00+05:30",
+      "settledAt": "2026-06-03T08:36:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-13",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-14",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-15T21:43:00+05:30",
+      "settledAt": "2026-06-16T09:43:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-14",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-15",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-14T07:50:00+05:30",
+      "settledAt": "2026-06-14T19:50:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-15",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-16",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-13T08:02:00+05:30",
+      "settledAt": "2026-06-13T20:02:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-16",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-17",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-12T09:09:00+05:30",
+      "settledAt": "2026-06-12T21:09:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-17",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-18",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-11T10:16:00+05:30",
+      "settledAt": "2026-06-11T22:16:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-18",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-19",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-10T11:23:00+05:30",
+      "settledAt": "2026-06-10T23:23:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-19",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-20",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-09T12:30:00+05:30",
+      "settledAt": "2026-06-10T00:30:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-20",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-21",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-08T13:37:00+05:30",
+      "settledAt": "2026-06-09T01:37:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-21",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-22",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-07T14:44:00+05:30",
+      "settledAt": "2026-06-08T02:44:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-22",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-23",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-06T15:51:00+05:30",
+      "settledAt": "2026-06-07T03:51:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-23",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-24",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-05T16:03:00+05:30",
+      "settledAt": "2026-06-06T04:03:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-24",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-25",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-04T17:10:00+05:30",
+      "settledAt": "2026-06-05T05:10:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-25",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-26",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-03T18:17:00+05:30",
+      "settledAt": "2026-06-04T06:17:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-26",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-27",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-02T19:24:00+05:30",
+      "settledAt": "2026-06-03T07:24:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-27",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-28",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-15T20:31:00+05:30",
+      "settledAt": "2026-06-16T08:31:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-28",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-29",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-14T21:38:00+05:30",
+      "settledAt": "2026-06-15T09:38:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-29",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-30",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-13T07:45:00+05:30",
+      "settledAt": "2026-06-13T19:45:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-30",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-31",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-12T08:52:00+05:30",
+      "settledAt": "2026-06-12T20:52:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-31",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-32",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-11T09:04:00+05:30",
+      "settledAt": "2026-06-11T21:04:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-32",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-33",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-10T10:11:00+05:30",
+      "settledAt": "2026-06-10T22:11:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-33",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-34",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-09T11:18:00+05:30",
+      "settledAt": "2026-06-09T23:18:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-34",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-35",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-08T12:25:00+05:30",
+      "settledAt": "2026-06-09T00:25:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-35",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-36",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-07T13:32:00+05:30",
+      "settledAt": "2026-06-08T01:32:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-36",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-37",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-06T14:39:00+05:30",
+      "settledAt": "2026-06-07T02:39:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-37",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-38",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-05T15:46:00+05:30",
+      "settledAt": "2026-06-06T03:46:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-38",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-39",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-04T16:53:00+05:30",
+      "settledAt": "2026-06-05T04:53:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-39",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-40",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-03T17:05:00+05:30",
+      "settledAt": "2026-06-04T05:05:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-40",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-41",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-02T18:12:00+05:30",
+      "settledAt": "2026-06-03T06:12:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-41",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-42",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-15T19:19:00+05:30",
+      "settledAt": "2026-06-16T07:19:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-42",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-43",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-14T20:26:00+05:30",
+      "settledAt": "2026-06-15T08:26:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-43",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-44",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-13T21:33:00+05:30",
+      "settledAt": "2026-06-14T09:33:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-44",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-45",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-12T07:40:00+05:30",
+      "settledAt": "2026-06-12T19:40:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-45",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-46",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-11T08:47:00+05:30",
+      "settledAt": "2026-06-11T20:47:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-46",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-47",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-10T09:54:00+05:30",
+      "settledAt": "2026-06-10T21:54:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-47",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-48",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-09T10:06:00+05:30",
+      "settledAt": "2026-06-09T22:06:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-48",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-49",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-08T11:13:00+05:30",
+      "settledAt": "2026-06-08T23:13:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-49",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-50",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-07T12:20:00+05:30",
+      "settledAt": "2026-06-08T00:20:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-50",
+      "payerState": "KA",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-51",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-06T13:27:00+05:30",
+      "settledAt": "2026-06-07T01:27:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-51",
+      "payerState": "KA",
+      "orderId": "ORD-51"
+    },
+    {
+      "id": "TX-5411-52",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-05T14:34:00+05:30",
+      "settledAt": "2026-06-06T02:34:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-52",
+      "payerState": "KA",
+      "orderId": "ORD-52"
+    },
+    {
+      "id": "TX-5411-53",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-04T15:41:00+05:30",
+      "settledAt": "2026-06-05T03:41:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-53",
+      "payerState": "KA",
+      "orderId": "ORD-53"
+    },
+    {
+      "id": "TX-5411-54",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-03T16:48:00+05:30",
+      "settledAt": "2026-06-04T04:48:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-54",
+      "payerState": "KA",
+      "orderId": "ORD-54"
+    },
+    {
+      "id": "TX-5411-55",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-02T17:00:00+05:30",
+      "settledAt": "2026-06-03T05:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-55",
+      "payerState": "KA",
+      "orderId": "ORD-55"
+    },
+    {
+      "id": "TX-5411-56",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-15T18:07:00+05:30",
+      "settledAt": "2026-06-16T06:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-56",
+      "payerState": "KA",
+      "orderId": "ORD-56"
+    },
+    {
+      "id": "TX-5411-57",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-14T19:14:00+05:30",
+      "settledAt": "2026-06-15T07:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-57",
+      "payerState": "KA",
+      "orderId": "ORD-57"
+    },
+    {
+      "id": "TX-5411-58",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-13T20:21:00+05:30",
+      "settledAt": "2026-06-14T08:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-58",
+      "payerState": "KA",
+      "orderId": "ORD-58"
+    },
+    {
+      "id": "TX-5411-59",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SALE",
+      "amount": 2800,
+      "time": "2026-06-12T21:28:00+05:30",
+      "settledAt": "2026-06-13T09:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-59",
+      "payerState": "KA",
+      "orderId": "ORD-59"
+    },
+    {
+      "id": "SET-5411-0",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SETTLEMENT",
+      "amount": 25000,
+      "time": "2026-06-06T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5411-1",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SETTLEMENT",
+      "amount": 25050,
+      "time": "2026-06-09T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5411-2",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SETTLEMENT",
+      "amount": 25100,
+      "time": "2026-06-12T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5411-3",
+      "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+      "type": "SETTLEMENT",
+      "amount": 25150,
+      "time": "2026-06-15T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "matchFixtures": [],
+  "dataAvailability": {
+    "acquiring": "AVAILABLE",
+    "website": "AVAILABLE",
+    "orders": "AVAILABLE",
+    "bank": "AVAILABLE",
+    "fulfillment": "AVAILABLE",
+    "calendar": "MISSING",
+    "verification": "AVAILABLE"
+  },
+  "website": {
+    "embeds": [
+      {
+        "id": "EMB-1",
+        "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+        "linkId": "PL-01",
+        "host": "clean-shop.example",
+        "path": "/checkout",
+        "category": "own",
+        "pageType": "checkout",
+        "firstSeen": "2026-05-01"
+      }
+    ],
+    "catalogue": [
+      {
+        "sku": "SKU-0",
+        "name": "Item 0",
+        "price": 490,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-1",
+        "name": "Item 1",
+        "price": 560,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-2",
+        "name": "Item 2",
+        "price": 630,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-3",
+        "name": "Item 3",
+        "price": 700,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-4",
+        "name": "Item 4",
+        "price": 770,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-5",
+        "name": "Item 5",
+        "price": 840,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-6",
+        "name": "Item 6",
+        "price": 910,
+        "inCategory": false,
+        "dupImage": true
+      },
+      {
+        "sku": "SKU-7",
+        "name": "Item 7",
+        "price": 980,
+        "inCategory": false,
+        "dupImage": true
+      }
+    ]
+  },
+  "orders": [
+    {
+      "orderId": "ORD-0",
+      "saleId": "TX-5411-0",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-1",
+      "saleId": "TX-5411-1",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-2",
+      "saleId": "TX-5411-2",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-3",
+      "saleId": "TX-5411-3",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-4",
+      "saleId": "TX-5411-4",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-5",
+      "saleId": "TX-5411-5",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-6",
+      "saleId": "TX-5411-6",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-7",
+      "saleId": "TX-5411-7",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-8",
+      "saleId": "TX-5411-8",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-9",
+      "saleId": "TX-5411-9",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-10",
+      "saleId": "TX-5411-10",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-11",
+      "saleId": "TX-5411-11",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-12",
+      "saleId": "TX-5411-12",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-13",
+      "saleId": "TX-5411-13",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    },
+    {
+      "orderId": "ORD-14",
+      "saleId": "TX-5411-14",
+      "status": "NONE",
+      "trackingId": "DUP-TRK-999"
+    }
+  ],
+  "bankCredits": [
+    {
+      "amount": 25000,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25050,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25100,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25150,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "purchaserVerification": {
+    "contacted": 15,
+    "confirmed": 2
+  }
+}

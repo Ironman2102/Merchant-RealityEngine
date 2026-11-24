@@ -1,0 +1,1002 @@
+[
+  {
+    "file": "001-front-gambling-host-bakery.json",
+    "merchantId": "M-001-FRONT-GAMBLING-HOST-BAKE",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "gambling host bakery",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "002-front-gambling-host-cafe.json",
+    "merchantId": "M-002-FRONT-GAMBLING-HOST-CAFE",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "gambling host cafe",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "003-front-undeclared-bet-host-kirana.json",
+    "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "undeclared bet host kirana",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "004-front-shared-hub-5-merchants.json",
+    "merchantId": "M-004-FRONT-SHARED-HUB-5-MERCH",
+    "mcc": "5999",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "shared hub 5 merchants",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "005-front-telegram-vip-tiffin.json",
+    "merchantId": "M-005-FRONT-TELEGRAM-VIP-TIFFI",
+    "mcc": "5814",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "telegram vip tiffin",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "006-front-whatsapp-bet-stationery.json",
+    "merchantId": "M-006-FRONT-WHATSAPP-BET-STATI",
+    "mcc": "5943",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "whatsapp bet stationery",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "007-front-discord-upi-collect-gifts.json",
+    "merchantId": "M-007-FRONT-DISCORD-UPI-COLLEC",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "discord upi collect gifts",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "008-front-inplay-cricket-prematch-rest.json",
+    "merchantId": "M-008-FRONT-INPLAY-CRICKET-PRE",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "inplay cricket prematch rest",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "009-front-bonus-tiers-fantasy-kirana.json",
+    "merchantId": "M-009-FRONT-BONUS-TIERS-FANTAS",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "bonus tiers fantasy kirana",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "010-front-loss-chasing-20x-repeat-bakery.json",
+    "merchantId": "M-010-FRONT-LOSS-CHASING-20X-R",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Gambling & Betting Fronts",
+    "typology": "loss chasing 20x repeat bakery",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "011-front-stealth-threshold-hug-495.json",
+    "merchantId": "M-011-FRONT-STEALTH-THRESHOLD-",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth threshold hug 495",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "012-front-stealth-daytime-21h-shift.json",
+    "merchantId": "M-012-FRONT-STEALTH-DAYTIME-21",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth daytime 21h shift",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "013-front-stealth-split-payers-under-8.json",
+    "merchantId": "M-013-FRONT-STEALTH-SPLIT-PAYE",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth split payers under 8",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "014-front-stealth-acquirer-only-no-opt.json",
+    "merchantId": "M-014-FRONT-STEALTH-ACQUIRER-O",
+    "mcc": "5814",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth acquirer only no opt",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "015-front-stealth-kyc-shield-national.json",
+    "merchantId": "M-015-FRONT-STEALTH-KYC-SHIELD",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth kyc shield national",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "016-front-stealth-seasonal-mult-inflate.json",
+    "merchantId": "M-016-FRONT-STEALTH-SEASONAL-M",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth seasonal mult inflate",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "017-front-stealth-hybrid-70-30-rest.json",
+    "merchantId": "M-017-FRONT-STEALTH-HYBRID-70-",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth hybrid 70 30 rest",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "018-front-stealth-hybrid-80-20-kirana.json",
+    "merchantId": "M-018-FRONT-STEALTH-HYBRID-80-",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth hybrid 80 20 kirana",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "019-front-stealth-partial-feeds-dups.json",
+    "merchantId": "M-019-FRONT-STEALTH-PARTIAL-FE",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth partial feeds dups",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "020-front-stealth-quiet-no-refund-payout.json",
+    "merchantId": "M-020-FRONT-STEALTH-QUIET-NO-R",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Stealth & Evasion Launderers",
+    "typology": "stealth quiet no refund payout",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "021-front-rotation-phoenix-1d-gap.json",
+    "merchantId": "M-021-FRONT-ROTATION-PHOENIX-1",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation phoenix 1d gap",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "022-front-rotation-phoenix-3d-gap.json",
+    "merchantId": "M-022-FRONT-ROTATION-PHOENIX-3",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation phoenix 3d gap",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "023-front-rotation-phoenix-7d-boundary.json",
+    "merchantId": "M-023-FRONT-ROTATION-PHOENIX-7",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation phoenix 7d boundary",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "024-front-rotation-no-shared-ben-44d.json",
+    "merchantId": "M-024-FRONT-ROTATION-NO-SHARED",
+    "mcc": "5814",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation no shared ben 44d",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "025-front-rotation-cross-city-gifts.json",
+    "merchantId": "M-025-FRONT-ROTATION-CROSS-CIT",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation cross city gifts",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "026-front-rotation-stationery-shell.json",
+    "merchantId": "M-026-FRONT-ROTATION-STATIONER",
+    "mcc": "5943",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation stationery shell",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "027-front-rotation-retail-otc.json",
+    "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+    "mcc": "5999",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation retail otc",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "028-front-rotation-multi-hop-chain.json",
+    "merchantId": "M-028-FRONT-ROTATION-MULTI-HOP",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Merchant Rotation & Phoenix",
+    "typology": "rotation multi hop chain",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "ROTATION"
+  },
+  {
+    "file": "029-front-mule-5-ben-hops-12-payouts.json",
+    "merchantId": "M-029-FRONT-MULE-5-BEN-HOPS-12",
+    "mcc": "5943",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "mule 5 ben hops 12 payouts",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "030-front-mule-8-ben-hops-sweep-1h.json",
+    "merchantId": "M-030-FRONT-MULE-8-BEN-HOPS-SW",
+    "mcc": "5999",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "mule 8 ben hops sweep 1h",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "031-front-payout-fanout-20-accounts.json",
+    "merchantId": "M-031-FRONT-PAYOUT-FANOUT-20-A",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "payout fanout 20 accounts",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "032-front-rapid-sweep-all-settlements.json",
+    "merchantId": "M-032-FRONT-RAPID-SWEEP-ALL-SE",
+    "mcc": "5814",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "rapid sweep all settlements",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "033-front-shadow-settlement-100pct-gap.json",
+    "merchantId": "M-033-FRONT-SHADOW-SETTLEMENT-",
+    "mcc": "5943",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "shadow settlement 100pct gap",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "034-front-shadow-settlement-partial-gap.json",
+    "merchantId": "M-034-FRONT-SHADOW-SETTLEMENT-",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "shadow settlement partial gap",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "035-front-orphan-refund-factory.json",
+    "merchantId": "M-035-FRONT-ORPHAN-REFUND-FACT",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "orphan refund factory",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "036-front-third-party-refund-diversion.json",
+    "merchantId": "M-036-FRONT-THIRD-PARTY-REFUND",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "third party refund diversion",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "037-front-combined-refund-and-mule-ring.json",
+    "merchantId": "M-037-FRONT-COMBINED-REFUND-AN",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "combined refund and mule ring",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "038-front-p2p-otc-liquidity-desk.json",
+    "merchantId": "M-038-FRONT-P2P-OTC-LIQUIDITY-",
+    "mcc": "5999",
+    "kind": "front",
+    "category": "Mule Rings & Payout Laundering",
+    "typology": "p2p otc liquidity desk",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "039-front-shell-furniture-total-fake.json",
+    "merchantId": "M-039-FRONT-SHELL-FURNITURE-TO",
+    "mcc": "5712",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell furniture total fake",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "040-front-shell-stationery-reused-trk.json",
+    "merchantId": "M-040-FRONT-SHELL-STATIONERY-R",
+    "mcc": "5943",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell stationery reused trk",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "041-front-shell-gifts-dup-catalogue.json",
+    "merchantId": "M-041-FRONT-SHELL-GIFTS-DUP-CA",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell gifts dup catalogue",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "042-front-shell-bakery-zero-confirm.json",
+    "merchantId": "M-042-FRONT-SHELL-BAKERY-ZERO-",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell bakery zero confirm",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "043-front-shell-kirana-undelivered.json",
+    "merchantId": "M-043-FRONT-SHELL-KIRANA-UNDEL",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell kirana undelivered",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "044-front-shell-restaurant-fake-online.json",
+    "merchantId": "M-044-FRONT-SHELL-RESTAURANT-F",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell restaurant fake online",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "045-front-shell-tiffin-no-fulfillment.json",
+    "merchantId": "M-045-FRONT-SHELL-TIFFIN-NO-FU",
+    "mcc": "5814",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell tiffin no fulfillment",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "046-front-shell-retail-high-ticket.json",
+    "merchantId": "M-046-FRONT-SHELL-RETAIL-HIGH-",
+    "mcc": "5999",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell retail high ticket",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "047-front-shell-online-channel-only.json",
+    "merchantId": "M-047-FRONT-SHELL-ONLINE-CHANN",
+    "mcc": "5712",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell online channel only",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "048-front-shell-sudden-volume-fake.json",
+    "merchantId": "M-048-FRONT-SHELL-SUDDEN-VOLUM",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Fabricated Substance Shells",
+    "typology": "shell sudden volume fake",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "FABRICATED_SUBSTANCE"
+  },
+  {
+    "file": "049-front-takeover-bakery-3wk-surge.json",
+    "merchantId": "M-049-FRONT-TAKEOVER-BAKERY-3W",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover bakery 3wk surge",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "050-front-takeover-kirana-3wk-surge.json",
+    "merchantId": "M-050-FRONT-TAKEOVER-KIRANA-3W",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover kirana 3wk surge",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "051-front-takeover-restaurant-night-shift.json",
+    "merchantId": "M-051-FRONT-TAKEOVER-RESTAURAN",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover restaurant night shift",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "052-front-takeover-tiffin-geo-explosion.json",
+    "merchantId": "M-052-FRONT-TAKEOVER-TIFFIN-GE",
+    "mcc": "5814",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover tiffin geo explosion",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "053-front-takeover-gifts-gradual-drift.json",
+    "merchantId": "M-053-FRONT-TAKEOVER-GIFTS-GRA",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover gifts gradual drift",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "054-front-takeover-stationery-round-shift.json",
+    "merchantId": "M-054-FRONT-TAKEOVER-STATIONER",
+    "mcc": "5943",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover stationery round shift",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "055-front-takeover-retail-payout-drift.json",
+    "merchantId": "M-055-FRONT-TAKEOVER-RETAIL-PA",
+    "mcc": "5999",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover retail payout drift",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "056-front-takeover-diwali-camouflaged-surge.json",
+    "merchantId": "M-056-FRONT-TAKEOVER-DIWALI-CA",
+    "mcc": "5462",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover diwali camouflaged surge",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "057-front-takeover-xmas-camouflaged-gifts.json",
+    "merchantId": "M-057-FRONT-TAKEOVER-XMAS-CAMO",
+    "mcc": "5947",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover xmas camouflaged gifts",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "058-front-takeover-eid-camouflaged-food.json",
+    "merchantId": "M-058-FRONT-TAKEOVER-EID-CAMOU",
+    "mcc": "5812",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover eid camouflaged food",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "059-front-takeover-furniture-payout-ring.json",
+    "merchantId": "M-059-FRONT-TAKEOVER-FURNITURE",
+    "mcc": "5712",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover furniture payout ring",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "060-front-takeover-multi-signal-late-ramp.json",
+    "merchantId": "M-060-FRONT-TAKEOVER-MULTI-SIG",
+    "mcc": "5411",
+    "kind": "front",
+    "category": "Account Takeover & Drift",
+    "typology": "takeover multi signal late ramp",
+    "expectedDecision": "OPEN_CASE",
+    "expectedMechanism": "TRANSACTION_LAUNDERING"
+  },
+  {
+    "file": "061-genuine-bakery-diwali-3x.json",
+    "merchantId": "M-061-GENUINE-BAKERY-DIWALI-3X",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "bakery diwali 3x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "062-genuine-bakery-holi-16x.json",
+    "merchantId": "M-062-GENUINE-BAKERY-HOLI-16X",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "bakery holi 16x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "063-genuine-kirana-diwali-16x.json",
+    "merchantId": "M-063-GENUINE-KIRANA-DIWALI-16",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "kirana diwali 16x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "064-genuine-gifts-diwali-25x.json",
+    "merchantId": "M-064-GENUINE-GIFTS-DIWALI-25X",
+    "mcc": "5947",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "gifts diwali 25x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "065-genuine-gifts-rakhi-18x.json",
+    "merchantId": "M-065-GENUINE-GIFTS-RAKHI-18X",
+    "mcc": "5947",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "gifts rakhi 18x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "066-genuine-gifts-christmas-16x.json",
+    "merchantId": "M-066-GENUINE-GIFTS-CHRISTMAS-",
+    "mcc": "5947",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "gifts christmas 16x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "067-genuine-restaurant-eid-13x.json",
+    "merchantId": "M-067-GENUINE-RESTAURANT-EID-1",
+    "mcc": "5812",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "restaurant eid 13x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "068-genuine-furniture-diwali-15x.json",
+    "merchantId": "M-068-GENUINE-FURNITURE-DIWALI",
+    "mcc": "5712",
+    "kind": "genuine",
+    "category": "Genuine Festival Surges",
+    "typology": "furniture diwali 15x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "069-genuine-kirana-border-neighbours.json",
+    "merchantId": "M-069-GENUINE-KIRANA-BORDER-NE",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Geo & Repeat Edge Cases",
+    "typology": "kirana border neighbours",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "070-genuine-bakery-college-outofstate.json",
+    "merchantId": "M-070-GENUINE-BAKERY-COLLEGE-O",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Geo & Repeat Edge Cases",
+    "typology": "bakery college outofstate",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "071-genuine-furniture-national-wide-geo.json",
+    "merchantId": "M-071-GENUINE-FURNITURE-NATION",
+    "mcc": "5712",
+    "kind": "genuine",
+    "category": "Genuine Geo & Repeat Edge Cases",
+    "typology": "furniture national wide geo",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "072-genuine-kirana-daily-regulars-5x.json",
+    "merchantId": "M-072-GENUINE-KIRANA-DAILY-REG",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Geo & Repeat Edge Cases",
+    "typology": "kirana daily regulars 5x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "073-genuine-stationery-repeat-b2b-4x.json",
+    "merchantId": "M-073-GENUINE-STATIONERY-REPEA",
+    "mcc": "5943",
+    "kind": "genuine",
+    "category": "Genuine Geo & Repeat Edge Cases",
+    "typology": "stationery repeat b2b 4x",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "074-genuine-tiffin-border-regulars.json",
+    "merchantId": "M-074-GENUINE-TIFFIN-BORDER-RE",
+    "mcc": "5814",
+    "kind": "genuine",
+    "category": "Genuine Geo & Repeat Edge Cases",
+    "typology": "tiffin border regulars",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "075-genuine-gifts-catalogue-499-999.json",
+    "merchantId": "M-075-GENUINE-GIFTS-CATALOGUE-",
+    "mcc": "5947",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "gifts catalogue 499 999",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "076-genuine-bakery-giftbox-500-1000.json",
+    "merchantId": "M-076-GENUINE-BAKERY-GIFTBOX-5",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "bakery giftbox 500 1000",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "077-genuine-stationery-mobile-self-refunds.json",
+    "merchantId": "M-077-GENUINE-STATIONERY-MOBIL",
+    "mcc": "5943",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "stationery mobile self refunds",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "078-genuine-bakery-small-3p-refund-under-5k.json",
+    "merchantId": "M-078-GENUINE-BAKERY-SMALL-3P-",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "bakery small 3p refund under 5k",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "079-genuine-restaurant-single-bank-switch.json",
+    "merchantId": "M-079-GENUINE-RESTAURANT-SINGL",
+    "mcc": "5812",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "restaurant single bank switch",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "080-genuine-kirana-own-account-sweeps.json",
+    "merchantId": "M-080-GENUINE-KIRANA-OWN-ACCOU",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "kirana own account sweeps",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "081-genuine-bakery-wide-kyc-honest-tx.json",
+    "merchantId": "M-081-GENUINE-BAKERY-WIDE-KYC-",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "bakery wide kyc honest tx",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "082-genuine-retail-80pct-exact-verification.json",
+    "merchantId": "M-082-GENUINE-RETAIL-80PCT-EXA",
+    "mcc": "5999",
+    "kind": "genuine",
+    "category": "Genuine Single-Signal & Exemption Traps",
+    "typology": "retail 80pct exact verification",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "083-genuine-overnight-honest-5812.json",
+    "merchantId": "M-083-GENUINE-OVERNIGHT-HONEST",
+    "mcc": "5812",
+    "kind": "genuine",
+    "category": "Genuine Overnight & Delivery",
+    "typology": "Genuine overnight Restaurants",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "084-genuine-overnight-honest-5814.json",
+    "merchantId": "M-084-GENUINE-OVERNIGHT-HONEST",
+    "mcc": "5814",
+    "kind": "genuine",
+    "category": "Genuine Overnight & Delivery",
+    "typology": "Genuine overnight Fast food and tiffin",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "085-genuine-bakery-late-night-delivery-2230.json",
+    "merchantId": "M-085-GENUINE-BAKERY-LATE-NIGH",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Overnight & Delivery",
+    "typology": "Genuine late-night delivery 22:30",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "086-genuine-young-cafe-15d-clean.json",
+    "merchantId": "M-086-GENUINE-YOUNG-CAFE-15D-C",
+    "mcc": "5812",
+    "kind": "genuine",
+    "category": "Genuine Young Onboarding Shops",
+    "typology": "Clean young 15d shop",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "087-genuine-young-kirana-45d-clean.json",
+    "merchantId": "M-087-GENUINE-YOUNG-KIRANA-45D",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Young Onboarding Shops",
+    "typology": "Clean young 45d shop",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "088-genuine-young-gifts-90d-clean.json",
+    "merchantId": "M-088-GENUINE-YOUNG-GIFTS-90D-",
+    "mcc": "5947",
+    "kind": "genuine",
+    "category": "Genuine Young Onboarding Shops",
+    "typology": "Clean young 90d shop",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "089-genuine-young-retail-180d-clean.json",
+    "merchantId": "M-089-GENUINE-YOUNG-RETAIL-180",
+    "mcc": "5999",
+    "kind": "genuine",
+    "category": "Genuine Young Onboarding Shops",
+    "typology": "Clean young 180d shop",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "090-genuine-acquirer-only-clean-5462.json",
+    "merchantId": "M-090-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Bakeries and sweet shops",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "091-genuine-acquirer-only-clean-5411.json",
+    "merchantId": "M-091-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Grocery and kirana",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "092-genuine-acquirer-only-clean-5812.json",
+    "merchantId": "M-092-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5812",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Restaurants",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "093-genuine-acquirer-only-clean-5814.json",
+    "merchantId": "M-093-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5814",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Fast food and tiffin",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "094-genuine-acquirer-only-clean-5947.json",
+    "merchantId": "M-094-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5947",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Gift, card and novelty",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "095-genuine-acquirer-only-clean-5712.json",
+    "merchantId": "M-095-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5712",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Furniture and home furnishings",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "096-genuine-acquirer-only-clean-5943.json",
+    "merchantId": "M-096-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5943",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Stationery and office supplies",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "097-genuine-acquirer-only-clean-5999.json",
+    "merchantId": "M-097-GENUINE-ACQUIRER-ONLY-CL",
+    "mcc": "5999",
+    "kind": "genuine",
+    "category": "Genuine Acquirer-Only (Missing Optional Feeds)",
+    "typology": "Clean acquirer-only Other retail",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "098-genuine-partial-feeds-clean-bakery.json",
+    "merchantId": "M-098-GENUINE-PARTIAL-FEEDS-CL",
+    "mcc": "5462",
+    "kind": "genuine",
+    "category": "Genuine Structural Edge Cases",
+    "typology": "Clean bakery with PARTIAL feeds",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "099-genuine-all-weekly-null-clean-kirana.json",
+    "merchantId": "M-099-GENUINE-ALL-WEEKLY-NULL-",
+    "mcc": "5411",
+    "kind": "genuine",
+    "category": "Genuine Structural Edge Cases",
+    "typology": "Clean kirana with all weeklySales null",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  },
+  {
+    "file": "100-genuine-anonymous-pos-1sale-minimum.json",
+    "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+    "mcc": "5814",
+    "kind": "genuine",
+    "category": "Genuine Structural Edge Cases",
+    "typology": "Clean single-sale anonymous shop",
+    "expectedDecision": "NO_CASE",
+    "expectedMechanism": null
+  }
+]

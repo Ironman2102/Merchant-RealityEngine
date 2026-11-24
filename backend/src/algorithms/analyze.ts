@@ -1,4 +1,4 @@
-import { runInvestigation } from '../../../frontend/src/engines/investigationEngine';
+import { runInvestigation, type LearnedRateOverride } from '../../../frontend/src/engines/investigationEngine';
 import type { InvestigationResult } from '../../../frontend/src/types/investigation';
 import type { Scenario } from '../../../frontend/src/types/merchant';
 import { parseCanonicalDataset } from '../adapters/canonicalDataset';
@@ -10,8 +10,12 @@ export type AnalysisResult =
   | { ok: false; errors: string[]; warnings: string[] };
 
 /** Server-side entry point for the deterministic evidence algorithms. */
-export function analyzeDataset(raw: unknown): AnalysisResult {
+export function analyzeDataset(
+  raw: unknown,
+  options?: { learnedRatesForMcc?: (mcc: string) => LearnedRateOverride | undefined },
+): AnalysisResult {
   const parsed = parseCanonicalDataset(raw);
   if (!parsed.ok || !parsed.scenario) return { ok: false, errors: parsed.errors, warnings: parsed.warnings };
-  return { ok: true, scenario: parsed.scenario, result: runInvestigation(parsed.scenario), engineVersion: ENGINE_VERSION };
+  const learnedRates = options?.learnedRatesForMcc?.(parsed.scenario.profile.mcc);
+  return { ok: true, scenario: parsed.scenario, result: runInvestigation(parsed.scenario, { learnedRates }), engineVersion: ENGINE_VERSION };
 }

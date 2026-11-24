@@ -33,6 +33,10 @@ The trained model is a second opinion. It does not choose the action. Throughput
 
 Use `./start.sh` to start the web app (Node.js 20+). To run the separate offline Python prototype, install its dependencies with `python3 -m pip install -r prototype/requirements.txt` and run `./start.sh prototype`.
 
+The local launcher starts the Stage 2 scorer when its Python dependencies are installed. To enable the on-demand DistilBART text model, install `python3 -m pip install -r ml/requirements-encoder.txt`; pretrained weights download on the first uncertain case. The encoder provides supporting context and does not itself determine fraud.
+
+To regenerate the LR, Decision Tree, and Random Forest estimators from the built-in synthetic examples, run `npx tsx ml/generate_synthetic_features.ts` and then `python3 ml/train_classical.py`. Their nine-example training set is intentionally treated as low-confidence until replaced by a larger adjudicated dataset.
+
 for windows user :
 
 Requires Node.js 20 or later.
@@ -118,7 +122,7 @@ Stack: React 18, TypeScript, Vite, Tailwind CSS v4, Recharts, React Flow (`@xyfl
 
 - 25 of the 112 catalogued detection patterns run as live statistical detectors in the Bayesian engine, alongside 10 solution and betting patterns (`S1–S7`, `N1–N3`); the remaining catalogue slots are design counts.
 - Category norms (`rules/mcc.json`) and initial detector sensitivities/false-positive rates (`rules/detectors.json`) are expert priors until calibrated on real labelled merchants in a shadow pilot.
-- Trained ML models (`M1` LightGBM with TreeSHAP and `nn-v0` Neural Network) are trained on the 1,000-merchant synthetic portfolio and serve strictly as a second opinion; they never override the governed Bayesian decision.
+- Existing ML models (`M1` LightGBM with TreeSHAP and `nn-v0` Neural Network) remain supporting models. Stage 2 also includes LR, a shallow Decision Tree, and Random Forest trained from nine curated synthetic fixtures; that small corpus is marked LOW confidence and always requests review. No model score overrides the independent statistical case gate.
 - Website, domain-category and purchaser-verification data are synthetic fixtures. No external site is contacted.
 - Controlled self-improvement (`T14` Bayesian label learning and `T15–T16` red-team rule proposals with Wilson CIs and McNemar backtests) requires explicit maker/checker approval by a distinct reviewer/admin; the engine never modifies its own rules autonomously.
 - The evidence pack produces draft FIU-IND STR facts and RBI PA Master Direction mappings for the Principal Officer to review; it is not an automatic portal filing.

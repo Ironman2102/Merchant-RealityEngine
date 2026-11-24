@@ -46,8 +46,11 @@ export default function (): number {
   try {
     const dir = 'tests/datasets';
     const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as ManifestEntry[];
-    check('manifest contains 24 diverse datasets (15 fronts + 9 genuine)',
-      manifest.length === 24 && manifest.filter(m => m.kind === 'front').length === 15 && manifest.filter(m => m.kind === 'genuine').length === 9);
+    const frontCount = manifest.filter(m => m.kind === 'front').length;
+    const genuineCount = manifest.filter(m => m.kind === 'genuine').length;
+    check(`manifest contains 100 diverse datasets (60 fronts + 40 genuine)`,
+      manifest.length === 100 && frontCount === 60 && genuineCount === 40,
+      `got total=${manifest.length} front=${frontCount} genuine=${genuineCount}`);
 
     const portfolioRows: PortfolioRow[] = [];
     const detectorsFiredEver = new Set<string>();
@@ -134,7 +137,7 @@ export default function (): number {
 
     // ==================== CROSS-PORTFOLIO COVERAGE & FDR QUEUE CHECKS ====================
     const missingDetectors = DETECTORS.map(d => d.id).filter(id => !detectorsFiredEver.has(id));
-    check('all 25 detectors (A1..K1) fired across the 24-dataset test pack',
+    check('all 25 detectors (A1..K1) fired across the 100-dataset test pack',
       missingDetectors.length === 0,
       `never fired: [${missingDetectors.join(', ')}]`);
 
@@ -143,29 +146,29 @@ export default function (): number {
     const genuineIds = new Set(manifest.filter(m => m.kind === 'genuine').map(m => m.merchantId));
     const openedFronts = fdr.queue.filter(r => frontIds.has(r.merchantId)).length;
     const openedGenuine = fdr.queue.filter(r => genuineIds.has(r.merchantId)).length;
-    check('one-shot portfolio FDR queue catches all 15 fronts with 0 genuine false positives',
-      openedFronts === 15 && openedGenuine === 0,
-      `openedFronts=${openedFronts}/15 openedGenuine=${openedGenuine}/9 fdrOpened=${fdr.opened}`);
+    check(`one-shot portfolio FDR queue catches all ${frontIds.size} fronts with 0 genuine false positives`,
+      openedFronts === frontIds.size && openedGenuine === 0,
+      `openedFronts=${openedFronts}/${frontIds.size} openedGenuine=${openedGenuine}/${genuineIds.size} fdrOpened=${fdr.opened}`);
 
     // ==================== DEDUPLICATION, PARTIAL SCALING & L6 HOLD GUARDRAILS ====================
     {
-      const r14 = analyzeDataset(rawDatasets.get('front-14-partial-degraded-feeds.json')!)!;
-      if (r14.ok) {
-        check('front-14 L1 deduplicated 3 exact duplicate sales (60 unique remain)',
-          r14.result.l1.counts.SALE.n === 60, `got ${r14.result.l1.counts.SALE.n}`);
-        const partialItems = r14.result.evidence.filter(e => e.status !== 'UNKNOWN');
-        check('front-14 PARTIAL coverage sets reliability=0.7 on active detectors',
+      const r19 = analyzeDataset(rawDatasets.get('019-front-stealth-partial-feeds-dups.json')!)!;
+      if (r19.ok) {
+        check('019 L1 deduplicated 4 exact duplicate sales (60 unique remain)',
+          r19.result.l1.counts.SALE.n === 60, `got ${r19.result.l1.counts.SALE.n}`);
+        const partialItems = r19.result.evidence.filter(e => e.status !== 'UNKNOWN' && e.requires.some(k => r19.result.scenario.coverage[k] === 'PARTIAL'));
+        check('019 PARTIAL coverage sets reliability=0.7 on affected detectors',
           partialItems.length > 0 && partialItems.every(e => e.reliability === 0.7));
       }
 
-      const r01 = analyzeDataset(rawDatasets.get('front-01-betting-web-embed.json')!)!;
+      const r01 = analyzeDataset(rawDatasets.get('001-front-gambling-host-bakery.json')!)!;
       if (r01.ok) {
         const l4Blocked = planResponse(r01.result, { chosenLevel: 'L4', legalVerified: false, escrowConfirmed: false, label: 'UNRESOLVED', notes: '', clarification: '', executed: false, audit: [] });
         const l4Allowed = planResponse(r01.result, { chosenLevel: 'L4', legalVerified: true, escrowConfirmed: true, label: 'UNRESOLVED', notes: '', clarification: '', executed: false, audit: [] });
         const l5Blocked = planResponse(r01.result, { chosenLevel: 'L5', legalVerified: true, escrowConfirmed: true, label: 'UNRESOLVED', notes: '', clarification: '', executed: false, audit: [] });
         const log = actionLog(r01.result, l4Allowed, 0);
         check('L6 blocks L4 without legal+escrow authority', l4Blocked.blocked.length >= 2 && l4Blocked.hold === null);
-        check('L6 mints HoldRecord on L4 with verified legal+escrow over unsettled PL-BET funds',
+        check('L6 mints HoldRecord on L4 with verified legal+escrow over unsettled funds',
           l4Allowed.blocked.length === 0 && l4Allowed.hold !== null && l4Allowed.hold.amount > 0 && log.length === l4Allowed.actions.length);
         check('L6 blocks L5 termination without CONFIRMED_ILLICIT label', l5Blocked.blocked.length >= 1);
       }
@@ -174,24 +177,24 @@ export default function (): number {
     // ==================== L7 WORKFLOW, MAKER/CHECKER & HASH-CHAINED AUDIT ====================
     {
       resetDb();
-      const analyst = createUser('os-analyst', 'os-pass-1', 'analyst');
-      const reviewer = createUser('os-reviewer', 'os-pass-2', 'reviewer');
-      const legal = createUser('os-legal', 'os-pass-3', 'legal');
+      const analyst = createUser('os-analyst', 'os-password-1234', 'analyst');
+      const reviewer = createUser('os-reviewer', 'os-password-2345', 'reviewer');
+      const legal = createUser('os-legal', 'os-password-3456', 'legal');
 
-      const opened = openInvestigation(rawDatasets.get('front-01-betting-web-embed.json')!, analyst);
+      const opened = openInvestigation(rawDatasets.get('001-front-gambling-host-bakery.json')!, analyst);
       const caseId = String(opened.body.id);
       check('L7 opens backend case with server-minted INV-* id', opened.status === 200 && /^INV-[0-9a-f]{8}$/.test(caseId));
 
-      const rev = reviewInvestigation(caseId, { note: 'Confirmed gambling embed + pre-match burst', legitDecision: 'FAILED' }, analyst);
+      const rev = reviewInvestigation(caseId, { notes: 'Confirmed gambling embed + pre-match burst' }, analyst);
       check('L7 analyst review recorded', rev.status === 200);
 
-      const propL3 = respondInvestigation(caseId, { level: 'L3', note: 'Disable PL-BET link' }, analyst);
+      const propL3 = respondInvestigation(caseId, { chosenLevel: 'L3' }, analyst);
       check('L7 analyst proposes L3 (needs checker approval)', propL3.status === 200);
 
-      const selfApp = approveInvestigation(caseId, { decision: 'APPROVE', note: 'self' }, analyst);
+      const selfApp = approveInvestigation(caseId, { approve: true, reason: 'self' }, analyst);
       check('L7 maker/checker blocks self-approval of L3', selfApp.status === 403);
 
-      const revApp = approveInvestigation(caseId, { decision: 'APPROVE', note: 'approved L3' }, reviewer);
+      const revApp = approveInvestigation(caseId, { approve: true, reason: 'approved L3' }, reviewer);
       check('L7 separate reviewer approves L3', revApp.status === 200);
 
       const lbl1 = labelInvestigation(caseId, { label: 'CONFIRMED_ILLICIT', note: 'analyst label' }, analyst);

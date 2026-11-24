@@ -29,7 +29,10 @@ ensure_node() {
     exit 1
   fi
 
-  if [[ ! -x node_modules/.bin/vite ]]; then
+  if [[ ! -x node_modules/.bin/vite \
+    || ! -d node_modules/@stdlib/math-base-special-gammainc \
+    || ! -d node_modules/@stdlib/math-base-special-betainc \
+    || ! -d node_modules/@stdlib/math-base-special-betaincinv ]]; then
     echo "Dependencies are missing; installing from package-lock.json..."
     npm ci --cache "${TMPDIR:-/tmp}/merchant-reality-engine-npm-cache"
   fi
@@ -38,10 +41,21 @@ ensure_node() {
 case "${1:-web}" in
   web|--web)
     ensure_node
+    ML_PID=""
+    if [[ -f ml/models/nn-v0/network.json ]] && python3 -c 'import fastapi, numpy, sklearn, uvicorn' >/dev/null 2>&1; then
+      echo "Starting the local AI/ML scorer at http://127.0.0.1:8790"
+      python3 -m uvicorn ml.serve:app --host 127.0.0.1 --port 8790 &
+      ML_PID=$!
+      if ! python3 -c 'import transformers, torch' >/dev/null 2>&1; then
+        echo "Text encoder is disabled. Install it with: python3 -m pip install -r ml/requirements-encoder.txt"
+      fi
+    else
+      echo "AI/ML scorer dependencies are missing. Install ml/requirements.txt to enable Stage 2 model scoring."
+    fi
     echo "Starting the investigation API at http://127.0.0.1:8787"
     node --import tsx backend/src/server.ts &
     API_PID=$!
-    trap 'kill "$API_PID" 2>/dev/null || true' EXIT
+    trap 'kill "$API_PID" ${ML_PID:-} 2>/dev/null || true' EXIT
     echo "Starting Merchant Reality Engine at http://localhost:5173"
     npm run dev -- --host 127.0.0.1
     ;;

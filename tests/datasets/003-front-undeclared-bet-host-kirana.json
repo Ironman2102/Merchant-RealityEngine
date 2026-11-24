@@ -1,0 +1,1405 @@
+{
+  "format": "mre-dataset/v1",
+  "title": "undeclared bet host kirana",
+  "description": "Gambling & Betting Fronts: undeclared bet host kirana",
+  "merchant": {
+    "id": "M-003-FRONT-UNDECLARED-BET-HOS",
+    "name": "undeclared bet host kirana (5411)",
+    "city": "Bengaluru, KA",
+    "mcc": "5411",
+    "category": "Grocery and kirana",
+    "products": [
+      "Standard item A",
+      "Standard item B"
+    ],
+    "ticketMin": 20,
+    "ticketMax": 3500,
+    "hours": [
+      7,
+      22
+    ],
+    "catchment": "LOCAL",
+    "localStates": [
+      "KA"
+    ],
+    "expectedRoundShare": 0.06,
+    "seasonalPeak": 1,
+    "baselineWeekly": 100000,
+    "accountAgeDays": 450,
+    "declaredDomains": [
+      "clean-shop.example"
+    ],
+    "declaredChannels": [
+      "UPI_LINK"
+    ],
+    "declaredActivity": [
+      "Grocery and kirana"
+    ]
+  },
+  "weeklySales": [
+    {
+      "week": "W1",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W2",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W3",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W4",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W5",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W6",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W7",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W8",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W9",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W10",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W11",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W12",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TX-5411-0",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-15T23:30:00+05:30",
+      "settledAt": "2026-06-15T19:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-0",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-1",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-14T23:30:00+05:30",
+      "settledAt": "2026-06-14T20:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-1",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-2",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-13T23:30:00+05:30",
+      "settledAt": "2026-06-13T21:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-2",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-3",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-12T23:30:00+05:30",
+      "settledAt": "2026-06-12T22:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-3",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-4",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-11T23:30:00+05:30",
+      "settledAt": "2026-06-11T23:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-4",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-5",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-10T23:30:00+05:30",
+      "settledAt": "2026-06-11T00:35:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-5",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-6",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-09T23:30:00+05:30",
+      "settledAt": "2026-06-10T01:42:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-6",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-7",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-08T23:30:00+05:30",
+      "settledAt": "2026-06-09T02:49:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-7",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-8",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-07T23:30:00+05:30",
+      "settledAt": "2026-06-08T03:01:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-8",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-9",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-06T23:30:00+05:30",
+      "settledAt": "2026-06-07T04:08:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-9",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-10",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-15T23:30:00+05:30",
+      "settledAt": "2026-06-06T05:15:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-10",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-11",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-14T23:30:00+05:30",
+      "settledAt": "2026-06-05T06:22:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-11",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-12",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-13T23:30:00+05:30",
+      "settledAt": "2026-06-04T07:29:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-12",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-13",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-12T23:30:00+05:30",
+      "settledAt": "2026-06-03T08:36:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-13",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-14",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-11T23:30:00+05:30",
+      "settledAt": "2026-06-16T09:43:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-14",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-15",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-10T23:30:00+05:30",
+      "settledAt": "2026-06-14T19:50:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-15",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-16",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-09T23:30:00+05:30",
+      "settledAt": "2026-06-13T20:02:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-16",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-17",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-08T23:30:00+05:30",
+      "settledAt": "2026-06-12T21:09:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-17",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-18",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-07T23:30:00+05:30",
+      "settledAt": "2026-06-11T22:16:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-18",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-19",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-06T23:30:00+05:30",
+      "settledAt": "2026-06-10T23:23:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-19",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-20",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-15T23:30:00+05:30",
+      "settledAt": "2026-06-10T00:30:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-20",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-21",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-14T23:30:00+05:30",
+      "settledAt": "2026-06-09T01:37:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-21",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-22",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-13T23:30:00+05:30",
+      "settledAt": "2026-06-08T02:44:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-22",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-23",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-12T23:30:00+05:30",
+      "settledAt": "2026-06-07T03:51:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-23",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-24",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-11T23:30:00+05:30",
+      "settledAt": "2026-06-06T04:03:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-24",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-25",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-10T23:30:00+05:30",
+      "settledAt": "2026-06-05T05:10:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-25",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-26",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-09T23:30:00+05:30",
+      "settledAt": "2026-06-04T06:17:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-26",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-27",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-08T23:30:00+05:30",
+      "settledAt": "2026-06-03T07:24:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-27",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-28",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-07T23:30:00+05:30",
+      "settledAt": "2026-06-16T08:31:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-28",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-29",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-06T23:30:00+05:30",
+      "settledAt": "2026-06-15T09:38:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-29",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-30",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-15T23:30:00+05:30",
+      "settledAt": "2026-06-13T19:45:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-30",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-31",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-14T23:30:00+05:30",
+      "settledAt": "2026-06-12T20:52:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-31",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-32",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-13T23:30:00+05:30",
+      "settledAt": "2026-06-11T21:04:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-32",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-33",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-12T23:30:00+05:30",
+      "settledAt": "2026-06-10T22:11:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-33",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-34",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-11T23:30:00+05:30",
+      "settledAt": "2026-06-09T23:18:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-34",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-35",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-10T23:30:00+05:30",
+      "settledAt": "2026-06-09T00:25:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-35",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-36",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-09T23:30:00+05:30",
+      "settledAt": "2026-06-08T01:32:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-36",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-37",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-08T23:30:00+05:30",
+      "settledAt": "2026-06-07T02:39:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-37",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-38",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-07T23:30:00+05:30",
+      "settledAt": "2026-06-06T03:46:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-38",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-39",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-06T23:30:00+05:30",
+      "settledAt": "2026-06-05T04:53:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-39",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-40",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-15T23:30:00+05:30",
+      "settledAt": "2026-06-04T05:05:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-40",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-41",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-14T23:30:00+05:30",
+      "settledAt": "2026-06-03T06:12:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-41",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-42",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-13T23:30:00+05:30",
+      "settledAt": "2026-06-16T07:19:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-42",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-43",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-12T23:30:00+05:30",
+      "settledAt": "2026-06-15T08:26:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-43",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-44",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-11T23:30:00+05:30",
+      "settledAt": "2026-06-14T09:33:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-44",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-45",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-10T23:30:00+05:30",
+      "settledAt": "2026-06-12T19:40:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-45",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-46",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-09T23:30:00+05:30",
+      "settledAt": "2026-06-11T20:47:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-46",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-47",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-08T23:30:00+05:30",
+      "settledAt": "2026-06-10T21:54:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-47",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-48",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-07T23:30:00+05:30",
+      "settledAt": "2026-06-09T22:06:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-48",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-49",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-06T23:30:00+05:30",
+      "settledAt": "2026-06-08T23:13:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-49",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-50",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-15T23:30:00+05:30",
+      "settledAt": "2026-06-08T00:20:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-50",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-51",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-14T23:30:00+05:30",
+      "settledAt": "2026-06-07T01:27:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-51",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-52",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-13T23:30:00+05:30",
+      "settledAt": "2026-06-06T02:34:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-52",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-53",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-12T23:30:00+05:30",
+      "settledAt": "2026-06-05T03:41:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-53",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-54",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-11T23:30:00+05:30",
+      "settledAt": "2026-06-04T04:48:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-54",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-55",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-10T23:30:00+05:30",
+      "settledAt": "2026-06-03T05:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-55",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-56",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-09T23:30:00+05:30",
+      "settledAt": "2026-06-16T06:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-56",
+      "payerState": "DL",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-57",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-08T23:30:00+05:30",
+      "settledAt": "2026-06-15T07:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-57",
+      "payerState": "UP",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-58",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-07T23:30:00+05:30",
+      "settledAt": "2026-06-14T08:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-58",
+      "payerState": "RJ",
+      "orderId": null
+    },
+    {
+      "id": "TX-5411-59",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SALE",
+      "amount": 5000,
+      "time": "2026-06-06T23:30:00+05:30",
+      "settledAt": "2026-06-13T09:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "CUST-5411-59",
+      "payerState": "WB",
+      "orderId": null
+    },
+    {
+      "id": "SET-5411-0",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SETTLEMENT",
+      "amount": 25000,
+      "time": "2026-06-06T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5411-1",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SETTLEMENT",
+      "amount": 25050,
+      "time": "2026-06-09T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5411-2",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SETTLEMENT",
+      "amount": 25100,
+      "time": "2026-06-12T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5411-3",
+      "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+      "type": "SETTLEMENT",
+      "amount": 25150,
+      "time": "2026-06-15T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "matchFixtures": [],
+  "dataAvailability": {
+    "acquiring": "AVAILABLE",
+    "website": "AVAILABLE",
+    "orders": "AVAILABLE",
+    "bank": "AVAILABLE",
+    "fulfillment": "AVAILABLE",
+    "calendar": "MISSING",
+    "verification": "AVAILABLE"
+  },
+  "website": {
+    "embeds": [
+      {
+        "id": "EMB-1",
+        "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+        "linkId": "PL-01",
+        "host": "clean-shop.example",
+        "path": "/checkout",
+        "category": "own",
+        "pageType": "checkout",
+        "firstSeen": "2026-05-01"
+      },
+      {
+        "id": "E-EXT",
+        "merchantId": "M-003-FRONT-UNDECLARED-BET-HOS",
+        "linkId": "PL-01",
+        "host": "playwin-portal.example",
+        "path": "/pay",
+        "category": "unknown",
+        "pageType": "checkout",
+        "firstSeen": "2026-06-01"
+      },
+      {
+        "id": "E-P2",
+        "merchantId": "M-CO-1",
+        "linkId": "PL-C1",
+        "host": "playwin-portal.example",
+        "path": "/pay",
+        "category": "unknown",
+        "pageType": "checkout",
+        "firstSeen": "2026-06-01"
+      }
+    ],
+    "catalogue": [
+      {
+        "sku": "SKU-0",
+        "name": "Item 0",
+        "price": 490,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-1",
+        "name": "Item 1",
+        "price": 560,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-2",
+        "name": "Item 2",
+        "price": 630,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-3",
+        "name": "Item 3",
+        "price": 700,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-4",
+        "name": "Item 4",
+        "price": 770,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-5",
+        "name": "Item 5",
+        "price": 840,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-6",
+        "name": "Item 6",
+        "price": 910,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-7",
+        "name": "Item 7",
+        "price": 980,
+        "inCategory": true,
+        "dupImage": false
+      }
+    ]
+  },
+  "orders": [
+    {
+      "orderId": "ORD-0",
+      "saleId": "TX-5411-0",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-0"
+    },
+    {
+      "orderId": "ORD-1",
+      "saleId": "TX-5411-1",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-1"
+    },
+    {
+      "orderId": "ORD-2",
+      "saleId": "TX-5411-2",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-2"
+    },
+    {
+      "orderId": "ORD-3",
+      "saleId": "TX-5411-3",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-3"
+    },
+    {
+      "orderId": "ORD-4",
+      "saleId": "TX-5411-4",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-4"
+    },
+    {
+      "orderId": "ORD-5",
+      "saleId": "TX-5411-5",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-5"
+    },
+    {
+      "orderId": "ORD-6",
+      "saleId": "TX-5411-6",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-6"
+    },
+    {
+      "orderId": "ORD-7",
+      "saleId": "TX-5411-7",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-7"
+    },
+    {
+      "orderId": "ORD-8",
+      "saleId": "TX-5411-8",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-8"
+    },
+    {
+      "orderId": "ORD-9",
+      "saleId": "TX-5411-9",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-9"
+    },
+    {
+      "orderId": "ORD-10",
+      "saleId": "TX-5411-10",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-10"
+    },
+    {
+      "orderId": "ORD-11",
+      "saleId": "TX-5411-11",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-11"
+    },
+    {
+      "orderId": "ORD-12",
+      "saleId": "TX-5411-12",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-12"
+    },
+    {
+      "orderId": "ORD-13",
+      "saleId": "TX-5411-13",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-13"
+    },
+    {
+      "orderId": "ORD-14",
+      "saleId": "TX-5411-14",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-14"
+    },
+    {
+      "orderId": "ORD-15",
+      "saleId": "TX-5411-15",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-15"
+    },
+    {
+      "orderId": "ORD-16",
+      "saleId": "TX-5411-16",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-16"
+    },
+    {
+      "orderId": "ORD-17",
+      "saleId": "TX-5411-17",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-17"
+    },
+    {
+      "orderId": "ORD-18",
+      "saleId": "TX-5411-18",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-18"
+    },
+    {
+      "orderId": "ORD-19",
+      "saleId": "TX-5411-19",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-19"
+    },
+    {
+      "orderId": "ORD-20",
+      "saleId": "TX-5411-20",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-20"
+    },
+    {
+      "orderId": "ORD-21",
+      "saleId": "TX-5411-21",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-21"
+    },
+    {
+      "orderId": "ORD-22",
+      "saleId": "TX-5411-22",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-22"
+    },
+    {
+      "orderId": "ORD-23",
+      "saleId": "TX-5411-23",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-23"
+    },
+    {
+      "orderId": "ORD-24",
+      "saleId": "TX-5411-24",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-24"
+    },
+    {
+      "orderId": "ORD-25",
+      "saleId": "TX-5411-25",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-25"
+    },
+    {
+      "orderId": "ORD-26",
+      "saleId": "TX-5411-26",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-26"
+    },
+    {
+      "orderId": "ORD-27",
+      "saleId": "TX-5411-27",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-27"
+    },
+    {
+      "orderId": "ORD-28",
+      "saleId": "TX-5411-28",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-28"
+    },
+    {
+      "orderId": "ORD-29",
+      "saleId": "TX-5411-29",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-29"
+    },
+    {
+      "orderId": "ORD-30",
+      "saleId": "TX-5411-30",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-30"
+    },
+    {
+      "orderId": "ORD-31",
+      "saleId": "TX-5411-31",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-31"
+    },
+    {
+      "orderId": "ORD-32",
+      "saleId": "TX-5411-32",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-32"
+    },
+    {
+      "orderId": "ORD-33",
+      "saleId": "TX-5411-33",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-33"
+    },
+    {
+      "orderId": "ORD-34",
+      "saleId": "TX-5411-34",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-34"
+    },
+    {
+      "orderId": "ORD-35",
+      "saleId": "TX-5411-35",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-35"
+    },
+    {
+      "orderId": "ORD-36",
+      "saleId": "TX-5411-36",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-36"
+    },
+    {
+      "orderId": "ORD-37",
+      "saleId": "TX-5411-37",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-37"
+    },
+    {
+      "orderId": "ORD-38",
+      "saleId": "TX-5411-38",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-38"
+    },
+    {
+      "orderId": "ORD-39",
+      "saleId": "TX-5411-39",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-39"
+    },
+    {
+      "orderId": "ORD-40",
+      "saleId": "TX-5411-40",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-40"
+    },
+    {
+      "orderId": "ORD-41",
+      "saleId": "TX-5411-41",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-41"
+    },
+    {
+      "orderId": "ORD-42",
+      "saleId": "TX-5411-42",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-42"
+    },
+    {
+      "orderId": "ORD-43",
+      "saleId": "TX-5411-43",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-43"
+    },
+    {
+      "orderId": "ORD-44",
+      "saleId": "TX-5411-44",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-44"
+    },
+    {
+      "orderId": "ORD-45",
+      "saleId": "TX-5411-45",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-45"
+    },
+    {
+      "orderId": "ORD-46",
+      "saleId": "TX-5411-46",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-46"
+    },
+    {
+      "orderId": "ORD-47",
+      "saleId": "TX-5411-47",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-47"
+    },
+    {
+      "orderId": "ORD-48",
+      "saleId": "TX-5411-48",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-48"
+    },
+    {
+      "orderId": "ORD-49",
+      "saleId": "TX-5411-49",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-49"
+    },
+    {
+      "orderId": "ORD-50",
+      "saleId": "TX-5411-50",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-50"
+    },
+    {
+      "orderId": "ORD-51",
+      "saleId": "TX-5411-51",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-51"
+    },
+    {
+      "orderId": "ORD-52",
+      "saleId": "TX-5411-52",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-52"
+    },
+    {
+      "orderId": "ORD-53",
+      "saleId": "TX-5411-53",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-53"
+    },
+    {
+      "orderId": "ORD-54",
+      "saleId": "TX-5411-54",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-54"
+    },
+    {
+      "orderId": "ORD-55",
+      "saleId": "TX-5411-55",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-55"
+    },
+    {
+      "orderId": "ORD-56",
+      "saleId": "TX-5411-56",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-56"
+    },
+    {
+      "orderId": "ORD-57",
+      "saleId": "TX-5411-57",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-57"
+    },
+    {
+      "orderId": "ORD-58",
+      "saleId": "TX-5411-58",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-58"
+    },
+    {
+      "orderId": "ORD-59",
+      "saleId": "TX-5411-59",
+      "status": "DELIVERED",
+      "trackingId": "TRK-5411-59"
+    }
+  ],
+  "bankCredits": [
+    {
+      "amount": 25000,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25050,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25100,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "amount": 25150,
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "purchaserVerification": {
+    "contacted": 12,
+    "confirmed": 11
+  }
+}

@@ -23,6 +23,7 @@ export interface Ctx {
   sc: Scenario; p: MerchantProfile; norm: MccNorm; all: PaymentEvent[];
   sales: PaymentEvent[]; refunds: PaymentEvent[]; settlements: PaymentEvent[]; transfers: PaymentEvent[];
   rows: WeeklyRow[]; cusum: CusumPoint[]; cohort: CohortMatch[]; vol: VolumeModel;
+  learnedRates?: Map<string, { sensitivity: number; falsePositive: number }>;
 }
 interface Def { id: string; run: (c: Ctx) => Obs }
 
@@ -44,11 +45,19 @@ function rateTest(x: number, n: number, normRate: number, strength = 200) {
   return { p: n ? betaBinomUpperP(x, n, pr) : 1, effect: share(x, n) - normRate, ci: ci90(x, n) };
 }
 
+const IST_OFFSET_MS = 19_800_000;
+const fastIstDay = (t: number) => Math.floor((t + IST_OFFSET_MS) / 86_400_000);
+const fastIstMin = (t: number) => {
+  const m = Math.floor((t + IST_OFFSET_MS) / 60_000) % 1440;
+  return m < 0 ? m + 1440 : m;
+};
+const fastIstHour = (t: number) => Math.floor(fastIstMin(t) / 60);
+
 const PRE = RULES.engine.preMatchMinutes;
 function matchWindows(c: Ctx) {
   const fx = [...c.sc.fixtures, ...RULES.calendar.cricketFixtures.map(f => Date.parse(String(f)))].filter(Number.isFinite);
-  const fixDays = new Set(fx.map(f => istDayKey(istMinuteOfDay(f) < PRE ? f - PRE * 60_000 : f)));
-  const wins = [...new Set(fx.map(istMinuteOfDay))].map(m => [m - PRE, m] as const);
+  const fixDays = new Set(fx.map(f => fastIstDay(fastIstMin(f) < PRE ? f - PRE * 60_000 : f)));
+  const wins = [...new Set(fx.map(fastIstMin))].map(m => [m - PRE, m] as const);
   const inWin = (m: number) => wins.some(([a, b]) => (a >= 0 ? m >= a && m < b : m >= a + 1440 || m < b));
   return { fx, fixDays, inWin };
 }
@@ -126,19 +135,39 @@ export const DETECTORS: Def[] = [
   { id: 'C5', run: c => {
     const { fx, fixDays, inWin } = matchWindows(c);
     if (!fx.length) return unknown('No match fixtures in the window, so alignment cannot be tested.', '—', 'Uploaded fixtures + rules/calendar.json');
-    const days = new Map<string, { inW: number; tot: number }>();
-    c.sales.forEach(e => { const k = istDayKey(e.eventTime), d = days.get(k) ?? { inW: 0, tot: 0 }; d.tot++; if (inWin(istMinuteOfDay(e.eventTime))) d.inW++; days.set(k, d); });
-    const keys = [...days.keys()], isFix = keys.map(k => fixDays.has(k)), k = isFix.filter(Boolean).length;
-    if (!k || k === keys.length) return unknown('Fixtures fall on all or none of the trading days, so there is no comparison.');
-    const rate = (sel: boolean[]) => { let a = 0, b = 0; keys.forEach((key, i) => { if (sel[i]) { a += days.get(key)!.inW; b += days.get(key)!.tot; } }); return b ? a / b : 0; };
+    const days = new Map<number, { inW: number; tot: number }>();
+    const hit: PaymentEvent[] = [];
+    for (const e of c.sales) {
+      const k = fastIstDay(e.eventTime);
+      let d = days.get(k);
+      if (!d) { d = { inW: 0, tot: 0 }; days.set(k, d); }
+      d.tot++;
+      if (inWin(fastIstMin(e.eventTime))) {
+        d.inW++;
+        if (fixDays.has(k)) hit.push(e);
+      }
+    }
+    const nDays = days.size;
+    const isFix: boolean[] = [], inWArr: number[] = [], totArr: number[] = [];
+    let kCount = 0, matchTot = 0;
+    for (const [key, d] of days) {
+      const f = fixDays.has(key);
+      isFix.push(f); inWArr.push(d.inW); totArr.push(d.tot);
+      if (f) { kCount++; matchTot += d.tot; }
+    }
+    if (!kCount || kCount === nDays) return unknown('Fixtures fall on all or none of the trading days, so there is no comparison.');
+    const rate = (sel: boolean[]) => {
+      let a = 0, b = 0;
+      for (let i = 0; i < nDays; i++) if (sel[i]) { a += inWArr[i]; b += totArr[i]; }
+      return b ? a / b : 0;
+    };
     const obs = rate(isFix), ctrl = rate(isFix.map(x => !x)), r = rng(seedOf(c.p.id + 'C5'));
     let ge = 0; const B = RULES.engine.permutationDraws;
     for (let i = 0; i < B; i++) if (rate(shuffle(r, isFix)) >= obs - 1e-12) ge++;
-    const p = (ge + 1) / (B + 1), ratio = obs / Math.max(ctrl, 0.5 / Math.max(c.sales.length, 1)), n = keys.filter((_, i) => isFix[i]).reduce((s, key) => s + days.get(key)!.tot, 0);
-    const hit = c.sales.filter(e => fixDays.has(istDayKey(e.eventTime)) && inWin(istMinuteOfDay(e.eventTime)));
+    const p = (ge + 1) / (B + 1), ratio = obs / Math.max(ctrl, 0.5 / Math.max(c.sales.length, 1)), n = matchTot;
     return { p, effect: ratio, n, effectLabel: 'rate ratio vs non-match days', ci: null, expectedSource: 'Same clock windows on non-match days (permutation over days)', records: ids(hit),
       observed: `${pct(obs)} of match-day sales in the ${PRE} min before a start vs ${pct(ctrl)} on other days (${ratio.toFixed(1)}×)`, expected: 'No difference from other days',
-      explanation: 'Funding that clusters just before match starts, compared with the same clock time on days without matches.', metrics: { ratio: ratio.toFixed(2), p: p.toFixed(4), matchDays: k } };
+      explanation: 'Funding that clusters just before match starts, compared with the same clock time on days without matches.', metrics: { ratio: ratio.toFixed(2), p: p.toFixed(4), matchDays: kCount } };
   } },
   { id: 'D7', run: c => {
     if (!c.refunds.length) return unknown('No refunds in the window.');
@@ -249,9 +278,17 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'H3', run: c => {
     const { fixDays, inWin } = matchWindows(c), local = c.norm.catchment === 'LOCAL' ? homeAndNeighbours(c.p) : null;
-    const traits = (e: PaymentEvent) => [isRound(e.amount), local ? !!e.payerState && e.payerState !== '—' && !local.has(e.payerState) : false,
-      outsideHours(istHour(e.eventTime), [c.norm.open, c.norm.close]) || (fixDays.has(istDayKey(e.eventTime)) && inWin(istMinuteOfDay(e.eventTime)))].filter(Boolean).length;
-    const joint = c.sales.filter(e => traits(e) >= 2), n = c.sales.length, t = rateTest(joint.length, n, 0.01, 100);
+    const joint: PaymentEvent[] = [];
+    for (const e of c.sales) {
+      let count = isRound(e.amount) ? 1 : 0;
+      if (local && e.payerState && e.payerState !== '—' && !local.has(e.payerState)) count++;
+      if (count + 1 >= 2) {
+        const min = fastIstMin(e.eventTime);
+        if (outsideHours(Math.floor(min / 60), [c.norm.open, c.norm.close]) || (fixDays.has(fastIstDay(e.eventTime)) && inWin(min))) count++;
+      }
+      if (count >= 2) joint.push(e);
+    }
+    const n = c.sales.length, t = rateTest(joint.length, n, 0.01, 100);
     return { ...t, n, effectLabel: 'excess share with ≥ 2 off-profile traits', expectedSource: 'Norm: about 1% of sales combine two off-profile traits', records: ids(joint),
       observed: `${joint.length} sales (${pct(share(joint.length, n))}) combine ≥ 2 off-profile traits`, expected: 'About 1%',
       explanation: 'Round amount, out-of-area payer and odd timing co-occurring in the same payments: a separate population hidden inside the merchant.', metrics: { joint: joint.length, value: inr(joint.reduce((s, e) => s + e.amount, 0)), p: t.p.toExponential(2) } };
@@ -264,7 +301,15 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'I3', run: c => {
     if (c.settlements.length < 3) return unknown('Too few settlements.');
-    const W = RULES.engine.sweepHours * 3600000, swept = c.settlements.filter(s => c.transfers.some(t => t.eventTime >= s.eventTime && t.eventTime - s.eventTime <= W)), n = c.settlements.length, p = binomSf(swept.length, n, 0.1);
+    const W = RULES.engine.sweepHours * 3600000;
+    const tTimes = c.transfers.map(t => t.eventTime).sort((a, b) => a - b);
+    const hasSweepAfter = (st: number) => {
+      let lo = 0, hi = tTimes.length;
+      while (lo < hi) { const mid = (lo + hi) >>> 1; if (tTimes[mid] < st) lo = mid + 1; else hi = mid; }
+      return lo < tTimes.length && tTimes[lo] - st <= W;
+    };
+    const swept = tTimes.length ? c.settlements.filter(s => hasSweepAfter(s.eventTime)) : [];
+    const n = c.settlements.length, p = binomSf(swept.length, n, 0.1);
     return { p, effect: share(swept.length, n) - 0.1, n, effectLabel: 'excess share swept within 24 h', ci: ci90(swept.length, n), expectedSource: 'Norm: ≤ 10% of settlements followed by an onward payout within 24 h', records: ids(swept),
       observed: `${swept.length} of ${n} settlements followed by an onward payout within ${RULES.engine.sweepHours} h`, expected: 'About 10%', explanation: 'Money passing straight through the merchant account.', metrics: { swept: swept.length, p: p.toExponential(2) } };
   } },
@@ -286,7 +331,9 @@ export const DETECTORS: Def[] = [
 
 export function runDetectors(c: Ctx): EvidenceItem[] {
   return DETECTORS.map(d => {
-    const cfg = RULES.detector(d.id), req = cfg.requires as CoverageKey[];
+    const baseCfg = RULES.detector(d.id), learned = c.learnedRates?.get(d.id);
+    const cfg = learned ? { ...baseCfg, sensitivity: learned.sensitivity, falsePositive: learned.falsePositive } : baseCfg;
+    const req = cfg.requires as CoverageKey[];
     const miss = req.filter(k => c.sc.coverage[k] === 'MISSING'), part = req.some(k => c.sc.coverage[k] === 'PARTIAL');
     const o: Obs = miss.length
       ? { ...unknown(`Required source (${miss.join(', ')}) is missing. Missing data is UNKNOWN: it does not move the score either way.`), observed: 'Source not available' }

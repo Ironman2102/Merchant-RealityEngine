@@ -1,0 +1,164 @@
+{
+  "format": "mre-dataset/v1",
+  "title": "Clean single-sale anonymous shop",
+  "description": "Genuine Structural Edge Cases: Clean single-sale anonymous shop",
+  "merchant": {
+    "id": "M-100-GENUINE-ANONYMOUS-POS-1S",
+    "name": "Clean single-sale anonymous shop (5814)",
+    "city": "Bengaluru, KA",
+    "mcc": "5814",
+    "category": "Fast food and tiffin",
+    "products": [
+      "Standard item A",
+      "Standard item B"
+    ],
+    "ticketMin": 20,
+    "ticketMax": 1750,
+    "hours": [
+      7,
+      22
+    ],
+    "catchment": "LOCAL",
+    "localStates": [
+      "KA"
+    ],
+    "expectedRoundShare": 0.04,
+    "seasonalPeak": 1,
+    "baselineWeekly": 100000,
+    "accountAgeDays": 450,
+    "declaredDomains": [
+      "clean-shop.example"
+    ],
+    "declaredChannels": [
+      "UPI_LINK"
+    ],
+    "declaredActivity": [
+      "Fast food and tiffin"
+    ]
+  },
+  "weeklySales": [
+    {
+      "week": "W1",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W2",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W3",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W4",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W5",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W6",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W7",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W8",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W9",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W10",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W11",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W12",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TX-5814-0",
+      "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+      "type": "SALE",
+      "amount": 228,
+      "time": "2026-06-15T07:00:00+05:30",
+      "settledAt": "2026-06-15T19:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerState": "KA",
+      "orderId": "ORD-0"
+    },
+    {
+      "id": "SET-5814-0",
+      "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+      "type": "SETTLEMENT",
+      "amount": 25000,
+      "time": "2026-06-06T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5814-1",
+      "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+      "type": "SETTLEMENT",
+      "amount": 25050,
+      "time": "2026-06-09T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5814-2",
+      "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+      "type": "SETTLEMENT",
+      "amount": 25100,
+      "time": "2026-06-12T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5814-3",
+      "merchantId": "M-100-GENUINE-ANONYMOUS-POS-1S",
+      "type": "SETTLEMENT",
+      "amount": 25150,
+      "time": "2026-06-15T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "matchFixtures": [],
+  "dataAvailability": {
+    "acquiring": "AVAILABLE",
+    "website": "MISSING",
+    "orders": "MISSING",
+    "bank": "MISSING",
+    "fulfillment": "MISSING",
+    "calendar": "MISSING",
+    "verification": "MISSING"
+  },
+  "orders": [],
+  "bankCredits": [],
+  "purchaserVerification": null
+}

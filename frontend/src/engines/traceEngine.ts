@@ -20,7 +20,11 @@ export interface TraceStep { label: string; delta: number; cumulative: number; p
 export interface Counterfactual { what: string; posterior: number; action: ResponseLevel; decision: string }
 export interface ValueOfInformation { feed: CoverageKey; detector: string; pFire: number; ifFires: number; ifCalm: number; voiRupees: number }
 export interface Trace {
-  caseSummary: { merchant: string; mcc: string; decision: string; posterior: number; ci: [number, number]; prior: number; action: ResponseLevel; mechanism: string; mechanismP: number };
+  caseSummary: {
+    merchant: string; mcc: string; decision: string; posterior: number; ci: [number, number];
+    conformalSet: ('GENUINE' | 'FRONT')[]; abstainRecommended: boolean;
+    prior: number; action: ResponseLevel; mechanism: string; mechanismP: number;
+  };
   coverage: { name: string; state: string; records: number }[];
   waterfall: TraceStep[];
   detectors: Pick<EvidenceItem, 'id' | 'name' | 'family' | 'status' | 'llr' | 'test' | 'p' | 'effect' | 'effectLabel' | 'ci' | 'n' | 'observed' | 'expected' | 'expectedSource' | 'provenance' | 'records'>[];
@@ -100,7 +104,11 @@ export function buildTrace(r: InvestigationResult): Trace {
   }).sort((a, b) => b.voiRupees - a.voiRupees);
 
   return {
-    caseSummary: { merchant: p.name, mcc: p.mcc, decision: f.decision, posterior: f.posterior, ci: f.posteriorCi, prior: f.prior, action: r.review.recommended, mechanism: top.id, mechanismP: f.mechanismPosterior[top.id] },
+    caseSummary: {
+      merchant: p.name, mcc: p.mcc, decision: f.decision, posterior: f.posterior, ci: f.posteriorCi,
+      conformalSet: f.conformalSet, abstainRecommended: f.abstainRecommended,
+      prior: f.prior, action: r.review.recommended, mechanism: top.id, mechanismP: f.mechanismPosterior[top.id],
+    },
     coverage: r.l1.sources.map(s => ({ name: s.name, state: s.state, records: s.records })),
     waterfall: steps,
     detectors: ev.map(({ id, name, family, status, llr, test, p: pv, effect, effectLabel, ci, n, observed, expected, expectedSource, provenance, records }) => ({ id, name, family, status, llr, test, p: pv, effect, effectLabel, ci, n, observed, expected, expectedSource, provenance, records })),

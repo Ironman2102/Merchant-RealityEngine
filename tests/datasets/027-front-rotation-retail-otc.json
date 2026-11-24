@@ -1,0 +1,1721 @@
+{
+  "format": "mre-dataset/v1",
+  "title": "rotation retail otc",
+  "description": "Merchant Rotation & Phoenix: rotation retail otc",
+  "merchant": {
+    "id": "M-027-FRONT-ROTATION-RETAIL-OT",
+    "name": "rotation retail otc (5999)",
+    "city": "Bengaluru, KA",
+    "mcc": "5999",
+    "category": "Other retail",
+    "products": [
+      "Standard item A",
+      "Standard item B"
+    ],
+    "ticketMin": 20,
+    "ticketMax": 3000,
+    "hours": [
+      9,
+      21
+    ],
+    "catchment": "LOCAL",
+    "localStates": [
+      "KA"
+    ],
+    "expectedRoundShare": 0.08,
+    "seasonalPeak": 1,
+    "baselineWeekly": 100000,
+    "accountAgeDays": 18,
+    "declaredDomains": [
+      "clean-shop.example"
+    ],
+    "declaredChannels": [
+      "UPI_LINK"
+    ],
+    "declaredActivity": [
+      "Other retail"
+    ]
+  },
+  "weeklySales": [
+    {
+      "week": "W1",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W2",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W3",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W4",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W5",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W6",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W7",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W8",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W9",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W10",
+      "actual": 97500,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W11",
+      "actual": 100000,
+      "seasonalMultiplier": 1
+    },
+    {
+      "week": "W12",
+      "actual": 102500,
+      "seasonalMultiplier": 1
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TX-5999-0",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-15T21:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-0",
+      "payerState": "DL",
+      "orderId": "ORD-0"
+    },
+    {
+      "id": "TX-5999-1",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-14T22:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-1",
+      "payerState": "UP",
+      "orderId": "ORD-1"
+    },
+    {
+      "id": "TX-5999-2",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-13T23:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-2",
+      "payerState": "MH",
+      "orderId": "ORD-2"
+    },
+    {
+      "id": "TX-5999-3",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-13T00:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-3",
+      "payerState": "DL",
+      "orderId": "ORD-3"
+    },
+    {
+      "id": "TX-5999-4",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-12T01:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-4",
+      "payerState": "UP",
+      "orderId": "ORD-4"
+    },
+    {
+      "id": "TX-5999-5",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-11T02:35:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-5",
+      "payerState": "MH",
+      "orderId": "ORD-5"
+    },
+    {
+      "id": "TX-5999-6",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-12T23:10:00+05:30",
+      "settledAt": "2026-06-10T03:42:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-6",
+      "payerState": "DL",
+      "orderId": "ORD-6"
+    },
+    {
+      "id": "TX-5999-7",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-13T23:10:00+05:30",
+      "settledAt": "2026-06-09T04:49:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-7",
+      "payerState": "UP",
+      "orderId": "ORD-7"
+    },
+    {
+      "id": "TX-5999-8",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-14T23:10:00+05:30",
+      "settledAt": "2026-06-08T05:01:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-8",
+      "payerState": "MH",
+      "orderId": "ORD-8"
+    },
+    {
+      "id": "TX-5999-9",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-07T06:08:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-9",
+      "payerState": "DL",
+      "orderId": "ORD-9"
+    },
+    {
+      "id": "TX-5999-10",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-06T07:15:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-10",
+      "payerState": "UP",
+      "orderId": "ORD-10"
+    },
+    {
+      "id": "TX-5999-11",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-05T08:22:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-11",
+      "payerState": "MH",
+      "orderId": "ORD-11"
+    },
+    {
+      "id": "TX-5999-12",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-03T21:29:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-12",
+      "payerState": "DL",
+      "orderId": "ORD-12"
+    },
+    {
+      "id": "TX-5999-13",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-02T22:36:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-13",
+      "payerState": "UP",
+      "orderId": "ORD-13"
+    },
+    {
+      "id": "TX-5999-14",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-15T23:43:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-14",
+      "payerState": "MH",
+      "orderId": "ORD-14"
+    },
+    {
+      "id": "TX-5999-15",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-12T23:10:00+05:30",
+      "settledAt": "2026-06-15T00:50:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-0",
+      "payerState": "DL",
+      "orderId": "ORD-15"
+    },
+    {
+      "id": "TX-5999-16",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-13T23:10:00+05:30",
+      "settledAt": "2026-06-14T01:02:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-1",
+      "payerState": "UP",
+      "orderId": "ORD-16"
+    },
+    {
+      "id": "TX-5999-17",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-14T23:10:00+05:30",
+      "settledAt": "2026-06-13T02:09:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-2",
+      "payerState": "MH",
+      "orderId": "ORD-17"
+    },
+    {
+      "id": "TX-5999-18",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-12T03:16:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-3",
+      "payerState": "DL",
+      "orderId": "ORD-18"
+    },
+    {
+      "id": "TX-5999-19",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-11T04:23:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-4",
+      "payerState": "UP",
+      "orderId": "ORD-19"
+    },
+    {
+      "id": "TX-5999-20",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-10T05:30:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-5",
+      "payerState": "MH",
+      "orderId": "ORD-20"
+    },
+    {
+      "id": "TX-5999-21",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-09T06:37:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-6",
+      "payerState": "DL",
+      "orderId": "ORD-21"
+    },
+    {
+      "id": "TX-5999-22",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-08T07:44:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-7",
+      "payerState": "UP",
+      "orderId": "ORD-22"
+    },
+    {
+      "id": "TX-5999-23",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-07T08:51:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-8",
+      "payerState": "MH",
+      "orderId": "ORD-23"
+    },
+    {
+      "id": "TX-5999-24",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-12T23:10:00+05:30",
+      "settledAt": "2026-06-05T21:03:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-9",
+      "payerState": "DL",
+      "orderId": "ORD-24"
+    },
+    {
+      "id": "TX-5999-25",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-13T23:10:00+05:30",
+      "settledAt": "2026-06-04T22:10:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-10",
+      "payerState": "UP",
+      "orderId": "ORD-25"
+    },
+    {
+      "id": "TX-5999-26",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-14T23:10:00+05:30",
+      "settledAt": "2026-06-03T23:17:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-11",
+      "payerState": "MH",
+      "orderId": "ORD-26"
+    },
+    {
+      "id": "TX-5999-27",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-03T00:24:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-12",
+      "payerState": "DL",
+      "orderId": "ORD-27"
+    },
+    {
+      "id": "TX-5999-28",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-16T01:31:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-13",
+      "payerState": "UP",
+      "orderId": "ORD-28"
+    },
+    {
+      "id": "TX-5999-29",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-15T02:38:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-14",
+      "payerState": "MH",
+      "orderId": "ORD-29"
+    },
+    {
+      "id": "TX-5999-30",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-14T03:45:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-0",
+      "payerState": "DL",
+      "orderId": "ORD-30"
+    },
+    {
+      "id": "TX-5999-31",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-13T04:52:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-1",
+      "payerState": "UP",
+      "orderId": "ORD-31"
+    },
+    {
+      "id": "TX-5999-32",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-12T05:04:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-2",
+      "payerState": "MH",
+      "orderId": "ORD-32"
+    },
+    {
+      "id": "TX-5999-33",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-12T23:10:00+05:30",
+      "settledAt": "2026-06-11T06:11:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-3",
+      "payerState": "DL",
+      "orderId": "ORD-33"
+    },
+    {
+      "id": "TX-5999-34",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-13T23:10:00+05:30",
+      "settledAt": "2026-06-10T07:18:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-4",
+      "payerState": "UP",
+      "orderId": "ORD-34"
+    },
+    {
+      "id": "TX-5999-35",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-14T23:10:00+05:30",
+      "settledAt": "2026-06-09T08:25:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-5",
+      "payerState": "MH",
+      "orderId": "ORD-35"
+    },
+    {
+      "id": "TX-5999-36",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-07T21:32:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-6",
+      "payerState": "DL",
+      "orderId": "ORD-36"
+    },
+    {
+      "id": "TX-5999-37",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-06T22:39:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-7",
+      "payerState": "UP",
+      "orderId": "ORD-37"
+    },
+    {
+      "id": "TX-5999-38",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-05T23:46:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-8",
+      "payerState": "MH",
+      "orderId": "ORD-38"
+    },
+    {
+      "id": "TX-5999-39",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-05T00:53:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-9",
+      "payerState": "DL",
+      "orderId": "ORD-39"
+    },
+    {
+      "id": "TX-5999-40",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-04T01:05:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-10",
+      "payerState": "UP",
+      "orderId": "ORD-40"
+    },
+    {
+      "id": "TX-5999-41",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-03T02:12:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-11",
+      "payerState": "MH",
+      "orderId": "ORD-41"
+    },
+    {
+      "id": "TX-5999-42",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-12T23:10:00+05:30",
+      "settledAt": "2026-06-16T03:19:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-12",
+      "payerState": "DL",
+      "orderId": "ORD-42"
+    },
+    {
+      "id": "TX-5999-43",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-13T23:10:00+05:30",
+      "settledAt": "2026-06-15T04:26:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-13",
+      "payerState": "UP",
+      "orderId": "ORD-43"
+    },
+    {
+      "id": "TX-5999-44",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-14T23:10:00+05:30",
+      "settledAt": "2026-06-14T05:33:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-14",
+      "payerState": "MH",
+      "orderId": "ORD-44"
+    },
+    {
+      "id": "TX-5999-45",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-13T06:40:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-0",
+      "payerState": "DL",
+      "orderId": "ORD-45"
+    },
+    {
+      "id": "TX-5999-46",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-12T07:47:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-1",
+      "payerState": "UP",
+      "orderId": "ORD-46"
+    },
+    {
+      "id": "TX-5999-47",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-11T08:54:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-2",
+      "payerState": "MH",
+      "orderId": "ORD-47"
+    },
+    {
+      "id": "TX-5999-48",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-09T21:06:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-3",
+      "payerState": "DL",
+      "orderId": "ORD-48"
+    },
+    {
+      "id": "TX-5999-49",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-08T22:13:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-4",
+      "payerState": "UP",
+      "orderId": "ORD-49"
+    },
+    {
+      "id": "TX-5999-50",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-07T23:20:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-5",
+      "payerState": "MH",
+      "orderId": "ORD-50"
+    },
+    {
+      "id": "TX-5999-51",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-12T23:10:00+05:30",
+      "settledAt": "2026-06-07T00:27:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-6",
+      "payerState": "DL",
+      "orderId": "ORD-51"
+    },
+    {
+      "id": "TX-5999-52",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-13T23:10:00+05:30",
+      "settledAt": "2026-06-06T01:34:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-7",
+      "payerState": "UP",
+      "orderId": "ORD-52"
+    },
+    {
+      "id": "TX-5999-53",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-14T23:10:00+05:30",
+      "settledAt": "2026-06-05T02:41:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-8",
+      "payerState": "MH",
+      "orderId": "ORD-53"
+    },
+    {
+      "id": "TX-5999-54",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-06T23:10:00+05:30",
+      "settledAt": "2026-06-04T03:48:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-9",
+      "payerState": "DL",
+      "orderId": "ORD-54"
+    },
+    {
+      "id": "TX-5999-55",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-07T23:10:00+05:30",
+      "settledAt": "2026-06-03T04:00:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-10",
+      "payerState": "UP",
+      "orderId": "ORD-55"
+    },
+    {
+      "id": "TX-5999-56",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-08T23:10:00+05:30",
+      "settledAt": "2026-06-16T05:07:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-11",
+      "payerState": "MH",
+      "orderId": "ORD-56"
+    },
+    {
+      "id": "TX-5999-57",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-09T23:10:00+05:30",
+      "settledAt": "2026-06-15T06:14:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-12",
+      "payerState": "DL",
+      "orderId": "ORD-57"
+    },
+    {
+      "id": "TX-5999-58",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-10T23:10:00+05:30",
+      "settledAt": "2026-06-14T07:21:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-13",
+      "payerState": "UP",
+      "orderId": "ORD-58"
+    },
+    {
+      "id": "TX-5999-59",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-11T23:10:00+05:30",
+      "settledAt": "2026-06-13T08:28:00+05:30",
+      "channel": "UPI_LINK",
+      "paymentLinkId": "PL-01",
+      "payerId": "COHORT-P-14",
+      "payerState": "MH",
+      "orderId": "ORD-59"
+    },
+    {
+      "id": "SET-5999-0",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SETTLEMENT",
+      "amount": 25000,
+      "time": "2026-06-06T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5999-1",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SETTLEMENT",
+      "amount": 25050,
+      "time": "2026-06-09T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5999-2",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SETTLEMENT",
+      "amount": 25100,
+      "time": "2026-06-12T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "SET-5999-3",
+      "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+      "type": "SETTLEMENT",
+      "amount": 25150,
+      "time": "2026-06-15T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    },
+    {
+      "id": "PEER-S-0",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-05T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-0",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-1",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-04T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-1",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-2",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-03T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-2",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-3",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-02T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-3",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-4",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-01T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-4",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-5",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-05-31T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-5",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-6",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-05-30T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-6",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-7",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-05-29T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-7",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-8",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-05-28T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-8",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-9",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-05-27T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-9",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-10",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-05T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-10",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-11",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-04T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-11",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-12",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-03T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-12",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-13",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-02T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-13",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-14",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-01T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-14",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-15",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-05-31T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-0",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-16",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-05-30T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-1",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-17",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-05-29T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-2",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-18",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-05-28T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-3",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-19",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-05-27T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-4",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-20",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-05T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-5",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-21",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-06-04T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-6",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-22",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-06-03T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-7",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-23",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-06-02T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-8",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-24",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-06-01T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-9",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-25",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-05-31T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-10",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-26",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1500,
+      "time": "2026-05-30T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-11",
+      "payerState": "MH"
+    },
+    {
+      "id": "PEER-S-27",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 2000,
+      "time": "2026-05-29T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-12",
+      "payerState": "DL"
+    },
+    {
+      "id": "PEER-S-28",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 500,
+      "time": "2026-05-28T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-13",
+      "payerState": "UP"
+    },
+    {
+      "id": "PEER-S-29",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SALE",
+      "amount": 1000,
+      "time": "2026-05-27T23:10:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "COHORT-P-14",
+      "payerState": "MH"
+    },
+    {
+      "id": "BG-S-0",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-0",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-1",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-1",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-2",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-2",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-3",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-3",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-4",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-4",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-5",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-5",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-6",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-6",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-7",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-7",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-8",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-8",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-9",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-9",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-10",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-10",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-11",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-11",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-12",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-12",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-13",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-13",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-14",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-14",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-15",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-15",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-16",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-16",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-17",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-17",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-18",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-18",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-19",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-19",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-20",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-20",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-21",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-21",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-22",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-22",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-23",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-23",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-24",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-24",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-25",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-25",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-26",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-26",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-27",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-27",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-28",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-28",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-29",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-29",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-30",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-30",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-31",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-31",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-32",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-32",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-33",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-33",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-34",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-34",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-35",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-35",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-36",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-36",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-37",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-37",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-38",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-38",
+      "payerState": "KA"
+    },
+    {
+      "id": "BG-S-39",
+      "merchantId": "M-BG-POOL",
+      "type": "SALE",
+      "amount": 400,
+      "time": "2026-05-31T12:00:00+05:30",
+      "channel": "UPI_LINK",
+      "payerId": "BG-POOL-39",
+      "payerState": "KA"
+    },
+    {
+      "id": "PEER-SET-1",
+      "merchantId": "M-PEER-DORMANT",
+      "type": "SETTLEMENT",
+      "amount": 30000,
+      "time": "2026-06-05T12:00:00+05:30",
+      "channel": "BANK",
+      "beneficiaryAccount": "BEN-PRIMARY-01"
+    }
+  ],
+  "matchFixtures": [],
+  "dataAvailability": {
+    "acquiring": "AVAILABLE",
+    "website": "AVAILABLE",
+    "orders": "MISSING",
+    "bank": "MISSING",
+    "fulfillment": "MISSING",
+    "calendar": "MISSING",
+    "verification": "MISSING"
+  },
+  "website": {
+    "embeds": [
+      {
+        "id": "EMB-1",
+        "merchantId": "M-027-FRONT-ROTATION-RETAIL-OT",
+        "linkId": "PL-01",
+        "host": "clean-shop.example",
+        "path": "/checkout",
+        "category": "own",
+        "pageType": "checkout",
+        "firstSeen": "2026-05-01"
+      }
+    ],
+    "catalogue": [
+      {
+        "sku": "SKU-0",
+        "name": "Item 0",
+        "price": 420,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-1",
+        "name": "Item 1",
+        "price": 480,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-2",
+        "name": "Item 2",
+        "price": 540,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-3",
+        "name": "Item 3",
+        "price": 600,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-4",
+        "name": "Item 4",
+        "price": 660,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-5",
+        "name": "Item 5",
+        "price": 720,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-6",
+        "name": "Item 6",
+        "price": 780,
+        "inCategory": true,
+        "dupImage": false
+      },
+      {
+        "sku": "SKU-7",
+        "name": "Item 7",
+        "price": 840,
+        "inCategory": true,
+        "dupImage": false
+      }
+    ]
+  },
+  "orders": [],
+  "bankCredits": [],
+  "purchaserVerification": null,
+  "peers": [
+    {
+      "id": "M-PEER-DORMANT",
+      "name": "Dormant Peer Shop",
+      "status": "DORMANT",
+      "accountAgeDays": 420
+    }
+  ]
+}

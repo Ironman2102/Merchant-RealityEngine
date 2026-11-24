@@ -12,6 +12,14 @@
 | L6 Governed Response | Six levels, authority gate, HoldRecord, action audit | `engines/responseEngine.ts` |
 | L7 Audit, Labels & Learning | Labels, indicators, reliability updates, hash-chained audit | `engines/learningEngine.ts` |
 
+## Two-stage analysis inside the seven layers
+
+MRE remains a seven-layer system. Stage 1 is the statistical evidence path in L1–L4. Stage 2 is an intelligence capability inside L3 and L4: L3 produces predictions from Logistic Regression, a shallow Decision Tree, a Random Forest, LightGBM and the existing neural network. The optional text encoder runs only for uncertain predictions and emits supporting context. L4 combines statistical and model risk, records disagreement and review confidence, then passes unresolved cases to L5.
+
+The sample-derived classical models are development opinions only. Their confidence is forced LOW for this small synthetic corpus, so the combined assessment requests review and cannot override the statistical case gate. Encoder output is also supporting context; it does not independently classify fraud. The existing statistical independence gate continues to govern case opening.
+
+Regenerate the synthetic fixture corpus and classical models with `npx tsx ml/generate_synthetic_features.ts` and `python3 ml/train_classical.py`. Enable the optional pretrained text model by installing `ml/requirements-encoder.txt`, setting `MRE_ENCODER_MODEL` (default `valhalla/distilbart-mnli-12-1`) and `HF_HOME` to a writable cache directory. The model loads on the first uncertain request and is cached outside the repository.
+
 ## Key formulas
 
 - Residual: `R_t = (V_t − E_t) / max(E_t, ε)`, ε = 1.
