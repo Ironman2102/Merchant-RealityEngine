@@ -187,7 +187,62 @@ export function UploadPage() {
   const loadSampleCsv = () => {
     read('gateway-export-sample.csv', buildSampleGatewayCsv());
   };
-  const onFile = async (f?: File | null) => { if (f) read(f.name, await f.text()); };
+  const onFiles = async (files?: FileList | null) => {
+    if (!files || files.length === 0) return;
+    if (files.length === 1) {
+      const f = files[0];
+      read(f.name, await f.text());
+      return;
+    }
+    clearCustom();
+    setCaseKey(null);
+    setCsvData(null);
+    setCsvMap(null);
+    setParsed(null);
+    setServerCase(null);
+    setServerError('');
+    setAnalysed(false);
+    const valid: NonNullable<ParseResult['scenario']>[] = [];
+    const errs: string[] = [];
+    for (const f of Array.from(files)) {
+      const text = await f.text();
+      const looksCsv = f.name.toLowerCase().endsWith('.csv') || (!text.trim().startsWith('{') && !text.trim().startsWith('[') && text.includes(','));
+      if (looksCsv) {
+        const parsedCsv = parseCsvText(text);
+        if (!parsedCsv.headers.length || !parsedCsv.rows.length) {
+          errs.push(`${f.name}: empty CSV.`);
+          continue;
+        }
+        const detected = autoDetectMapping(parsedCsv.headers);
+        const { datasets } = buildDatasetsFromMultiCsv(parsedCsv, detected, { ...csvMeta, id: f.name.replace(/\.[^.]+$/, ''), name: f.name.replace(/\.[^.]+$/, '') });
+        for (const ds of datasets) {
+          const res = datasetToScenario(ds);
+          if (res.ok && res.scenario) valid.push(res.scenario);
+          else errs.push(...res.errors.map(e => `${f.name}: ${e}`));
+        }
+      } else {
+        try {
+          const trimmed = text.trim();
+          const items = trimmed.startsWith('[')
+            ? (JSON.parse(trimmed) as unknown[])
+            : trimmed.split('\n').filter(l => l.trim().startsWith('{')).length > 1 && (() => { try { JSON.parse(trimmed); return false; } catch { return true; } })()
+              ? trimmed.split('\n').map(l => l.trim()).filter(Boolean).map(l => JSON.parse(l))
+              : [JSON.parse(trimmed)];
+          for (const item of items) {
+            const res = datasetToScenario(item);
+            if (res.ok && res.scenario) valid.push(res.scenario);
+            else errs.push(...res.errors.map(e => `${f.name}: ${e}`));
+          }
+        } catch (e) {
+          errs.push(`${f.name}: ${(e as Error).message}`);
+        }
+      }
+    }
+    setBulkScenarios(valid);
+    setBulkErrors(errs);
+    setFileName(`${files.length} files selected (${valid.length} merchant(s))`);
+  };
+  const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); void onFiles(e.dataTransfer.files); };
   const loadSample = async () => {
     const sample = TEST_DATASETS.find(item => item.file === sampleFile);
     if (!sample) return;
@@ -245,7 +300,6 @@ export function UploadPage() {
     clearCustom(); clearUploaded(); setCaseKey(null); setParsed(null); setFileName(''); setRaw(''); setCsvData(null); setCsvMap(null); setServerCase(null); setServerError(''); setAnalysed(false); setDetailsOpen(false); setLegalVerified(false); setEscrowConfirmed(false);
     if (input.current) input.current.value = '';
   };
-  const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); onFile(e.dataTransfer.files?.[0]); };
 
   const hasRun = analysed && scenarioId === 'custom' && !!custom && started;
   const showSimulation = hasRun && !allDone;
@@ -283,13 +337,13 @@ export function UploadPage() {
         <div onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}
           className={cx('flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors', over ? 'border-indigo-500 bg-indigo-50/50' : 'border-line2 bg-panel')}>
           <FileUp className="text-indigo-600" size={30} />
-          <div className="text-sm font-semibold text-ink">Drop a raw gateway CSV (.csv) or dataset (.json) here</div>
-          <div className="text-xs text-mute">Auto-detects columns &amp; paise/rupee scaling in browser</div>
+          <div className="text-sm font-semibold text-ink">Drop one or multiple CSV (.csv) / dataset (.json, .jsonl) files here</div>
+          <div className="text-xs text-mute">Auto-detects columns, paise/rupee scaling, and multi-merchant files</div>
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Btn variant="primary" onClick={() => input.current?.click()}>Choose file</Btn>
+            <Btn variant="primary" onClick={() => input.current?.click()}>Choose file(s)</Btn>
             <Btn variant="outline" onClick={loadSampleCsv}><FileSpreadsheet size={14} />Load sample CSV</Btn>
           </div>
-          <input ref={input} type="file" accept=".json,.csv,application/json,text/csv" className="hidden" onChange={e => onFile(e.target.files?.[0])} />
+          <input ref={input} type="file" multiple accept=".json,.jsonl,.csv,application/json,text/csv" className="hidden" onChange={e => void onFiles(e.target.files)} />
           <div className="text-[11px] text-dim">The mapped dataset is sent to the investigation API to score all 7 layers and save the case.</div>
         </div>
 
