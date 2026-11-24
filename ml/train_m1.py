@@ -6,7 +6,7 @@ from pathlib import Path
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from sklearn.isotonic import IsotonicRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -66,11 +66,17 @@ def main() -> None:
         fold = lgb.LGBMClassifier(objective='binary', random_state=SEED, deterministic=True, n_jobs=1, scale_pos_weight=neg / pos, monotone_constraints=mono, verbosity=-1, **best)
         fold.fit(Xtr.iloc[tr], ytr[tr])
         oof[va] = fold.predict_proba(Xtr.iloc[va])[:, 1]
-    iso = IsotonicRegression(out_of_bounds='clip')
-    iso.fit(oof, ytr)
+    oof_clipped = np.clip(oof, 1e-6, 1 - 1e-6)
+    logits = np.log(oof_clipped / (1 - oof_clipped)).reshape(-1, 1)
+    platt = LogisticRegression(C=1.0)
+    platt.fit(logits, ytr)
+    grid_x = np.linspace(0.0, 1.0, 21)
+    gx_clip = np.clip(grid_x, 1e-6, 1 - 1e-6)
+    gx_logits = np.log(gx_clip / (1 - gx_clip)).reshape(-1, 1)
+    grid_y = platt.predict_proba(gx_logits)[:, 1]
     OUT.mkdir(parents=True, exist_ok=True)
     model.booster_.save_model(str(OUT / 'model.txt'))
-    (OUT / 'calibrator.json').write_text(json.dumps({'X_thresholds_': iso.X_thresholds_.tolist(), 'y_thresholds_': iso.y_thresholds_.tolist()}))
+    (OUT / 'calibrator.json').write_text(json.dumps({'X_thresholds_': grid_x.tolist(), 'y_thresholds_': grid_y.tolist()}))
     (OUT / 'features.json').write_text(json.dumps(cols))
     (OUT / 'params.json').write_text(json.dumps({'params': best, 'cv_average_precision': best_score}))
     raw = DATA.read_bytes()

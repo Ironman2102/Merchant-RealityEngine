@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.isotonic import IsotonicRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import StratifiedKFold
@@ -90,10 +90,16 @@ def main() -> None:
         fold = MLPClassifier(hidden_layer_sizes=(32, 16), activation='relu', solver='adam', alpha=1e-3, max_iter=200, random_state=SEED)
         fold.fit(Ztr[tr], y_tr[tr])
         oof[va] = fold.predict_proba(Ztr[va])[:, 1]
-    iso = IsotonicRegression(out_of_bounds='clip')
-    iso.fit(oof, y_tr)
+    oof_clipped = np.clip(oof, 1e-6, 1 - 1e-6)
+    logits = np.log(oof_clipped / (1 - oof_clipped)).reshape(-1, 1)
+    platt = LogisticRegression(C=1.0)
+    platt.fit(logits, y_tr)
+    grid_x = np.linspace(0.0, 1.0, 21)
+    gx_clip = np.clip(grid_x, 1e-6, 1 - 1e-6)
+    gx_logits = np.log(gx_clip / (1 - gx_clip)).reshape(-1, 1)
+    grid_y = platt.predict_proba(gx_logits)[:, 1]
     raw_all = net.predict_proba(Z)[:, 1]
-    p_nn = apply_iso(raw_all, {'X_thresholds_': iso.X_thresholds_, 'y_thresholds_': iso.y_thresholds_})
+    p_nn = apply_iso(raw_all, {'X_thresholds_': grid_x, 'y_thresholds_': grid_y})
     booster, m1_cols, cal = load(ROOT / 'ml' / 'models' / 'm1-v0')
     p_m1 = apply_iso(np.asarray(booster.predict(df.loc[held, m1_cols]), dtype=float), cal)
     y_te = y[held]
@@ -112,7 +118,7 @@ def main() -> None:
         'std': sd.tolist(),
         'coefs': [c.tolist() for c in net.coefs_],
         'intercepts': [b.tolist() for b in net.intercepts_],
-        'calibrator': {'X_thresholds_': iso.X_thresholds_.tolist(), 'y_thresholds_': iso.y_thresholds_.tolist()},
+        'calibrator': {'X_thresholds_': grid_x.tolist(), 'y_thresholds_': grid_y.tolist()},
         'features': cols,
         'modelVersion': 'nn-v0',
     }
