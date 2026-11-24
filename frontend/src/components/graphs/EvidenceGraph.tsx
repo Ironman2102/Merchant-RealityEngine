@@ -22,29 +22,53 @@ type NData = { spec: GraphNodeSpec; dim: boolean; sel: boolean; path: boolean };
 function MreNode({ data }: NodeProps) {
   const { spec, dim, sel, path } = data as unknown as NData;
   const I = ICON[spec.type], c = NCOL[spec.type];
-  const hs = { left: '50%', top: '50%', opacity: 0, pointerEvents: 'none' as const, transform: 'translate(-50%,-50%)' };
+  const hs = { opacity: 0, pointerEvents: 'none' as const };
   return (
-    <div className={cx('flex w-[190px] items-center gap-2 rounded-md border bg-[#101010] px-2.5 py-2 transition-opacity', dim && 'opacity-25', sel ? 'ring-2 ring-zinc-300' : '')} style={{ borderColor: path || sel ? c : '#343434' }}>
-      <Handle type="target" position={Position.Top} style={hs} isConnectable={false} /><Handle type="source" position={Position.Top} style={hs} isConnectable={false} />
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded" style={{ background: c + '22', color: c }}><I size={15} /></span>
-      <div className="min-w-0"><div className="truncate text-[12px] font-medium text-ink" title={spec.label}>{spec.label}</div>{spec.sub && <div className="truncate text-[10.5px] text-mute" title={spec.sub}>{spec.sub}</div>}</div>
+    <div
+      className={cx(
+        'flex w-[205px] items-center gap-2.5 rounded-lg border bg-white px-3 py-2 shadow-sm transition-all',
+        dim && 'opacity-25',
+        sel ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:shadow-md',
+      )}
+      style={{ borderColor: path || sel ? c : '#cbd5e1' }}
+    >
+      <Handle type="target" position={Position.Left} style={hs} isConnectable={false} />
+      <Handle type="source" position={Position.Right} style={hs} isConnectable={false} />
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md" style={{ background: c + '18', color: c }}><I size={16} /></span>
+      <div className="min-w-0">
+        <div className="truncate text-[12px] font-semibold text-slate-900" title={spec.label}>{spec.label}</div>
+        {spec.sub && <div className="truncate text-[10.5px] text-slate-500" title={spec.sub}>{spec.sub}</div>}
+      </div>
     </div>
   );
 }
 const nodeTypes = { mre: MreNode };
 
-function layout(nodes: GraphNodeSpec[], edges: GraphEdgeSpec[]) {
-  const root = nodes.find(n => n.type === 'merchant')!.id, adj = new Map<string, string[]>();
-  edges.forEach(e => { adj.set(e.source, [...(adj.get(e.source) ?? []), e.target]); adj.set(e.target, [...(adj.get(e.target) ?? []), e.source]); });
-  const depth = new Map<string, number>([[root, 0]]), q = [root];
-  while (q.length) { const x = q.shift()!; (adj.get(x) ?? []).forEach(y => { if (!depth.has(y)) { depth.set(y, depth.get(x)! + 1); q.push(y); } }); }
-  const byD = new Map<number, GraphNodeSpec[]>();
-  nodes.forEach(n => { const d = depth.get(n.id) ?? 3; byD.set(d, [...(byD.get(d) ?? []), n]); });
+const COL_OF: Record<GraphNodeSpec['type'], number> = {
+  payer: 0,
+  website: 0,
+  link: 1,
+  device: 1,
+  merchant: 2,
+  account: 3,
+  peer: 3,
+  beneficiary: 3,
+};
+
+function layout(nodes: GraphNodeSpec[], _edges: GraphEdgeSpec[]) {
+  const byCol = new Map<number, GraphNodeSpec[]>();
+  for (const n of nodes) {
+    const col = COL_OF[n.type] ?? 2;
+    byCol.set(col, [...(byCol.get(col) ?? []), n]);
+  }
   const pos = new Map<string, { x: number; y: number }>();
-  byD.forEach((g, d) => {
-    const r = d === 0 ? 0 : d === 1 ? 215 : d === 2 ? 370 : 480;
-    g.sort((a, b) => a.type.localeCompare(b.type)).forEach((n, i) => { const a = (i / g.length) * Math.PI * 2 + d * 0.5 - Math.PI / 2; pos.set(n.id, { x: Math.cos(a) * r * 1.3, y: Math.sin(a) * r * 0.9 }); });
-  });
+  for (const [col, group] of byCol.entries()) {
+    group.sort((a, b) => a.type.localeCompare(b.type) || a.label.localeCompare(b.label));
+    const mid = (group.length - 1) / 2;
+    group.forEach((n, i) => {
+      pos.set(n.id, { x: col * 290, y: (i - mid) * 92 });
+    });
+  }
   return pos;
 }
 function pathFrom(root: string, target: string, edges: GraphEdgeSpec[]) {
@@ -61,7 +85,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
   const [selN, setSelN] = useState<string | null>(null);
   const [selE, setSelE] = useState<string | null>(null);
   const pos = useMemo(() => layout(ns, es), [ns, es]);
-  const root = ns.find(n => n.type === 'merchant')!.id;
+  const root = ns.find(n => n.type === 'merchant')?.id ?? ns[0]?.id ?? '';
   const vis = useMemo(() => es.filter(e => types.has(e.type)), [es, types]);
   const hl = useMemo(() => (selN && selN !== root ? pathFrom(root, selN, vis) : { ns: new Set<string>(), es: new Set<string>() }), [selN, root, vis]);
   const focus = selN !== null || selE !== null;
@@ -76,9 +100,9 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
   const nodes: Node[] = ns.map(n => ({ id: n.id, type: 'mre', position: pos.get(n.id)!, data: { spec: n, dim: focus && !litNodes.has(n.id), sel: n.id === selN, path: hl.ns.has(n.id) } as unknown as Record<string, unknown> }));
   const edges: Edge[] = vis.map(e => {
     const st = EDGE_STYLE[e.type], lit = hl.es.has(e.id) || e.id === selE || (selN !== null && (e.source === selN || e.target === selN));
-    return { id: e.id, source: e.source, target: e.target, type: 'straight', animated: e.type === 'PAYMENT_FLOW' && (!focus || lit), label: lit ? e.label : undefined,
-      labelStyle: { fill: '#ececec', fontSize: 11 }, labelBgStyle: { fill: '#151515' }, labelBgPadding: [4, 2] as [number, number],
-      style: { stroke: st.color, strokeWidth: lit ? 2.6 : e.type === 'BEHAVIOURAL_SIMILARITY' ? 1.2 : 1.6, strokeDasharray: st.dash, opacity: focus && !lit ? 0.12 : 0.9 },
+    return { id: e.id, source: e.source, target: e.target, type: 'default', animated: e.type === 'PAYMENT_FLOW' && (!focus || lit), label: lit ? e.label : undefined,
+      labelStyle: { fill: '#0f172a', fontSize: 11, fontWeight: 500 }, labelBgStyle: { fill: '#ffffff', fillOpacity: 0.94 }, labelBgPadding: [6, 3] as [number, number], labelBgBorderRadius: 4,
+      style: { stroke: st.color, strokeWidth: lit ? 2.6 : e.type === 'BEHAVIOURAL_SIMILARITY' ? 1.4 : 1.8, strokeDasharray: st.dash, opacity: focus && !lit ? 0.14 : 0.9 },
       markerEnd: e.type === 'PAYMENT_FLOW' || e.type === 'SETTLEMENT_RELATIONSHIP' ? { type: MarkerType.ArrowClosed, color: st.color, width: 14, height: 14 } : undefined };
   });
   const node = ns.find(n => n.id === selN);
@@ -98,27 +122,27 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
           })}
           <Btn size="sm" variant="ghost" onClick={() => { setSelN(null); setSelE(null); }}>Clear selection</Btn>
         </div>
-        <div className="grid-bg overflow-hidden rounded-md border border-line bg-[#0b0b0b]" style={{ height }}>
-          <ReactFlow key={scenario.id} nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView fitViewOptions={{ padding: 0.12 }} minZoom={0.25} maxZoom={2.2} nodesConnectable={false} proOptions={{ hideAttribution: true }}
+        <div className="overflow-hidden rounded-xl border border-line bg-slate-50 shadow-xs" style={{ height }}>
+          <ReactFlow key={scenario.id} nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView fitViewOptions={{ padding: 0.16 }} minZoom={0.25} maxZoom={2.2} nodesConnectable={false} proOptions={{ hideAttribution: true }}
             onNodeClick={(_, n) => { setSelN(n.id); setSelE(null); }} onEdgeClick={(_, e) => { setSelE(e.id); setSelN(null); }} onPaneClick={() => { setSelN(null); setSelE(null); }}>
-            <Background color="#1f1f1f" gap={32} /><Controls showInteractive={false} />
+            <Background color="#cbd5e1" gap={28} /><Controls showInteractive={false} />
           </ReactFlow>
         </div>
         <div className="text-xs text-dim">Scroll to zoom, drag to pan. Click a node to highlight its neighbourhood and the shortest path from the merchant. Click an edge to inspect it.</div>
       </div>
       <div className="space-y-3">
         <Callout tone="warn" title="Similarity is not identity">Behavioural-similarity and shared-infrastructure edges are leads for a human to verify. They are never treated as proof of common ownership.</Callout>
-        <div className="rounded-md border border-line bg-panel">
+        <div className="rounded-xl border border-line bg-panel shadow-xs">
           <div className="border-b border-line px-4 py-3 text-sm font-semibold">{node ? node.label : selEdge ? `${nm(selEdge.source)} → ${nm(selEdge.target)}` : 'Inspector'}</div>
           <div className="space-y-3 p-4 text-sm">
             {!node && !selEdge && <div className="text-mute">Select a node or an edge to see its relationships and the evidence behind them.</div>}
-            {node && <div className="space-y-1 text-mute"><Badge tone="info">{node.type}</Badge>{node.sub && <div>{node.sub}</div>}{node.note && <div className="text-stone-300/90">{node.note}</div>}
+            {node && <div className="space-y-1 text-mute"><Badge tone="info">{node.type}</Badge>{node.sub && <div>{node.sub}</div>}{node.note && <div className="text-slate-700">{node.note}</div>}
               {hl.es.size > 0 && <div className="text-xs text-dim">Path from merchant: {hl.es.size} hop{hl.es.size > 1 ? 's' : ''} highlighted.</div>}</div>}
             {incident.map(e => (
               <div key={e.id} className="rounded border border-line bg-panel2 p-3">
                 <div className="mb-1 flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: EDGE_STYLE[e.type].color }} /><span className="text-xs font-medium">{EDGE_STYLE[e.type].label}</span></div>
-                <div className="text-[13px] text-ink/90">{nm(e.source)} → {nm(e.target)}</div><div className="text-xs text-mute">{e.label}</div>
-                {e.note && <div className="mt-1.5 text-xs text-stone-300/90">{e.note}</div>}
+                <div className="text-[13px] text-ink">{nm(e.source)} → {nm(e.target)}</div><div className="text-xs text-mute">{e.label}</div>
+                {e.note && <div className="mt-1.5 text-xs text-slate-700">{e.note}</div>}
                 {evOf(e.evidence).map(ev => <div key={ev.id} className="mt-2 border-t border-line pt-2"><div className="flex items-center justify-between gap-2"><span className="text-xs font-medium">{ev.id} {ev.name}</span><StatusBadge s={ev.status} /></div><div className="mt-0.5 text-xs text-mute">{ev.observed}</div></div>)}
                 {!e.evidence.length && <div className="mt-1.5 text-[11px] text-dim">No detector evidence attached to this edge.</div>}
               </div>
