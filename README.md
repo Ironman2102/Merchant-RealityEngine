@@ -108,7 +108,7 @@ frontend/
     styles/
     types/
     utils/
-backend/        HTTP API, server-side analysis entry point, adapter and case store
+backend/        HTTP API, server-side analysis entry point, adapter and case store 
 api/            Vercel adapter for the backend bundle
 api-src/        pointer to the maintained backend location
 docs/           project and data documentation
