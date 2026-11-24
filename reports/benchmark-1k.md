@@ -1,6 +1,6 @@
 # 1,200-Case Stress Benchmark Report
 
-- **Runtime:** 6.71s for 1200 datasets (rules=mre-bayes-0.3.0)
+- **Runtime:** 5.96s for 1200 datasets (rules=mre-bayes-0.3.0)
 - **Confusion:** TP=457, FP=0, FN=143, TN=600
 - **Metrics:** Recall=0.7617, Precision=1.0000, FPR=0.0000, F1=0.8647
 - **Bayesian FDR Queue (q=0.1):** opened=431, expectedFalseAlarms=42.75

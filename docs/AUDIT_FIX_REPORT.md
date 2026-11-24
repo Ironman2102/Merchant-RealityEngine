@@ -2,7 +2,7 @@
 
 **Date:** 22 November 2026 · **Branch:** `fix/audit-issues`, cut from `hackathon-impl` at `ceaa331`
 
-**State:** proposed on this branch, for team review before merge and deployment.
+**State:** merged into `final-edition` alongside the leak-free retrained Stage 2 ML ensemble (`m1-v0` LightGBM, `nn-v0` MLP, and `classical-v0` LR/DT/RF trained strictly on `BEHAVIORAL_FEATURE_COLUMNS`, verified by `tests/engine/leakage.test.ts`). Note that item F3 below reflects the initial withdrawal of the leaky v1 models; in `final-edition`, those models were retrained on the leak-free generator as a non-decisional second opinion (`README.md`, `docs/ARCHITECTURE.md`).
 
 **Who did it:** Claude (an AI assistant), at a team member's request. See `AI_USAGE.md`.
 

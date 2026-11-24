@@ -59,13 +59,11 @@ We ask before we restrict, only an identified link can be restricted, a differen
 **Do you tip off the fraudster?**
 The letter is identical for every merchant and names no signal. [RBI's KYC Direction](https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=11566) requires the reasons to stay confidential.
 
-**Where is the AI, and why not deep learning?**
-A small logistic model gives a second opinion. It cannot see age, category or which feeds exist. With no real labels, a bigger
-model would learn our generator. It already did that once.
+**Where is the AI, and why is it a second opinion only?**
+Stage 2 (`ml/serve.py`) runs a calibrated ensemble — LightGBM (`m1-v0`, with monotone constraints and TreeSHAP attributions), a small ReLU MLP (`nn-v0`), and classical baselines (`classical-v0`: Logistic Regression, Decision Tree, Random Forest) — trained strictly on `BEHAVIORAL_FEATURE_COLUMNS`. It cannot see account age, prior, posterior, or which feeds exist (enforced by `tests/engine/leakage.test.ts`). Our first version leaked those fields and was withdrawn before retraining on the leak-free generator. Because there are no real labels yet, ML is a non-decisional second opinion only and never opens a case or overrides the Bayesian conduct gate.
 
 **Why is the trained model's recall higher than the engine's?**
-78% against 47% on its test suite, because it needs no independence or conduct gate. Both see only synthetic fronts. We keep the
-gate until real labels show the model's extra flags are right.
+On the leak-free synthetic holdout (`python -m ml.compare`), calibrated M1 gets AUC-PR `0.999` (`60/60` recall at `0.10`, `8/120` honest FPs) vs. the Bayesian engine's AUC-PR `0.840` (`14/60` at `0.10`, `0/120` honest FPs), because the ML model needs no multi-source independence or conduct gate. Both see only synthetic fronts. We keep the Bayesian conduct gate until real shadow-pilot labels show the model's extra flags are right without hurting honest merchants.
 
 **How does it learn?**
 Ten or more labelled merchants can propose a calibration. It must pass a holdout and be approved by someone other than the requester.

@@ -33,4 +33,4 @@ npm run dev:users   # the last four lines of backend/data/dev-users.txt are the 
 
 ## Fallback
 
-Keep a screen recording. `/demo` works offline once loaded and needs no sign-in or server.
+Keep a screen recording. `/demo` works offline once loaded and needs no sign-in or server. For live bulk ring-detection demos via `POST /investigations/bulk`, keep JSON batches to ~5–20 merchants so payloads stay under the 6 MB HTTP body limit.

@@ -20,11 +20,13 @@ async function daytona(path: string, method = 'GET', body?: unknown): Promise<{ 
   return { status: res.status, json };
 }
 
+const mlUrl = () => (process.env.MRE_ML_URL ?? 'http://127.0.0.1:8790').replace(/\/$/, '');
+
 export async function modelOnline(): Promise<boolean> {
-  const url = process.env.MRE_ML_URL;
+  const url = mlUrl();
   if (!url) return false;
   try {
-    const res = await fetch(`${url.replace(/\/$/, '')}/health`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) return false;
     const body = await res.json() as { status?: string };
     return body.status === 'ok';
@@ -32,17 +34,17 @@ export async function modelOnline(): Promise<boolean> {
 }
 
 async function modelUpToDate(): Promise<boolean> {
-  const url = process.env.MRE_ML_URL;
+  const url = mlUrl();
   if (!url) return false;
   try {
-    const res = await fetch(`${url.replace(/\/$/, '')}/health`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) return false;
     const body = await res.json() as { status?: string; nn?: boolean };
     return body.status === 'ok' && body.nn === true;
   } catch { return false; }
 }
 
-const RAW_GH = `https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/${process.env.MRE_RAW_GH_BRANCH || 'main'}`;
+const RAW_GH = `https://raw.githubusercontent.com/dhruv11bhandari/Merchant-RealityEngine/${process.env.MRE_RAW_GH_BRANCH || 'final-edition'}`;
 
 async function launchServer(id: string): Promise<void> {
   const info = await daytona(`/sandbox/${encodeURIComponent(id)}`);

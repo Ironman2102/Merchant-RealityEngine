@@ -103,11 +103,13 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     }
     if (path === '/model/start' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to start the model sandbox.' } });
+      if (actor.role !== 'admin') return send(res, { status: 403, body: { error: 'Only an admin can start the model sandbox.' } });
       const started = await startModelSandbox();
       return send(res, { status: started.state === 'unconfigured' ? 503 : 200, body: { ...started, configured: modelHostConfigured() } });
     }
     if (path === '/model/stop' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to stop the model sandbox.' } });
+      if (actor.role !== 'admin') return send(res, { status: 403, body: { error: 'Only an admin can stop the model sandbox.' } });
       await stopModelSandbox();
       return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model sandbox stopped.' } });
     }
