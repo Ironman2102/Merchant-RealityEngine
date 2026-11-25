@@ -22,10 +22,10 @@ import { type Axis } from './passport';
 import { hasBetween } from '../utils/num';
 import { instant } from '../utils/time';
 
-export type ScopeKind = 'account' | 'link' | 'repeat-payers';
+export type ScopeKind = 'account' | 'link' | 'channel' | 'repeat-payers';
 export interface Ctx {
   sc: Scenario; p: MerchantProfile; norm: MccNorm; all: PaymentEvent[];
-  sales: PaymentEvent[]; refunds: PaymentEvent[]; settlements: PaymentEvent[]; transfers: PaymentEvent[];
+  sales: PaymentEvent[]; refunds: PaymentEvent[]; settlements: PaymentEvent[]; transfers: PaymentEvent[]; chargebacks?: PaymentEvent[];
   rows: WeeklyRow[]; cusum: CusumPoint[]; cohort: CohortMatch[]; vol: VolumeModel;
   scope: ScopeKind; covered: (e: PaymentEvent, axis: Axis) => boolean;
   learnedRates?: Map<string, { sensitivity: number; falsePositive: number }>;
@@ -154,6 +154,7 @@ export const DETECTORS: Def[] = [
       explanation: 'The same people paying round sums again and again is how wallets are topped up, whatever the merchant says it sells.', metrics: { repeatDeposits: hit.length, p: t.p.toExponential(2) } };
   } },
   { id: 'B10', run: c => {
+    if (c.norm.catchment === 'NATIONAL') return unknown('This category sells nationally, so distant repeat payers are not informative.', 'National catchment', normSrc(c));
     const local = homeAndNeighbours(c.p);
     if (!local) return unknown('No home state on the merchant record.');
     const known = c.sales.filter(e => hasPayer(e) && !!e.payerState && e.payerState !== '—' && e.payerState !== 'UNKNOWN');
@@ -251,11 +252,21 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'D10', run: c => {
     if (!c.sc.orders.length) return unknown('No order records connected. Only an explicit "none found" row counts as missing an order.');
-    const online = c.sales.filter(s => s.channel !== 'POS');
-    if (!online.length) return unknown('Only POS walk-in sales in window; order matching applies to online/link sales.');
+    const online = c.sales.filter(s => s.channel !== 'POS' && s.channel !== 'UPI_QR');
+    if (!online.length) return unknown('Only POS / in-store QR walk-in sales in window; order matching applies to online/remote sales.');
     const n = online.length, un = online.filter(s => !s.orderId), p = binomSf(un.length, n, 0.05);
     return { p, effect: share(un.length, n) - 0.05, n, effectLabel: 'excess unmatched share', ci: ci90(un.length, n), expectedSource: 'Norm: ≤ 5% of online payments lack an order', records: ids(un),
       observed: `${pct(1 - share(un.length, n))} of online payments match an order`, expected: '≥ 95% match', explanation: 'Payments with no corresponding order in the merchant\'s order system.', metrics: { unmatched: un.length, p: p.toExponential(2) } };
+  } },
+  { id: 'D11', run: c => {
+    const cbs = c.chargebacks ?? c.all.filter(e => e.type === 'CHARGEBACK');
+    if (!cbs.length) return unknown('No chargeback records in the window.');
+    const n = c.sales.length;
+    if (!n) return unknown('No sales in the window.');
+    const k = Math.min(cbs.length, n), rate = k / n, p = binomSf(k, n, 0.01);
+    return { p, effect: rate - 0.01, n, effectLabel: 'excess chargeback rate above 1%', ci: ci90(k, n), expectedSource: 'Industry card/online norm: ≤ 1% chargeback rate', records: ids(cbs),
+      observed: `${cbs.length} chargeback(s) across ${n} sales (${pct(rate, 1)})`, expected: '≤ 1% of sales disputed',
+      explanation: 'High chargeback and dispute rates on cards, netbanking, or wallets indicate unauthorised, undelivered, or disguised transactions.', metrics: { chargebacks: cbs.length, rate: pct(rate, 1), p: p.toExponential(2) } };
   } },
   { id: 'E1', run: c => {
     const mine = c.sc.web.embeds.filter(e => e.merchantId === c.p.id && e.category !== 'own');
@@ -267,8 +278,9 @@ export const DETECTORS: Def[] = [
   } },
   { id: 'E3', run: c => {
     if (!c.cohort.length) return unknown('No cohort peers monitored for this merchant.');
-    const b = c.cohort[0], P = new Set(c.sales.map(e => e.payerHash)), Q = new Set(c.sc.events.filter(e => e.merchantId === b.peerId && e.type === 'SALE').map(e => e.payerHash));
-    const N = new Set(c.sc.events.filter(e => e.type === 'SALE').map(e => e.payerHash)).size, k = [...P].filter(x => Q.has(x)).length;
+    const b = c.cohort[0], P = new Set(c.sales.filter(hasPayer).map(e => e.payerHash)), Q = new Set(c.sc.events.filter(e => e.merchantId === b.peerId && e.type === 'SALE' && hasPayer(e)).map(e => e.payerHash));
+    if (!P.size || !Q.size) return unknown('No identified payers to test cohort overlap.');
+    const N = new Set(c.sc.events.filter(e => e.type === 'SALE' && hasPayer(e)).map(e => e.payerHash)).size, k = [...P].filter(x => Q.has(x)).length;
     const p = hypergeomSf(k, Math.max(N, P.size + Q.size - k), Q.size, P.size);
     const force = b.score < 0.4 ? 'BENIGN' as const : b.handoff ? undefined : 'UNKNOWN' as const;
     return { p, effect: b.score, n: P.size, effectLabel: 'continuity score', ci: null, expectedSource: 'Payers in this file (hypergeometric null)', force,
@@ -395,6 +407,33 @@ export const DETECTORS: Def[] = [
     return { p: pv, effect: d, n: 1, effectLabel: 'standardised distance from the norm', ci: null, expectedSource: normSrc(c), force: d === 0 ? 'BENIGN' : undefined,
       observed: gaps.length ? gaps.map(g => g[0]).join('; ') : 'Declared profile matches the category norm', expected: 'Declared profile close to the category norm',
       explanation: 'A merchant that declares an unusually wide profile switches off ordinary checks. The width of the declaration is itself a signal.', metrics: { distance: d.toFixed(2), p: pv.toExponential(2) } };
+  } },
+  { id: 'K2', run: c => {
+    const decl = c.p.declaredChannels ?? [];
+    if (!decl.length) return unknown('No payment channels declared on the merchant record.');
+    const allowed = new Set<string>();
+    for (const raw of decl) {
+      const s = raw.toLowerCase();
+      if (s.includes('pos') || s.includes('in-store') || s.includes('in store') || s.includes('pickup') || s.includes('retail')) { allowed.add('POS'); allowed.add('UPI_QR'); allowed.add('CARD'); }
+      if (s.includes('qr') || s.includes('upi')) { allowed.add('UPI_QR'); allowed.add('UPI_LINK'); allowed.add('UPI_COLLECT'); }
+      if (s.includes('deliver') || s.includes('link') || s.includes('whatsapp')) { allowed.add('UPI_LINK'); allowed.add('UPI_COLLECT'); allowed.add('UPI_QR'); allowed.add('ONLINE'); }
+      if (s.includes('online') || s.includes('website') || s.includes('web') || s.includes('e-commerce') || s.includes('ecommerce') || s.includes('app')) {
+        allowed.add('ONLINE'); allowed.add('CARD'); allowed.add('NETBANKING'); allowed.add('WALLET'); allowed.add('BNPL'); allowed.add('UPI_LINK'); allowed.add('UPI_COLLECT');
+      }
+      if (s.includes('card')) allowed.add('CARD');
+      if (s.includes('netbanking') || s.includes('net banking')) allowed.add('NETBANKING');
+      if (s.includes('wallet')) allowed.add('WALLET');
+      if (s.includes('bnpl') || s.includes('emi') || s.includes('pay later')) allowed.add('BNPL');
+    }
+    if (!allowed.size) return unknown('Declared channels could not be mapped to canonical payment rails.');
+    const n = c.sales.length;
+    if (!n) return unknown('No sales in the window.');
+    const un = c.sales.filter(e => !allowed.has(e.channel));
+    const p = binomSf(un.length, n, 0.1);
+    const rails = [...new Set(un.map(e => e.channel))].join(', ');
+    return { p, effect: share(un.length, n) - 0.1, n, effectLabel: 'excess share on undeclared payment rails', ci: ci90(un.length, n), expectedSource: `Declared channels: ${decl.join(', ')}`, records: ids(un),
+      observed: un.length ? `${pct(share(un.length, n))} of sales via undeclared rail(s) (${rails})` : 'All sales match declared payment channels', expected: '≤ 10% outside declared payment channels',
+      explanation: 'Collections arriving on payment rails (e.g. online cards, netbanking, wallets, or remote links) that the merchant never declared during onboarding.', metrics: { undeclaredSales: un.length, rails: rails || 'none', p: p.toExponential(2) } };
   } },
 ];
 

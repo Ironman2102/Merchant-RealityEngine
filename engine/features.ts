@@ -43,7 +43,7 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
   }
   row.n_sales = sales.length;
   const IST = 19_800_000;
-  let night = 0, weekend = 0, sum = 0;
+  let night = 0, weekend = 0, sum = 0, identifiedSales = 0;
   const payerCounts = new Map<string, number>();
   for (const s of sales) {
     const d = new Date(s.eventTime + IST);
@@ -51,13 +51,16 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
     if (h >= 23 || h < 6) night++;
     if (wd === 0 || wd === 6) weekend++;
     sum += s.amount;
-    if (s.payerHash) payerCounts.set(s.payerHash, (payerCounts.get(s.payerHash) ?? 0) + 1);
+    if (s.payerHash && s.payerHash !== '—') {
+      identifiedSales++;
+      payerCounts.set(s.payerHash, (payerCounts.get(s.payerHash) ?? 0) + 1);
+    }
   }
   row.night_share = sales.length ? night / sales.length : 0;
   row.weekend_share = sales.length ? weekend / sales.length : 0;
   row.refund_ratio = sales.length ? refunds.length / sales.length : 0;
   let hhi = 0;
-  if (sales.length) for (const c of payerCounts.values()) hhi += (c / sales.length) ** 2;
+  if (identifiedSales) for (const c of payerCounts.values()) hhi += (c / identifiedSales) ** 2;
   row.payer_hhi = hhi;
   const mean = sales.length ? sum / sales.length : 0;
   const variance = sales.length && mean > 0 ? sales.reduce((s, e) => s + (e.amount - mean) ** 2, 0) / sales.length : 0;
@@ -71,7 +74,7 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
   const pc = payerConcentration([...payerCounts.values()]);
   row.payer_entropy = pc.entropy; row.payer_gini = pc.gini;
   const byPayer = new Map<string, number[]>();
-  for (const s of sales) if (s.payerHash) (byPayer.get(s.payerHash) ?? byPayer.set(s.payerHash, []).get(s.payerHash)!).push(s.eventTime);
+  for (const s of sales) if (s.payerHash && s.payerHash !== '—') (byPayer.get(s.payerHash) ?? byPayer.set(s.payerHash, []).get(s.payerHash)!).push(s.eventTime);
   const rp = repeatPayers(byPayer);
   row.returning_share = rp.returningShare; row.repeat_gap_cv = rp.repeatGapCv;
 

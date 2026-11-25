@@ -129,16 +129,22 @@ function normalizeType(raw: string): EventType | null {
   if (s.includes('SETTLE')) return 'SETTLEMENT';
   if (s.includes('TRANSFER') || s.includes('PAYOUT')) return 'TRANSFER';
   if (s.includes('CHARGEBACK') || s.includes('DISPUTE')) return 'CHARGEBACK';
-  return /^(SALE|PAYMENT|PAY|CREDIT|PURCHASE|CAPTURE|COLLECT|COLLECTION|UPI|CARD|P)$/.test(s) ? 'SALE' : null;
+  return /^(SALE|PAYMENT|PAY|CREDIT|PURCHASE|CAPTURE|COLLECT|COLLECTION|UPI|QR|CARD|NETBANKING|WALLET|BNPL|EMI|POS|P)$/.test(s) ? 'SALE' : null;
 }
 
 function normalizeChannel(raw: string): Channel {
-  const s = raw.trim().toUpperCase();
-  if (s.includes('POS') || s.includes('SWIPE')) return 'POS';
-  if (s.includes('COLLECT')) return 'UPI_COLLECT';
-  if (s.includes('LINK') || s.includes('UPI') || s.includes('QR')) return 'UPI_LINK';
+  const s = raw.trim().toUpperCase().replace(/[\s-]+/g, '_');
   if (s.includes('PAYOUT')) return 'PAYOUT';
-  if (s.includes('BANK') || s.includes('NEFT') || s.includes('IMPS')) return 'BANK';
+  if (s.includes('BANK') && !s.includes('NETBANK') && !s.includes('NET_BANK')) return 'BANK';
+  if (s.includes('NEFT') || s.includes('IMPS') || s.includes('RTGS')) return 'BANK';
+  if (s.includes('NETBANK') || s.includes('NET_BANK') || s === 'NB' || s.includes('INTERNET_BANKING')) return 'NETBANKING';
+  if (s.includes('CARD') || s.includes('VISA') || s.includes('MASTERCARD') || s.includes('RUPAY') || s.includes('AMEX')) return 'CARD';
+  if (s.includes('WALLET') || s === 'PPI' || s.includes('MOBIKWIK')) return 'WALLET';
+  if (s.includes('BNPL') || s.includes('EMI') || s.includes('PAY_LATER') || s.includes('PAYLATER')) return 'BNPL';
+  if (s.includes('QR')) return 'UPI_QR';
+  if (s.includes('POS') || s.includes('SWIPE') || s.includes('TAP') || s.includes('TERMINAL')) return 'POS';
+  if (s.includes('COLLECT')) return 'UPI_COLLECT';
+  if (s.includes('LINK') || s.includes('INTENT') || s.includes('UPI')) return 'UPI_LINK';
   return 'ONLINE';
 }
 

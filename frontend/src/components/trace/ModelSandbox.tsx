@@ -59,6 +59,7 @@ export function ModelSandbox({ onReady }: { onReady?: () => void }) {
       </div>
       {host.online && h && (
         <div className="flex flex-wrap gap-1.5 text-[11px]">
+          {h.model === 'stage2-v1' && <Badge tone="ok">Stage 2 v1 Ensemble</Badge>}
           {h.model === 'm1-v0' && <Badge tone="ok">LightGBM m1-v0</Badge>}
           {h.nn && <Badge tone="ok">MLP nn-v0</Badge>}
           {h.classical && <Badge tone="ok">Classical LR/DT/RF</Badge>}

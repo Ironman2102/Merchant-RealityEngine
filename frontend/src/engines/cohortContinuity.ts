@@ -11,6 +11,7 @@ const cosine = (a: number[], b: number[]) => {
   return na && nb ? d / (na * nb) : 0;
 };
 const sales = (ev: PaymentEvent[], id: string) => ev.filter(e => e.merchantId === id && e.type === 'SALE');
+const hasPayer = (e: PaymentEvent) => !!e.payerHash && e.payerHash !== '—';
 
 /**
  * Cohort continuity: does a peer's behaviour carry on into the primary merchant?
@@ -20,14 +21,14 @@ const sales = (ev: PaymentEvent[], id: string) => ev.filter(e => e.merchantId ==
 export function cohortContinuity(sc: Scenario): CohortMatch[] {
   const P = sales(sc.events, sc.primaryMerchantId);
   if (!P.length) return [];
-  const pPayers = new Set(P.map(e => e.payerHash)), pStart = extent(P, e => e.eventTime)![0];
+  const pPayers = new Set(P.filter(hasPayer).map(e => e.payerHash)), pStart = extent(P, e => e.eventTime)![0];
   const pBen = new Set(sc.events.filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SETTLEMENT').map(e => e.beneficiaryHash));
   return sc.peers.map(peer => {
     const Q = sales(sc.events, peer.id);
     if (!Q.length) return null;
-    const qPayers = new Set(Q.map(e => e.payerHash));
+    const qPayers = new Set(Q.filter(hasPayer).map(e => e.payerHash));
     const inter = [...pPayers].filter(x => qPayers.has(x)).length, union = new Set([...pPayers, ...qPayers]).size;
-    const jaccard = inter / union;
+    const jaccard = union > 0 ? inter / union : 0;
     const ticketSim = cosine(hist(P.map(e => e.amount), x => BINS.findIndex(b => x <= b), 6), hist(Q.map(e => e.amount), x => BINS.findIndex(b => x <= b), 6));
     const timingSim = cosine(hist(P.map(e => istHour(e.eventTime)), x => x, 24), hist(Q.map(e => istHour(e.eventTime)), x => x, 24));
     const qLast = extent(Q, e => e.eventTime)![1];

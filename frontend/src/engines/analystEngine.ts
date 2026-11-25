@@ -8,15 +8,15 @@ const LEGIT: [string, string, string[]][] = [
   ['Baskets fit the declared products', 'Ticket sizes follow the menu or catalogue, without round-number heaping.', ['A1', 'A4', 'G2']],
   ['Orders and fulfilment are verified', 'Payments link to orders that were produced and delivered.', ['D10', 'F7']],
   ['Funding follows business hours and demand', 'Collections track trading hours, not external event calendars.', ['C2', 'C5', 'H3', 'C6']],
-  ['Refunds reconcile to original sales', 'Each refund returns to the payer who paid.', ['D7', 'D9']],
+  ['Refunds and disputes reconcile to original sales', 'Each refund returns to the payer who paid, and chargebacks stay low.', ['D7', 'D9', 'D11']],
   ['Settlements are stable and explained', 'One beneficiary, reconciled to bank credits, no handoffs.', ['F5', 'F2', 'F8']],
-  ['Payment links sit on declared channels only', 'Checkout appears only on the merchant’s own domain.', ['G6', 'E1']],
+  ['Payment links and rails match declared channels', 'Checkout and payment methods match what the merchant declared.', ['G6', 'E1', 'K2']],
 ];
 const FRONT: [string, string, string[]][] = [
-  ['Undeclared offering behind retail credentials', 'The merchant’s payment link is used on a page for a different business.', ['G6', 'E1']],
+  ['Undeclared offering behind retail credentials', 'The merchant’s payment link or undeclared rail is used for a different business.', ['G6', 'E1', 'K2']],
   ['Coordinated funding events', 'Payments cluster around external triggers and form a joint off-profile population.', ['C5', 'H3', 'C6', 'B8', 'B10']],
   ['Disguised collection', 'Ticket sizes, payer geography and hours are off the declared profile.', ['A1', 'A4', 'B6', 'C2']],
-  ['Refunds as a return or onward channel', 'Refunds without sales, to other destinations, or fan-out payouts.', ['D7', 'D9', 'I2']],
+  ['Refunds, chargebacks, or onward payout loops', 'Refunds without sales, to other destinations, high chargebacks, or fan-out payouts.', ['D7', 'D9', 'D11', 'I2']],
   ['Settlement or account manoeuvres', 'Beneficiary changes, lifecycle handoffs or continuity with a dormant peer.', ['F5', 'F2', 'E3']],
   ['Commercial substance cannot be shown', 'Orders, fulfilment and purchasers fail to substantiate the sales.', ['D10', 'F7', 'B9', 'G2']],
 ];

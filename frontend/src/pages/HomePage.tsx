@@ -59,7 +59,7 @@ const TECH = [
   [Fingerprint, 'Merchant behavioural profiling', 'Declared profile turned into numeric expectations: ticket band, hours, geography, seasonality.'],
   [Activity, 'Residual and change-point detection', 'R = (V − E) / max(E, ε) against anchored, seasonal and rolling baselines.'],
   [Radar, 'CUSUM drift tracking', 'Accumulates only sustained excess, so a single busy week does not raise an alarm.'],
-  [Boxes, `${DETECTORS.length} live tests, QR by QR`, 'Each QR or link with 30+ payments is also scored on its own, so a side business there stands out from the shop’s average.'],
+  [Boxes, `${DETECTORS.length} live tests, stream by stream`, 'Each QR, payment link, or payment rail (UPI, card, netbanking, wallet, POS) with 30+ payments is also scored on its own, so a side business stands out from the shop’s average.'],
   [Network, 'Heterogeneous relationship graphs', 'A map of merchants, links, sites and beneficiaries for the analyst. It is not an input to the score.'],
   [GitBranch, 'Cohort continuity', 'Detects behaviour that carries on from a dormant account into a new one.'],
   [Layers, 'Evidence fusion', 'Collapses correlated signals, sets UNKNOWN aside and requires independent evidence.'],

@@ -80,9 +80,23 @@ export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => bo
 
 export function passportUplift(sc: Scenario, weekEnd: number): number {
   let uplift = 1;
+  const ownSales = sc.events.filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SALE');
   for (const p of passportsInForce(sc)) {
     const [a, b] = passportPeriod(p);
-    if (p.volumeUplift && weekEnd >= a && weekEnd - 7 * DAY < b) uplift = Math.max(uplift, Math.min(RULES.engine.passport.maxUplift, p.volumeUplift));
+    if (!p.volumeUplift || !(weekEnd >= a && weekEnd - 7 * DAY < b)) continue;
+    const cap = Math.min(RULES.engine.passport.maxUplift, p.volumeUplift);
+    // Scope volumeUplift to the passport's link share of sales so a minor side link cannot grant a 3x whole-account uplift.
+    const periodSales = ownSales.filter(e => e.eventTime >= a && e.eventTime <= b);
+    const baseSales = periodSales.length ? periodSales : ownSales;
+    const totalAmt = baseSales.reduce((s, e) => s + e.amount, 0);
+    if (totalAmt > 0 && p.linkId && p.linkId !== '*') {
+      const linkAmt = baseSales.filter(e => e.linkId === p.linkId).reduce((s, e) => s + e.amount, 0);
+      const share = linkAmt / totalAmt;
+      const scoped = share > 0 ? Math.min(cap, 1 / Math.max(1 - share, 1 / cap)) : 1;
+      uplift = Math.max(uplift, scoped);
+    } else {
+      uplift = Math.max(uplift, cap);
+    }
   }
   return uplift;
 }

@@ -185,16 +185,16 @@ button:hover{background:color-mix(in srgb,var(--c) 35%,#151515);border-color:var
 const C={obj:'#b8b8b8',l1:'#b8b8b8',l2:'#a3a3a3',l3:'#c9c9c9',l4:'#969696',l5:'#d7d7d7',l6:'#a3a3a3',l7:'#e6e6e6',sup:'#b6b6b6',safe:'#e6e6e6'};
 const ord=['obj','l1','l2','l3','l4','l5','l6','l7'],all=[...ord,'sup','safe'];
 const D={
-obj:{b:'OBJ',n:'Objective',s:'Defines the goals',d:'The four goals every layer of the engine exists to serve.',f:[['Detect disguised betting collections','Identify fake merchant fronts','Find transaction laundering','Protect genuine businesses']]},
-l1:{b:'L1',n:'Data Ingestion',s:'Clean event store',d:'Turns raw payment, KYC, refund and checkout data into one clean, traceable event store.',f:['Collect raw data',['PA transactions','KYC and merchant profile','Refunds and chargebacks','Settlements and bank flows','Website, checkout and orders'],'Normalise into PaymentEvent','Classify event types','Sale / Refund / Transfer / Payout / Reversal / Settlement','Separate timestamps','Link refunds to original sale','Hash payer and device identifiers','Build merchant coverage map','Record source lineage','OUTPUT: Clean event store + coverage map']},
-l2:{b:'L2',n:'Merchant Profile',s:'Approved profile',d:'Builds an approved picture of what each merchant should look like, using three baselines and a peer group.',f:['Read L1 transaction data','Read declared business details','Create anchor profile','Products, MCC, hours, geography','Expected transaction values','Create three baselines',['Anchored baseline','Seasonal expectation','Rolling challenger'],'Compare with similar merchants','Create matched peer group','Version profile changes','Require evidence and approval','OUTPUT: Approved merchant profile']},
-l3:{b:'L3',n:'Detection Engine',s:'Evidence stream',d:'Checks coverage, then runs its live detectors on the account and on each QR with 30+ sales to produce evidence, or returns UNKNOWN.',f:['Check data coverage',{q:'Is required data available?',n:['Return UNKNOWN'],y:['Calculate residuals','Compare three baselines','Run CUSUM and change-point checks','Run detection families',['A: Ticket and menu','B: Payer and geography','C: Timing','D: Money flow and refunds','E: Network connections','F: Merchant lifecycle','G: Catalogue and checkout','H: Drift and rotation','I: Other abuse'],'Generate EvidenceItems','Support illicit / Support benign / UNKNOWN','OUTPUT: Evidence stream']}]},
-l4:{b:'L4',n:'Evidence Fusion',s:'Case + mechanism',d:'Strips out correlated signals and needs independent evidence, including conduct, before a case is opened.',f:['Receive L3 evidence','Remove correlated signals','Separate UNKNOWN evidence','Evaluate fake difficulty','Evaluate source independence','Combine independent family votes','Identify mechanism',['ROTATION','TRANSACTION LAUNDERING','FABRICATED SUBSTANCE','OTHER ABUSE'],{q:'Independent evidence with conduct?',n:['L0 / L1 only'],y:['Create investigation case','Calculate priority']},'OUTPUT: Case + evidence + mechanism']},
-l5:{b:'L5',n:'Analyst Review',s:'Reviewed case',d:'Analysts weigh a legitimate-business story against a front story and verify independently.',f:['Receive prioritised case','Build two explanations',['Legitimate business chain','Potential front chain'],'Compare evidence','Independent verification',['Test checkout and payment links','Check descriptors and domains','Reconcile refunds','Verify suppliers and fulfillment'],'Request merchant clarification if needed','Record contradictions and coverage gaps','Record best benign explanation','Recommend L0-L5 response','OUTPUT: Reviewed case and recommendation']},
-l6:{b:'L6',n:'Response Engine',s:'Action + audit',d:'Chooses the narrowest effective action and records it. Designed for legal authorisation and appeal; nothing is sent.',f:['Receive analyst recommendation','Check external directions','Check legal and contractual basis',{q:'Is action legally authorised?',n:['Step down response level'],y:['Check positive evidence']},'Choose narrowest effective action',['L0 Observe','L1 Clarification','L2 EDD','L3 Restrict collection flow','L4 Time-boxed fund restriction','L5 Terminate relationship'],'Create HoldRecord','Approval and expiry tracking','Notify merchant and enable appeal','OUTPUT: Action and audit record']},
-l7:{b:'L7',n:'Audit and Learning',s:'Keeps improving',d:'Labels outcomes, measures performance and feeds improvements back into L2, L3 and L4.',f:['Collect investigation outcomes','Assign case labels',['Confirmed illicit','Adjudicated benign','Unresolved'],'Calculate performance metrics',['Precision and false-positive rate','Unresolved coverage','Value intercepted and delay','Benign funds disruption'],'Compare incumbent system','Propose rule changes',['Approved profile updates to L2','Detector improvements to L3','New mechanisms to L4'],'OUTPUT: Continuous improvement']},
-sup:{b:'SUP',n:'Supporting Engines',d:'Shared engines that power detection and evidence confidence.',f:[['Residual and change-point','Cohort continuity','Evidence confidence','Coverage tracking']]},
-safe:{b:'SAFE',n:'Core Safeguards',d:'The rules every layer is designed to follow.',f:[['Missing evidence equals UNKNOWN','Refund is not a payout','Do not double-count signals','Detection is not legal authority','Independent corroboration']]}};
+obj:{b:'OBJ',n:'Objective',s:'Core mission',d:'Verify whether a merchant behaves like the business it declared—catching disguised fronts while protecting honest changes.',f:[['Detect disguised betting & laundering','Catch rotating & fabricated fronts','Cover all payment rails (UPI, QR, card, NB, wallet, POS)','Protect genuine businesses & honest changes']]},
+l1:{b:'L1',n:'Ingest & Lineage',s:'Multi-rail event store',d:'Normalises multi-rail PA CSV/JSON feeds into PaymentEvents, pseudonymises identifiers with HMAC-SHA256, and maps 7-feed coverage.',f:['Ingest PA CSV / JSON feeds',['Multi-rail sales (UPI, QR, Card, NB, Wallet, BNPL, POS)','Refunds & chargebacks','Settlements & payouts','KYC & declared channels','Website crawl, orders & bank credits'],'Validate & normalise 11 canonical channels','Classify SALE / REFUND / CHARGEBACK / TRANSFER / SETTLEMENT','Separate event, settle & ingest timestamps','Link refunds & chargebacks to original sales','HMAC-SHA256 pseudonymisation & privacy scrubbing','Build 7-source merchant coverage map','OUTPUT: Multi-rail event store + coverage map']},
+l2:{b:'L2',n:'Merchant Profile',s:'Norms & drift baselines',d:'Anchors expectations to independent MCC category norms, festival ramps, and link-scoped Context Passports—tracking sustained drift via CUSUM & BOCPD.',f:['Read L1 event store & declared profile','Load independent MCC category norm (~40 MCCs)','Reconcile weekly sales against L1 ledger','Apply sector festival ramps (rules/calendar.json)','Apply link-scoped Context Passport volume uplift','Fit log-normal weekly volume baseline','Compute standardised residuals','Track sustained drift with CUSUM (h = 2.35) & BOCPD','OUTPUT: Category expectations, residuals & changepoints']},
+l3:{b:'L3',n:'Detection Engine',s:'30 detectors + ML',d:'Splits by account, link/QR, payment rail, and repeat payers; runs 30 live detectors across 10 families, N4/N5 rings, 10 patterns, and Stage 2 ML.',f:['Check 7-source coverage map',{q:'Is required source available?',n:['Return UNKNOWN (LLR = 0)'],y:['Split streams: account, link/QR, payment rail & repeat payers','Run 30 live detectors across 10 families (A–I + K)',['A: Ticket & menu','B: Payer & geo','C: Timing & matches','D: Refunds, orders & D11 chargebacks','E: Web & peer cohorts','F: Lifecycle, settlement & fulfilment','G: Catalogue & undeclared embeds','H: Volume, BOCPD & joint cluster','I: Payout fan-out & sweeps','K: Declared profile & K2 rails'],'Run N4/N5 cross-merchant ring detector & S1–S7, N1–N3 patterns','Extract leak-free features for Stage 2 ML (LightGBM + TreeSHAP, MLP, classical)','OUTPUT: Graded EvidenceItems + per-stream & ML second opinion']}]},
+l4:{b:'L4',n:'Evidence Fusion',s:'Bayesian gate + ASK',d:'Bayesian log-odds fusion with ρ = 0.3 shrinkage, 1,000-draw 90% CI, conformal abstention, and conduct + independence gate (ASK before freeze).',f:['Start from MCC + account-age prior log-odds','Exclude UNKNOWN (LLR 0) & suspend passports if conduct fires','Apply within-family correlation shrinkage (ρ = 0.3) & damping','Apply R-01 (betting host) & R-02 (shared peer beneficiary) overrides','Run 1,000 Monte-Carlo draws for 90% CI & conformal set','Score 4 mechanism posteriors',['TRANSACTION LAUNDERING','ROTATION','FABRICATED SUBSTANCE','OTHER ABUSE'],{q:'P(front) ≥ 0.10 + conduct + independent corroboration?',n:['Profile-only change → Context Passport ASK (no freeze)','Otherwise → NO_CASE (L0)'],y:['OPEN_CASE + priority (LOW/MED/HIGH)','Attach Stage 2 ML as advisory second opinion only']},'OUTPUT: Posterior, 90% CI, verdict & leading mechanism']},
+l5:{b:'L5',n:'Analyst Review',s:'Chains & passports',d:'Tests Legitimate vs Potential Front chains side by side with log-odds waterfall, flip-set counterfactuals, VOI (₹), and two-person Context Passports.',f:['Receive case or Context Passport ASK','Compare Legitimate vs Potential Front chains','Inspect log-odds waterfall & flip-set counterfactuals','Review Value of Information (₹) for missing feeds','Inspect Evidence Graph & cross-merchant N4/N5 rings','Verify or revoke Context Passports (two-person maker/checker)','Record analyst notes & recommended L0–L5 level','OUTPUT: Reviewed investigation & recommendation']},
+l6:{b:'L6',n:'Governed Response',s:'Expected-loss L0–L5',d:'Expected-loss decision theory with low-CI step-down, maker/checker role separation, legal gate for L4/L5, and narrow link-scoped restrictions.',f:['Compute expected loss across L0–L5 (rules/costs.json)','Step down if milder level wins at 90% CI low bound','Scope L3 restriction to suspect links (healthy rails stay live)',{q:'Two-person approval & legal authority (for L4/L5)?',n:['Block escalation / keep at L2 EDD'],y:['Record approved L0–L5 response','Create simulated time-boxed HoldRecord (24h review / 72h expiry)']},'Notify merchant with appeal path','OUTPUT: Governed response & action log']},
+l7:{b:'L7',n:'Audit & Learning',s:'Sealed trail & calibration',d:'SHA-256 hash-chained & HMAC-sealed SQLite audit, RBI/FIU-IND evidence packs, PSI drift monitor, and backtested two-person rule calibration.',f:['Record two-person adjudicated labels',['CONFIRMED_ILLICIT','ADJUDICATED_BENIGN','UNRESOLVED'],'Seal SQLite tables with HMAC & SHA-256 hash chain','Export RBI / FIU-IND evidence pack','Monitor PSI calibration drift & empirical peer baselines','Generate Beta-binomial calibration proposals','Backtest on holdout & red-team suites before second-person promotion','OUTPUT: Tamper-evident audit & governed rule updates']},
+sup:{b:'SUP',n:'Supporting Engines',d:'Shared modules built on main that power stream isolation, network linking, ML second opinions, and drift monitoring.',f:[['Per-link & per-rail stream splitter','Cross-merchant N4/N5 ring detector','Stage 2 leak-free ML ensemble (LightGBM/MLP)','Context Passports & PSI drift monitor']]},
+safe:{b:'SAFE',n:'Core Safeguards',d:'Hard invariants enforced in code and verified by automated security, leakage, and adversarial test suites.',f:[['Missing data = UNKNOWN (LLR 0)','Change ≠ Conduct (ASK before freeze)','Within-family shrinkage (ρ = 0.3)','Two-person maker/checker & legal gate','ML second opinion never overrides gate']]}};
 const $=s=>document.querySelector(s);
 // ---- grand flowchart
 const W=150,H=84,pos=i=>({x:235+i*128,y:i%2?250:110});
@@ -218,84 +218,84 @@ const seq=a=>a.map((x,i)=>(i&&!Array.isArray(x)&&!Array.isArray(a[i-1])?cn:'')+o
 // Hand-laid paths preserve the selective branches shown in the L6 and L7 source diagrams.
 const customFlow={
  obj:()=>{
-  const nodes=[[600,28,360,64,'Four mission outcomes'],[150,220,250,86,'Detect disguised\nbetting collections'],[450,220,250,86,'Identify fake\nmerchant fronts'],[750,220,250,86,'Find transaction\nlaundering'],[1050,220,250,86,'Protect genuine\nbusinesses'],[600,450,420,72,'Detect abuse while protecting\nlegitimate commerce','output']];
+  const nodes=[[600,28,380,64,'Four mission outcomes (main branch)'],[150,220,250,86,'Detect disguised\nbetting & laundering'],[450,220,250,86,'Catch rotating &\nfabricated fronts'],[750,220,250,86,'Cover all payment rails\n(UPI, QR, Card, NB, POS)'],[1050,220,250,86,'Protect genuine shops\n& honest changes'],[600,450,440,72,'Detect abuse across every rail while\nprotecting legitimate commerce','output']];
   const e=['M600 92 V160 H150 H1050','M150 160 V220','M450 160 V220','M750 160 V220','M1050 160 V220','M150 306 V370 H600','M450 306 V370 H600','M750 306 V370 H600','M1050 306 V370 H600','M600 370 V450'];
   return renderCustomGraph(1200,550,nodes,e,[]);
  },
  sup:()=>{
-  const nodes=[[600,28,360,64,'Shared services support every layer'],[150,210,250,110,'Residuals & change-points\nCompare behaviour to baselines'],[450,210,250,110,'Cohort continuity\nTrack behaviour across changed IDs'],[750,210,250,110,'Evidence confidence\nQualify signal strength'],[1050,210,250,110,'Coverage tracking\nExpose missing inputs'],[600,430,380,72,'Signals strengthen layer decisions','output']];
+  const nodes=[[600,28,390,64,'Shared engines built on main'],[150,210,250,110,'Per-link & per-rail\nstream splitter\n(QR, Card, NB, Wallet)'],[450,210,250,110,'Cross-merchant N4/N5\nring detector\n(shared ben. & payers)'],[750,210,250,110,'Stage 2 ML ensemble\nLightGBM + TreeSHAP\n& MLP (second opinion)'],[1050,210,250,110,'Context Passports &\nPSI calibration\ndrift monitor'],[600,430,410,72,'Shared engines strengthen L3–L7 decisions','output']];
   const e=['M600 92 V150 H150 H1050','M150 150 V210','M450 150 V210','M750 150 V210','M1050 150 V210','M150 320 V370 H600','M450 320 V370 H600','M750 320 V370 H600','M1050 320 V370 H600','M600 370 V430'];
   return renderCustomGraph(1200,530,nodes,e,[]);
  },
  safe:()=>{
-  const nodes=[[600,28,390,64,'Checks apply to every layer and decision'],[120,200,210,100,'Missing evidence\nremains UNKNOWN'],[360,200,210,100,'Refunds never\nbecome payouts'],[600,200,210,100,'Do not double-count\ncorrelated signals'],[840,200,210,100,'Detection is not\nlegal authority'],[1080,200,210,100,'Require independent\ncorroboration'],[600,430,420,72,'Outcome: governed, evidence-led decisions','output']];
-  const e=['M600 92 V150 H120 H1080','M120 150 V200','M360 150 V200','M600 150 V200','M840 150 V200','M1080 150 V200','M120 300 V370 H600','M360 300 V370 H600','M600 300 V370','M840 300 V370 H600','M1080 300 V370 H600','M600 370 V430'];
+  const nodes=[[600,28,420,64,'Hard safeguards enforced across L1–L7'],[120,200,210,104,'Missing data stays\nUNKNOWN (LLR = 0)'],[360,200,210,104,'Change ≠ Conduct\n(ASK Context Passport\nbefore any freeze)'],[600,200,210,104,'Within-family\nshrinkage (ρ = 0.3)\nprevents double-count'],[840,200,210,104,'Maker/checker &\nlegal role gate\nfor L4/L5 & labels'],[1080,200,210,104,'Stage 2 ML is\nadvisory only;\nnever overrides gate'],[600,430,440,72,'Outcome: verifiable, proportionate decisions','output']];
+  const e=['M600 92 V150 H120 H1080','M120 150 V200','M360 150 V200','M600 150 V200','M840 150 V200','M1080 150 V200','M120 304 V370 H600','M360 304 V370 H600','M600 304 V370','M840 304 V370 H600','M1080 304 V370 H600','M600 370 V430'];
   return renderCustomGraph(1200,530,nodes,e,[]);
  },
  l1:()=>{
-  const nodes=[[600,28,260,64,'Collect raw data'],[120,200,210,78,'PA transactions'],[360,200,210,78,'KYC and merchant\nprofile'],[600,200,210,78,'Refunds and\nchargebacks'],[840,200,210,78,'Settlements and\nbank flows'],[1080,200,210,78,'Website, checkout\nand orders'],
-   [600,350,300,64,'Normalise into PaymentEvent'],[600,450,260,64,'Classify event types'],[600,550,300,78,'Sale / Refund / Transfer /\nPayout / Reversal / Settlement'],[600,650,250,64,'Separate timestamps'],[600,750,280,64,'Link refunds to original sale'],[600,850,280,64,'Hash payer and device identifiers'],[600,950,280,64,'Build merchant coverage map'],[600,1050,260,64,'Record source lineage'],[600,1150,320,64,'OUTPUT: Clean event store +\ncoverage map','output']];
-  const e=['M600 92 V150 H120 H1080','M120 150 V200','M360 150 V200','M600 150 V200','M840 150 V200','M1080 150 V200','M120 278 V316 H600','M360 278 V316 H600','M600 278 V316','M840 278 V316 H600','M1080 278 V316 H600','M600 316 V350','M600 414 V450','M600 514 V550','M600 628 V650','M600 714 V750','M600 814 V850','M600 914 V950','M600 1014 V1050','M600 1114 V1150'];
-  return renderCustomGraph(1200,1240,nodes,e,[]);
+  const nodes=[[600,28,300,64,'Ingest PA CSV / JSON feeds'],[120,200,210,82,'Multi-rail sales\n(UPI, QR, Card, NB,\nWallet, BNPL, POS)'],[360,200,210,82,'KYC, MCC &\ndeclared channels'],[600,200,210,82,'Refunds &\nchargebacks'],[840,200,210,82,'Settlements &\nonward payouts'],[1080,200,210,82,'Website crawl,\norders & bank credits'],
+   [600,350,340,64,'Normalise 11 canonical channels'],[600,450,360,64,'SALE / REFUND / CHARGEBACK / TRANSFER / SETTLEMENT'],[600,550,300,64,'Separate event, settle & ingest time'],[600,650,320,64,'Link refunds & chargebacks to sales'],[600,750,340,64,'HMAC-SHA256 pseudonymisation & scrubbing'],[600,850,320,64,'Build 7-source merchant coverage map'],[600,950,380,68,'OUTPUT: Multi-rail PaymentEvent store +\n7-feed coverage map','output']];
+  const e=['M600 92 V150 H120 H1080','M120 150 V200','M360 150 V200','M600 150 V200','M840 150 V200','M1080 150 V200','M120 282 V316 H600','M360 282 V316 H600','M600 282 V316','M840 282 V316 H600','M1080 282 V316 H600','M600 316 V350','M600 414 V450','M600 514 V550','M600 614 V650','M600 714 V750','M600 814 V850','M600 914 V950'];
+  return renderCustomGraph(1200,1040,nodes,e,[]);
  },
  l2:()=>{
-  const nodes=[[600,28,260,64,'Read L1 transaction data'],[600,118,280,64,'Read declared business details'],[600,208,260,64,'Create anchor profile'],[600,298,300,64,'Products, MCC, hours, geography'],[600,388,280,64,'Expected transaction values'],[600,478,290,64,'Create three baselines'],
-   [250,600,250,64,'Anchored baseline'],[600,600,250,64,'Seasonal expectation'],[950,600,250,64,'Rolling challenger'],[600,710,300,64,'Compare with similar merchants'],[600,800,300,64,'Create matched peer group'],[600,890,280,64,'Version profile changes'],[600,980,300,64,'Require evidence and approval'],[600,1070,320,64,'OUTPUT: Approved merchant profile','output']];
-  const e=['M600 92 V118','M600 182 V208','M600 272 V298','M600 362 V388','M600 452 V478','M600 542 V570 H250 H950','M250 570 V600','M600 570 V600','M950 570 V600','M250 664 V684 H600','M600 664 V710','M950 664 V684 H600','M600 774 V800','M600 864 V890','M600 954 V980','M600 1044 V1070'];
-  return renderCustomGraph(1200,1160,nodes,e,[]);
+  const nodes=[[600,28,320,64,'Read L1 events & declared profile'],[600,118,340,64,'Load independent MCC norm (rules/mcc.json)'],[600,208,340,64,'Reconcile weekly sales against L1 ledger'],[600,298,320,64,'Build expected volume & baselines'],
+   [220,420,260,72,'Log-normal weekly\nvolume baseline'],[600,420,260,72,'Festival sector ramps\n(rules/calendar.json)'],[980,420,260,72,'Link-scoped Context\nPassport uplift'],
+   [600,550,320,64,'Compute standardised log residuals'],[600,640,340,64,'ARL-calibrated CUSUM drift (h = 2.35)'],[600,730,340,64,'Bayesian Online Changepoint (BOCPD)'],[600,820,380,68,'OUTPUT: Category expectations,\nresiduals, CUSUM & changepoints','output']];
+  const e=['M600 92 V118','M600 182 V208','M600 272 V298','M600 362 V390 H220 H980','M220 390 V420','M600 390 V420','M980 390 V420','M220 492 V520 H600','M600 492 V550','M980 492 V520 H600','M600 614 V640','M600 704 V730','M600 794 V820'];
+  return renderCustomGraph(1200,910,nodes,e,[]);
  },
  l3:()=>{
-  const nodes=[[600,28,280,64,'Check data coverage'],[600,118,280,64,'Is required data available?','decision'],[260,250,240,64,'Return UNKNOWN'],[940,250,260,64,'Calculate residuals'],[940,340,260,64,'Compare three baselines'],[940,430,300,64,'Run CUSUM and change-point checks'],[940,520,260,64,'Run detection families'],
-   [80,650,130,78,'A: Ticket and\nmenu'],[210,650,130,78,'B: Payer and\ngeography'],[340,650,130,78,'C: Timing'],[470,650,130,78,'D: Money flow\nand refunds'],[600,650,130,78,'E: Network\nconnections'],[730,650,130,78,'F: Merchant\nlifecycle'],[860,650,130,78,'G: Catalogue\nand checkout'],[990,650,130,78,'H: Drift and\nrotation'],[1120,650,130,78,'I: Other abuse'],
-   [940,800,280,64,'Generate EvidenceItems'],[940,890,320,64,'Support illicit / Support benign /\nUNKNOWN'],[940,980,280,64,'OUTPUT: Evidence stream','output']];
-  const e=['M600 92 V118','M600 182 V218 H260 V250','M600 182 V218 H940 V250','M940 314 V340','M940 404 V430','M940 494 V520','M940 584 V610 H80 H1120',...Array.from({length:9},(_,i)=>`M${80+i*130} 610 V650`),
-   ...Array.from({length:9},(_,i)=>`M${80+i*130} 728 V770 H940`),'M940 770 V800','M940 864 V890','M940 954 V980'];
-  return renderCustomGraph(1200,1060,nodes,e,[['No',260,240],['Yes',940,240]]);
+  const nodes=[[600,28,300,64,'Check 7-source coverage map'],[600,118,300,64,'Is required source available?','decision'],[240,250,250,64,'Return UNKNOWN (LLR = 0)'],[920,250,320,64,'Split streams: account, link/QR,\npayment rail & repeat payers'],[920,348,320,64,'Run 30 live detectors across 10 families'],
+   [65,470,112,82,'A: Ticket\n& menu'],[183,470,112,82,'B: Payer\n& geo'],[301,470,112,82,'C: Timing\n& match'],[419,470,112,82,'D: Refunds\n& D11 CB'],[537,470,112,82,'E: Web &\ncohorts'],[655,470,112,82,'F: Life &\nsettle'],[773,470,112,82,'G: Site &\nembeds'],[891,470,112,82,'H: Drift &\njoint'],[1009,470,112,82,'I: Payouts\n& sweeps'],[1127,470,112,82,'K: Profile\n& K2 rails'],
+   [600,610,440,64,'Run N4/N5 cross-merchant rings + 10 advisory patterns'],[600,700,440,64,'Stage 2 ML second opinion (LightGBM + TreeSHAP, MLP)'],[600,790,380,68,'OUTPUT: Graded EvidenceItems,\nstream scores & ML second opinion','output']];
+  const e=['M600 92 V118','M600 182 V218 H240 V250','M600 182 V218 H920 V250','M920 314 V348','M920 412 V438 H65 H1127',...Array.from({length:10},(_,i)=>`M${65+i*118} 438 V470`),
+   ...Array.from({length:10},(_,i)=>`M${65+i*118} 552 V582 H600`),'M600 582 V610','M600 674 V700','M600 764 V790'];
+  return renderCustomGraph(1200,880,nodes,e,[['No',240,240],['Yes',920,240]]);
  },
  l4:()=>{
-  const nodes=[[600,28,280,64,'Receive L3 evidence'],[600,118,280,64,'Remove correlated signals'],[600,208,280,64,'Separate UNKNOWN evidence'],[600,298,260,64,'Evaluate fake difficulty'],[600,388,300,64,'Evaluate source independence'],[600,478,320,64,'Combine independent family votes'],[600,568,260,64,'Identify mechanism'],
-   [180,680,220,64,'ROTATION'],[460,680,240,64,'TRANSACTION\nLAUNDERING'],[740,680,240,64,'FABRICATED\nSUBSTANCE'],[1020,680,220,64,'OTHER ABUSE'],[600,790,300,64,'Independent evidence\nwith conduct?','decision'],
-   [260,900,240,64,'L0 / L1 only'],[940,900,280,64,'Create investigation case'],[940,990,260,64,'Calculate priority'],[940,1080,320,64,'OUTPUT: Case + evidence +\nmechanism','output']];
-  const e=['M600 92 V118','M600 182 V208','M600 272 V298','M600 362 V388','M600 452 V478','M600 542 V568','M600 632 V650 H180 H1020',...Array.from({length:4},(_,i)=>`M${180+i*280} 650 V680`),
-   ...Array.from({length:4},(_,i)=>`M${180+i*280} 744 V766 H600`),'M600 766 V790','M600 854 V878 H260 V900','M600 854 V878 H940 V900','M940 964 V990','M940 1054 V1080'];
-  return renderCustomGraph(1200,1160,nodes,e,[['No',260,890],['Yes',940,890]]);
+  const nodes=[[600,28,340,64,'Start from MCC + age prior log-odds'],[600,118,360,64,'Exclude UNKNOWN; suspend passports on conduct'],[600,208,360,64,'Within-family shrinkage (ρ = 0.3) & damping'],[600,298,380,64,'Apply R-01 (betting host) & R-02 (shared peer ben.)'],[600,388,360,64,'1,000 Monte-Carlo draws → 90% CI & conformal set'],[600,478,280,64,'Score 4 mechanism posteriors'],
+   [180,588,220,64,'TRANSACTION\nLAUNDERING'],[460,588,220,64,'ROTATION'],[740,588,220,64,'FABRICATED\nSUBSTANCE'],[1020,588,220,64,'OTHER ABUSE'],
+   [600,700,360,68,'P ≥ 0.10 + conduct +\nindependent corroboration?','decision'],
+   [260,820,290,72,'Profile-only → Context Passport\nASK (no freeze) / else NO_CASE'],[940,820,300,72,'OPEN_CASE (LOW / MED / HIGH)\n+ ML second opinion attached'],[600,940,380,68,'OUTPUT: Posterior, 90% CI, verdict\n& leading mechanism','output']];
+  const e=['M600 92 V118','M600 182 V208','M600 272 V298','M600 362 V388','M600 452 V478','M600 542 V560 H180 H1020',...Array.from({length:4},(_,i)=>`M${180+i*280} 560 V588`),
+   ...Array.from({length:4},(_,i)=>`M${180+i*280} 652 V676 H600`),'M600 676 V700','M600 768 V794 H260 V820','M600 768 V794 H940 V820','M260 892 V916 H600','M940 892 V916 H600','M600 916 V940'];
+  return renderCustomGraph(1200,1030,nodes,e,[['No',260,810],['Yes',940,810]]);
  },
  l5:()=>{
-  const nodes=[[600,28,280,64,'Receive prioritised case'],[600,128,280,64,'Build two explanations'],[280,240,260,64,'Legitimate business chain'],[920,240,260,64,'Potential front chain'],[600,350,260,64,'Compare evidence'],[600,450,300,64,'Independent verification'],
-   [160,570,260,78,'Test checkout and\npayment links'],[453,570,260,78,'Check descriptors and\ndomains'],[747,570,260,78,'Reconcile refunds'],[1040,570,260,78,'Verify suppliers and\nfulfillment'],
-   [600,700,300,64,'Request merchant clarification\nif needed'],[600,790,320,64,'Record contradictions and\ncoverage gaps'],[600,880,280,64,'Record best benign explanation'],[600,970,280,64,'Recommend L0–L5 response'],[600,1060,340,64,'OUTPUT: Reviewed case and\nrecommendation','output']];
-  const e=['M600 92 V128','M600 192 V218 H280 V240','M600 192 V218 H920 V240','M280 304 V328 H600','M920 304 V328 H600','M600 328 V350','M600 414 V450','M600 514 V540 H160 H1040',...Array.from({length:4},(_,i)=>`M${160+i*293.333} 540 V570`),
-   ...Array.from({length:4},(_,i)=>`M${160+i*293.333} 648 V674 H600`),'M600 674 V700','M600 764 V790','M600 854 V880','M600 944 V970','M600 1034 V1060'];
-  return renderCustomGraph(1200,1140,nodes,e,[]);
+  const nodes=[[600,28,320,64,'Receive OPEN_CASE or Passport ASK'],[600,122,300,64,'Build two competing chains'],[280,232,270,64,'Legitimate business chain'],[920,232,270,64,'Potential front chain'],[600,342,320,64,'Inspect trace & explainability'],
+   [160,460,260,78,'Log-odds waterfall &\nflip-set counterfactuals'],[453,460,260,78,'Value of Information (₹)\nfor missing feeds'],[747,460,260,78,'Evidence Graph &\nN4/N5 ring links'],[1040,460,260,78,'Two-person Context\nPassport verification'],
+   [600,592,340,64,'Record analyst notes & recommendation'],[600,686,360,68,'OUTPUT: Reviewed case, verified passports\n& L0–L5 recommendation','output']];
+  const e=['M600 92 V122','M600 186 V210 H280 V232','M600 186 V210 H920 V232','M280 296 V320 H600','M920 296 V320 H600','M600 320 V342','M600 406 V432 H160 H1040',...Array.from({length:4},(_,i)=>`M${160+i*293.333} 432 V460`),
+   ...Array.from({length:4},(_,i)=>`M${160+i*293.333} 538 V566 H600`),'M600 566 V592','M600 656 V686'];
+  return renderCustomGraph(1200,780,nodes,e,[]);
  },
  l6:()=>{
   const nodes=[
-   [600,28,280,64,'Receive analyst\nrecommendation'],[600,128,280,64,'Check external directions'],[600,228,280,64,'Check legal and contractual\nbasis'],[600,328,280,64,'Is action legally authorised?','decision'],
-   [270,450,240,64,'Step down response level'],[900,450,260,64,'Check positive evidence'],[900,550,280,64,'Choose narrowest effective\naction'],
-   [100,670,170,72,'L0 Observe'],[300,670,170,72,'L1 Clarification'],[500,670,170,72,'L2 EDD'],[700,670,170,72,'L3 Restrict collection flow'],[900,670,170,72,'L4 Time-boxed fund\nrestriction'],[1100,670,170,72,'L5 Terminate relationship'],
-   [800,810,260,64,'Create HoldRecord'],[800,910,280,64,'Approval and expiry tracking'],[800,1000,280,64,'Notify merchant and enable appeal'],[800,1090,280,64,'OUTPUT: Action and audit record','output']
+   [600,28,340,64,'Expected-loss decision theory (rules/costs.json)'],[600,122,360,64,'Conservative step-down at 90% CI low bound'],[600,216,360,64,'Scope L3 to suspect links (healthy rails stay live)'],[600,310,340,68,'Maker/checker & legal role\nverified (for L4/L5)?','decision'],
+   [250,432,260,64,'Block escalation / stay at L2 EDD'],[910,432,290,64,'Execute governed response level'],
+   [100,554,170,72,'L0 Observe'],[300,554,170,72,'L1 Context\nPassport'],[500,554,170,72,'L2 EDD'],[700,554,170,72,'L3 Restrict\nsuspect link'],[900,554,170,72,'L4 Time-boxed\nHoldRecord'],[1100,554,170,72,'L5 Terminate\n& report'],
+   [600,690,360,64,'24h review / 72h expiry + merchant appeal route'],[600,784,360,68,'OUTPUT: Approved response record\n& tamper-evident action log','output']
   ];
-  const e=['M600 92 V128','M600 192 V228','M600 292 V328','M600 392 V418 H270 V450','M600 392 V418 H900 V450','M900 514 V550','M900 614 V642 H100 V670','M900 614 V642 H300 V670','M900 614 V642 H500 V670','M900 614 V642 H700 V670','M900 614 V642 H900 V670','M900 614 V642 H1100 V670',
-   'M700 742 V770 H800','M900 742 V770 H800','M800 770 V810','M800 874 V910','M800 974 V1000','M800 1064 V1090'];
-  const labels=[['No',270,440],['Yes',900,440]];
-  return renderCustomGraph(1200,1190,nodes,e,labels);
+  const e=['M600 92 V122','M600 186 V216','M600 280 V310','M600 378 V404 H250 V432','M600 378 V404 H910 V432','M910 496 V526 H100 V554','M910 496 V526 H300 V554','M910 496 V526 H500 V554','M910 496 V526 H700 V554','M910 496 V526 H900 V554','M910 496 V526 H1100 V554',
+   'M700 626 V660 H600','M900 626 V660 H600','M1100 626 V660 H600','M600 660 V690','M600 754 V784'];
+  const labels=[['No',250,422],['Yes',910,422]];
+  return renderCustomGraph(1200,880,nodes,e,labels);
  },
  l7:()=>{
   const nodes=[
-   [600,30,280,64,'Collect investigation outcomes'],[600,125,260,64,'Assign case labels'],
-   [260,240,240,64,'Confirmed illicit'],[600,240,240,64,'Adjudicated benign'],[940,240,240,64,'Unresolved'],
-   [600,360,280,64,'Calculate performance metrics'],
-   [120,470,240,72,'Precision and false-positive\nrate'],[440,470,240,72,'Unresolved coverage'],[760,470,260,72,'Value intercepted and delay'],[1080,470,260,72,'Benign funds disruption'],
-   [1080,580,260,64,'Compare incumbent system'],[1080,680,260,64,'Propose rule changes'],
-   [300,800,260,72,'Approved profile updates\nto L2'],[600,800,260,72,'Detector improvements\nto L3'],[900,800,260,72,'New mechanisms to L4'],
-   [600,920,280,64,'Continuous improvement','output']
+   [600,28,320,64,'Two-person label adjudication'],
+   [240,140,240,64,'CONFIRMED_ILLICIT'],[600,140,240,64,'ADJUDICATED_BENIGN'],[960,140,240,64,'UNRESOLVED'],
+   [600,256,360,64,'Audit sealing, reporting & monitoring'],
+   [160,372,250,76,'SHA-256 hash chain\n& HMAC SQLite seals'],[453,372,250,76,'RBI / FIU-IND\nevidence pack export'],[747,372,250,76,'PSI drift monitor &\nempirical peer baselines'],[1040,372,250,76,'Beta-binomial\ncalibration proposals'],
+   [600,504,400,64,'Backtest on holdout & red-team suites + 2nd-person approval'],
+   [600,602,380,68,'OUTPUT: Verified audit trail &\ngoverned rule updates → L2/L3/L4','output']
   ];
-  const e=['M600 94 V125','M600 189 V215 H260 V240','M600 189 V215 H600 V240','M600 189 V215 H940 V240',
-   'M260 304 V330 H600','M600 304 V330','M940 304 V330 H600','M600 330 V360',
-   'M600 424 V446 H120 V470','M600 424 V446 H440 V470','M600 424 V446 H760 V470','M600 424 V446 H1080 V470',
-   'M1080 542 V580','M1080 644 V680','M1080 744 V778 H300 V800','M1080 744 V778 H600 V800','M1080 744 V778 H900 V800',
-   'M300 872 V895 H600','M600 872 V920','M900 872 V895 H600'];
-  return renderCustomGraph(1200,1010,nodes,e,[]);
+  const e=['M600 92 V116 H240 V140','M600 92 V140','M600 92 V116 H960 V140',
+   'M240 204 V230 H600','M600 204 V256','M960 204 V230 H600',
+   'M600 320 V346 H160 H1040','M160 346 V372','M453 346 V372','M747 346 V372','M1040 346 V372',
+   'M160 448 V476 H600','M453 448 V476 H600','M747 448 V476 H600','M1040 448 V476 H600','M600 476 V504','M600 568 V602'];
+  return renderCustomGraph(1200,690,nodes,e,[]);
  }
 };
 function renderCustomGraph(width,height,nodes,edges,labels){

@@ -64,7 +64,12 @@ export function fuse(
   const posFamOrder = rawFamRows.filter(f => f.llr > 0).sort((a, b) => b.llr - a.llr);
   const dampedSet = new Set(posFamOrder.slice(3).map(f => f.family));
   const famRows = rawFamRows.map(f => (dampedSet.has(f.family) ? { ...f, llr: f.llr * 0.85 } : f));
-  const overrides = RULES.overrides.rules.filter(r => evidence.some(e => e.id === r.detector && e.status === 'ILLICIT' && (r.id !== 'R-01' || (e.effect ?? 0) >= 1.25)))
+  const overrides = RULES.overrides.rules.filter(r => evidence.some(e => {
+    if (e.id !== r.detector || e.status !== 'ILLICIT') return false;
+    if (r.id === 'R-01') return (e.effect ?? 0) >= 1.25;
+    if (r.id === 'R-02') return e.metrics?.sharedWithPeer === 'yes';
+    return true;
+  }))
     .map(r => ({ id: r.id, llr: r.llr, when: r.when }));
   const overrideSum = overrides.reduce((s, o) => s + o.llr, 0);
   const total = priorLogOdds + famRows.reduce((s, f) => s + f.llr, 0) + overrideSum;

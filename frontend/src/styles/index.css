@@ -80,36 +80,63 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; lette
   .anim-dash, .anim-pulse, .blink, .scanbar::after, .fade-in { animation: none !important; }
 }
 
-.mre-light {
-  --color-bg: #f8fafc;
-  --color-panel: #ffffff;
-  --color-panel2: #f1f5f9;
-  --color-line: #e2e8f0;
-  --color-line2: #cbd5e1;
-  --color-ink: #0f172a;
-  --color-mute: #475569;
-  --color-dim: #64748b;
-  --color-cy: #0284c7;
-  --color-sky: #0ea5e9;
-  --color-ok: #059669;
-  --color-warn: #d97706;
-  --color-bad: #e11d48;
+.mre-app {
   background: var(--color-bg);
   color: var(--color-ink);
 }
-.mre-light ::selection { background: rgba(79, 70, 229, .18); }
-.mre-light :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
-.mre-light * { scrollbar-color: #cbd5e1 transparent; }
+.mre-app .bg-white,
+.mre-app .bg-white\/90,
+.mre-app .bg-white\/80 { background-color: var(--color-panel) !important; }
+.mre-app [class*="bg-slate-50"] { background-color: var(--color-panel2) !important; }
+.mre-app [class*="bg-slate-100"] { background-color: #161616 !important; }
+.mre-app [class*="bg-slate-200"] { background-color: #262626 !important; }
+.mre-app [class*="bg-indigo-50"] { background-color: rgba(34, 211, 238, 0.08) !important; }
+.mre-app [class*="bg-rose-50"] { background-color: rgba(244, 63, 94, 0.09) !important; }
+.mre-app [class*="bg-emerald-50"] { background-color: rgba(16, 185, 129, 0.09) !important; }
+.mre-app [class*="bg-amber-50"] { background-color: rgba(245, 158, 11, 0.09) !important; }
+.mre-app [class*="bg-sky-50"],
+.mre-app [class*="bg-blue-50"] { background-color: rgba(56, 189, 248, 0.09) !important; }
+.mre-app [class*="text-slate-900"],
+.mre-app [class*="text-slate-800"] { color: var(--color-ink) !important; }
+.mre-app [class*="text-slate-700"],
+.mre-app [class*="text-slate-600"] { color: #d4d4d8 !important; }
+.mre-app [class*="text-slate-500"],
+.mre-app [class*="text-slate-400"] { color: var(--color-mute) !important; }
+.mre-app [class*="text-indigo-700"],
+.mre-app [class*="text-indigo-800"],
+.mre-app [class*="text-indigo-600"] { color: #67e8f9 !important; }
+.mre-app [class*="text-rose-700"],
+.mre-app [class*="text-rose-800"],
+.mre-app [class*="text-rose-600"] { color: #fda4af !important; }
+.mre-app [class*="text-emerald-700"],
+.mre-app [class*="text-emerald-800"],
+.mre-app [class*="text-emerald-600"] { color: #6ee7b7 !important; }
+.mre-app [class*="text-amber-700"],
+.mre-app [class*="text-amber-800"],
+.mre-app [class*="text-amber-900"] { color: #fcd34d !important; }
+.mre-app [class*="border-slate-200"],
+.mre-app [class*="border-slate-300"] { border-color: var(--color-line) !important; }
+.mre-app [class*="border-indigo-200"],
+.mre-app [class*="border-indigo-300"] { border-color: rgba(34, 211, 238, 0.3) !important; }
+.mre-app [class*="border-rose-200"],
+.mre-app [class*="border-rose-300"] { border-color: rgba(244, 63, 94, 0.32) !important; }
+.mre-app [class*="border-emerald-200"],
+.mre-app [class*="border-emerald-300"] { border-color: rgba(16, 185, 129, 0.32) !important; }
+.mre-app [class*="border-amber-200"],
+.mre-app [class*="border-amber-300"] { border-color: rgba(245, 158, 11, 0.32) !important; }
+.mre-app input,
+.mre-app select,
+.mre-app textarea { background-color: var(--color-panel2); color: var(--color-ink); border-color: var(--color-line2); }
 
 @media print {
   aside, nav, .no-print { display: none !important; }
-  .mre-light { background: #ffffff !important; color: #0f172a !important; }
+  .mre-app { background: #ffffff !important; color: #0f172a !important; }
   main { max-width: 100% !important; padding: 0 !important; }
 }
 
 .react-flow__attribution { display: none; }
 .react-flow { --xy-background-color: transparent; }
-.react-flow__controls button { background: #ffffff; color: #334155; border-bottom: 1px solid #e2e8f0; }
-.react-flow__controls button:hover { background: #f1f5f9; }
+.react-flow__controls button { background: #080808; color: #f4f4f4; border-bottom: 1px solid #272727; }
+.react-flow__controls button:hover { background: #141414; }
 .react-flow__controls button svg { fill: currentColor; }
-.react-flow__minimap { background: #f8fafc !important; border: 1px solid #e2e8f0; }
+.react-flow__minimap { background: #080808 !important; border: 1px solid #272727; }

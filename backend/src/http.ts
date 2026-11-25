@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, openInvestigationWithStage2, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { actorFromToken, assertSecrets, bootAccounts, clearCookie, createUser, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { getDb } from './db';
 import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
@@ -17,6 +18,21 @@ import { atomic } from './integrity';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
 const LIMIT = 6_000_000;
+
+let serverlessSeeded = false;
+/** Seed ephemeral serverless SQLite instance (/tmp/mre.db) with boot accounts and stateless sessions. */
+export function ensureServerlessBoot(): void {
+  if (serverlessSeeded) return;
+  if (!process.env.MRE_DB_FILE) process.env.MRE_DB_FILE = '/tmp/mre.db';
+  process.env.MRE_STATELESS_SESSIONS = '1';
+  assertSecrets();
+  serverlessSeeded = true;
+  const db = getDb();
+  for (const u of bootAccounts()) {
+    const row = db.prepare('SELECT id FROM users WHERE username = ?').get(u.username);
+    if (!row) createUser(u.username, u.password, u.role);
+  }
+}
 
 /** Per-client token bucket: 60 requests per minute. ponytail: in-memory, per process; move to a shared store with >1 API process. */
 const buckets = new Map<string, { tokens: number; at: number }>();

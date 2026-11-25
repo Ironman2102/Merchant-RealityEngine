@@ -25,7 +25,7 @@ export function L1View() {
     <LayerFrame
       n={1}
       brief={{
-        checks: 'Cleans raw payment, refund, settlement, and website logs into one timeline, hashes customer UPI IDs for privacy, links refunds back to their original sales, and records which data feeds exist.',
+        checks: 'Cleans raw payment (UPI, QR, card, netbanking, wallet, POS), refund, chargeback, settlement, and website logs into one timeline, hashes customer payment identifiers for privacy, links refunds back to their original sales, and records which data feeds exist.',
         happened: (
           <>
             Ingested <b>{r.events.length} records</b> ({l1.counts.SALE.n} sales totalling {inr(l1.counts.SALE.value)}, {l1.counts.REFUND.n} refunds, {l1.counts.SETTLEMENT.n} settlements).
@@ -79,7 +79,7 @@ export function L1View() {
         <div className="mt-3"><Callout tone="info" title="Missing data is UNKNOWN">A missing feed is not evidence of good or bad behaviour. Detectors that need it return UNKNOWN, and UNKNOWN is excluded from risk scoring in L4.{missing.length ? ` Here: ${missing.join(', ')}.` : ''}</Callout></div>
       </Panel>
       <Panel title="Event store" subtitle="Synthetic records, newest first. Source lineage is kept on every row." right={
-        <Tabs tabs={(['ALL', 'SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT'] as const).map(t => ({ id: t, label: t === 'ALL' ? 'All' : t[0] + t.slice(1).toLowerCase() }))} value={f as 'ALL'} onChange={v => { setF(v); setLimit(14); }} />} bodyClass="p-0 overflow-x-auto">
+        <Tabs tabs={(['ALL', 'SALE', 'REFUND', 'CHARGEBACK', 'TRANSFER', 'SETTLEMENT'] as const).map(t => ({ id: t, label: t === 'ALL' ? 'All' : t[0] + t.slice(1).toLowerCase() }))} value={f as 'ALL'} onChange={v => { setF(v); setLimit(14); }} />} bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Event</Th><Th>Type</Th><Th>Amount</Th><Th>Event time (IST)</Th><Th>Payer hash</Th><Th>State</Th><Th>Channel</Th><Th>Linked sale</Th><Th>Source</Th></tr></thead>
           <tbody>{rows.slice(0, Math.min(shown, limit)).map(e => (
             <tr key={e.id} className={rowCls}><Td><Mono>{e.id}</Mono></Td><Td><Badge tone={typeTone[e.type]}>{e.type[0] + e.type.slice(1).toLowerCase()}</Badge></Td><Td className="tabular-nums">{inr(e.amount)}</Td><Td className="font-mono text-xs">{fmtDateTime(e.eventTime)}</Td>

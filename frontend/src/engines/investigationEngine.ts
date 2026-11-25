@@ -30,7 +30,7 @@ function layer1(
   for (const e of ev) if (e.type === 'SALE' && !seen.has(e.payerRef) && hashSamples.length < 4) { seen.add(e.payerRef); hashSamples.push({ raw: e.payerRef, hash: e.payerHash }); }
   const c = sc.coverage;
   return { counts, refundLinkage: { total: refunds.length, linked, orphan: refunds.length - linked }, coverage: c, hashSamples, sources: [
-    { name: 'Payment transactions', key: 'acquiring', state: c.acquiring, records: counts.SALE.n, note: 'Acquirer UPI and POS feed' },
+    { name: 'Payment transactions', key: 'acquiring', state: c.acquiring, records: counts.SALE.n, note: 'Acquirer UPI, QR, card, netbanking, wallet & POS feed' },
     { name: 'Refunds and chargebacks', key: 'acquiring', state: c.acquiring, records: counts.REFUND.n + counts.CHARGEBACK.n, note: 'Refund ledger' },
     { name: 'Settlements', key: 'acquiring', state: c.acquiring, records: counts.SETTLEMENT.n, note: 'Settlement ledger' },
     { name: 'Merchant KYC', key: 'kyc', state: 'AVAILABLE', records: 1, note: 'Declared profile and documents' },
@@ -98,22 +98,23 @@ function investigate(
   }
   const vol = volumeModel(sc), rows = vol.rows, cs = cusum(rows, vol.z), cohort = cohortContinuity(sc);
   const norm = RULES.mcc(sc.profile.mcc), covered = passportCover(sc);
-  const detect = (xs: PaymentEvent[], scope: Scope, pre?: { s: PaymentEvent[]; r: PaymentEvent[]; st: PaymentEvent[]; tr: PaymentEvent[] }) => {
+  const detect = (xs: PaymentEvent[], scope: Scope, pre?: { s: PaymentEvent[]; r: PaymentEvent[]; st: PaymentEvent[]; tr: PaymentEvent[]; cb: PaymentEvent[] }) => {
     const view = scope.kind === 'link' ? { ...sc, web: { ...sc.web, embeds: sc.web.embeds.filter(e => e.merchantId !== sc.primaryMerchantId || e.linkId === scope.id) } }
-      : scope.kind === 'repeat-payers' ? { ...sc, web: { embeds: [], catalogue: sc.web.catalogue } } : sc;
+      : scope.kind === 'repeat-payers' || scope.kind === 'channel' ? { ...sc, web: { embeds: [], catalogue: sc.web.catalogue } } : sc;
     const s = pre ? pre.s : xs.filter(e => e.type === 'SALE');
     const r = pre ? pre.r : xs.filter(e => e.type === 'REFUND');
     const st = pre ? pre.st : xs.filter(e => e.type === 'SETTLEMENT');
     const tr = pre ? pre.tr : xs.filter(e => e.type === 'TRANSFER');
+    const cb = pre ? pre.cb : xs.filter(e => e.type === 'CHARGEBACK');
     return runDetectors({
-      sc: view, p: sc.profile, norm, vol, all: xs, sales: s, refunds: r, settlements: st, transfers: tr,
+      sc: view, p: sc.profile, norm, vol, all: xs, sales: s, refunds: r, settlements: st, transfers: tr, chargebacks: cb,
       rows, cusum: cs, cohort, scope: scope.kind, covered, learnedRates: opts.learnedRates,
     });
   };
 
   const salesN = sales.length;
   const account: Scope = { kind: 'account', id: 'account', label: 'Whole account', sales: salesN, share: 1 };
-  let scope = account, evidence = detect(events, account, { s: sales, r: refunds, st: settlements, tr: transfers }), fusion = fuse(evidence, sc.profile, opts);
+  let scope = account, evidence = detect(events, account, { s: sales, r: refunds, st: settlements, tr: transfers, cb: chargebacks }), fusion = fuse(evidence, sc.profile, opts);
   const wholeAccount = evidence;
 
   const parts = splitStreams(events);

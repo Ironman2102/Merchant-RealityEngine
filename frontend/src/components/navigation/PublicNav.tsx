@@ -32,20 +32,20 @@ export function PublicNav({ landing = false }: { landing?: boolean }) {
     </header>
   );
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-line bg-black/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
         <Link to="/" aria-label="Merchant Reality Engine home"><Logo /></Link>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-          {ITEMS.map(([l, id]) => <button key={id} onClick={() => go(id)} className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">{l}</button>)}
-          <Link to="/architecture" className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">Architecture</Link>
-          <Link to="/ai-engine" className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">AI Engine</Link>
-          <Link to="/demo" className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">Guided demo</Link>
+          {ITEMS.map(([l, id]) => <button key={id} onClick={() => go(id)} className="rounded px-3 py-1.5 text-xs font-medium tracking-wide text-mute hover:text-ink">{l}</button>)}
+          <Link to="/architecture" className="rounded px-3 py-1.5 text-xs font-medium tracking-wide text-mute hover:text-ink">Architecture</Link>
+          <Link to="/ai-engine" className="rounded px-3 py-1.5 text-xs font-semibold tracking-wide text-[#6ee7b7] hover:text-[#a7f3d0]">AI Engine</Link>
+          <Link to="/demo" className="rounded px-3 py-1.5 text-xs font-semibold tracking-wide text-[#6ee7b7] hover:text-[#a7f3d0]">Guided demo</Link>
         </nav>
         <div className="flex items-center gap-2"><Link to="/ai-engine"><Btn variant="primary" size="sm">Open AI Engine</Btn></Link>
-          <button className="rounded p-1.5 text-mute md:hidden" onClick={() => setOpen(o => !o)} aria-label="Menu" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button></div>
+          <button className="rounded p-1.5 text-[#6ee7b7] md:hidden" onClick={() => setOpen(o => !o)} aria-label="Menu" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button></div>
       </div>
-      {open && <div className="border-t border-line px-5 py-3 md:hidden">{ITEMS.map(([l, id]) => <button key={id} onClick={() => { setOpen(false); go(id); }} className="block w-full py-2 text-left text-sm text-mute">{l}</button>)}
-        <Link to="/architecture" className="block py-2 text-sm text-mute" onClick={() => setOpen(false)}>Architecture</Link><Link to="/ai-engine" className="block py-2 text-sm text-mute" onClick={() => setOpen(false)}>AI Engine</Link><Link to="/demo" className="block py-2 text-sm text-mute" onClick={() => setOpen(false)}>Guided demo</Link></div>}
+      {open && <div className="border-t border-line bg-black px-5 py-3 md:hidden">{ITEMS.map(([l, id]) => <button key={id} onClick={() => { setOpen(false); go(id); }} className="block w-full py-2 text-left text-sm text-mute hover:text-ink">{l}</button>)}
+        <Link to="/architecture" className="block py-2 text-sm text-mute hover:text-ink" onClick={() => setOpen(false)}>Architecture</Link><Link to="/ai-engine" className="block py-2 text-sm text-[#6ee7b7]" onClick={() => setOpen(false)}>AI Engine</Link><Link to="/demo" className="block py-2 text-sm text-[#6ee7b7]" onClick={() => setOpen(false)}>Guided demo</Link></div>}
     </header>
   );
 }

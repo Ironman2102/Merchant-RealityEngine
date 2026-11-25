@@ -3,7 +3,7 @@
  * in `frontend/src/engines/detectors.ts`.
  * Returns the number of failed assertions.
  */
-import { runDetectors, outsideHours } from '../../frontend/src/engines/detectors';
+import { DETECTORS, runDetectors, outsideHours } from '../../frontend/src/engines/detectors';
 import { volumeModel } from '../../frontend/src/engines/residualEngine';
 import { cusum } from '../../frontend/src/engines/cusumEngine';
 import { cohortContinuity } from '../../frontend/src/engines/cohortContinuity';
@@ -156,9 +156,9 @@ export default function (): number {
     else console.log(`  ✓ ${name}`);
   };
 
-  // 1. Coverage gating across all 28 detectors: MISSING -> UNKNOWN & LLR=0; PARTIAL -> 0.7× LLR
+  // 1. Coverage gating across all detectors: MISSING -> UNKNOWN & LLR=0; PARTIAL -> 0.7× LLR
   const baseEv = evalDetectors(mkBaseScenario());
-  check('all 28 detectors emitted', baseEv.size === 28, `got ${baseEv.size}`);
+  check(`all ${DETECTORS.length} detectors emitted`, baseEv.size === DETECTORS.length, `got ${baseEv.size}`);
 
   const covKeys: CoverageKey[] = ['acquiring', 'website', 'orders', 'bank', 'fulfillment', 'calendar', 'verification'];
   for (const key of covKeys) {

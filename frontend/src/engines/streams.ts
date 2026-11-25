@@ -16,19 +16,35 @@ export interface Stream { scope: Scope; events: PaymentEvent[] }
 export function splitStreams(events: PaymentEvent[]): Stream[] {
   const cfg = RULES.engine.streams, sales = events.filter(e => e.type === 'SALE'), N = sales.length;
   const refunds = events.filter(e => e.type === 'REFUND');
-  const withRefunds = (xs: PaymentEvent[], link?: string) => {
+  const chargebacks = events.filter(e => e.type === 'CHARGEBACK');
+  const withLinked = (xs: PaymentEvent[], link?: string, channel?: string) => {
     const ids = new Set(xs.map(e => e.id));
-    return [...xs, ...refunds.filter(r => (r.linkedSaleId && ids.has(r.linkedSaleId)) || (link && r.linkId === link))].sort((a, b) => a.eventTime - b.eventTime);
+    const relRefunds = refunds.filter(r => (r.linkedSaleId && ids.has(r.linkedSaleId)) || (link && r.linkId === link) || (channel && r.channel === channel));
+    const relCbs = chargebacks.filter(c => (c.linkedSaleId && ids.has(c.linkedSaleId)) || (link && c.linkId === link) || (channel && c.channel === channel));
+    return [...xs, ...relRefunds, ...relCbs].sort((a, b) => a.eventTime - b.eventTime);
   };
   const byLink = new Map<string, PaymentEvent[]>();
   for (const e of sales) if (e.linkId) { const list = byLink.get(e.linkId); if (list) list.push(e); else byLink.set(e.linkId, [e]); }
   const out: Stream[] = [...byLink.entries()]
     .filter(([, xs]) => xs.length >= cfg.minSales && xs.length <= cfg.maxShare * N)
     .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).slice(0, cfg.maxStreams)
-    .map(([id, xs]) => ({ scope: { kind: 'link', id, label: `QR / link ${id}`, sales: xs.length, share: xs.length / N }, events: withRefunds(xs, id) }));
+    .map(([id, xs]) => ({ scope: { kind: 'link', id, label: `Payment link / QR ${id}`, sales: xs.length, share: xs.length / N }, events: withLinked(xs, id) }));
+  // Also split by payment rail/channel (e.g. CARD, NETBANKING, WALLET, UPI_QR, POS) when multiple rails are active
+  // and a rail is not already identically covered by a single link stream (covers dynamic QRs and card/netbanking flows).
+  const byChannel = new Map<string, PaymentEvent[]>();
+  for (const e of sales) { const list = byChannel.get(e.channel); if (list) list.push(e); else byChannel.set(e.channel, [e]); }
+  if (byChannel.size >= 2) {
+    const linkSaleSets = out.map(s => new Set(s.events.filter(e => e.type === 'SALE').map(e => e.id)));
+    for (const [ch, xs] of [...byChannel.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))) {
+      if (xs.length < cfg.minSales || xs.length > cfg.maxShare * N) continue;
+      const dupOfLink = linkSaleSets.some(set => set.size === xs.length && xs.every(e => set.has(e.id)));
+      if (dupOfLink) continue;
+      out.push({ scope: { kind: 'channel', id: ch, label: `Channel ${ch.replace(/_/g, ' ')}`, sales: xs.length, share: xs.length / N }, events: withLinked(xs, undefined, ch) });
+    }
+  }
   const repeat = regulars(sales);
   if (repeat.length >= cfg.minSales && repeat.length <= cfg.repeatCohortMaxShare * N)
-    out.push({ scope: { kind: 'repeat-payers', id: 'repeat-payers', label: 'Repeat payers, across every QR', sales: repeat.length, share: repeat.length / N }, events: withRefunds(repeat) });
+    out.push({ scope: { kind: 'repeat-payers', id: 'repeat-payers', label: 'Repeat payers, across all channels', sales: repeat.length, share: repeat.length / N }, events: withLinked(repeat) });
   return out;
 }
 

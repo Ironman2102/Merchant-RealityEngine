@@ -43,8 +43,8 @@ async function modelUpToDate(): Promise<boolean> {
   try {
     const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) return false;
-    const body = await res.json() as { status?: string; nn?: boolean; serveVersion?: number };
-    return body.status === 'ok' && body.nn === true && body.serveVersion === 3;
+    const body = await res.json() as { status?: string; model?: string; nn?: boolean; serveVersion?: number };
+    return body.status === 'ok' && body.model === 'stage2-v1' && body.nn === true && body.serveVersion === 3;
   } catch { return false; }
 }
 
@@ -56,9 +56,15 @@ async function launchServer(id: string): Promise<void> {
   const base = String(info.json.toolboxProxyUrl || '');
   if (!base) return;
   const cmd = [
-    'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 /tmp/mre/ml/models/classical-v0 /tmp/mre/ml/models/ae-v0 /tmp/mre/ml/models/seq-v0 /tmp/mre/ml/models/graph-v0 &&',
-    `curl -sf http://127.0.0.1:8790/health | grep -q '"serveVersion":3' || (`,
+    'mkdir -p /tmp/mre/ml/models/stage2-v1 /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 /tmp/mre/ml/models/classical-v0 /tmp/mre/ml/models/ae-v0 /tmp/mre/ml/models/seq-v0 /tmp/mre/ml/models/graph-v0 &&',
+    `curl -sf http://127.0.0.1:8790/health | grep -q '"model":"stage2-v1"' || (`,
+    `curl -fsSL ${RAW_GH}/ml/__init__.py -o /tmp/mre/ml/__init__.py &&`,
     `curl -fsSL ${RAW_GH}/ml/serve.py -o /tmp/mre/ml/serve.py &&`,
+    `curl -fsSL ${RAW_GH}/ml/stage2_lib.py -o /tmp/mre/ml/stage2_lib.py &&`,
+    `curl -fsSL ${RAW_GH}/ml/stage2_math.py -o /tmp/mre/ml/stage2_math.py &&`,
+    `curl -fsSL ${RAW_GH}/ml/explain.py -o /tmp/mre/ml/explain.py &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/stage2-v1/ensemble.json -o /tmp/mre/ml/models/stage2-v1/ensemble.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/stage2-v1/models.joblib -o /tmp/mre/ml/models/stage2-v1/models.joblib &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/model.txt -o /tmp/mre/ml/models/m1-v0/model.txt &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/calibrator.json -o /tmp/mre/ml/models/m1-v0/calibrator.json &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/features.json -o /tmp/mre/ml/models/m1-v0/features.json &&`,
@@ -80,9 +86,9 @@ async function launchServer(id: string): Promise<void> {
     body: JSON.stringify({
       command: cmd,
       cwd: '/tmp/mre',
-      timeout: 25,
+      timeout: 60,
     }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(65000),
   });
 }
 

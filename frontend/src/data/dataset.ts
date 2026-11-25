@@ -121,13 +121,41 @@ export interface DatasetSummary {
 }
 
 export const TYPES: EventType[] = ['SALE', 'REFUND', 'TRANSFER', 'SETTLEMENT', 'CHARGEBACK'];
-const CHANNELS: Channel[] = ['POS', 'UPI_LINK', 'UPI_COLLECT', 'ONLINE', 'PAYOUT', 'BANK'];
-/** Accept common input formatting and the legacy generic UPI value, but keep the
+export const CHANNELS: Channel[] = ['POS', 'UPI_QR', 'UPI_LINK', 'UPI_COLLECT', 'CARD', 'NETBANKING', 'WALLET', 'BNPL', 'ONLINE', 'PAYOUT', 'BANK'];
+const CHANNEL_ALIASES: Record<string, Channel> = {
+  UPI: 'UPI_LINK',
+  UPI_INTENT: 'UPI_LINK',
+  QR: 'UPI_QR',
+  STATIC_QR: 'UPI_QR',
+  DYNAMIC_QR: 'UPI_QR',
+  UPI_STATIC_QR: 'UPI_QR',
+  UPI_DYNAMIC_QR: 'UPI_QR',
+  CARD_ONLINE: 'CARD',
+  CARD_POS: 'CARD',
+  CREDIT_CARD: 'CARD',
+  DEBIT_CARD: 'CARD',
+  VISA: 'CARD',
+  MASTERCARD: 'CARD',
+  RUPAY: 'CARD',
+  AMEX: 'CARD',
+  NET_BANKING: 'NETBANKING',
+  INTERNET_BANKING: 'NETBANKING',
+  NB: 'NETBANKING',
+  PREPAID_WALLET: 'WALLET',
+  PPI: 'WALLET',
+  PAYTM_WALLET: 'WALLET',
+  PHONEPE_WALLET: 'WALLET',
+  MOBIKWIK: 'WALLET',
+  EMI: 'BNPL',
+  PAY_LATER: 'BNPL',
+  PAYLATER: 'BNPL',
+};
+/** Accept common input formatting and payment-rail aliases, while keeping the
  * internal event channel restricted to the canonical Channel enum. */
 export function normalizeChannel(value: unknown): Channel | undefined {
   if (typeof value !== 'string') return undefined;
   const key = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
-  const canonical = key === 'UPI' ? 'UPI_LINK' : key;
+  const canonical = CHANNEL_ALIASES[key] ?? key;
   return CHANNELS.includes(canonical as Channel) ? canonical as Channel : undefined;
 }
 const COVERAGE: CoverageKey[] = ['acquiring', 'website', 'orders', 'bank', 'fulfillment', 'calendar', 'verification'];
@@ -138,7 +166,18 @@ const strArr = (x: unknown) => Array.isArray(x) && x.every(isStr);
 const { maxPaymentRupees, maxSettlementRupees } = RULES.engine.limits;
 
 function defaultSource(t: DatasetTransaction): string {
-  return t.type === 'SETTLEMENT' ? 'settlement.ledger' : t.type === 'TRANSFER' ? 'payout.ledger' : t.type === 'REFUND' || t.type === 'CHARGEBACK' ? 'acquirer.refund' : 'acquirer.upi';
+  if (t.type === 'SETTLEMENT') return 'settlement.ledger';
+  if (t.type === 'TRANSFER') return 'payout.ledger';
+  if (t.type === 'CHARGEBACK') return 'acquirer.chargeback';
+  if (t.type === 'REFUND') return 'acquirer.refund';
+  const ch = normalizeChannel(t.channel);
+  if (ch === 'CARD') return 'acquirer.card';
+  if (ch === 'NETBANKING') return 'acquirer.netbanking';
+  if (ch === 'WALLET') return 'acquirer.wallet';
+  if (ch === 'BNPL') return 'acquirer.bnpl';
+  if (ch === 'POS') return 'acquirer.pos';
+  if (ch === 'ONLINE') return 'acquirer.online';
+  return 'acquirer.upi';
 }
 
 const GRAPH_LINKS = 60;

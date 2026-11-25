@@ -59,8 +59,8 @@ export interface FusionResult {
   /** Log-odds added to the prior because several streams were tested. */
   priorShift: number;
 }
-/** What the headline evidence and probability refer to: the whole account, one QR / link, or its repeat payers. */
-export interface Scope { kind: 'account' | 'link' | 'repeat-payers'; id: string; label: string; sales: number; share: number }
+/** What the headline evidence and probability refer to: the whole account, one QR / link, one payment rail, or repeat payers. */
+export interface Scope { kind: 'account' | 'link' | 'channel' | 'repeat-payers'; id: string; label: string; sales: number; share: number }
 export interface StreamResult { scope: Scope; posterior: number; decision: 'OPEN_CASE' | 'NO_CASE'; followUp: 'ASK' | 'NONE'; fired: string[] }
 export interface DecisionAnalysis {
   actions: { level: ResponseLevel; label: string; expectedLoss: number; expectedLossLow: number; expectedLossHigh: number; autoAllowed: boolean }[];
