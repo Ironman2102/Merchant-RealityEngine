@@ -26,6 +26,20 @@ Demo samples (never trained on), served with the base-rate shift: all 6 fronts f
 98.0%, others 96.6–99.8%); all 5 honest merchants at most 0.7%. In the trace panel the neural network is shown as one
 stack member with its weight, on the training scale, not as a separate opinion beside the shifted stacked score.
 
+### Multi-modal encoders: which are on (25 Nov 2026)
+
+Measured on the 11 demo merchants (6 fronts, 5 honest), a score of 0.5 or more counted as a flag:
+
+| Encoder | Fronts flagged | Honest flagged | Status |
+|---|---|---|---|
+| Temporal 1D-CNN (`seq-v0`) | 6/6 | 0/5 | On |
+| Autoencoder (`ae-v0`) | 6/6 | 2/5 | On, shown as "unusual vs training data", never as risk |
+| Entity graph R-GCN (`graph-v0`) | 4/6 | 4/5 (three at 0.95) | Off by default |
+| Bi-encoder (lexical fallback without the neural model) | 4/5 | 4/4 (all at 1.0) | Off by default |
+
+The graph encoder and bi-encoder made the second opinion less accurate on honest merchants, so `/score` leaves them out
+unless `MRE_EXPERIMENTAL_ENCODERS=1`. None of the encoders opens or closes a case.
+
 ## Problems found in v0
 
 | # | Problem | Effect |
