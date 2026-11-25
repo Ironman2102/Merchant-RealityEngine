@@ -633,13 +633,19 @@ def _should_run_nli(ensemble_p: float, disagreement: float, features: dict[str, 
     return (low <= ensemble_p <= high) or (disagreement >= 0.15) or low_cov or has_high_signal_text
 
 
+# The graph encoder and the bi-encoder are off unless MRE_EXPERIMENTAL_ENCODERS=1. On the demo merchants the graph
+# encoder scored three of five honest shops at 0.95, and the bi-encoder (lexical fallback without the neural model)
+# scored every merchant with a catalogue at 1.0, so showing them made the second opinion less accurate, not more.
+EXPERIMENTAL_ENCODERS = os.environ.get('MRE_EXPERIMENTAL_ENCODERS') == '1'
+
+
 def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float, skip_nli: bool = False) -> dict[str, Any]:
     out: dict[str, Any] = {}
     if not skip_nli and _should_run_nli(ensemble_p, disagreement, body.features, body.context, body.force_encoder):
         enc = _contextual_score(body.context)
         if enc:
             out['encoder'] = enc
-    bi = _bi_encoder_score(body.alignment)
+    bi = _bi_encoder_score(body.alignment) if EXPERIMENTAL_ENCODERS else None
     if bi:
         out['biEncoder'] = bi
     ae = _ae_forward(body.features)
@@ -648,7 +654,7 @@ def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float, ski
     seq = _temporal_forward(body.sequence)
     if seq:
         out['temporal'] = seq
-    gr = _graph_forward(body.graph)
+    gr = _graph_forward(body.graph) if EXPERIMENTAL_ENCODERS else None
     if gr:
         out['graph'] = gr
     return out
@@ -833,11 +839,12 @@ def health():
         'encoderStatus': _encoder_status,
         'encoderModel': _encoder_model_loaded or os.getenv('MRE_ENCODER_MODEL', DEFAULT_NLI_MODEL).strip(),
         'encoderError': _encoder_error,
-        'biEncoder': _bi_model is not None,
+        'biEncoder': EXPERIMENTAL_ENCODERS and _bi_model is not None,
         'biEncoderStatus': _bi_status,
         'autoencoder': _ae is not None,
         'temporal': _seq is not None,
-        'graph': _graph is not None,
+        'graph': EXPERIMENTAL_ENCODERS and _graph is not None,
+        'experimentalEncoders': EXPERIMENTAL_ENCODERS,
         'serveVersion': 3,
     }
 
@@ -847,6 +854,7 @@ def score(body: ScoreIn):
     if v1_ready():
         # The stacked ensemble scores the merchant; the alignment, autoencoder, temporal and graph encoders still add
         # their supporting views. v1 decides on its own when to run the NLI encoder, so it is not run a second time.
+        ready()  # loads the autoencoder and temporal models; without it a first /score before any /health drops them
         out = _v1_score(body)
         ens = out.get('ensemble') or {}
         aux = _run_aux_encoders(body, float(ens.get('pTrainScale', out.get('p') or 0.0)), float(ens.get('disagreement', 0.0)),

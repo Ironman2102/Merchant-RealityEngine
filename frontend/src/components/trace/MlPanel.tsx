@@ -176,7 +176,7 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
                     <li>Uncertainty: {ml.ensemble.uncertainty.totalBits.toFixed(3)} bits = noise {ml.ensemble.uncertainty.aleatoricBits.toFixed(3)} + model disagreement {ml.ensemble.uncertainty.epistemicBits.toFixed(3)}</li>
                   )}
                   {ml.ensemble.neymanPearson && (
-                    <li>False-alarm-controlled bar (at most {Math.round(ml.ensemble.neymanPearson.alpha * 100)}% of honest merchants, {Math.round((1 - ml.ensemble.neymanPearson.delta) * 100)}% confidence): <b className="text-ink">{ml.ensemble.neymanPearson.flag ? 'above' : 'below'}</b></li>
+                    <li>False-alarm-controlled bar on the training-scale score {fmtProb(ml.ensemble.pTrainScale ?? ml.ensemble.p)} (at most {Math.round(ml.ensemble.neymanPearson.alpha * 100)}% of honest training merchants, {Math.round((1 - ml.ensemble.neymanPearson.delta) * 100)}% confidence): <b className="text-ink">{ml.ensemble.neymanPearson.flag ? 'above' : 'below'}</b>. The review bar below, on the engine's base rate, is the one that suggests a review.</li>
                   )}
                   {ml.ensemble.priorShift?.applied && (
                     <li>Moved from the training base rate ({fmtProb(ml.ensemble.priorShift.trainPrevalence)}) onto the engine prior ({fmtProb(ml.ensemble.priorShift.enginePrior ?? 0)}): {fmtProb(ml.ensemble.pTrainScale ?? ml.ensemble.p)} → {fmtProb(ml.ensemble.p)}</li>
@@ -210,9 +210,9 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
                 {ml.autoencoder && (
                   <div className="rounded border border-line bg-panel2 p-2.5 text-xs">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-mute">Behavioral Autoencoder ({ml.autoencoder.modelVersion})</span>
-                      <Badge tone={ml.autoencoder.isAnomaly ? 'bad' : 'ok'}>
-                        {ml.autoencoder.isAnomaly ? 'Anomaly' : 'Normal'} · {fmtProb(ml.autoencoder.anomalyScore)}
+                      <span className="text-mute">Unusual vs training data · autoencoder ({ml.autoencoder.modelVersion})</span>
+                      <Badge tone={ml.autoencoder.isAnomaly ? 'info' : 'mute'}>
+                        {ml.autoencoder.isAnomaly ? 'Unusual' : 'Typical'} · {fmtProb(ml.autoencoder.anomalyScore)}
                       </Badge>
                     </div>
                     <div className="mt-1 text-[11px] text-mute">
