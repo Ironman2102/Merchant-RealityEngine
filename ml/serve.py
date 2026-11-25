@@ -1,6 +1,7 @@
 """Local second-opinion scorer. GET /health, POST /score. The Bayesian engine still decides."""
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 
 try:
@@ -23,26 +24,31 @@ _net: dict | None = None
 _encoder = None
 _classical: list[dict] = []
 
+@lru_cache(maxsize=128)
+def _run_encoder(encoder_id: int, model_name: str, snippet: str):
+    result = _encoder(snippet, candidate_labels=[
+        'description consistent with the declared merchant business',
+        'description suggests a different or undisclosed business activity',
+        'insufficient context to assess the merchant description',
+    ], multi_label=False)
+    labels = result.get('labels', [])
+    scores = result.get('scores', [])
+    return (labels[0] if labels else None, float(scores[0]) if scores else None)
+
+
 def _contextual_score(text: str):
     """Optional lazy zero-shot text encoder. Loads only for uncertain cases and only when configured."""
     global _encoder
     model_name = os.getenv('MRE_ENCODER_MODEL', 'valhalla/distilbart-mnli-12-1').strip()
-    if not model_name or not text.strip():
+    snippet = text.strip()[:900]
+    if not model_name or not snippet:
         return None
     try:
         if _encoder is None:
             from transformers import pipeline
             _encoder = pipeline('zero-shot-classification', model=model_name, device=-1)
-        result = _encoder(text[:6000], candidate_labels=[
-            'description consistent with the declared merchant business',
-            'description suggests a different or undisclosed business activity',
-            'insufficient context to assess the merchant description',
-        ], multi_label=False)
-        labels = result.get('labels', [])
-        scores = result.get('scores', [])
-        return {'label': labels[0] if labels else None,
-                'score': float(scores[0]) if scores else None,
-                'modelVersion': model_name}
+        label, score = _run_encoder(id(_encoder), model_name, snippet)
+        return {'label': label, 'score': score, 'modelVersion': model_name}
     except Exception:
         # Encoder availability must never take down the statistical/model scoring path.
         return None

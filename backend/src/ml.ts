@@ -1,7 +1,7 @@
 /** Ask the local model service. Any failure, including a timeout, leaves the Bayesian decision unchanged. */
 import { features } from '../../engine/features';
 import type { InvestigationResult } from '../../frontend/src/types/investigation';
-import { modelHostConfigured, startModelSandbox, stopModelSandbox } from './modelHost';
+import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 
 export interface MlDriver { feature: string; shap: number }
 export interface MlOpinion {
@@ -31,7 +31,8 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
   const isLocal = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(url);
   // First uncertain request may lazily load the configured text model; allow that one-time cost.
   const defaultTimeout = isLocal ? 10000 : 5000;
-  const timeoutMs = Number(process.env.MRE_ML_TIMEOUT) > 0 ? Number(process.env.MRE_ML_TIMEOUT) : defaultTimeout;
+  const rawTimeout = Number(process.env.MRE_ML_TIMEOUT) > 0 ? Number(process.env.MRE_ML_TIMEOUT) : defaultTimeout;
+  const timeoutMs = isLocal ? rawTimeout : Math.min(24000, rawTimeout);
   try {
     const res = await fetch(`${url}/score`, {
       method: 'POST',
@@ -67,6 +68,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
 export async function scoreWithHost(result: InvestigationResult): Promise<MlOpinion | null> {
   const direct = await mlScore(result);
   if (direct || !modelHostConfigured()) return direct;
+  if (await modelOnline()) return null;
   await startModelSandbox();
   return await mlScore(result);
 }
