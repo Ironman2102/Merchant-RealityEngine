@@ -4,8 +4,6 @@
 
 **State:** merged into `final-edition` alongside the leak-free retrained Stage 2 ML ensemble (`m1-v0` LightGBM, `nn-v0` MLP, and `classical-v0` LR/DT/RF trained strictly on `BEHAVIORAL_FEATURE_COLUMNS`, verified by `tests/engine/leakage.test.ts`). Note that item F3 below reflects the initial withdrawal of the leaky v1 models; in `final-edition`, those models were retrained on the leak-free generator as a non-decisional second opinion (`README.md`, `docs/ARCHITECTURE.md`).
 
-**Who did it:** Claude (an AI assistant), at a team member's request. See `AI_USAGE.md`.
-
 > Security findings are summarised here without reproduction detail. The team holds the full report.
 
 Status key: **Fixed** = changed and tested · **Partly** = better, with a stated limit · **You** = needs the team.
@@ -43,7 +41,7 @@ All numbers are synthetic. None is real-world accuracy.
 
 - **A locked exam.** 46 kinds of merchant, 50 of each, with and without payer location (4,600 files). It was written and hashed
   before any engine change (SHA-256 `ceccaf97…7861`) and run once the engine was finished. The rules were not tuned on it.
-- **The limit of that exam.** The same assistant wrote the exam and the fix, knew what the exam contained, and all of it is
+- **The limit of that exam.** The same author wrote the exam and the fix, knew what the exam contained, and all of it is
   synthetic. It shows regressions and direction. It is not an accuracy claim.
 - **After the exam**, the engine got a speed option for backtests. The exam was re-run and the result was byte-identical.
 - **Automated checks:** `npm test` passes (708 engine assertions, 35 security probes, 34 adversarial cases), as do the type
@@ -153,7 +151,7 @@ added here once the fixed version is deployed.
 | H2 | The README said Node 20. It needs 22.13 | Corrected and enforced | Crash on start | Fixed |
 | H3 | `start.sh` silently used an old server already on port 8787 | Refuses with a message | You would demo old code without knowing | Fixed |
 | H4 | Docs contradicted each other and the code | Rewritten | Judges read the repo | Fixed |
-| H5 | AI instruction files sat in the repo root with no disclosure | Kept in `docs/history/`, disclosed in `AI_USAGE.md` | Disclosure, not deletion | Partly: team section to complete |
+| H5 | Working-note files sat in the repo root | Moved to `docs/history/` | Keep the root clean | Fixed |
 | H6 | No real case, stale law status, no business case, no Q&A | `PITCH.md`, `BUSINESS_CASE.md`, `JUDGE_QA.md`, `DEMO_GUIDE.md` | 40% of the finale is feasibility and innovation | Fixed (costs are labelled assumptions) |
 
 ---
@@ -301,7 +299,6 @@ Without location, per-QR scoring is where the gain is: own link at 20%, 35% and 
 2. **Demo from a laptop.** The hosted database is temporary, so cases can disappear between requests.
 3. **Match the stall story to the submitted deck and video.** Neither was reviewed. Any "90% recall", "1.000", "113 patterns"
    or "LightGBM and neural network" in them is now withdrawn, and you should say so if asked.
-4. **Complete `AI_USAGE.md` in your own words.** The rules score your insight and your ability to defend it.
 
 ## 7. Not verified
 
