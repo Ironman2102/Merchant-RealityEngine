@@ -84,9 +84,7 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; lette
   background: var(--color-bg);
   color: var(--color-ink);
 }
-.mre-app div.bg-white:not(.text-black),
-.mre-app section.bg-white:not(.text-black),
-.mre-app article.bg-white:not(.text-black),
+.mre-app .bg-white:not(.text-black),
 .mre-app .bg-white\/90:not(.text-black),
 .mre-app .bg-white\/80:not(.text-black) { background-color: var(--color-panel) !important; }
 .mre-app .bg-white.text-black { background-color: #ffffff !important; color: #000000 !important; }

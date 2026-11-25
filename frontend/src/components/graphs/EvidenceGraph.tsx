@@ -104,8 +104,8 @@ function MreNode({ data }: NodeProps) {
       style={{
         width: NODE_W,
         minHeight: NODE_H,
-        borderColor: sel ? '#4f46e5' : illicitCount > 0 && spec.type !== 'merchant' ? '#ef4444' : path ? color : spec.type === 'merchant' ? '#0284c7' : '#cbd5e1',
-        backgroundColor: spec.type === 'merchant' ? '#f0f9ff' : '#ffffff',
+        borderColor: sel ? '#4f46e5' : illicitCount > 0 && spec.type !== 'merchant' ? '#ef4444' : path ? color : spec.type === 'merchant' ? '#0284c7' : 'var(--color-line2)',
+        backgroundColor: spec.type === 'merchant' ? '#0b1b26' : 'var(--color-panel2)',
       }}
       className={cx(
         'relative flex items-center gap-2.5 py-2 shadow-xs transition-all',
@@ -467,14 +467,14 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
             <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
               <button
                 onClick={() => setDir('LR')}
-                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'LR' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'LR' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
                 title="Left-to-right Mermaid layout"
               >
                 <ArrowLeftRight size={13} /> LR
               </button>
               <button
                 onClick={() => setDir('TD')}
-                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'TD' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'TD' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
                 title="Top-down Mermaid layout"
               >
                 <ArrowDownUp size={13} /> TD
@@ -483,13 +483,13 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
             <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
               <button
                 onClick={() => setViewMode('diagram')}
-                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'diagram' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'diagram' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
               >
                 <GitFork size={13} /> Diagram
               </button>
               <button
                 onClick={() => setViewMode('mermaid')}
-                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'mermaid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'mermaid' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
               >
                 <Code2 size={13} /> Mermaid
               </button>
@@ -515,7 +515,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
               onPaneClick={() => { setSelN(null); setSelE(null); }}
             >
               <Background variant={BackgroundVariant.Dots} color="#cbd5e1" gap={22} size={1.1} />
-              <MiniMap pannable zoomable nodeStrokeWidth={2} nodeColor={n => n.type === 'subgraph' ? '#f1f5f9' : '#cbd5e1'} className="!border !border-slate-200 !bg-white/95" />
+              <MiniMap pannable zoomable nodeStrokeWidth={2} nodeColor={n => n.type === 'subgraph' ? '#1a1a1a' : '#525252'} bgColor="var(--color-panel)" maskColor="rgba(0,0,0,0.55)" className="!border !border-slate-200" />
               <Controls showInteractive={false} />
             </ReactFlow>
           </div>
