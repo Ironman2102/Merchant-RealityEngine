@@ -82,8 +82,9 @@ export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => bo
 export function deliveredOrderCover(sc: Scenario): Set<string> {
   const cnt = new Map<string, number>();
   for (const o of sc.orders) if (o.trackingId) cnt.set(o.trackingId, (cnt.get(o.trackingId) ?? 0) + 1);
-  const good = sc.orders.filter(o => o.status === 'DELIVERED' && o.trackingId && cnt.get(o.trackingId) === 1);
-  if (!sc.orders.length || good.length / sc.orders.length < 0.9) return new Set(); // same bar as F7
+  const ok = sc.orders.filter(o => o.status === 'DELIVERED' && !(o.trackingId && cnt.get(o.trackingId)! > 1));
+  if (!sc.orders.length || ok.length / sc.orders.length < 0.9) return new Set(); // same bar and count as F7
+  const good = ok.filter(o => o.trackingId); // an excused sale needs its own tracking
   return new Set(sc.events
     .filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SALE' && good.some(o => o.saleId === e.id || (!!e.orderId && o.orderId === e.orderId)))
     .map(e => e.id));

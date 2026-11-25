@@ -286,7 +286,9 @@ export default function (): number {
     check('below 90% delivered excuses nothing', deliveredOrderCover(undelivered).size === 0);
 
     const noTrack = mkBaseScenario({ events: base.events, orders: base.orders.map((o, i) => i === 0 ? { ...o, trackingId: undefined } : o) });
-    check('no tracking not excused', !deliveredOrderCover(noTrack).has('S-0'));
+    check('no tracking counts for guard (F7) but not excused', deliveredOrderCover(noTrack).size === 39 && !deliveredOrderCover(noTrack).has('S-0'));
+    const fiveNoTrack = mkBaseScenario({ events: base.events, orders: base.orders.map((o, i) => i < 5 ? { ...o, trackingId: undefined } : o) }); // F7 count 40/40; tracked-only would be 35/40 < 90%
+    check('untracked delivered orders pass guard like F7', deliveredOrderCover(fiveNoTrack).size === 35);
 
     const byOrderId = mkBaseScenario({ events: base.events, orders: base.orders.map(o => ({ ...o, saleId: 'unknown' })) });
     check('matched by orderId', deliveredOrderCover(byOrderId).has('S-3'));
