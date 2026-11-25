@@ -72,7 +72,7 @@ Ten or more labelled merchants can propose a calibration. It must pass a holdout
 About 17 ms for a small merchant on a laptop core (`reports/perf.md`). Daily batch is enough. The cost is analyst time, not compute.
 
 **Did AI build this?**
-AI tools wrote much of the code, and we disclose it in `AI_USAGE.md`. Then give your own three decisions and why you made them.
+AI coding tools helped write much of the code. Then give your own three decisions and why you made them.
 
 **What changed since your submission?**
 Answer truthfully: an audit found leakage, false alarms and security holes, and we fixed them (`docs/AUDIT_FIX_REPORT.md`).
