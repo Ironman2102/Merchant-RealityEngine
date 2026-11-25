@@ -177,14 +177,14 @@ export function fuse(
   const illicitMass = famRows.reduce((s, f) => s + Math.max(0, f.llr), 0), benignMass = famRows.reduce((s, f) => s + Math.max(0, -f.llr), 0);
   const decisionAnalysis = decide(posterior, posteriorCi, gatePassed, followUp);
   const tau = E.gate.openPosterior;
-  const conformalSet: ('GENUINE' | 'FRONT')[] =
+  const uncertaintySet: ('GENUINE' | 'FRONT')[] =
     posteriorCi[1] < tau ? ['GENUINE'] : posteriorCi[0] >= tau ? ['FRONT'] : ['GENUINE', 'FRONT'];
-  const abstainRecommended = conformalSet.length > 1 || (!gatePassed && posterior >= tau);
+  const abstainRecommended = uncertaintySet.length > 1 || (!gatePassed && posterior >= tau);
   const priority = !gatePassed ? 'NONE' : posterior >= E.priority.high ? 'HIGH' : posterior >= E.priority.medium ? 'MEDIUM' : 'LOW';
   return {
     items, families, independentFamilies: strongFam.map(f => f.family), systems: strongProv.map(p => p.provenance), gatePassed, gateReason, illicitMass, benignMass, mechanisms,
     decision: gatePassed ? 'OPEN_CASE' : 'NO_CASE', priority, priorityScore: posterior, unknownIds: evidence.filter(e => e.status === 'UNKNOWN').map(e => e.id),
-    rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi, conformalSet, abstainRecommended,
+    rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi, uncertaintySet, abstainRecommended,
     followUp, conductSignals: conduct.map(e => e.id), priorShift: shift,
     logOdds: { prior: priorLogOdds, families: famRows, overrides, total }, provenances, mechanismPosterior, decisionAnalysis,
   };
