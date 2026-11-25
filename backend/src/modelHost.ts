@@ -40,7 +40,7 @@ async function modelUpToDate(): Promise<boolean> {
     const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) return false;
     const body = await res.json() as { status?: string; nn?: boolean; serveVersion?: number };
-    return body.status === 'ok' && body.nn === true && body.serveVersion === 2;
+    return body.status === 'ok' && body.nn === true && body.serveVersion === 3;
   } catch { return false; }
 }
 
@@ -52,13 +52,16 @@ async function launchServer(id: string): Promise<void> {
   const base = String(info.json.toolboxProxyUrl || '');
   if (!base) return;
   const cmd = [
-    'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 /tmp/mre/ml/models/classical-v0 &&',
-    `curl -sf http://127.0.0.1:8790/health | grep -q '"serveVersion":2' || (`,
+    'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 /tmp/mre/ml/models/classical-v0 /tmp/mre/ml/models/ae-v0 /tmp/mre/ml/models/seq-v0 /tmp/mre/ml/models/graph-v0 &&',
+    `curl -sf http://127.0.0.1:8790/health | grep -q '"serveVersion":3' || (`,
     `curl -fsSL ${RAW_GH}/ml/serve.py -o /tmp/mre/ml/serve.py &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/model.txt -o /tmp/mre/ml/models/m1-v0/model.txt &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/calibrator.json -o /tmp/mre/ml/models/m1-v0/calibrator.json &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/features.json -o /tmp/mre/ml/models/m1-v0/features.json &&`,
     `curl -fsSL ${RAW_GH}/ml/models/nn-v0/network.json -o /tmp/mre/ml/models/nn-v0/network.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/ae-v0/autoencoder.json -o /tmp/mre/ml/models/ae-v0/autoencoder.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/seq-v0/temporal.json -o /tmp/mre/ml/models/seq-v0/temporal.json &&`,
+    `curl -fsSL ${RAW_GH}/ml/models/graph-v0/graph.json -o /tmp/mre/ml/models/graph-v0/graph.json &&`,
     `curl -fsSL ${RAW_GH}/ml/models/classical-v0/logistic-regression-v0.joblib -o /tmp/mre/ml/models/classical-v0/logistic-regression-v0.joblib &&`,
     `curl -fsSL ${RAW_GH}/ml/models/classical-v0/decision-tree-v0.joblib -o /tmp/mre/ml/models/classical-v0/decision-tree-v0.joblib &&`,
     `curl -fsSL ${RAW_GH}/ml/models/classical-v0/random-forest-v0.joblib -o /tmp/mre/ml/models/classical-v0/random-forest-v0.joblib &&`,

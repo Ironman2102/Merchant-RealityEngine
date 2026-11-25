@@ -15,7 +15,57 @@ interface Opinion {
   nn?: { p: number; modelVersion: string; drivers: Driver[] };
   classical?: { p: number; modelVersion: string }[];
   ensemble?: { p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean };
-  encoder?: { label: string | null; score: number | null; modelVersion: string };
+  encoder?: {
+    label: string | null;
+    score: number | null;
+    modelVersion: string;
+    verdict?: 'CONSISTENT' | 'SUSPICIOUS' | 'INSUFFICIENT';
+    riskScore?: number;
+    abstained?: boolean;
+    scores?: Record<string, number>;
+    latencyMs?: number;
+    truncated?: boolean;
+  };
+  biEncoder?: {
+    modelVersion: string;
+    backend: 'neural' | 'lexical-fallback';
+    meanSimilarity: number;
+    minSimilarity: number;
+    mismatchShare: number;
+    riskScore: number;
+    itemCount: number;
+    mismatches: { text: string; kind: string; similarity: number }[];
+  };
+  autoencoder?: {
+    modelVersion: string;
+    anomalyScore: number;
+    reconstructionError: number;
+    thresholdP95: number;
+    isAnomaly: boolean;
+    latentNorm: number;
+    topResiduals: { feature: string; residual: number }[];
+  };
+  temporal?: {
+    modelVersion: string;
+    riskScore: number;
+    embeddingNorm: number;
+    eventCount: number;
+    signals?: Record<string, number>;
+  };
+  graph?: {
+    modelVersion: string;
+    riskScore: number;
+    embeddingNorm: number;
+    nodeCount: number;
+    edgeCount: number;
+    motifs: {
+      sharedInfraEdges: number;
+      websiteLinkEdges: number;
+      behavioralSimEdges: number;
+      peerCount: number;
+      beneficiaryCount: number;
+    };
+  };
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
 }
 
@@ -43,11 +93,10 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
     return () => { live = false; };
   }, [caseId, reload]);
   const both = ml && ((ml.p >= 0.1 && posterior >= 0.1) || (ml.p < 0.1 && posterior < 0.1));
-  // m1-v0 is the LightGBM model. Without it the service answers with the neural network and classical models,
-  // and its headline probability is their average, so it must not be shown under the LightGBM name.
   const gbm = ml?.modelVersion === 'm1-v0';
+  const hasEncoders = Boolean(ml?.encoder || ml?.biEncoder || ml?.autoencoder || ml?.temporal || ml?.graph);
   return (
-    <Panel title="Stage 2 AI/ML assessment" subtitle="Predictive models and optional text understanding add a confidence-gated assessment. The statistical independence gate still governs case opening.">
+    <Panel title="Stage 2 AI/ML assessment" subtitle="Predictive models and multi-modal encoders add a confidence-gated assessment. The statistical independence gate still governs case opening.">
       {ml === undefined && <p className="text-sm text-mute">Asking the model…</p>}
       {ml === null && <div className="space-y-2"><p className="text-sm">AI model offline. The decision does not depend on it.</p><ModelSandbox onReady={() => setReload(n => n + 1)} /></div>}
       {ml && (
@@ -108,7 +157,104 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
               ) : null}
             </div>
           )}
-          {ml.encoder && <p className="text-xs text-mute">Context encoder ({ml.encoder.modelVersion}): <b className="text-ink">{ml.encoder.label}</b> ({ml.encoder.score == null ? 'no score' : fmtProb(ml.encoder.score)}). Supporting context only.</p>}
+
+          {hasEncoders && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-ink">Multi-Modal Encoders (supporting context only)</div>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {ml.autoencoder && (
+                  <div className="rounded border border-line bg-panel2 p-2.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-mute">Behavioral Autoencoder ({ml.autoencoder.modelVersion})</span>
+                      <Badge tone={ml.autoencoder.isAnomaly ? 'bad' : 'ok'}>
+                        {ml.autoencoder.isAnomaly ? 'Anomaly' : 'Normal'} · {fmtProb(ml.autoencoder.anomalyScore)}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-[11px] text-mute">
+                      MSE <span className="font-mono text-ink">{ml.autoencoder.reconstructionError.toFixed(4)}</span> (p95 bar {ml.autoencoder.thresholdP95.toFixed(4)})
+                    </div>
+                    {ml.autoencoder.topResiduals.length > 0 && (
+                      <ul className="mt-1.5 space-y-0.5 text-[11px] text-mute">
+                        {ml.autoencoder.topResiduals.slice(0, 3).map(r => (
+                          <li key={r.feature}>{words(r.feature)}: <span className="font-mono text-ink">{r.residual.toFixed(2)}</span></li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {ml.temporal && (
+                  <div className="rounded border border-line bg-panel2 p-2.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-mute">Temporal 1D-CNN ({ml.temporal.modelVersion})</span>
+                      <Badge tone={ml.temporal.riskScore >= 0.5 ? 'bad' : ml.temporal.riskScore >= 0.2 ? 'info' : 'ok'}>
+                        Risk {fmtProb(ml.temporal.riskScore)}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-[11px] text-mute">
+                      Encoded <span className="font-mono text-ink">{ml.temporal.eventCount}</span> recent events
+                      {ml.temporal.signals ? ` · out-of-state ${fmtProb(ml.temporal.signals.outOfStateShare ?? 0)} · peak ${ml.temporal.signals.weeklyPeakRatio ?? 1}×` : ''}
+                    </div>
+                  </div>
+                )}
+
+                {ml.graph && (
+                  <div className="rounded border border-line bg-panel2 p-2.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-mute">Entity Graph R-GCN ({ml.graph.modelVersion})</span>
+                      <Badge tone={ml.graph.riskScore >= 0.5 ? 'bad' : ml.graph.riskScore >= 0.2 ? 'info' : 'ok'}>
+                        Risk {fmtProb(ml.graph.riskScore)}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-[11px] text-mute">
+                      {ml.graph.nodeCount} nodes · {ml.graph.edgeCount} edges · shared infra {ml.graph.motifs.sharedInfraEdges}, web links {ml.graph.motifs.websiteLinkEdges}, peers {ml.graph.motifs.peerCount}
+                    </div>
+                  </div>
+                )}
+
+                {ml.biEncoder && (
+                  <div className="rounded border border-line bg-panel2 p-2.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-mute truncate">Semantic Bi-Encoder ({ml.biEncoder.backend})</span>
+                      <Badge tone={ml.biEncoder.riskScore >= 0.5 ? 'bad' : ml.biEncoder.riskScore >= 0.25 ? 'info' : 'ok'}>
+                        Mismatch {fmtProb(ml.biEncoder.mismatchShare)}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-[11px] text-mute">
+                      Mean sim <span className="font-mono text-ink">{ml.biEncoder.meanSimilarity.toFixed(2)}</span> across {ml.biEncoder.itemCount} observed items
+                    </div>
+                    {ml.biEncoder.mismatches.length > 0 && (
+                      <ul className="mt-1.5 space-y-0.5 text-[11px] text-mute">
+                        {ml.biEncoder.mismatches.slice(0, 3).map((m, idx) => (
+                          <li key={`${m.kind}-${idx}`} className="truncate">
+                            [{m.kind}] {m.text}: <span className="font-mono text-ink">{m.similarity.toFixed(2)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {ml.encoder && (
+                <div className="rounded border border-line bg-panel2 p-2.5 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-mute">NLI Cross-Encoder ({ml.encoder.modelVersion})</span>
+                    <div className="flex items-center gap-1.5">
+                      <Badge tone={ml.encoder.verdict === 'SUSPICIOUS' ? 'bad' : ml.encoder.verdict === 'CONSISTENT' ? 'ok' : 'mute'}>
+                        {ml.encoder.verdict ?? (ml.encoder.abstained ? 'INSUFFICIENT' : 'SCORED')}
+                      </Badge>
+                      {ml.encoder.riskScore != null && <Badge tone="mute">Risk {fmtProb(ml.encoder.riskScore)}</Badge>}
+                    </div>
+                  </div>
+                  <div className="mt-1 text-[11px] text-mute">
+                    Top hypothesis: <b className="text-ink">{ml.encoder.label}</b> ({ml.encoder.score == null ? 'no score' : fmtProb(ml.encoder.score)})
+                    {ml.encoder.latencyMs != null ? ` · ${ml.encoder.latencyMs} ms` : ''}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </Panel>
