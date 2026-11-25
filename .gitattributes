@@ -1,2 +1,4 @@
 # Trained model files are byte-exact; never convert their line endings (LightGBM seeks by byte offset).
 ml/models/** -text
+# PDFs are binary; never convert line endings or diff them as text.
+*.pdf binary
