@@ -2,6 +2,7 @@
 import { DETECTORS } from '../frontend/src/engines/detectors';
 import type { InvestigationResult } from '../frontend/src/types/investigation';
 import type { CoverageKey } from '../frontend/src/types/merchant';
+import { benford, payerConcentration, repeatPayers, timing } from './fraudMath';
 
 const COVERAGE: CoverageKey[] = ['acquiring', 'website', 'orders', 'bank', 'fulfillment', 'calendar', 'verification'];
 
@@ -17,6 +18,11 @@ export const BEHAVIORAL_FEATURE_COLUMNS: string[] = [
   ...DETECTORS.flatMap(d => [`llr_${d.id}`, `eff_${d.id}`, `fired_${d.id}`]),
   'n_sales',
   'night_share', 'weekend_share', 'refund_ratio', 'payer_hhi', 'ticket_cv', 'sweep_lag_median_h',
+  // Fraud-detection statistics (engine/fraudMath.ts).
+  'benford_chi2_per_n', 'benford_p', 'benford_mad',
+  'daily_dispersion', 'gap_burstiness', 'gap_cv',
+  'payer_entropy', 'payer_gini',
+  'returning_share', 'repeat_gap_cv',
 ];
 
 export function behavioralFeatures(result: InvestigationResult): Record<string, number> {
@@ -56,6 +62,18 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
   const mean = sales.length ? sum / sales.length : 0;
   const variance = sales.length && mean > 0 ? sales.reduce((s, e) => s + (e.amount - mean) ** 2, 0) / sales.length : 0;
   row.ticket_cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
+
+  // Benford first-digit test, payment timing, payer concentration and repeat-payer regularity.
+  const bf = benford(sales.map(s => s.amount));
+  row.benford_chi2_per_n = bf.chi2PerN; row.benford_p = bf.p; row.benford_mad = bf.mad;
+  const tm = timing(sales.map(s => s.eventTime), IST);
+  row.daily_dispersion = tm.dispersion; row.gap_burstiness = tm.burstiness; row.gap_cv = tm.gapCv;
+  const pc = payerConcentration([...payerCounts.values()]);
+  row.payer_entropy = pc.entropy; row.payer_gini = pc.gini;
+  const byPayer = new Map<string, number[]>();
+  for (const s of sales) if (s.payerHash) (byPayer.get(s.payerHash) ?? byPayer.set(s.payerHash, []).get(s.payerHash)!).push(s.eventTime);
+  const rp = repeatPayers(byPayer);
+  row.returning_share = rp.returningShare; row.repeat_gap_cv = rp.repeatGapCv;
 
   // Median hours from settlement to next onward payout (capped at 72 h if un-swept or missing).
   let sweepLagMedian = 72;
