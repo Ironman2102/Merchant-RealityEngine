@@ -14,7 +14,7 @@ const nats = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
 
 /** The reasoning trace: every number on this page comes from the engine's result, a rules file or a formula shown here. */
 export function TracePage() {
-  const { result, caseId } = useInvestigation();
+  const { result, caseId, scenarioId } = useInvestigation();
   const t = useMemo(() => buildTrace(result), [result]);
   const [filter, setFilter] = useState<Filter>('fired');
   const [packError, setPackError] = useState('');
@@ -52,7 +52,7 @@ export function TracePage() {
         </div>
       </Panel>
 
-      <MlPanel caseId={caseId} posterior={t.caseSummary.posterior} />
+      <MlPanel caseId={caseId} scenarioId={scenarioId} posterior={t.caseSummary.posterior} />
 
       <Panel title="How the probability was reached" subtitle="Bayes' rule in log-odds: start from the base rate, add each evidence family's weight (nats). Positive moves towards 'front', negative towards 'genuine'." bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Step</Th><Th>Weight</Th><Th>Running P(front)</Th></tr></thead><tbody>

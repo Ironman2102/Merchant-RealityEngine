@@ -15,14 +15,16 @@ import type { Actor } from './auth';
 
 const fail = (status: number, error: string): ApiReply => ({ status, body: { error } });
 
-export async function caseTrace(id: string): Promise<ApiReply> {
+export async function caseTrace(id: string, refresh = false): Promise<ApiReply> {
   if (!isCaseId(id)) return fail(400, 'Invalid case id.');
   const rec = getCase(id);
   if (!rec) return fail(404, 'No case with that id.');
   assertCase(id);
   syncLiveRules();
-  const ml = rec.ml ?? await scoreWithHost(rec.result);
-  if (ml && !rec.ml) { rec.ml = ml; putCase(rec); }
+  const needsScore = refresh || !rec.ml || !rec.ml.assessment || !rec.ml.autoencoder || !rec.ml.biEncoder;
+  const fresh = needsScore ? await scoreWithHost(rec.result) : null;
+  const ml = fresh ?? rec.ml ?? null;
+  if (fresh) { rec.ml = fresh; putCase(rec); }
   return { status: 200, body: { ...buildTrace(rec.result), ml: ml ? { ...ml, synthetic: true } : null } as unknown as Record<string, unknown> };
 }
 

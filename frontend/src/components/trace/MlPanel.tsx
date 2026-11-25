@@ -1,7 +1,7 @@
 /** Second opinion from the trained model. The Bayesian decision on this page does not use it. */
 import { useEffect, useState } from 'react';
-import { Badge, Panel } from '../ui/ui';
-import { getPilotJson } from '../../services/pilotApi';
+import { RefreshCw } from 'lucide-react';
+import { Badge, Btn, Panel } from '../ui/ui';
 import { fmtProb } from '../../utils/format';
 import { ModelSandbox } from './ModelSandbox';
 import { RULES } from '../../../../rules/index';
@@ -93,15 +93,32 @@ function words(feature: string): string {
   return feature.replaceAll('_', ' ');
 }
 
-export function MlPanel({ caseId, posterior }: { caseId: string | null; posterior: number }) {
+export function MlPanel({ caseId, scenarioId, posterior }: { caseId: string | null; scenarioId?: string; posterior: number }) {
   const [ml, setMl] = useState<Opinion | null | undefined>(undefined);
   const [reload, setReload] = useState(0);
   useEffect(() => {
-    if (!caseId) { setMl(null); return; }
     let live = true;
-    getPilotJson(caseId, 'trace').then(body => { if (live) setMl((body.ml as Opinion | null) ?? null); }).catch(() => { if (live) setMl(null); });
+    setMl(undefined);
+    if (caseId) {
+      const qs = reload > 0 ? '?refresh=1' : '';
+      fetch(`/api/investigations/${encodeURIComponent(caseId)}/trace${qs}`)
+        .then(r => (r.ok ? r.json() : null))
+        .then(body => { if (live) setMl((body?.ml as Opinion | null) ?? null); })
+        .catch(() => { if (live) setMl(null); });
+    } else if (scenarioId && scenarioId !== 'custom') {
+      fetch('/api/demo/ml-score', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ scenarioId }),
+      })
+        .then(r => (r.ok ? r.json() : null))
+        .then(body => { if (live) setMl((body?.ml as Opinion | null) ?? null); })
+        .catch(() => { if (live) setMl(null); });
+    } else {
+      setMl(null);
+    }
     return () => { live = false; };
-  }, [caseId, reload]);
+  }, [caseId, scenarioId, reload]);
   const both = ml && ((ml.p >= 0.1 && posterior >= 0.1) || (ml.p < 0.1 && posterior < 0.1));
   // m1-v0 is LightGBM and stage2-v1 the stacked ensemble. Without either, the service answers with the neural network
   // and classical models, and its headline probability is their average, so it must not be shown under either name.
@@ -112,7 +129,11 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
   const members = [...(ml?.classical ?? []), ...(stacked && ml?.nn ? [{ p: ml.nn.p, modelVersion: ml.nn.modelVersion }] : [])];
   const hasEncoders = Boolean(ml?.encoder || ml?.biEncoder || ml?.autoencoder || ml?.temporal || ml?.graph);
   return (
-    <Panel title="Stage 2 AI/ML assessment" subtitle="Predictive models and multi-modal encoders add a confidence-gated assessment. The statistical independence gate still governs case opening.">
+    <Panel
+      title="Stage 2 AI/ML assessment"
+      subtitle="Predictive models and multi-modal encoders add a confidence-gated assessment. The statistical independence gate still governs case opening."
+      right={ml !== undefined ? <Btn size="sm" onClick={() => setReload(n => n + 1)}><RefreshCw size={12} />Re-score</Btn> : undefined}
+    >
       {ml === undefined && <p className="text-sm text-mute">Asking the model…</p>}
       {ml === null && <div className="space-y-2"><p className="text-sm">AI model offline. The decision does not depend on it.</p><ModelSandbox onReady={() => setReload(n => n + 1)} /></div>}
       {ml && (

@@ -22,15 +22,19 @@ async function daytona(path: string, method = 'GET', body?: unknown): Promise<{ 
 
 const mlUrl = () => (process.env.MRE_ML_URL ?? 'http://127.0.0.1:8790').replace(/\/$/, '');
 
-export async function modelOnline(): Promise<boolean> {
+export async function modelHealth(): Promise<Record<string, unknown> | null> {
   const url = mlUrl();
-  if (!url) return false;
+  if (!url) return null;
   try {
     const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
-    if (!res.ok) return false;
-    const body = await res.json() as { status?: string };
-    return body.status === 'ok';
-  } catch { return false; }
+    if (!res.ok) return null;
+    const body = await res.json() as Record<string, unknown>;
+    return body.status === 'ok' ? body : null;
+  } catch { return null; }
+}
+
+export async function modelOnline(): Promise<boolean> {
+  return (await modelHealth()) !== null;
 }
 
 async function modelUpToDate(): Promise<boolean> {

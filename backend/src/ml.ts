@@ -107,9 +107,9 @@ function encoderContext(result: InvestigationResult): string {
   const offDomain = scenario.web.embeds.filter(e => e.category !== 'own');
   const ownEmbeds = scenario.web.embeds.filter(e => e.category === 'own');
   if (offDomain.length) {
-    lines.push(`Off-domain embeds: ${offDomain.slice(0, 8).map(x => `${x.host}${x.path} [${x.category}, ${x.pageType}]`).join('; ')}.`);
+    lines.push(`Off-domain embeds: ${offDomain.slice(0, 8).map(x => `${x.host}${x.path ?? ''} [${[x.category, x.pageType].filter(Boolean).join(', ')}]`).join('; ')}.`);
   } else if (ownEmbeds.length) {
-    lines.push(`Observed embeds: ${ownEmbeds.slice(0, 5).map(x => `${x.host}${x.path} [${x.pageType}]`).join('; ')}.`);
+    lines.push(`Observed embeds: ${ownEmbeds.slice(0, 5).map(x => `${x.host}${x.path ?? ''}${x.pageType ? ` [${x.pageType}]` : ''}`).join('; ')}.`);
   }
 
   if (scenario.sightings?.length) {
@@ -140,7 +140,7 @@ function alignmentPayload(result: InvestigationResult) {
     observed.push({ text: item.name, kind: 'catalogue' });
   }
   for (const emb of scenario.web.embeds.slice(0, 10)) {
-    observed.push({ text: `${emb.host} ${emb.path} ${emb.category} ${emb.pageType}`.trim(), kind: 'embed' });
+    observed.push({ text: [emb.host, emb.path, emb.category, emb.pageType].filter(Boolean).join(' ').trim(), kind: 'embed' });
   }
   for (const s of (scenario.sightings ?? []).slice(0, 6)) {
     observed.push({ text: `${s.source} ${s.place} ${s.note ?? ''}`.trim(), kind: 'sighting' });
@@ -247,6 +247,22 @@ function graphPayload(result: InvestigationResult) {
   };
 }
 
+export function attachAssessment(ml: MlOpinion, statP: number): MlOpinion {
+  if (!ml.ensemble || ml.assessment) return ml;
+  const trust = ml.ensemble.confidence === 'HIGH' ? 0.3 : ml.ensemble.confidence === 'MEDIUM' ? 0.15 : 0.05;
+  const clamp = (p: number) => Math.max(1e-6, Math.min(1 - 1e-6, p));
+  const logit = (p: number) => Math.log(clamp(p) / (1 - clamp(p)));
+  const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
+  const combinedP = sigmoid((1 - trust) * logit(statP) + trust * logit(ml.ensemble.p));
+  ml.assessment = {
+    statisticalP: statP,
+    combinedP,
+    classification: ml.ensemble.review ? 'REVIEW' : combinedP >= 0.8 ? 'HIGH_RISK' : combinedP <= 0.1 ? 'LOW_RISK' : 'REVIEW',
+    review: ml.ensemble.review || (combinedP > 0.1 && combinedP < 0.8),
+  };
+  return ml;
+}
+
 let logged = false;
 
 export async function mlScore(result: InvestigationResult): Promise<MlOpinion | null> {
@@ -291,7 +307,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
     const nn = body.nn && typeof body.nn.p === 'number' && body.nn.modelVersion
       ? { p: body.nn.p, drivers: body.nn.drivers ?? [], modelVersion: body.nn.modelVersion }
       : undefined;
-    return {
+    const opinion: MlOpinion = {
       p: body.p, pRaw: body.p_raw ?? body.p, drivers: body.drivers ?? [], modelVersion: body.modelVersion,
       ...(nn ? { nn } : {}),
       ...(body.classical ? { classical: body.classical } : {}),
@@ -303,6 +319,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       ...(body.graph ? { graph: body.graph } : {}),
       ...(body.explanation ? { explanation: body.explanation } : {}),
     };
+    return attachAssessment(opinion, result.fusion.posterior);
   } catch (err) {
     if (!logged) { console.error('AI model offline. The decision does not depend on it.', err instanceof Error ? err.message : err); logged = true; }
     return null;
