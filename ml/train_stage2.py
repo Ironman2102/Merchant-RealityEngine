@@ -50,8 +50,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 
+from ml.deep_ensemble import DeepEnsembleMLP, expand_members
 from ml.focal import FocalLGBMClassifier
-
 from ml.stage2_math import (BetaCalibrator, IdentityCalibrator, IsotonicCalibrator, apply_calibration, brier_decomposition, brier_skill_score,
                             delong_test, entropy_decomposition, expected_cost_curve, mcnemar_exact, np_threshold,
                             reliability_curve, wilson_interval)
@@ -87,25 +87,46 @@ def make_model(name: str, params: dict, cols: list[str]):
                                       max_samples=params.get('max_samples'), max_features='sqrt', class_weight='balanced_subsample',
                                       random_state=SEED, n_jobs=ML_JOBS)
     if name == 'lightgbm':
-        # gamma = 0: the v1 log-loss booster; gamma > 0: focal loss (Lin et al. 2017), see ml/focal.py.
         mono = [1 if c.startswith(('llr_', 'fired_')) else 0 for c in cols]
-        return FocalLGBMClassifier(gamma=params.get('gamma', 0.0), monotone_constraints=mono, num_leaves=params['num_leaves'],
-                                   min_child_samples=params['min_child_samples'], learning_rate=params['learning_rate'],
-                                   n_estimators=params['n_estimators'], reg_lambda=params['reg_lambda'], random_state=SEED)
+        gamma = params.get('gamma', 0.0)
+        if gamma > 0:
+            # Focal loss (Lin et al. 2017), see ml/focal.py. Only reachable with MRE_EXTENDED_TREES=1.
+            return FocalLGBMClassifier(gamma=gamma, monotone_constraints=mono, num_leaves=params['num_leaves'],
+                                       min_child_samples=params['min_child_samples'], learning_rate=params['learning_rate'],
+                                       n_estimators=params['n_estimators'], reg_lambda=params['reg_lambda'], random_state=SEED)
+        lgb_params = {k: v for k, v in params.items() if k != 'gamma'}
+        return lgb.LGBMClassifier(objective='binary', random_state=SEED, deterministic=True, n_jobs=1, verbosity=-1, is_unbalance=True,
+                                  monotone_constraints=mono, colsample_bytree=0.5, subsample=0.8, subsample_freq=1, max_depth=4, **lgb_params)
     if name == 'neural_net':
+        if DEEP_ENSEMBLE:
+            # Deep ensemble (Lakshminarayanan et al. 2017): 5 seeds of the same network; their spread feeds epistemic uncertainty.
+            return DeepEnsembleMLP(hidden_layer_sizes=(32, 16), alpha=params['alpha'], n_members=5, max_iter=600, random_state=SEED)
         return make_pipeline(StandardScaler(), MLPClassifier(hidden_layer_sizes=(32, 16), alpha=params['alpha'], max_iter=600,
                                                              early_stopping=False, random_state=SEED))
     raise ValueError(name)
 
 
+# Optional searches, measured as neutral in round 3 (docs/STAGE2_ML.md) and therefore off by default:
+#   MRE_EXTENDED_TREES=1  cost-complexity pruning, bootstrap fraction and focal-loss LightGBM in the grid search
+#   MRE_DEEP_ENSEMBLE=1   the neural network becomes a 5-seed deep ensemble (about 5x slower to train)
+EXTENDED_TREES = os.environ.get('MRE_EXTENDED_TREES') == '1'
+DEEP_ENSEMBLE = os.environ.get('MRE_DEEP_ENSEMBLE') == '1'
+
 GRIDS = {
     'logistic_regression': [{'C': c} for c in (0.03, 0.1, 0.3, 1.0)],
-    'decision_tree': lambda X, y, w: decision_tree_grid(X, y, w),
-    'random_forest': [{'max_depth': d, 'min_samples_leaf': l, 'max_samples': s} for d in (8, None) for l in (2, 5) for s in (None, 0.6)],
-    'lightgbm': [{'num_leaves': nl, 'min_child_samples': mc, 'learning_rate': 0.05, 'n_estimators': ne, 'reg_lambda': 5.0, 'gamma': g}
-                 for nl in (7, 15) for mc in (10, 20) for ne in (150, 300) for g in (0.0, 1.0, 2.0)],
+    'decision_tree': [{'max_depth': d, 'min_samples_leaf': l} for d in (3, 4, 5) for l in (5, 15)],
+    'random_forest': [{'max_depth': d, 'min_samples_leaf': l} for d in (5, 8, None) for l in (2, 5)],
+    'lightgbm': [{'num_leaves': nl, 'min_child_samples': mc, 'learning_rate': 0.05, 'n_estimators': ne, 'reg_lambda': 5.0}
+                 for nl in (7, 15) for mc in (10, 20) for ne in (150, 300)],
     'neural_net': [{'alpha': a} for a in (1e-3, 1e-2, 1e-1)],
 }
+if EXTENDED_TREES:
+    GRIDS.update({
+        'decision_tree': lambda X, y, w: decision_tree_grid(X, y, w),
+        'random_forest': [{'max_depth': d, 'min_samples_leaf': l, 'max_samples': s} for d in (8, None) for l in (2, 5) for s in (None, 0.6)],
+        'lightgbm': [{'num_leaves': nl, 'min_child_samples': mc, 'learning_rate': 0.05, 'n_estimators': ne, 'reg_lambda': 5.0, 'gamma': g}
+                     for nl in (7, 15) for mc in (10, 20) for ne in (150, 300) for g in (0.0, 1.0, 2.0)],
+    })
 
 
 def decision_tree_grid(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> list[dict]:
@@ -312,8 +333,11 @@ def predict(ens: dict, df: pd.DataFrame, cols: list[str]) -> dict[str, np.ndarra
     Z = np.column_stack([logit(base[n]) for n in BASE])
     raw = stack(Z, ens['intercept'], ens['weights'])
     members = np.vstack([base[n] for n in BASE])
-    unc = entropy_decomposition(members, np.maximum(ens['weights'], 0) + 1e-12)
-    return {**base, 'mean': np.mean(members, axis=0), 'stacked_raw': raw,
+    rows, mix = expand_members(ens['models'], BASE, base, ens['weights'], X)
+    unc = entropy_decomposition(rows, mix)
+    nn = ens['models']['neural_net']
+    nn_var = nn.member_logit_variance(X) if hasattr(nn, 'member_logit_variance') else np.zeros(len(X))
+    return {**base, 'mean': np.mean(members, axis=0), 'stacked_raw': raw, 'nn_logit_var': nn_var,
             'stacked': np.clip(ens['calibrator'].predict(raw), 1e-6, 1 - 1e-6),
             'epistemic': unc['epistemic'], 'aleatoric': unc['aleatoric'], 'distance': ens['novelty'].distance(X)}
 
@@ -340,11 +364,11 @@ def leave_one_kind_out(df_train: pd.DataFrame, df_all: pd.DataFrame, cols: list[
                      'recall_stacked': k_st / n, 'recall_stacked_ci': wilson_interval(k_st, n),
                      'novelty_flagged': float(flagged_ood.mean()),
                      'caught_or_flagged': k_any / n, 'caught_or_flagged_ci': wilson_interval(k_any, n),
-                     'mean_epistemic_bits': float(pr['epistemic'].mean()),
+                     'mean_epistemic_bits': float(pr['epistemic'].mean()), 'mean_nn_logit_var': float(pr['nn_logit_var'].mean()),
                      'engine_open_case': float((unseen['posterior'] >= 0.5).mean()) if 'posterior' in unseen else None})
         lo, hi = rows[-1]['recall_stacked_ci']
         print(f"  unseen {kind:28} n={n:3}  mean-ens {k_mean / n:.2f}  stacked {k_st / n:.2f} [{lo:.2f}, {hi:.2f}]  "
-              f"novelty {rows[-1]['novelty_flagged']:.2f}  caught-or-flagged {k_any / n:.2f}  epistemic {rows[-1]['mean_epistemic_bits']:.3f} bits")
+              f"novelty {rows[-1]['novelty_flagged']:.2f}  caught-or-flagged {k_any / n:.2f}  epistemic {rows[-1]['mean_epistemic_bits']:.3f} bits  nn-logit-var {rows[-1]['mean_nn_logit_var']:.3f}")
     return rows
 
 
@@ -417,6 +441,8 @@ def evaluate(ens: dict, train: pd.DataFrame, test: pd.DataFrame, cols: list[str]
                            'costFlagNobody': COST_RATIO * median_prior}
     err = ((s >= t).astype(int) != y).astype(int)
     rep['uncertainty'] = {'meanEpistemicBits': float(pr['epistemic'].mean()), 'meanAleatoricBits': float(pr['aleatoric'].mean()),
+                          'meanNnLogitVar': float(pr['nn_logit_var'].mean()),
+                          'nnLogitVarAurocForErrors': float(roc_auc_score(err, pr['nn_logit_var'])) if 0 < err.sum() < len(err) else None,
                           'errorsAtThreshold': int(err.sum()),
                           'epistemicAurocForErrors': float(roc_auc_score(err, pr['epistemic'])) if 0 < err.sum() < len(err) else None}
     samples = load_samples()
