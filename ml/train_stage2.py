@@ -44,11 +44,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, brier_score_loss, log_loss
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
-from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 
+from ml.deep_ensemble import DeepEnsembleMLP, expand_members
 from ml.stage2_math import (BetaCalibrator, IdentityCalibrator, IsotonicCalibrator, apply_calibration, brier_decomposition, brier_skill_score,
                             delong_test, entropy_decomposition, expected_cost_curve, mcnemar_exact, np_threshold,
                             reliability_curve, wilson_interval)
@@ -83,8 +83,8 @@ def make_model(name: str, params: dict, cols: list[str]):
         return lgb.LGBMClassifier(objective='binary', random_state=SEED, deterministic=True, n_jobs=1, verbosity=-1, is_unbalance=True,
                                   monotone_constraints=mono, colsample_bytree=0.5, subsample=0.8, subsample_freq=1, max_depth=4, **params)
     if name == 'neural_net':
-        return make_pipeline(StandardScaler(), MLPClassifier(hidden_layer_sizes=(32, 16), alpha=params['alpha'], max_iter=600,
-                                                             early_stopping=False, random_state=SEED))
+        # Deep ensemble: 5 seeds of the same 32x16 network; their spread feeds the epistemic uncertainty term.
+        return DeepEnsembleMLP(hidden_layer_sizes=(32, 16), alpha=params['alpha'], n_members=5, max_iter=600, random_state=SEED)
     raise ValueError(name)
 
 
@@ -286,8 +286,11 @@ def predict(ens: dict, df: pd.DataFrame, cols: list[str]) -> dict[str, np.ndarra
     Z = np.column_stack([logit(base[n]) for n in BASE])
     raw = stack(Z, ens['intercept'], ens['weights'])
     members = np.vstack([base[n] for n in BASE])
-    unc = entropy_decomposition(members, np.maximum(ens['weights'], 0) + 1e-12)
-    return {**base, 'mean': np.mean(members, axis=0), 'stacked_raw': raw,
+    rows, mix = expand_members(ens['models'], BASE, base, ens['weights'], X)
+    unc = entropy_decomposition(rows, mix)
+    nn = ens['models']['neural_net']
+    nn_var = nn.member_logit_variance(X) if hasattr(nn, 'member_logit_variance') else np.zeros(len(X))
+    return {**base, 'mean': np.mean(members, axis=0), 'stacked_raw': raw, 'nn_logit_var': nn_var,
             'stacked': np.clip(ens['calibrator'].predict(raw), 1e-6, 1 - 1e-6),
             'epistemic': unc['epistemic'], 'aleatoric': unc['aleatoric'], 'distance': ens['novelty'].distance(X)}
 
@@ -314,11 +317,11 @@ def leave_one_kind_out(df_train: pd.DataFrame, df_all: pd.DataFrame, cols: list[
                      'recall_stacked': k_st / n, 'recall_stacked_ci': wilson_interval(k_st, n),
                      'novelty_flagged': float(flagged_ood.mean()),
                      'caught_or_flagged': k_any / n, 'caught_or_flagged_ci': wilson_interval(k_any, n),
-                     'mean_epistemic_bits': float(pr['epistemic'].mean()),
+                     'mean_epistemic_bits': float(pr['epistemic'].mean()), 'mean_nn_logit_var': float(pr['nn_logit_var'].mean()),
                      'engine_open_case': float((unseen['posterior'] >= 0.5).mean()) if 'posterior' in unseen else None})
         lo, hi = rows[-1]['recall_stacked_ci']
         print(f"  unseen {kind:28} n={n:3}  mean-ens {k_mean / n:.2f}  stacked {k_st / n:.2f} [{lo:.2f}, {hi:.2f}]  "
-              f"novelty {rows[-1]['novelty_flagged']:.2f}  caught-or-flagged {k_any / n:.2f}  epistemic {rows[-1]['mean_epistemic_bits']:.3f} bits")
+              f"novelty {rows[-1]['novelty_flagged']:.2f}  caught-or-flagged {k_any / n:.2f}  epistemic {rows[-1]['mean_epistemic_bits']:.3f} bits  nn-logit-var {rows[-1]['mean_nn_logit_var']:.3f}")
     return rows
 
 
@@ -390,6 +393,8 @@ def evaluate(ens: dict, train: pd.DataFrame, test: pd.DataFrame, cols: list[str]
                            'costFlagNobody': COST_RATIO * median_prior}
     err = ((s >= t).astype(int) != y).astype(int)
     rep['uncertainty'] = {'meanEpistemicBits': float(pr['epistemic'].mean()), 'meanAleatoricBits': float(pr['aleatoric'].mean()),
+                          'meanNnLogitVar': float(pr['nn_logit_var'].mean()),
+                          'nnLogitVarAurocForErrors': float(roc_auc_score(err, pr['nn_logit_var'])) if 0 < err.sum() < len(err) else None,
                           'errorsAtThreshold': int(err.sum()),
                           'epistemicAurocForErrors': float(roc_auc_score(err, pr['epistemic'])) if 0 < err.sum() < len(err) else None}
     samples = load_samples()

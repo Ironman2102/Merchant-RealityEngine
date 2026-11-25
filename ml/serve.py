@@ -135,7 +135,9 @@ def _v1_scores(features: list[dict[str, float]]) -> dict:
     w = np.asarray([meta['stacker']['weights'][n] for n in names])
     raw = _sigmoid(meta['stacker']['intercept'] + np.column_stack([_logit(base[n]) for n in names]) @ w)
     p_train = np.clip(apply_calibration(meta.get('calibration', {'method': 'identity'}), raw), 1e-6, 1 - 1e-6)
-    unc = entropy_decomposition(np.vstack([base[n] for n in names]), np.maximum(w, 0) + 1e-12)
+    from ml.deep_ensemble import expand_members  # deep-ensemble members count towards epistemic uncertainty
+    rows, mix = expand_members(_v1['models'], names, base, w, X)
+    unc = entropy_decomposition(rows, mix)
     return {'X': X, 'base': base, 'p_train': p_train, 'distance': _v1['novelty'].distance(X), **unc}
 
 
