@@ -103,10 +103,13 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
     return () => { live = false; };
   }, [caseId, reload]);
   const both = ml && ((ml.p >= 0.1 && posterior >= 0.1) || (ml.p < 0.1 && posterior < 0.1));
-  // The headline score comes from the Stage 2 v1 stacked ensemble or from the m1-v0 LightGBM model. In the v0 fallback
-  // without m1-v0 the headline is an average of the other models, so it must not be shown under either name.
+  // m1-v0 is LightGBM and stage2-v1 the stacked ensemble. Without either, the service answers with the neural network
+  // and classical models, and its headline probability is their average, so it must not be shown under either name.
   const stacked = ml?.ensemble?.method === 'stacked';
-  const gbm = ml?.modelVersion === 'm1-v0';
+  const gbm = ml?.modelVersion === 'm1-v0' || stacked;
+  // In the stacked ensemble the neural network is one member on the training scale, so it sits with the other members
+  // rather than in its own card beside the base-rate-shifted stacked score.
+  const members = [...(ml?.classical ?? []), ...(stacked && ml?.nn ? [{ p: ml.nn.p, modelVersion: ml.nn.modelVersion }] : [])];
   const hasEncoders = Boolean(ml?.encoder || ml?.biEncoder || ml?.autoencoder || ml?.temporal || ml?.graph);
   return (
     <Panel title="Stage 2 AI/ML assessment" subtitle="Predictive models and multi-modal encoders add a confidence-gated assessment. The statistical independence gate still governs case opening.">
@@ -114,9 +117,9 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
       {ml === null && <div className="space-y-2"><p className="text-sm">AI model offline. The decision does not depend on it.</p><ModelSandbox onReady={() => setReload(n => n + 1)} /></div>}
       {ml && (
         <div className="space-y-3 text-sm">
-          {!gbm && !stacked && <p className="text-xs text-mute">The LightGBM model (m1-v0) is not loaded on this host, so the neural network and classical models answer instead.</p>}
+          {!gbm && <p className="text-xs text-mute">Neither the stacked ensemble nor LightGBM (m1-v0) is loaded on this host, so the neural network and classical models answer instead.</p>}
           <div className="grid gap-3 sm:grid-cols-2">
-            {(gbm || stacked) && (
+            {gbm && (
               <div className="rounded border border-line bg-panel2 p-3">
                 <div className="text-xs text-mute">{stacked ? `Stacked ensemble (${ml.modelVersion}) · ${ml.explanation ? 'drivers from the stacked ensemble (log-odds SHAP)' : 'drivers from LightGBM SHAP'}` : `LightGBM tree model (${ml.modelVersion})`}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -128,7 +131,7 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
                 </ul>
               </div>
             )}
-            {ml.nn && (
+            {ml.nn && !stacked && (
               <div className="rounded border border-line bg-panel2 p-3">
                 <div className="text-xs text-mute">Neural network challenger ({ml.nn.modelVersion})</div>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -183,15 +186,19 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
                   )}
                 </ul>
               )}
-              {ml.classical?.length ? (
-                <div className="mt-2.5 grid gap-2 sm:grid-cols-4">
-                  {ml.classical.map(x => (
-                    <div key={x.modelVersion} className="rounded border border-line bg-panel px-2.5 py-1.5 text-xs">
-                      <div className="text-[11px] text-mute truncate">{x.modelVersion}</div>
-                      <div className="font-mono font-semibold text-ink">{fmtProb(x.p)}</div>
-                    </div>
-                  ))}
-                </div>
+              {members.length ? (
+                <>
+                  {stacked && <p className="mt-2.5 text-[11px] text-mute">Stack members, each on the training scale (about one front in three) before the base-rate shift. The stacked score weighs them; no single member is the assessment.</p>}
+                  <div className={`mt-2 grid gap-2 ${members.length > 4 ? 'sm:grid-cols-5' : 'sm:grid-cols-4'}`}>
+                    {members.map(x => (
+                      <div key={x.modelVersion} className="rounded border border-line bg-panel px-2.5 py-1.5 text-xs">
+                        <div className="text-[11px] text-mute truncate">{x.modelVersion}</div>
+                        <div className="font-mono font-semibold text-ink">{fmtProb(x.p)}</div>
+                        {stacked && ml.ensemble?.weights?.[x.modelVersion] != null && <div className="text-[10px] text-mute">weight {ml.ensemble.weights[x.modelVersion].toFixed(2)}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : null}
             </div>
           )}

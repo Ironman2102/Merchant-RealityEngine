@@ -37,7 +37,7 @@ def main() -> None:
     test_ids = set(pd.read_csv(test_ids_path)['merchant_id'].astype(str)) if test_ids_path.exists() else set()
     held = df['merchant_id'].astype(str).isin(test_ids).to_numpy()
 
-    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
+    drop_cols = {'merchant_id', 'label', 'kind', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
     cols = [c for c in df.columns if c not in drop_cols and not c.startswith('cov_') and not c.startswith('unk_')]
 
     X_df = df[cols].copy()

@@ -9,7 +9,6 @@ export interface MlExplanation {
   method: string; baseLogit: number; stackedLogit: number; sumOfAttributions: number; residual: number; preCalibration: boolean;
   perModel: Record<string, { weight: number; method: string; baseLogit: number; logit: number; completenessError: number; top: { feature: string; value: number }[] }>;
 }
-
 export interface NliEncoderOpinion {
   label: string | null;
   score: number | null;
@@ -261,8 +260,8 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
     const res = await fetch(`${url}/score`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      // Send exactly the training row. Leaving out the behavioural columns scored them as zero (a zero sweep lag
-      // reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
+      // Send every column the models were trained on (modelFeatures). Leaving out the behavioural columns scored them as
+      // zero (a zero sweep lag reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
       body: JSON.stringify({
         features: modelFeatures(result),
         context: encoderContext(result),

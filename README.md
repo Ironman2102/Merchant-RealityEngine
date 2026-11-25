@@ -20,7 +20,7 @@ All figures below were measured locally against synthetic generators (`engine/sy
 | Synthetic benchmark (`n = 1,000`, `seed = 7`) | Recall `33/81` (`0.407`), Opened/Asked `67/81` (`0.827`), Precision `33/33` (`1.000`), Honest FP `0/919` (`0.000`) | `npm run benchmark` |
 | 1,200-case stress benchmark (`rules=mre-bayes-0.3.0`) | TP `457`, FP `0`, TN `600`, Recall `0.7617`, Precision `1.0000`, FPR `0.0000`, `0` integrity errors | `npx tsx scripts/benchmark-1k.ts` -> `reports/benchmark-1k.md` |
 | One-shot multi-dataset verification (`100` datasets) | `57/60` multi-source fronts opened (single-source fronts routed to `ASK`), `0/40` genuine FPs | `npm run test:stats` (`one-shot-portfolio`) |
-| Stage 2 M1 vs Bayesian on leak-free `engine/synthetic.ts` | M1 AUC-PR `0.997` (`ECE 0.014`, `130/131` at `0.10`, FP `8/256`); Bayesian AUC-PR `0.936` (`0/256` FP). On the 11 demo samples, which are never used for training, M1 opens all 6 fronts and none of the 5 honest merchants at `0.10` | `.venv/bin/python -m ml.compare` |
+| Stage 2 M1 vs Bayesian on leak-free `engine/synthetic.ts` | M1 AUC-PR `0.997` (`ECE 0.017`, `129/131` at `0.10`, FP `7/256`); Bayesian AUC-PR `0.936` (`0/256` FP). Stage 2 v1 stacked ensemble (served): AP `0.999`, Brier `0.011`, ECE `0.017` on 387 held-out merchants (`reports/stage2-v1-evaluation.json`). On the 11 demo samples, never used for training, v1 flags all 6 fronts and none of the 5 honest merchants | `.venv/bin/python -m ml.compare` |
 
 ML models (`m1-v0`, `nn-v0`, `classical-v0`) are second opinions only and never open cases or override the independent Bayesian conduct gate.
 

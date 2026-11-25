@@ -4,6 +4,28 @@ Stage 2 is a second opinion. It never opens or closes a case: the Stage 1 statis
 Everything below was trained and measured on **synthetic** merchants from `engine/synthetic.ts`. These are not
 real-world accuracy figures.
 
+## Update, 25 Nov 2026: merged onto main and retrained on the context corpus
+
+v1 was first trained on the payment-only generator. It is now merged onto main (after the train/serve fix
+`modelFeatures()` and the training-only context generator `makeContextSuite` / `makeContextPortfolio`) and retrained
+on 1,288 merchants with website, order, delivery and purchaser feeds attached independently of the label, plus
+fabricated-store fronts. The champion/challenger gate promoted it over the payment-only v1 (paired bootstrap on the
+fixed held-out set: ΔAP +0.030, 95% CI [0.014, 0.048]; Brier and log loss also better). Current figures are in
+`reports/stage2-v1-evaluation.json`; the sections below describe the method and the original, payment-only results.
+
+| 387 held-out synthetic merchants | AP | AUC | Brier | ECE | recall at bar | false alarms |
+|---|---|---|---|---|---|---|
+| stacked (served) | 0.999 | 0.999 | 0.011 | 0.017 | 0.954 | 0.004 |
+| plain mean | 0.998 | 0.999 | 0.015 | 0.042 | 0.916 | 0.000 |
+| LightGBM alone | 0.997 | 0.998 | 0.017 | 0.021 | 0.939 | 0.004 |
+
+Leave one fraud type out (the type removed from training entirely): unseen fabricated stores are caught or flagged as
+unfamiliar 69–73% of the time (plain mean 0–38%); unseen non-round deposits 94% (mean 3%); a perfect mimic 0%.
+
+Demo samples (never trained on), served with the base-rate shift: all 6 fronts flagged (Sweet Crumbs 91.5%, Aarav
+98.0%, others 96.6–99.8%); all 5 honest merchants at most 0.7%. In the trace panel the neural network is shown as one
+stack member with its weight, on the training scale, not as a separate opinion beside the shifted stacked score.
+
 ## Problems found in v0
 
 | # | Problem | Effect |

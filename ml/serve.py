@@ -633,9 +633,9 @@ def _should_run_nli(ensemble_p: float, disagreement: float, features: dict[str, 
     return (low <= ensemble_p <= high) or (disagreement >= 0.15) or low_cov or has_high_signal_text
 
 
-def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float) -> dict[str, Any]:
+def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float, skip_nli: bool = False) -> dict[str, Any]:
     out: dict[str, Any] = {}
-    if _should_run_nli(ensemble_p, disagreement, body.features, body.context, body.force_encoder):
+    if not skip_nli and _should_run_nli(ensemble_p, disagreement, body.features, body.context, body.force_encoder):
         enc = _contextual_score(body.context)
         if enc:
             out['encoder'] = enc
@@ -750,13 +750,7 @@ def _v1_score(body: 'ScoreIn') -> dict:
     drivers, explanation = _v1_explain(s['X'][0])
     names = {'logistic_regression': 'logistic-regression-v1', 'decision_tree': 'decision-tree-v1',
              'random_forest': 'random-forest-v1', 'lightgbm': 'lightgbm-v1', 'neural_net': 'neural-net-v1'}
-    # The multi-modal encoders (NLI, bi-encoder, autoencoder, temporal CNN, graph) run on the v1 path too. The NLI
-    # encoder also runs when v1 is unsure: an unfamiliar merchant or a conformal set that is not one class.
-    aux = _run_aux_encoders(body, p_train, float(max(base.values()) - min(base.values())))
-    if 'encoder' not in aux and (novel or len(cset) != 1):
-        enc = _contextual_score(body.context)
-        if enc:
-            aux['encoder'] = enc
+    encoder = _contextual_score(body.context) if (novel or len(cset) != 1) else None
     return {
         'p_raw': p_train, 'p': p, 'drivers': drivers, 'modelVersion': meta['version'],
         **({'explanation': explanation} if explanation else {}),
@@ -777,7 +771,7 @@ def _v1_score(body: 'ScoreIn') -> dict:
                         'unfamiliar': _v1['novelty'].drivers(s['X'], _v1['features']) if novel else []},
             'syntheticTrainingExamples': meta['data']['trainingRows'],
         },
-        **aux,
+        **({'encoder': encoder} if encoder else {}),
     }
 
 
@@ -851,7 +845,13 @@ def health():
 @app.post('/score')
 def score(body: ScoreIn):
     if v1_ready():
-        return _v1_score(body)
+        # The stacked ensemble scores the merchant; the alignment, autoencoder, temporal and graph encoders still add
+        # their supporting views. v1 decides on its own when to run the NLI encoder, so it is not run a second time.
+        out = _v1_score(body)
+        ens = out.get('ensemble') or {}
+        aux = _run_aux_encoders(body, float(ens.get('pTrainScale', out.get('p') or 0.0)), float(ens.get('disagreement', 0.0)),
+                                skip_nli='encoder' in out)
+        return {**out, **aux}
     if not ready():
         return {'p_raw': None, 'p': None, 'drivers': [], 'modelVersion': None}
     nn_out = None

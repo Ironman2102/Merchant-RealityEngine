@@ -2,9 +2,9 @@
 
 Purpose: second opinion on P(front). It does not choose the action.
 
-Data: synthetic portfolio (`ml/data/features.csv`), SHA-256 cbdaa00f85cd077993ef65cf7b645cb18fa4c1813ed40888fa3d358f599cb856.
+Data: synthetic portfolio (`ml/data/features.csv`), SHA-256 fcccb6e56489e2255567ae7acf46879544fdd2fd2c912bd196202f59cda4093b.
 
-Features: 91 columns from the TypeScript engine. Monotone +1 on llr_* and fired_*.
+Features: 101 columns from the TypeScript engine. Monotone +1 on llr_* and fired_*.
 
 Params: {"num_leaves": 15, "min_child_samples": 20, "learning_rate": 0.1, "n_estimators": 200, "reg_lambda": 1.0, "colsample_bytree": 0.5, "subsample": 0.8, "subsample_freq": 1, "max_depth": 4}. Cross-validated average precision 0.9998.
 
