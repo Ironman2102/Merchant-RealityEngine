@@ -44,6 +44,18 @@ function allowed(key: string, perMin = 60, now = Date.now()): boolean {
 }
 
 async function readBody(req: IncomingMessage): Promise<unknown> {
+  const pre = (req as IncomingMessage & { body?: unknown }).body;
+  if (pre !== undefined && pre !== null) {
+    if (typeof pre === 'string') {
+      if (!pre.trim()) return {};
+      try { return JSON.parse(pre); } catch { throw Object.assign(new Error('Body is not JSON.'), { status: 400 }); }
+    }
+    if (Buffer.isBuffer(pre)) {
+      if (!pre.length) return {};
+      try { return JSON.parse(pre.toString('utf8')); } catch { throw Object.assign(new Error('Body is not JSON.'), { status: 400 }); }
+    }
+    return pre;
+  }
   const chunks: Buffer[] = [];
   let n = 0;
   for await (const chunk of req) {
