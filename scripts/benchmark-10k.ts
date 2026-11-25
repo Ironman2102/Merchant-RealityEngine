@@ -246,10 +246,11 @@ for (let s = 1; s <= 10; s++) {
 // Dimension 6 & 13: Cross-Merchant Ring Detector Scaling & Topology Accuracy
 // ============================================================================
 const ringBench: Record<string, { ms: number; rings: number; linked: number }> = {};
+const posteriorByMerchant = new Map(portfolioRows.map(r => [r.merchantId, r.posterior]));
 let fullRings: ReturnType<typeof detectRings> | null = null;
 for (const n of [1000, 5000, 10000]) {
   const t0 = performance.now();
-  const rr = detectRings(scenariosForRings.slice(0, n));
+  const rr = detectRings(scenariosForRings.slice(0, n), { posteriorByMerchant });
   const ms = Number((performance.now() - t0).toFixed(1));
   ringBench[`N=${n}`] = { ms, rings: rr.rings.length, linked: rr.linkedMerchantIds.length };
   if (n === 10000) fullRings = rr;

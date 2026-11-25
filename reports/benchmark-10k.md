@@ -1,15 +1,15 @@
 # 10,000-Case Exhaustive Stress Benchmark Report (mre-bayes-0.3.0)
 
-- **Runtime:** 86.69s for 10000 unique datasets (p50=3.29ms, p95=4.49ms, p99=6.86ms, max=94.08ms)
+- **Runtime:** 38.63s for 10000 unique datasets (p50=3.36ms, p95=4.75ms, p99=6.89ms, max=49.51ms)
 - **Binary Confusion (OPEN_CASE):** TP=3368, FP=0, FN=1632, TN=5000 | **Recall=0.6736**, **Precision=1**, **FPR=0**, **F1=0.805**
 - **3-Class Verdict Matrix (Expected → Actual):** case→{case:3368, ask:1151, clear:481} | ask→{case:0, ask:242, clear:8} | clear→{case:0, ask:234, clear:4516}
 - **Calibration & Economics:** Brier=0.201, ECE=0.2113, Avg Expected Loss=₹118519.28/merchant
-- **Integrity & Governance:** parseErrors=0, nanErrors=0, ciViolations=0, verifySummaryFails=0, waterfall=1000/1000, packIsolation=827/1000, outreachNoTipOff=200/200
+- **Integrity & Governance:** parseErrors=0, nanErrors=0, ciViolations=0, verifySummaryFails=0, waterfall=1000/1000, packIsolation=830/1000, outreachNoTipOff=200/200
 - **Metamorphic (80):** shuffle=80/80, rename=32/80, tz=80/80, mono(G6/R-01)=80/80
 - **TTD Replay (80 fronts):** median=3d, p90=3d, slippedVol=22.29%
 - **Security Fuzzing:** 8/8 passed
 - **Learning Poisoning (500 rogue + 200 dispute labels on B8):** honestFP=0.0198 → poisonedFP=0.3149 (bounded=true)
-- **Ring Scaling:** N=1k: 282.7ms (0 rings) | N=5k: 9183.5ms (631 rings) | N=10k: 40298.9ms (706 rings, 700 linked)
+- **Ring Scaling:** N=1k: 57.8ms (0 rings) | N=5k: 244.5ms (541 rings) | N=10k: 382.5ms (541 rings, 475 linked)
 
 ## By Difficulty
 | Group | N | TP | FP | FN | TN | ASK | Rate |
