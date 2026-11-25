@@ -1,0 +1,246 @@
+[
+  {
+    "model": "decision_tree",
+    "setting": "depth=3 ccp_alpha=0.00000",
+    "params": {
+      "max_depth": 3,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.0
+    },
+    "cvLogLoss": 0.1944034623765944,
+    "heldoutLogLoss": 0.1981223589783669,
+    "heldoutBrier": 0.03178026992637686,
+    "heldoutAP": 0.9388941102756891,
+    "heldoutReliability": 0.004836317414242522,
+    "leaves": 5
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=6 ccp_alpha=0.00000",
+    "params": {
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.0
+    },
+    "cvLogLoss": 0.33616700196864957,
+    "heldoutLogLoss": 0.27648615408057936,
+    "heldoutBrier": 0.03182935522774113,
+    "heldoutAP": 0.9494287133631395,
+    "heldoutReliability": 0.00931569402555534,
+    "leaves": 11
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=6 ccp_alpha=0.00955",
+    "params": {
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.00954891882311237
+    },
+    "cvLogLoss": 0.27421206309031343,
+    "heldoutLogLoss": 0.18402060493197697,
+    "heldoutBrier": 0.028755279212002133,
+    "heldoutAP": 0.9415707563428194,
+    "heldoutReliability": 0.005014868129902762,
+    "leaves": 6
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=6 ccp_alpha=0.03452",
+    "params": {
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.034522833340236314
+    },
+    "cvLogLoss": 0.2741771090696005,
+    "heldoutLogLoss": 0.24390266071214783,
+    "heldoutBrier": 0.03991464396960292,
+    "heldoutAP": 0.9022545170265801,
+    "heldoutReliability": 0.002579964384775448,
+    "leaves": 4
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=6 ccp_alpha=0.11632",
+    "params": {
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.11632107155812264
+    },
+    "cvLogLoss": 0.37705125144045515,
+    "heldoutLogLoss": 0.3645310181881641,
+    "heldoutBrier": 0.10190940804391942,
+    "heldoutAP": 0.7792592592592593,
+    "heldoutReliability": 0.008740683764084036,
+    "leaves": 2
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=6 ccp_alpha=0.21868",
+    "params": {
+      "max_depth": 6,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.2186761082858977
+    },
+    "cvLogLoss": 0.37705125144045515,
+    "heldoutLogLoss": 0.3645310181881641,
+    "heldoutBrier": 0.10190940804391942,
+    "heldoutAP": 0.7792592592592593,
+    "heldoutReliability": 0.008740683764084036,
+    "leaves": 2
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=None ccp_alpha=0.00000",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.0
+    },
+    "cvLogLoss": 0.3874059631999882,
+    "heldoutLogLoss": 0.4797720458360964,
+    "heldoutBrier": 0.040277711112083336,
+    "heldoutAP": 0.9050271739130435,
+    "heldoutReliability": 0.003402711112083332,
+    "leaves": 13
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=None ccp_alpha=0.00955",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.00954891882311237
+    },
+    "cvLogLoss": 0.32131888213202103,
+    "heldoutLogLoss": 0.21042368317700355,
+    "heldoutBrier": 0.04515506138070929,
+    "heldoutAP": 0.9415707563428194,
+    "heldoutReliability": 0.021408296924734206,
+    "leaves": 8
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=None ccp_alpha=0.03452",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.034522833340236314
+    },
+    "cvLogLoss": 0.2741771090696005,
+    "heldoutLogLoss": 0.24390266071214783,
+    "heldoutBrier": 0.03991464396960292,
+    "heldoutAP": 0.9022545170265801,
+    "heldoutReliability": 0.002579964384775448,
+    "leaves": 4
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=None ccp_alpha=0.11632",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.11632107155812264
+    },
+    "cvLogLoss": 0.37705125144045515,
+    "heldoutLogLoss": 0.3645310181881641,
+    "heldoutBrier": 0.10190940804391942,
+    "heldoutAP": 0.7792592592592593,
+    "heldoutReliability": 0.008740683764084036,
+    "leaves": 2
+  },
+  {
+    "model": "decision_tree",
+    "setting": "depth=None ccp_alpha=0.21868",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 5,
+      "ccp_alpha": 0.2186761082858977
+    },
+    "cvLogLoss": 0.37705125144045515,
+    "heldoutLogLoss": 0.3645310181881641,
+    "heldoutBrier": 0.10190940804391942,
+    "heldoutAP": 0.7792592592592593,
+    "heldoutReliability": 0.008740683764084036,
+    "leaves": 2
+  },
+  {
+    "model": "random_forest",
+    "setting": "depth=None leaf=2 max_samples=None",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 2,
+      "max_samples": null
+    },
+    "cvLogLoss": 0.08823178863061158,
+    "heldoutLogLoss": 0.06773446064697236,
+    "heldoutBrier": 0.015300218665022807,
+    "heldoutAP": 0.9994623655913979,
+    "heldoutReliability": 0.008112200385962278
+  },
+  {
+    "model": "random_forest",
+    "setting": "depth=None leaf=2 max_samples=0.6",
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 2,
+      "max_samples": 0.6
+    },
+    "cvLogLoss": 0.0986364873630829,
+    "heldoutLogLoss": 0.07149992378602496,
+    "heldoutBrier": 0.014980715443479722,
+    "heldoutAP": 1.0,
+    "heldoutReliability": 0.010584212135113163
+  },
+  {
+    "model": "lightgbm",
+    "setting": "v1 params, focal gamma=0.0",
+    "params": {
+      "num_leaves": 7,
+      "min_child_samples": 10,
+      "learning_rate": 0.05,
+      "n_estimators": 300,
+      "reg_lambda": 5.0,
+      "gamma": 0.0
+    },
+    "cvLogLoss": 0.06800972751342055,
+    "heldoutLogLoss": 0.04248706136817963,
+    "heldoutBrier": 0.010458184640841474,
+    "heldoutAP": 0.999462365591398,
+    "heldoutReliability": 0.006543158219403822
+  },
+  {
+    "model": "lightgbm",
+    "setting": "v1 params, focal gamma=1.0",
+    "params": {
+      "num_leaves": 7,
+      "min_child_samples": 10,
+      "learning_rate": 0.05,
+      "n_estimators": 300,
+      "reg_lambda": 5.0,
+      "gamma": 1.0
+    },
+    "cvLogLoss": 0.10464386072321992,
+    "heldoutLogLoss": 0.08053777036417036,
+    "heldoutBrier": 0.013578379825418995,
+    "heldoutAP": 1.0,
+    "heldoutReliability": 0.013203993377487233
+  },
+  {
+    "model": "lightgbm",
+    "setting": "v1 params, focal gamma=2.0",
+    "params": {
+      "num_leaves": 7,
+      "min_child_samples": 10,
+      "learning_rate": 0.05,
+      "n_estimators": 300,
+      "reg_lambda": 5.0,
+      "gamma": 2.0
+    },
+    "cvLogLoss": 0.15695646873018312,
+    "heldoutLogLoss": 0.13756613110041147,
+    "heldoutBrier": 0.023805436117884,
+    "heldoutAP": 1.0,
+    "heldoutReliability": 0.02080718882761409
+  }
+]
