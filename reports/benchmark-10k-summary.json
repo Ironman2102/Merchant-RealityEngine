@@ -1,0 +1,1482 @@
+{
+  "generatedAt": "2026-11-25T07:18:58.724Z",
+  "rulesVersion": "mre-bayes-0.3.0",
+  "total": 10000,
+  "elapsedSec": 86.69,
+  "confusion": {
+    "tp": 3368,
+    "fp": 0,
+    "fn": 1632,
+    "tn": 5000,
+    "recall": 0.6736,
+    "precision": 1,
+    "fpr": 0,
+    "f1": 0.805
+  },
+  "verdictMatrix": {
+    "case": {
+      "case": 3368,
+      "ask": 1151,
+      "clear": 481
+    },
+    "ask": {
+      "case": 0,
+      "ask": 242,
+      "clear": 8
+    },
+    "clear": {
+      "case": 0,
+      "ask": 234,
+      "clear": 4516
+    }
+  },
+  "calibration": {
+    "ece": 0.2113,
+    "brier": 0.201
+  },
+  "economics": {
+    "totalExpectedLoss": 1185192800,
+    "avgLossPerMerchant": 118519.28,
+    "actionMeanP": {
+      "L0": {
+        "n": 5005,
+        "meanP": 0.0004
+      },
+      "L1": {
+        "n": 1627,
+        "meanP": 0.1024
+      },
+      "L2": {
+        "n": 449,
+        "meanP": 0.2311
+      },
+      "L3": {
+        "n": 2919,
+        "meanP": 0.8957
+      },
+      "L4": {
+        "n": 0,
+        "meanP": 0
+      },
+      "L5": {
+        "n": 0,
+        "meanP": 0
+      }
+    }
+  },
+  "integrity": {
+    "parseErrors": 0,
+    "nanErrors": 0,
+    "ciViolations": 0,
+    "summaryFails": 0,
+    "waterfallChecked": 1000,
+    "waterfallFails": 0,
+    "packChecked": 1000,
+    "packFails": 173,
+    "outreachChecked": 200,
+    "outreachFails": 0
+  },
+  "latencyMs": {
+    "p50": 3.29,
+    "p95": 4.49,
+    "p99": 6.86,
+    "max": 94.08
+  },
+  "ringScaling": {
+    "N=1000": {
+      "ms": 282.7,
+      "rings": 0,
+      "linked": 0
+    },
+    "N=5000": {
+      "ms": 9183.5,
+      "rings": 631,
+      "linked": 500
+    },
+    "N=10000": {
+      "ms": 40298.9,
+      "rings": 706,
+      "linked": 700
+    }
+  },
+  "ringTopologyStats": {
+    "ring-star-ben": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    },
+    "ring-clique-payers": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    },
+    "ring-phoenix-chain": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    },
+    "ring-bipartite-hub": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    },
+    "ring-quiet-individual": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    },
+    "indian-franchise-shared-ben": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    },
+    "indian-techpark-shared-payers": {
+      "total": 100,
+      "linked": 100,
+      "rate": 1
+    }
+  },
+  "baseRateStats": [
+    {
+      "prevalence": 0.01,
+      "nTotal": 5051,
+      "nPos": 51,
+      "fdr": {
+        "q=0.05": {
+          "opened": 29,
+          "tp": 29,
+          "fp": 0,
+          "empFdr": 0
+        },
+        "q=0.1": {
+          "opened": 32,
+          "tp": 32,
+          "fp": 0,
+          "empFdr": 0
+        },
+        "q=0.2": {
+          "opened": 36,
+          "tp": 36,
+          "fp": 0,
+          "empFdr": 0
+        }
+      },
+      "precAt50": 0.56,
+      "precAt100": 0.29,
+      "precAt500": 0.086,
+      "recallAt1PctFpr": 0.549
+    },
+    {
+      "prevalence": 0.02,
+      "nTotal": 5102,
+      "nPos": 102,
+      "fdr": {
+        "q=0.05": {
+          "opened": 56,
+          "tp": 56,
+          "fp": 0,
+          "empFdr": 0
+        },
+        "q=0.1": {
+          "opened": 62,
+          "tp": 62,
+          "fp": 0,
+          "empFdr": 0
+        },
+        "q=0.2": {
+          "opened": 70,
+          "tp": 70,
+          "fp": 0,
+          "empFdr": 0
+        }
+      },
+      "precAt50": 0.98,
+      "precAt100": 0.53,
+      "precAt500": 0.17,
+      "recallAt1PctFpr": 0.5196
+    },
+    {
+      "prevalence": 0.05,
+      "nTotal": 5263,
+      "nPos": 263,
+      "fdr": {
+        "q=0.05": {
+          "opened": 133,
+          "tp": 133,
+          "fp": 0,
+          "empFdr": 0
+        },
+        "q=0.1": {
+          "opened": 150,
+          "tp": 150,
+          "fp": 0,
+          "empFdr": 0
+        },
+        "q=0.2": {
+          "opened": 176,
+          "tp": 176,
+          "fp": 0,
+          "empFdr": 0
+        }
+      },
+      "precAt50": 1,
+      "precAt100": 1,
+      "precAt500": 0.404,
+      "recallAt1PctFpr": 0.4829
+    }
+  ],
+  "driftByQuarter": {
+    "Q1": {
+      "n": 2367,
+      "psi": 0.4819,
+      "psiStatus": "SIGNIFICANT",
+      "abstainShare": 0.1872,
+      "topDrifts": [
+        "C5:50.0x",
+        "I3:22.9x",
+        "D9:18.9x"
+      ]
+    },
+    "Q2": {
+      "n": 2373,
+      "psi": 0.4698,
+      "psiStatus": "SIGNIFICANT",
+      "abstainShare": 0.1981,
+      "topDrifts": [
+        "C5:50.0x",
+        "I3:21.5x",
+        "D9:19.2x"
+      ]
+    },
+    "Q3": {
+      "n": 2500,
+      "psi": 0.5896,
+      "psiStatus": "SIGNIFICANT",
+      "abstainShare": 0.186,
+      "topDrifts": [
+        "C5:50.0x",
+        "D9:19.2x",
+        "I3:18.4x"
+      ]
+    },
+    "Q4": {
+      "n": 2500,
+      "psi": 0.5695,
+      "psiStatus": "SIGNIFICANT",
+      "abstainShare": 0.172,
+      "topDrifts": [
+        "C5:50.0x",
+        "D9:18.9x",
+        "I3:18.8x"
+      ]
+    }
+  },
+  "metamorphic": {
+    "n": 80,
+    "shufflePass": 80,
+    "renamePass": 32,
+    "tzPass": 80,
+    "monoPass": 80
+  },
+  "ttdReplay": {
+    "n": 80,
+    "medianDays": 3,
+    "p90Days": 3,
+    "slippedVolPct": 22.29
+  },
+  "fuzzing": {
+    "total": 8,
+    "passed": 8,
+    "results": [
+      {
+        "name": "proto-pollution-mcc",
+        "pass": true
+      },
+      {
+        "name": "constructor-state-safe",
+        "pass": true
+      },
+      {
+        "name": "empty-transactions-rejected",
+        "pass": true
+      },
+      {
+        "name": "all-refunds-no-sales-rejected",
+        "pass": true
+      },
+      {
+        "name": "over-maxPaymentRupees-rejected",
+        "pass": true
+      },
+      {
+        "name": "negative-amount-rejected",
+        "pass": true
+      },
+      {
+        "name": "100-streams-exceeds-maxStreams-safe",
+        "pass": true
+      },
+      {
+        "name": "prompt-injection-name-safe",
+        "pass": true
+      }
+    ]
+  },
+  "learningPoisoning": {
+    "honestFp": 0.0198,
+    "poisonedFp": 0.3149,
+    "bounded": true
+  },
+  "breakdowns": {
+    "difficulty": {
+      "front (hard)": {
+        "n": 1950,
+        "tp": 987,
+        "fp": 0,
+        "fn": 963,
+        "tn": 0,
+        "ask": 713
+      },
+      "front (redteam)": {
+        "n": 1050,
+        "tp": 671,
+        "fp": 0,
+        "fn": 379,
+        "tn": 0,
+        "ask": 148
+      },
+      "front (standard)": {
+        "n": 2000,
+        "tp": 1710,
+        "fp": 0,
+        "fn": 290,
+        "tn": 0,
+        "ask": 290
+      },
+      "genuine (hard)": {
+        "n": 2500,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2500,
+        "ask": 187
+      },
+      "genuine (standard)": {
+        "n": 2000,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2000,
+        "ask": 0
+      },
+      "profile_shift (hard)": {
+        "n": 500,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 500,
+        "ask": 289
+      }
+    },
+    "category": {
+      "FRONT: Account Takeovers": {
+        "n": 350,
+        "tp": 350,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "FRONT: Betting & Gambling Fronts": {
+        "n": 650,
+        "tp": 650,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "FRONT: Cross-Merchant Rings": {
+        "n": 500,
+        "tp": 209,
+        "fp": 0,
+        "fn": 291,
+        "tn": 0,
+        "ask": 191
+      },
+      "FRONT: Evasion & Smurfing Fronts": {
+        "n": 300,
+        "tp": 300,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "FRONT: Fabricated Substance Shells": {
+        "n": 350,
+        "tp": 284,
+        "fp": 0,
+        "fn": 66,
+        "tn": 0,
+        "ask": 66
+      },
+      "FRONT: Low-Intensity Hybrid Fronts": {
+        "n": 400,
+        "tp": 25,
+        "fp": 0,
+        "fn": 375,
+        "tn": 0,
+        "ask": 125
+      },
+      "FRONT: Mule & Payout Laundering": {
+        "n": 350,
+        "tp": 350,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "FRONT: Mule & Refund Laundering": {
+        "n": 400,
+        "tp": 3,
+        "fp": 0,
+        "fn": 397,
+        "tn": 0,
+        "ask": 397
+      },
+      "FRONT: Multi-Stream Hiding": {
+        "n": 250,
+        "tp": 250,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "FRONT: Red-Team Adaptive Evasion": {
+        "n": 950,
+        "tp": 671,
+        "fp": 0,
+        "fn": 279,
+        "tn": 0,
+        "ask": 148
+      },
+      "FRONT: Rotation & Phoenix Fronts": {
+        "n": 300,
+        "tp": 76,
+        "fp": 0,
+        "fn": 224,
+        "tn": 0,
+        "ask": 224
+      },
+      "FRONT: Unknown-MCC Conduct Fronts": {
+        "n": 200,
+        "tp": 200,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "GENUINE: Clean Diverse Shops": {
+        "n": 2000,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2000,
+        "ask": 0
+      },
+      "GENUINE: Genuine Festival & Local Surges": {
+        "n": 300,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 300,
+        "ask": 0
+      },
+      "GENUINE: Genuine Geo & Repeat Edge Cases": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "GENUINE: Genuine Operational Edge Cases": {
+        "n": 600,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 600,
+        "ask": 0
+      },
+      "GENUINE: Genuine Pricing & POS Traps": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 10
+      },
+      "GENUINE: Genuine Timing & Calendar Traps": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 1
+      },
+      "GENUINE: Indian Commerce Traps": {
+        "n": 1000,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1000,
+        "ask": 176
+      },
+      "GENUINE: Messy Real-World Data": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "PROFILE_SHIFT: Honest Profile Shifts (ASK)": {
+        "n": 250,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 250,
+        "ask": 242
+      },
+      "PROFILE_SHIFT: Honest Profile Shifts (Passport)": {
+        "n": 250,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 250,
+        "ask": 47
+      }
+    },
+    "typology": {
+      "front: b8-deposit-conduct": {
+        "n": 300,
+        "tp": 300,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: benign-padding-camouflage": {
+        "n": 200,
+        "tp": 191,
+        "fp": 0,
+        "fn": 9,
+        "tn": 0,
+        "ask": 9
+      },
+      "front: hybrid-15pct": {
+        "n": 200,
+        "tp": 0,
+        "fp": 0,
+        "fn": 200,
+        "tn": 0,
+        "ask": 5
+      },
+      "front: hybrid-25pct": {
+        "n": 200,
+        "tp": 25,
+        "fp": 0,
+        "fn": 175,
+        "tn": 0,
+        "ask": 120
+      },
+      "front: k1-kyc-lie-and-r01": {
+        "n": 150,
+        "tp": 150,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: orphan-refund-ring": {
+        "n": 200,
+        "tp": 3,
+        "fp": 0,
+        "fn": 197,
+        "tn": 0,
+        "ask": 197
+      },
+      "front: passport-abuse-front": {
+        "n": 200,
+        "tp": 200,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: payout-fanout-sweep": {
+        "n": 350,
+        "tp": 350,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: ring-bipartite-hub": {
+        "n": 100,
+        "tp": 99,
+        "fp": 0,
+        "fn": 1,
+        "tn": 0,
+        "ask": 1
+      },
+      "front: ring-clique-payers": {
+        "n": 100,
+        "tp": 17,
+        "fp": 0,
+        "fn": 83,
+        "tn": 0,
+        "ask": 83
+      },
+      "front: ring-phoenix-chain": {
+        "n": 100,
+        "tp": 0,
+        "fp": 0,
+        "fn": 100,
+        "tn": 0,
+        "ask": 100
+      },
+      "front: ring-quiet-individual": {
+        "n": 100,
+        "tp": 0,
+        "fp": 0,
+        "fn": 100,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: ring-star-ben": {
+        "n": 100,
+        "tp": 93,
+        "fp": 0,
+        "fn": 7,
+        "tn": 0,
+        "ask": 7
+      },
+      "front: rotation-dormant-handoff": {
+        "n": 300,
+        "tp": 76,
+        "fp": 0,
+        "fn": 224,
+        "tn": 0,
+        "ask": 224
+      },
+      "front: shell-full-fake": {
+        "n": 350,
+        "tp": 284,
+        "fp": 0,
+        "fn": 66,
+        "tn": 0,
+        "ask": 66
+      },
+      "front: slow-boil-takeover": {
+        "n": 200,
+        "tp": 80,
+        "fp": 0,
+        "fn": 120,
+        "tn": 0,
+        "ask": 120
+      },
+      "front: sub-minsales-shard": {
+        "n": 200,
+        "tp": 200,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: sub-qr-stream-hide": {
+        "n": 250,
+        "tp": 250,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: takeover-3wk-surge": {
+        "n": 350,
+        "tp": 350,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: telegram-no-web-c6": {
+        "n": 150,
+        "tp": 150,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: thirdparty-refund-ring": {
+        "n": 200,
+        "tp": 0,
+        "fp": 0,
+        "fn": 200,
+        "tn": 0,
+        "ask": 200
+      },
+      "front: threshold-hug-epsilon": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 150,
+        "tn": 0,
+        "ask": 19
+      },
+      "front: unknown-mcc-conduct-front": {
+        "n": 200,
+        "tp": 200,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "front: web-gambling-embed": {
+        "n": 350,
+        "tp": 350,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      },
+      "genuine: acquirer-only-and-partial": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: border-neighbours": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: calendar-festival-surge": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: clean-known-mcc": {
+        "n": 1700,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1700,
+        "ask": 0
+      },
+      "genuine: clean-unknown-mcc": {
+        "n": 300,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 300,
+        "ask": 0
+      },
+      "genuine: discrete-menu-99-pos": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 10
+      },
+      "genuine: indian-airport-pilgrim-hub": {
+        "n": 200,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 200,
+        "ask": 0
+      },
+      "genuine: indian-b2b-wholesale": {
+        "n": 200,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 200,
+        "ask": 176
+      },
+      "genuine: indian-franchise-shared-ben": {
+        "n": 100,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 100,
+        "ask": 0
+      },
+      "genuine: indian-recurring-emi-tiffin": {
+        "n": 200,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 200,
+        "ask": 0
+      },
+      "genuine: indian-salary-fee-spike": {
+        "n": 200,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 200,
+        "ask": 0
+      },
+      "genuine: indian-techpark-shared-payers": {
+        "n": 100,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 100,
+        "ask": 0
+      },
+      "genuine: messy-tz-paise-dups-anon": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: mobile-self-refunds-bank-switch": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: monsoon-delay-and-overnight": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: small-n-under-minN": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "genuine: sports-bar-local-match": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 1
+      },
+      "genuine: unlisted-local-fair": {
+        "n": 150,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "ask": 0
+      },
+      "profile_shift: ask-profile-shift-no-passport": {
+        "n": 250,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 250,
+        "ask": 242
+      },
+      "profile_shift: genuine-with-valid-passport": {
+        "n": 250,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 250,
+        "ask": 47
+      }
+    },
+    "knownVsUnknownMcc": {
+      "known-mcc (39)": {
+        "n": 8264,
+        "tp": 2520,
+        "fp": 0,
+        "fn": 1298,
+        "tn": 4446,
+        "ask": 1403
+      },
+      "unknown-mcc (10)": {
+        "n": 1736,
+        "tp": 848,
+        "fp": 0,
+        "fn": 334,
+        "tn": 554,
+        "ask": 224
+      }
+    },
+    "quarter": {
+      "Q1": {
+        "n": 2367,
+        "tp": 762,
+        "fp": 0,
+        "fn": 355,
+        "tn": 1250,
+        "ask": 387
+      },
+      "Q2": {
+        "n": 2373,
+        "tp": 754,
+        "fp": 0,
+        "fn": 369,
+        "tn": 1250,
+        "ask": 391
+      },
+      "Q3": {
+        "n": 2642,
+        "tp": 936,
+        "fp": 0,
+        "fn": 456,
+        "tn": 1250,
+        "ask": 437
+      },
+      "Q4": {
+        "n": 2618,
+        "tp": 916,
+        "fp": 0,
+        "fn": 452,
+        "tn": 1250,
+        "ask": 412
+      }
+    },
+    "region": {
+      "metro": {
+        "n": 4617,
+        "tp": 1549,
+        "fp": 0,
+        "fn": 759,
+        "tn": 2309,
+        "ask": 762
+      },
+      "nonmetro": {
+        "n": 5383,
+        "tp": 1819,
+        "fp": 0,
+        "fn": 873,
+        "tn": 2691,
+        "ask": 865
+      }
+    },
+    "size": {
+      "enterprise": {
+        "n": 556,
+        "tp": 91,
+        "fp": 0,
+        "fn": 67,
+        "tn": 398,
+        "ask": 243
+      },
+      "micro": {
+        "n": 5838,
+        "tp": 1678,
+        "fp": 0,
+        "fn": 1085,
+        "tn": 3075,
+        "ask": 849
+      },
+      "mid": {
+        "n": 3606,
+        "tp": 1599,
+        "fp": 0,
+        "fn": 480,
+        "tn": 1527,
+        "ask": 535
+      }
+    },
+    "age": {
+      "established": {
+        "n": 2397,
+        "tp": 781,
+        "fp": 0,
+        "fn": 374,
+        "tn": 1242,
+        "ask": 339
+      },
+      "mid": {
+        "n": 4756,
+        "tp": 1674,
+        "fp": 0,
+        "fn": 608,
+        "tn": 2474,
+        "ask": 643
+      },
+      "new": {
+        "n": 2847,
+        "tp": 913,
+        "fp": 0,
+        "fn": 650,
+        "tn": 1284,
+        "ask": 645
+      }
+    },
+    "channel": {
+      "mixed": {
+        "n": 3905,
+        "tp": 1390,
+        "fp": 0,
+        "fn": 624,
+        "tn": 1891,
+        "ask": 625
+      },
+      "pos": {
+        "n": 873,
+        "tp": 238,
+        "fp": 0,
+        "fn": 104,
+        "tn": 531,
+        "ask": 132
+      },
+      "upi": {
+        "n": 5222,
+        "tp": 1740,
+        "fp": 0,
+        "fn": 904,
+        "tn": 2578,
+        "ask": 870
+      }
+    },
+    "passportMode": {
+      "ask-profile-shift-no-passport": {
+        "n": 250,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 250,
+        "ask": 242
+      },
+      "genuine-with-valid-passport": {
+        "n": 250,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 250,
+        "ask": 47
+      },
+      "passport-abuse-front": {
+        "n": 200,
+        "tp": 200,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "ask": 0
+      }
+    },
+    "mcc": {
+      "4121": {
+        "n": 267,
+        "tp": 67,
+        "fp": 0,
+        "fn": 31,
+        "tn": 169,
+        "ask": 19
+      },
+      "4131": {
+        "n": 211,
+        "tp": 62,
+        "fp": 0,
+        "fn": 37,
+        "tn": 112,
+        "ask": 40
+      },
+      "4814": {
+        "n": 167,
+        "tp": 75,
+        "fp": 0,
+        "fn": 23,
+        "tn": 69,
+        "ask": 15
+      },
+      "4900": {
+        "n": 210,
+        "tp": 67,
+        "fp": 0,
+        "fn": 31,
+        "tn": 112,
+        "ask": 37
+      },
+      "5045": {
+        "n": 166,
+        "tp": 64,
+        "fp": 0,
+        "fn": 33,
+        "tn": 69,
+        "ask": 23
+      },
+      "5122": {
+        "n": 210,
+        "tp": 68,
+        "fp": 0,
+        "fn": 30,
+        "tn": 112,
+        "ask": 44
+      },
+      "5251": {
+        "n": 266,
+        "tp": 63,
+        "fp": 0,
+        "fn": 34,
+        "tn": 169,
+        "ask": 109
+      },
+      "5311": {
+        "n": 210,
+        "tp": 65,
+        "fp": 0,
+        "fn": 33,
+        "tn": 112,
+        "ask": 43
+      },
+      "5411": {
+        "n": 267,
+        "tp": 67,
+        "fp": 0,
+        "fn": 31,
+        "tn": 169,
+        "ask": 23
+      },
+      "5422": {
+        "n": 212,
+        "tp": 65,
+        "fp": 0,
+        "fn": 34,
+        "tn": 113,
+        "ask": 48
+      },
+      "5451": {
+        "n": 167,
+        "tp": 67,
+        "fp": 0,
+        "fn": 30,
+        "tn": 70,
+        "ask": 27
+      },
+      "5462": {
+        "n": 361,
+        "tp": 66,
+        "fp": 0,
+        "fn": 33,
+        "tn": 262,
+        "ask": 47
+      },
+      "5499": {
+        "n": 168,
+        "tp": 69,
+        "fp": 0,
+        "fn": 28,
+        "tn": 71,
+        "ask": 19
+      },
+      "5541": {
+        "n": 211,
+        "tp": 58,
+        "fp": 0,
+        "fn": 41,
+        "tn": 112,
+        "ask": 53
+      },
+      "5542": {
+        "n": 168,
+        "tp": 62,
+        "fp": 0,
+        "fn": 36,
+        "tn": 70,
+        "ask": 25
+      },
+      "5651": {
+        "n": 167,
+        "tp": 62,
+        "fp": 0,
+        "fn": 36,
+        "tn": 69,
+        "ask": 26
+      },
+      "5661": {
+        "n": 209,
+        "tp": 65,
+        "fp": 0,
+        "fn": 33,
+        "tn": 111,
+        "ask": 42
+      },
+      "5691": {
+        "n": 168,
+        "tp": 67,
+        "fp": 0,
+        "fn": 31,
+        "tn": 70,
+        "ask": 22
+      },
+      "5712": {
+        "n": 266,
+        "tp": 67,
+        "fp": 0,
+        "fn": 31,
+        "tn": 168,
+        "ask": 111
+      },
+      "5732": {
+        "n": 168,
+        "tp": 66,
+        "fp": 0,
+        "fn": 32,
+        "tn": 70,
+        "ask": 20
+      },
+      "5812": {
+        "n": 310,
+        "tp": 64,
+        "fp": 0,
+        "fn": 34,
+        "tn": 212,
+        "ask": 45
+      },
+      "5813": {
+        "n": 218,
+        "tp": 64,
+        "fp": 0,
+        "fn": 34,
+        "tn": 120,
+        "ask": 23
+      },
+      "5814": {
+        "n": 310,
+        "tp": 69,
+        "fp": 0,
+        "fn": 29,
+        "tn": 212,
+        "ask": 45
+      },
+      "5912": {
+        "n": 167,
+        "tp": 67,
+        "fp": 0,
+        "fn": 31,
+        "tn": 69,
+        "ask": 25
+      },
+      "5943": {
+        "n": 210,
+        "tp": 66,
+        "fp": 0,
+        "fn": 32,
+        "tn": 112,
+        "ask": 43
+      },
+      "5944": {
+        "n": 167,
+        "tp": 64,
+        "fp": 0,
+        "fn": 34,
+        "tn": 69,
+        "ask": 27
+      },
+      "5947": {
+        "n": 209,
+        "tp": 65,
+        "fp": 0,
+        "fn": 32,
+        "tn": 112,
+        "ask": 40
+      },
+      "5967": {
+        "n": 124,
+        "tp": 66,
+        "fp": 0,
+        "fn": 32,
+        "tn": 26,
+        "ask": 21
+      },
+      "5968": {
+        "n": 223,
+        "tp": 103,
+        "fp": 0,
+        "fn": 35,
+        "tn": 85,
+        "ask": 25
+      },
+      "5969": {
+        "n": 124,
+        "tp": 66,
+        "fp": 0,
+        "fn": 32,
+        "tn": 26,
+        "ask": 21
+      },
+      "5977": {
+        "n": 168,
+        "tp": 65,
+        "fp": 0,
+        "fn": 34,
+        "tn": 69,
+        "ask": 24
+      },
+      "5993": {
+        "n": 224,
+        "tp": 106,
+        "fp": 0,
+        "fn": 33,
+        "tn": 85,
+        "ask": 24
+      },
+      "5995": {
+        "n": 124,
+        "tp": 63,
+        "fp": 0,
+        "fn": 35,
+        "tn": 26,
+        "ask": 23
+      },
+      "5999": {
+        "n": 124,
+        "tp": 66,
+        "fp": 0,
+        "fn": 32,
+        "tn": 26,
+        "ask": 21
+      },
+      "7011": {
+        "n": 166,
+        "tp": 59,
+        "fp": 0,
+        "fn": 38,
+        "tn": 69,
+        "ask": 28
+      },
+      "7230": {
+        "n": 169,
+        "tp": 63,
+        "fp": 0,
+        "fn": 36,
+        "tn": 70,
+        "ask": 28
+      },
+      "7299": {
+        "n": 224,
+        "tp": 105,
+        "fp": 0,
+        "fn": 34,
+        "tn": 85,
+        "ask": 22
+      },
+      "7311": {
+        "n": 123,
+        "tp": 64,
+        "fp": 0,
+        "fn": 34,
+        "tn": 25,
+        "ask": 22
+      },
+      "7399": {
+        "n": 223,
+        "tp": 107,
+        "fp": 0,
+        "fn": 31,
+        "tn": 85,
+        "ask": 20
+      },
+      "7832": {
+        "n": 209,
+        "tp": 64,
+        "fp": 0,
+        "fn": 33,
+        "tn": 112,
+        "ask": 44
+      },
+      "7941": {
+        "n": 169,
+        "tp": 62,
+        "fp": 0,
+        "fn": 37,
+        "tn": 70,
+        "ask": 27
+      },
+      "7997": {
+        "n": 375,
+        "tp": 61,
+        "fp": 0,
+        "fn": 36,
+        "tn": 278,
+        "ask": 47
+      },
+      "8011": {
+        "n": 168,
+        "tp": 66,
+        "fp": 0,
+        "fn": 32,
+        "tn": 70,
+        "ask": 21
+      },
+      "8062": {
+        "n": 209,
+        "tp": 58,
+        "fp": 0,
+        "fn": 39,
+        "tn": 112,
+        "ask": 44
+      },
+      "8220": {
+        "n": 234,
+        "tp": 63,
+        "fp": 0,
+        "fn": 34,
+        "tn": 137,
+        "ask": 24
+      },
+      "8299": {
+        "n": 167,
+        "tp": 61,
+        "fp": 0,
+        "fn": 37,
+        "tn": 69,
+        "ask": 27
+      },
+      "8398": {
+        "n": 167,
+        "tp": 64,
+        "fp": 0,
+        "fn": 33,
+        "tn": 70,
+        "ask": 22
+      },
+      "8661": {
+        "n": 233,
+        "tp": 63,
+        "fp": 0,
+        "fn": 35,
+        "tn": 135,
+        "ask": 26
+      },
+      "8999": {
+        "n": 223,
+        "tp": 102,
+        "fp": 0,
+        "fn": 36,
+        "tn": 85,
+        "ask": 25
+      }
+    }
+  }
+}
