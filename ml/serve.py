@@ -138,6 +138,7 @@ def score(body: ScoreIn):
                              'disagreement': float(max(scores) - min(scores)) if len(scores) > 1 else 0.0,
                              'confidence': 'LOW', 'review': True,
                              'syntheticTrainingExamples': min([x.get('training_examples', 0) for x in _classical], default=None)},
+                'nn': nn_out,
                 **({'encoder': encoder} if encoder else {})}
     row = np.array([[float(body.features.get(c, 0)) for c in _cols]])
     raw = float(_booster.predict(row)[0])

@@ -146,7 +146,8 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
       observed: !hoursKnown || (openH === 0 && closeH === 24) ? 'No closed hours to compare' : `${pct(r.offHoursShare)} of payments processed while shop is closed`,
       barValue: r.offHoursShare,
       barLabel: 'Off-hours transaction share',
-      ...status('C2', 'C5'),
+      // Only C2 measures off-hours sales, which is what this row shows. C5 (pre-match funding) is listed on its own.
+      ...status('C2'),
     },
     {
       icon: CreditCard,

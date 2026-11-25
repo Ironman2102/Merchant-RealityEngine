@@ -45,7 +45,25 @@ const festive = [...steady(12), 1.25, 1.8];
 const bakeryLike = (seed: number, pool?: number) => { const b = genBakery(seed, pool); return { ...getScenario('bakery'), events: b.events, fixtures: b.fixtures }; };
 const diwaliLike = (seed: number) => { const b = genDiwali(seed); return { ...getScenario('diwali'), events: b.events, fixtures: b.fixtures, orders: b.orders, bankCredits: b.bankCredits }; };
 
-const write = (file: string, ds: MreDataset) => { writeFileSync(`${OUT}/${file}`, JSON.stringify(ds, null, 2)); console.log('wrote', file, ds.transactions.length, 'transactions'); };
+/**
+ * Each sample is built independently and numbers its payers and accounts from 001, so without this two unrelated
+ * shops would share `cust001@upi` and `BEN-001`, and the portfolio ring detector (N4/N5) would link honest merchants.
+ * Prefix every payer and account with the file's merchant code. Accounts that receive onward payouts (TRANSFER) are
+ * the mule accounts of the betting ledgers and keep one shared namespace, so the fronts built on them stay linked.
+ */
+function namespaceIds(ds: MreDataset) {
+  const code = ds.merchant.id.split('-')[1]?.toLowerCase() ?? ds.merchant.id.toLowerCase();
+  const mule = new Set(ds.transactions.filter(t => t.type === 'TRANSFER' && t.beneficiaryAccount).map(t => t.beneficiaryAccount!));
+  const acct = (a?: string) => !a ? a : mule.has(a) ? `MULE-${a}` : `${code.toUpperCase()}-${a}`;
+  ds.transactions.forEach(t => {
+    if (t.payerId) t.payerId = `${code}.${t.payerId}`;
+    if (t.paidTo) t.paidTo = acct(t.paidTo);
+    if (t.beneficiaryAccount) t.beneficiaryAccount = acct(t.beneficiaryAccount);
+  });
+  ds.bankCredits?.forEach(b => { b.beneficiaryAccount = acct(b.beneficiaryAccount)!; });
+  return ds;
+}
+const write = (file: string, ds: MreDataset) => { writeFileSync(`${OUT}/${file}`, JSON.stringify(namespaceIds(ds), null, 2)); console.log('wrote', file, ds.transactions.length, 'transactions'); };
 
 // 1–4: built-in cases
 write('01-sweet-crumbs-betting-front.json', scenarioToDataset(getScenario('bakery'), { title: 'Sweet Crumbs Bakery — suspected betting collections' }));
