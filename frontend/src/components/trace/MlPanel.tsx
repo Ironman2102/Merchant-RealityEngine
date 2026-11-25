@@ -26,6 +26,7 @@ interface Opinion {
   };
   encoder?: { label: string | null; score: number | null; modelVersion: string };
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
+  explanation?: { method: string; baseLogit: number; stackedLogit: number; residual: number };
 }
 
 function words(feature: string): string {
@@ -60,7 +61,7 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
         <div className="space-y-3 text-sm">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded border border-line bg-panel2 p-3">
-              <div className="text-xs text-mute">{ml.ensemble?.method === 'stacked' ? `Stacked ensemble (${ml.modelVersion}) · drivers from LightGBM SHAP` : `LightGBM tree model (${ml.modelVersion})`}</div>
+              <div className="text-xs text-mute">{ml.ensemble?.method === 'stacked' ? `Stacked ensemble (${ml.modelVersion}) · ${ml.explanation ? 'drivers from the stacked ensemble (log-odds SHAP)' : 'drivers from LightGBM SHAP'}` : `LightGBM tree model (${ml.modelVersion})`}</div>
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span className="font-mono text-xl">{fmtProb(ml.p)}</span>
                 <Badge tone="info">Trained on synthetic data</Badge>
