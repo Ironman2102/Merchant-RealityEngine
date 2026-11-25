@@ -7,6 +7,7 @@ import { DETECTORS, runDetectors, outsideHours } from '../../frontend/src/engine
 import { volumeModel } from '../../frontend/src/engines/residualEngine';
 import { cusum } from '../../frontend/src/engines/cusumEngine';
 import { cohortContinuity } from '../../frontend/src/engines/cohortContinuity';
+import { deliveredOrderCover } from '../../frontend/src/engines/passport';
 import { RULES } from '../../rules/index';
 import type { EvidenceItem } from '../../frontend/src/types/evidence';
 import type { CoverageKey, CoverageState, Scenario } from '../../frontend/src/types/merchant';
@@ -270,6 +271,28 @@ export default function (): number {
     const scEmptyLocal = mkBaseScenario();
     scEmptyLocal.profile.localStates = [];
     check('B6 empty localStates -> UNKNOWN', evalDetectors(scEmptyLocal).get('B6')!.status === 'UNKNOWN');
+  }
+
+  // B6 delivered-order excuse
+  {
+    const far = (i: number) => mkSale(i, { payerState: ['DL', 'UP', 'WB', 'PB'][i % 4] });
+    const base = mkBaseScenario({ events: Array.from({ length: 40 }, (_, i) => far(i)) }); // all 40 orders DELIVERED, unique TRK
+    check('delivered + unique tracking excused', deliveredOrderCover(base).size === 40);
+
+    const reused = mkBaseScenario({ events: base.events, orders: base.orders.map(o => ({ ...o, trackingId: 'TRK-SAME' })) });
+    check('reused tracking fails guard', deliveredOrderCover(reused).size === 0);
+
+    const undelivered = mkBaseScenario({ events: base.events, orders: base.orders.map((o, i) => i < 5 ? { ...o, status: 'NONE' as const } : o) }); // 87.5% < 90%
+    check('below 90% delivered excuses nothing', deliveredOrderCover(undelivered).size === 0);
+
+    const noTrack = mkBaseScenario({ events: base.events, orders: base.orders.map((o, i) => i === 0 ? { ...o, trackingId: undefined } : o) });
+    check('no tracking not excused', !deliveredOrderCover(noTrack).has('S-0'));
+
+    const byOrderId = mkBaseScenario({ events: base.events, orders: base.orders.map(o => ({ ...o, saleId: 'unknown' })) });
+    check('matched by orderId', deliveredOrderCover(byOrderId).has('S-3'));
+
+    const unmatched = mkBaseScenario({ events: base.events, orders: base.orders.slice(0, 20) });
+    check('unmatched still counts', !deliveredOrderCover(unmatched).has('S-30') && deliveredOrderCover(unmatched).has('S-0'));
   }
 
   // 7. B7: Heavy repeat payers (boundary 7 vs 8 payments in same epoch week)

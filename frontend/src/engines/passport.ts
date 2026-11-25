@@ -78,6 +78,17 @@ export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => bo
   });
 }
 
+/** Primary-merchant sales backed by a delivered order with unique tracking; excused on `area` only when the order feed itself is sound. */
+export function deliveredOrderCover(sc: Scenario): Set<string> {
+  const cnt = new Map<string, number>();
+  for (const o of sc.orders) if (o.trackingId) cnt.set(o.trackingId, (cnt.get(o.trackingId) ?? 0) + 1);
+  const good = sc.orders.filter(o => o.status === 'DELIVERED' && o.trackingId && cnt.get(o.trackingId) === 1);
+  if (!sc.orders.length || good.length / sc.orders.length < 0.9) return new Set(); // same bar as F7
+  return new Set(sc.events
+    .filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SALE' && good.some(o => o.saleId === e.id || (!!e.orderId && o.orderId === e.orderId)))
+    .map(e => e.id));
+}
+
 export function passportUplift(sc: Scenario, weekEnd: number): number {
   let uplift = 1;
   const ownSales = sc.events.filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SALE');
