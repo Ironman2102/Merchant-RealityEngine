@@ -81,7 +81,7 @@ export function runInvestigation(
       result.passportAnswered = inForce.map(p => p.id);
       result.fusion.gateReason += ` A question about this change was answered by passport ${result.passportAnswered.join(', ')}. Revoking it reopens the question. Once it expires, a later file asks again.`;
     }
-    if (excused) result.fusion.gateReason += ` ${excused} out-of-state payments were set aside as delivered online orders.`;
+    if (excused) result.fusion.gateReason += ` ${excused} payments matched to delivered online orders were set aside from the out-of-state check.`;
   }
   return result;
 }
