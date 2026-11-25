@@ -1,7 +1,7 @@
 /** Ask the local model service. Any failure, including a timeout, leaves the Bayesian decision unchanged. */
-import { behavioralFeatures, features } from '../../engine/features';
+import { modelFeatures } from '../../engine/features';
 import type { InvestigationResult } from '../../frontend/src/types/investigation';
-import { modelHostConfigured, startModelSandbox, stopModelSandbox } from './modelHost';
+import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 
 export interface MlDriver { feature: string; shap: number }
 /** Stage 2 v1: exact-sum attribution of the stacked logit (ml/explain.py); `drivers` are its top five. */
@@ -48,14 +48,15 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
   const isLocal = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(url);
   // First uncertain request may lazily load the configured text model; allow that one-time cost.
   const defaultTimeout = isLocal ? 10000 : 5000;
-  const timeoutMs = Number(process.env.MRE_ML_TIMEOUT) > 0 ? Number(process.env.MRE_ML_TIMEOUT) : defaultTimeout;
+  const rawTimeout = Number(process.env.MRE_ML_TIMEOUT) > 0 ? Number(process.env.MRE_ML_TIMEOUT) : defaultTimeout;
+  const timeoutMs = isLocal ? rawTimeout : Math.min(24000, rawTimeout);
   try {
     const res = await fetch(`${url}/score`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      // Send every column the models were trained on. Leaving out the behavioural columns scored them as zero
-      // (a zero sweep lag reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
-      body: JSON.stringify({ features: { ...features(result), ...behavioralFeatures(result) }, context: encoderContext(result) }),
+      // Send exactly the training row. Leaving out the behavioural columns scored them as zero (a zero sweep lag
+      // reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
+      body: JSON.stringify({ features: modelFeatures(result), context: encoderContext(result) }),
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) throw new Error(`ML ${res.status}`);
@@ -88,6 +89,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
 export async function scoreWithHost(result: InvestigationResult): Promise<MlOpinion | null> {
   const direct = await mlScore(result);
   if (direct || !modelHostConfigured()) return direct;
+  if (await modelOnline()) return null;
   await startModelSandbox();
   return await mlScore(result);
 }

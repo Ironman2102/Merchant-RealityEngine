@@ -53,23 +53,32 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
     return () => { live = false; };
   }, [caseId, reload]);
   const both = ml && ((ml.p >= 0.1 && posterior >= 0.1) || (ml.p < 0.1 && posterior < 0.1));
+  // m1-v0 is the LightGBM model. Without it the service answers with the neural network and classical models,
+  // and its headline probability is their average, so it must not be shown under the LightGBM name.
+  // The headline score comes from the Stage 2 v1 stacked ensemble or from the m1-v0 LightGBM model. In the v0 fallback
+  // without m1-v0 the headline is an average of the other models, so it must not be shown under either name.
+  const stacked = ml?.ensemble?.method === 'stacked';
+  const gbm = ml?.modelVersion === 'm1-v0';
   return (
     <Panel title="Stage 2 AI/ML assessment" subtitle="Predictive models and optional text understanding add a confidence-gated assessment. The statistical independence gate still governs case opening.">
       {ml === undefined && <p className="text-sm text-mute">Asking the model…</p>}
       {ml === null && <div className="space-y-2"><p className="text-sm">AI model offline. The decision does not depend on it.</p><ModelSandbox onReady={() => setReload(n => n + 1)} /></div>}
       {ml && (
         <div className="space-y-3 text-sm">
+          {!gbm && !stacked && <p className="text-xs text-mute">The LightGBM model (m1-v0) is not loaded on this host, so the neural network and classical models answer instead.</p>}
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded border border-line bg-panel2 p-3">
-              <div className="text-xs text-mute">{ml.ensemble?.method === 'stacked' ? `Stacked ensemble (${ml.modelVersion}) · ${ml.explanation ? 'drivers from the stacked ensemble (log-odds SHAP)' : 'drivers from LightGBM SHAP'}` : `LightGBM tree model (${ml.modelVersion})`}</div>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xl">{fmtProb(ml.p)}</span>
-                <Badge tone="info">Trained on synthetic data</Badge>
+            {(gbm || stacked) && (
+              <div className="rounded border border-line bg-panel2 p-3">
+                <div className="text-xs text-mute">{stacked ? `Stacked ensemble (${ml.modelVersion}) · ${ml.explanation ? 'drivers from the stacked ensemble (log-odds SHAP)' : 'drivers from LightGBM SHAP'}` : `LightGBM tree model (${ml.modelVersion})`}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xl">{fmtProb(ml.p)}</span>
+                  <Badge tone="info">Trained on synthetic data</Badge>
+                </div>
+                <ul className="mt-2 space-y-0.5 text-[12px] text-mute">
+                  {ml.drivers.slice(0, 5).map(d => <li key={d.feature}>{words(d.feature)}: <span className="font-mono text-ink">{d.shap >= 0 ? '+' : ''}{d.shap.toFixed(2)}</span></li>)}
+                </ul>
               </div>
-              <ul className="mt-2 space-y-0.5 text-[12px] text-mute">
-                {ml.drivers.slice(0, 5).map(d => <li key={d.feature}>{words(d.feature)}: <span className="font-mono text-ink">{d.shap >= 0 ? '+' : ''}{d.shap.toFixed(2)}</span></li>)}
-              </ul>
-            </div>
+            )}
             {ml.nn && (
               <div className="rounded border border-line bg-panel2 p-3">
                 <div className="text-xs text-mute">Neural network challenger ({ml.nn.modelVersion})</div>

@@ -1,6 +1,10 @@
 """Local second-opinion scorer. GET /health, POST /score. The Bayesian engine still decides."""
+import concurrent.futures
 import json
 import os
+import threading
+from contextlib import asynccontextmanager
+from functools import lru_cache
 from pathlib import Path
 
 try:
@@ -15,36 +19,76 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / 'ml' / 'models' / 'm1-v0'
 NET = ROOT / 'ml' / 'models' / 'nn-v0' / 'network.json'
 
-app = FastAPI()
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    if os.getenv('MRE_ENCODER_PRELOAD', '').strip() == '1':
+        model_name = os.getenv('MRE_ENCODER_MODEL', 'valhalla/distilbart-mnli-12-1').strip()
+        _start_encoder_load(model_name)
+    yield
+
+
+app = FastAPI(lifespan=_lifespan)
 _booster = None
 _cols: list[str] = []
 _cal: dict = {}
 _net: dict | None = None
 _encoder = None
+_encoder_lock = threading.Lock()
+_encoder_loading = False
+_encoder_exec = concurrent.futures.ThreadPoolExecutor(max_workers=1)
 _classical: list[dict] = []
 
+@lru_cache(maxsize=128)
+def _run_encoder(encoder_id: int, model_name: str, snippet: str):
+    result = _encoder(snippet, candidate_labels=[
+        'description consistent with the declared merchant business',
+        'description suggests a different or undisclosed business activity',
+        'insufficient context to assess the merchant description',
+    ], multi_label=False)
+    labels = result.get('labels', [])
+    scores = result.get('scores', [])
+    return (labels[0] if labels else None, float(scores[0]) if scores else None)
+
+
+def _start_encoder_load(model_name: str):
+    global _encoder_loading
+    with _encoder_lock:
+        if _encoder is not None or _encoder_loading or not model_name:
+            return
+        _encoder_loading = True
+
+    def _load():
+        global _encoder, _encoder_loading
+        try:
+            from transformers import pipeline
+            enc = pipeline('zero-shot-classification', model=model_name, device=-1)
+            with _encoder_lock:
+                _encoder = enc
+        except Exception:
+            pass
+        finally:
+            with _encoder_lock:
+                _encoder_loading = False
+
+    threading.Thread(target=_load, daemon=True).start()
+
+
 def _contextual_score(text: str):
-    """Optional lazy zero-shot text encoder. Loads only for uncertain cases and only when configured."""
-    global _encoder
+    """Optional lazy zero-shot text encoder. Loads only once without blocking /score if still warming."""
     model_name = os.getenv('MRE_ENCODER_MODEL', 'valhalla/distilbart-mnli-12-1').strip()
-    if not model_name or not text.strip():
+    snippet = text.strip()[:900]
+    if not model_name or not snippet:
+        return None
+    if _encoder is None:
+        _start_encoder_load(model_name)
         return None
     try:
-        if _encoder is None:
-            from transformers import pipeline
-            _encoder = pipeline('zero-shot-classification', model=model_name, device=-1)
-        result = _encoder(text[:6000], candidate_labels=[
-            'description consistent with the declared merchant business',
-            'description suggests a different or undisclosed business activity',
-            'insufficient context to assess the merchant description',
-        ], multi_label=False)
-        labels = result.get('labels', [])
-        scores = result.get('scores', [])
-        return {'label': labels[0] if labels else None,
-                'score': float(scores[0]) if scores else None,
-                'modelVersion': model_name}
+        timeout_s = float(os.getenv('MRE_ENCODER_TIMEOUT_SEC', '6'))
+        fut = _encoder_exec.submit(_run_encoder, id(_encoder), model_name, snippet)
+        label, score = fut.result(timeout=max(0.5, timeout_s))
+        return {'label': label, 'score': score, 'modelVersion': model_name}
     except Exception:
-        # Encoder availability must never take down the statistical/model scoring path.
+        # Encoder availability or CPU latency must never take down the statistical/model scoring path.
         return None
 
 def ready() -> bool:
@@ -272,6 +316,8 @@ def health():
         'nn': _net is not None or v1,
         'classical': bool(_classical) or v1,
         'stage2': v1,
+        'encoder': _encoder is not None,
+        'serveVersion': 2,
     }
 
 @app.post('/score')
@@ -301,6 +347,7 @@ def score(body: ScoreIn):
                              'disagreement': float(max(scores) - min(scores)) if len(scores) > 1 else 0.0,
                              'confidence': 'LOW', 'review': True,
                              'syntheticTrainingExamples': min([x.get('training_examples', 0) for x in _classical], default=None)},
+                'nn': nn_out,
                 **({'encoder': encoder} if encoder else {})}
     row = np.array([[float(body.features.get(c, 0)) for c in _cols]])
     raw = float(_booster.predict(row)[0])

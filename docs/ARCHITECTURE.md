@@ -22,7 +22,7 @@ Stage 2 (`ml/serve.py`) provides a separate, non-decisional second opinion combi
 - `classical-v0` (calibrated Logistic Regression, Decision Tree, Random Forest), and
 - an optional lazy zero-shot text encoder (`valhalla/distilbart-mnli-12-1`) for uncertain reviews.
 
-Models are trained on leakage-free synthetic cohorts generated from `engine/synthetic.ts` using `BEHAVIORAL_FEATURE_COLUMNS` (explicitly excluding `account_age_days`, `prior`, `posterior`, `logodds_total`, `cov_*`, and `unk_*`, enforced by `tests/engine/leakage.test.ts`). Stage 2 never opens, closes, or overrides the Bayesian conduct gate.
+Models are trained on leakage-free synthetic cohorts generated from `engine/synthetic.ts` (payment-only merchants, plus a training-only context portfolio with website crawls, orders, deliveries and purchaser panels attached independently of the label, and fabricated-store fronts) using `BEHAVIORAL_FEATURE_COLUMNS` (explicitly excluding `account_age_days`, `prior`, `posterior`, `logodds_total`, `cov_*`, and `unk_*`, enforced by `tests/engine/leakage.test.ts`). Every scorer call sends `modelFeatures()`, the same row the models are trained on. Stage 2 never opens, closes, or overrides the Bayesian conduct gate.
 
 ## Governance & Security Controls
 

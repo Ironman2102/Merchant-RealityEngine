@@ -39,8 +39,8 @@ async function modelUpToDate(): Promise<boolean> {
   try {
     const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) return false;
-    const body = await res.json() as { status?: string; nn?: boolean };
-    return body.status === 'ok' && body.nn === true;
+    const body = await res.json() as { status?: string; nn?: boolean; serveVersion?: number };
+    return body.status === 'ok' && body.nn === true && body.serveVersion === 2;
   } catch { return false; }
 }
 
@@ -53,7 +53,7 @@ async function launchServer(id: string): Promise<void> {
   if (!base) return;
   const cmd = [
     'mkdir -p /tmp/mre/ml/models/m1-v0 /tmp/mre/ml/models/nn-v0 /tmp/mre/ml/models/classical-v0 &&',
-    `curl -sf http://127.0.0.1:8790/health | grep -q '"classical":true' || (`,
+    `curl -sf http://127.0.0.1:8790/health | grep -q '"serveVersion":2' || (`,
     `curl -fsSL ${RAW_GH}/ml/serve.py -o /tmp/mre/ml/serve.py &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/model.txt -o /tmp/mre/ml/models/m1-v0/model.txt &&`,
     `curl -fsSL ${RAW_GH}/ml/models/m1-v0/calibrator.json -o /tmp/mre/ml/models/m1-v0/calibrator.json &&`,
@@ -64,7 +64,7 @@ async function launchServer(id: string): Promise<void> {
     `curl -fsSL ${RAW_GH}/ml/models/classical-v0/random-forest-v0.joblib -o /tmp/mre/ml/models/classical-v0/random-forest-v0.joblib &&`,
     `curl -fsSL ${RAW_GH}/ml/models/classical-v0/metadata.json -o /tmp/mre/ml/models/classical-v0/metadata.json &&`,
     `(pkill -f "uvicorn ml.serve:app" || true) &&`,
-    `cd /tmp/mre && setsid python3 -m uvicorn ml.serve:app --host 0.0.0.0 --port 8790 </dev/null >/tmp/m1.log 2>&1 &`,
+    `cd /tmp/mre && setsid env MRE_ENCODER_PRELOAD=1 python3 -m uvicorn ml.serve:app --host 0.0.0.0 --port 8790 </dev/null >/tmp/m1.log 2>&1 &`,
     ')',
   ].join(' ');
   await fetch(`${base.replace(/\/$/, '')}/${realId}/process/execute`, {

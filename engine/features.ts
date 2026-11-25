@@ -98,6 +98,16 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
   return row;
 }
 
+/**
+ * Exactly the row the Stage 2 models are trained on (ml/generate_synthetic_features.ts). Anything that scores with the
+ * models must send this, not features() alone: features() lacks the six behavioural columns, which the scorer would
+ * then fill with 0 (for sweep_lag_median_h, 0 means "swept at once", the opposite of the 72 h "never swept" default).
+ */
+export const MODEL_FEATURE_COLUMNS: string[] = [...new Set([...FEATURE_COLUMNS, ...BEHAVIORAL_FEATURE_COLUMNS])];
+export function modelFeatures(result: InvestigationResult): Record<string, number> {
+  return { ...features(result), ...behavioralFeatures(result) };
+}
+
 export function features(result: InvestigationResult): Record<string, number> {
   const byId = new Map(result.evidence.map(e => [e.id, e]));
   const row: Record<string, number> = {};
