@@ -14,7 +14,16 @@ interface Opinion {
   drivers: Driver[];
   nn?: { p: number; modelVersion: string; drivers: Driver[] };
   classical?: { p: number; modelVersion: string }[];
-  ensemble?: { p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean };
+  ensemble?: {
+    p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean;
+    method?: 'stacked'; pTrainScale?: number; weights?: Record<string, number>;
+    priorShift?: { applied: boolean; enginePrior: number | null; trainPrevalence: number };
+    threshold?: number; flag?: boolean; costRatio?: number; conformalSet?: ('front' | 'honest')[]; conformalAlpha?: number;
+    novelty?: { distance: number; threshold: number; flagged: boolean; pValue?: number; unfamiliar: string[] };
+    conformalPValues?: { front: number; honest: number }; calibration?: string;
+    uncertainty?: { totalBits: number; aleatoricBits: number; epistemicBits: number };
+    neymanPearson?: { threshold: number; flag: boolean; alpha: number; delta: number } | null;
+  };
   encoder?: { label: string | null; score: number | null; modelVersion: string };
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
 }
@@ -51,7 +60,7 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
         <div className="space-y-3 text-sm">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded border border-line bg-panel2 p-3">
-              <div className="text-xs text-mute">LightGBM tree model ({ml.modelVersion})</div>
+              <div className="text-xs text-mute">{ml.ensemble?.method === 'stacked' ? `Stacked ensemble (${ml.modelVersion}) · drivers from LightGBM SHAP` : `LightGBM tree model (${ml.modelVersion})`}</div>
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span className="font-mono text-xl">{fmtProb(ml.p)}</span>
                 <Badge tone="info">Trained on synthetic data</Badge>
@@ -90,8 +99,33 @@ export function MlPanel({ caseId, posterior }: { caseId: string | null; posterio
                   Combined assessment: <b className="text-ink">{ml.assessment.classification.replace('_', ' ')}</b> · {fmtProb(ml.assessment.combinedP)} (Stage 1 {fmtProb(ml.assessment.statisticalP)}){ml.assessment.review ? ' · Human review recommended' : ''}
                 </div>
               )}
+              {ml.ensemble.method === 'stacked' && (
+                <ul className="mt-2 space-y-0.5 text-xs text-mute">
+                  {ml.ensemble.novelty?.flagged && (
+                    <li className="text-rose-700"><b>Unfamiliar pattern:</b> this merchant is unlike anything in training (distance {ml.ensemble.novelty.distance.toFixed(1)} vs {ml.ensemble.novelty.threshold.toFixed(1)}). The scores below are not reliable for it{ml.ensemble.novelty.unfamiliar.length ? `; unusual: ${ml.ensemble.novelty.unfamiliar.map(words).join(', ')}` : ''}.</li>
+                  )}
+                  {ml.ensemble.conformalSet && (
+                    <li>{Math.round((1 - (ml.ensemble.conformalAlpha ?? 0.1)) * 100)}% conformal prediction set: <b className="text-ink">{ml.ensemble.conformalSet.length === 1 ? ml.ensemble.conformalSet[0] : ml.ensemble.conformalSet.length === 0 ? 'none (atypical)' : 'front or honest (uncertain)'}</b></li>
+                  )}
+                  {ml.ensemble.conformalPValues && (
+                    <li>Conformal p-values: front <span className="font-mono text-ink">{ml.ensemble.conformalPValues.front.toFixed(3)}</span>, honest <span className="font-mono text-ink">{ml.ensemble.conformalPValues.honest.toFixed(3)}</span>{ml.ensemble.novelty?.pValue != null ? <> · novelty p <span className="font-mono text-ink">{ml.ensemble.novelty.pValue.toFixed(3)}</span></> : null}</li>
+                  )}
+                  {ml.ensemble.uncertainty && (
+                    <li>Uncertainty: {ml.ensemble.uncertainty.totalBits.toFixed(3)} bits = noise {ml.ensemble.uncertainty.aleatoricBits.toFixed(3)} + model disagreement {ml.ensemble.uncertainty.epistemicBits.toFixed(3)}</li>
+                  )}
+                  {ml.ensemble.neymanPearson && (
+                    <li>False-alarm-controlled bar (at most {Math.round(ml.ensemble.neymanPearson.alpha * 100)}% of honest merchants, {Math.round((1 - ml.ensemble.neymanPearson.delta) * 100)}% confidence): <b className="text-ink">{ml.ensemble.neymanPearson.flag ? 'above' : 'below'}</b></li>
+                  )}
+                  {ml.ensemble.priorShift?.applied && (
+                    <li>Moved from the training base rate ({fmtProb(ml.ensemble.priorShift.trainPrevalence)}) onto the engine prior ({fmtProb(ml.ensemble.priorShift.enginePrior ?? 0)}): {fmtProb(ml.ensemble.pTrainScale ?? ml.ensemble.p)} → {fmtProb(ml.ensemble.p)}</li>
+                  )}
+                  {ml.ensemble.threshold != null && (
+                    <li>Review bar {fmtProb(ml.ensemble.threshold)} (a missed front counted as {ml.ensemble.costRatio}× a needless review): <b className="text-ink">{ml.ensemble.flag ? 'above, suggest review' : 'below'}</b></li>
+                  )}
+                </ul>
+              )}
               {ml.classical?.length ? (
-                <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                <div className="mt-2.5 grid gap-2 sm:grid-cols-4">
                   {ml.classical.map(x => (
                     <div key={x.modelVersion} className="rounded border border-line bg-panel px-2.5 py-1.5 text-xs">
                       <div className="text-[11px] text-mute truncate">{x.modelVersion}</div>

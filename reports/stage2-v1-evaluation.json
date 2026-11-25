@@ -1,0 +1,860 @@
+{
+  "heldoutMerchants": 180,
+  "threshold": 0.701067615658363,
+  "models": {
+    "logistic_regression": {
+      "ap": 0.9981174117177397,
+      "roc_auc": 0.9990277777777777,
+      "brier": 0.01572751074732109,
+      "log_loss": 0.058687552953894814,
+      "ece": 0.03668613750011265,
+      "threshold": 0.701067615658363,
+      "recall": 0.95,
+      "false_alarm_rate": 0.0,
+      "ap_ci": [
+        0.9934616875717119,
+        1.0
+      ],
+      "brier_ci": [
+        0.007752729936471546,
+        0.025312127136473496
+      ]
+    },
+    "decision_tree": {
+      "ap": 0.9388941102756891,
+      "roc_auc": 0.961875,
+      "brier": 0.03178026992637686,
+      "log_loss": 0.1981223589783669,
+      "ece": 0.047379298078652606,
+      "threshold": 0.701067615658363,
+      "recall": 0.9333333333333333,
+      "false_alarm_rate": 0.008333333333333333,
+      "ap_ci": [
+        0.8813912708453194,
+        0.9887547080979284
+      ],
+      "brier_ci": [
+        0.012509422642823223,
+        0.055181420241597716
+      ]
+    },
+    "random_forest": {
+      "ap": 0.9994623655913979,
+      "roc_auc": 0.9997222222222222,
+      "brier": 0.01530021866502281,
+      "log_loss": 0.06773446064697236,
+      "ece": 0.046634088136380564,
+      "threshold": 0.701067615658363,
+      "recall": 0.9333333333333333,
+      "false_alarm_rate": 0.0,
+      "ap_ci": [
+        0.996631099364329,
+        1.0000000000000002
+      ],
+      "brier_ci": [
+        0.008885512574794687,
+        0.023197424820215137
+      ]
+    },
+    "lightgbm": {
+      "ap": 0.999462365591398,
+      "roc_auc": 0.9997222222222222,
+      "brier": 0.010458184640841474,
+      "log_loss": 0.04248706136817963,
+      "ece": 0.029532715823437077,
+      "threshold": 0.701067615658363,
+      "recall": 0.9833333333333333,
+      "false_alarm_rate": 0.0,
+      "ap_ci": [
+        0.9976307311764215,
+        1.0000000000000002
+      ],
+      "brier_ci": [
+        0.004177428103485756,
+        0.01758203771815075
+      ]
+    },
+    "neural_net": {
+      "ap": 0.9969989602781149,
+      "roc_auc": 0.9984722222222222,
+      "brier": 0.01480105983961026,
+      "log_loss": 0.04241793257649336,
+      "ece": 0.0193252847336559,
+      "threshold": 0.701067615658363,
+      "recall": 0.95,
+      "false_alarm_rate": 0.016666666666666666,
+      "ap_ci": [
+        0.9909291487953862,
+        1.0
+      ],
+      "brier_ci": [
+        0.0044733470673495495,
+        0.027456128893112972
+      ]
+    },
+    "mean": {
+      "ap": 0.9997267759562843,
+      "roc_auc": 0.9998611111111111,
+      "brier": 0.012284121346220651,
+      "log_loss": 0.05951592309678581,
+      "ece": 0.03912526047933699,
+      "threshold": 0.701067615658363,
+      "recall": 0.9333333333333333,
+      "false_alarm_rate": 0.0,
+      "ap_ci": [
+        0.9982859591735819,
+        1.0000000000000002
+      ],
+      "brier_ci": [
+        0.005950536008767218,
+        0.02018709840784814
+      ]
+    },
+    "stacked": {
+      "ap": 0.9997267759562843,
+      "roc_auc": 0.9998611111111111,
+      "brier": 0.010022440548303346,
+      "log_loss": 0.034400815912466604,
+      "ece": 0.01895751086862224,
+      "threshold": 0.701067615658363,
+      "recall": 0.9666666666666667,
+      "false_alarm_rate": 0.0,
+      "ap_ci": [
+        0.9984877431429658,
+        1.0000000000000002
+      ],
+      "brier_ci": [
+        0.0033493955132205032,
+        0.018883508091436182
+      ]
+    }
+  },
+  "conformal": {
+    "coverage_front": 0.9666666666666667,
+    "coverage_honest": 0.8916666666666667,
+    "singleton_share": 0.9166666666666666,
+    "singleton_accuracy": 1.0
+  },
+  "novelty": {
+    "heldout_flag_rate": 0.022222222222222223
+  },
+  "calibration": {
+    "method": "identity",
+    "crossFittedLogLoss": {
+      "identity": 0.06738967336738907,
+      "beta": 0.07371964834966808,
+      "isotonic": 0.09163853759531472
+    },
+    "brierDecomposition": {
+      "stacked": {
+        "brier": 0.010022440548303346,
+        "reliability": 0.006162653899540211,
+        "resolution": 0.21851851851851853,
+        "uncertainty": 0.22222222222222224
+      },
+      "mean": {
+        "brier": 0.012284121346220651,
+        "reliability": 0.00578971324085303,
+        "resolution": 0.21555555555555558,
+        "uncertainty": 0.22222222222222224
+      }
+    },
+    "brierSkill": {
+      "stacked": 0.954899017532635,
+      "mean": 0.944721453942007
+    },
+    "reliabilityCurve": [
+      {
+        "bin": [
+          0.0,
+          0.1
+        ],
+        "n": 113,
+        "meanPredicted": 0.004818454650627638,
+        "observed": 0.0,
+        "observedCi": [
+          0.0,
+          0.03287753216595198
+        ]
+      },
+      {
+        "bin": [
+          0.1,
+          0.2
+        ],
+        "n": 1,
+        "meanPredicted": 0.19572263357724812,
+        "observed": 0.0,
+        "observedCi": [
+          0.0,
+          0.7934506856227626
+        ]
+      },
+      {
+        "bin": [
+          0.2,
+          0.3
+        ],
+        "n": 1,
+        "meanPredicted": 0.24482487438209366,
+        "observed": 0.0,
+        "observedCi": [
+          0.0,
+          0.7934506856227626
+        ]
+      },
+      {
+        "bin": [
+          0.3,
+          0.4
+        ],
+        "n": 1,
+        "meanPredicted": 0.39714716076862744,
+        "observed": 0.0,
+        "observedCi": [
+          0.0,
+          0.7934506856227626
+        ]
+      },
+      {
+        "bin": [
+          0.4,
+          0.5
+        ],
+        "n": 1,
+        "meanPredicted": 0.4097774220368006,
+        "observed": 0.0,
+        "observedCi": [
+          0.0,
+          0.7934506856227626
+        ]
+      },
+      {
+        "bin": [
+          0.5,
+          0.6
+        ],
+        "n": 2,
+        "meanPredicted": 0.57243220137588,
+        "observed": 0.0,
+        "observedCi": [
+          0.0,
+          0.6576197724933469
+        ]
+      },
+      {
+        "bin": [
+          0.6,
+          0.7
+        ],
+        "n": 3,
+        "meanPredicted": 0.6635427426256559,
+        "observed": 0.6666666666666666,
+        "observedCi": [
+          0.2076596008020477,
+          0.9385080552796037
+        ]
+      },
+      {
+        "bin": [
+          0.8,
+          0.9
+        ],
+        "n": 2,
+        "meanPredicted": 0.8851541981133273,
+        "observed": 1.0,
+        "observedCi": [
+          0.34238022750665303,
+          1.0
+        ]
+      },
+      {
+        "bin": [
+          0.9,
+          1.0
+        ],
+        "n": 56,
+        "meanPredicted": 0.9957773801532469,
+        "observed": 1.0,
+        "observedCi": [
+          0.9358060632812366,
+          1.0
+        ]
+      }
+    ]
+  },
+  "significance": {
+    "delong": {
+      "stacked_vs_logistic_regression": {
+        "auc1": 0.9998611111111111,
+        "auc2": 0.9990277777777777,
+        "diff": 0.0008333333333333526,
+        "z": 0.978784316996198,
+        "p": 0.32768656031612353
+      },
+      "stacked_vs_decision_tree": {
+        "auc1": 0.9998611111111111,
+        "auc2": 0.961875,
+        "diff": 0.037986111111111054,
+        "z": 2.237131181571654,
+        "p": 0.025277767535787286
+      },
+      "stacked_vs_random_forest": {
+        "auc1": 0.9998611111111111,
+        "auc2": 0.9997222222222222,
+        "diff": 0.0001388888888889106,
+        "z": 0.4059611671992702,
+        "p": 0.6847711334843951
+      },
+      "stacked_vs_lightgbm": {
+        "auc1": 0.9998611111111111,
+        "auc2": 0.9997222222222222,
+        "diff": 0.0001388888888889106,
+        "z": 0.498952878431895,
+        "p": 0.6178125807583488
+      },
+      "stacked_vs_neural_net": {
+        "auc1": 0.9998611111111111,
+        "auc2": 0.9984722222222222,
+        "diff": 0.001388888888888884,
+        "z": 1.3109060388324318,
+        "p": 0.18988951039120316
+      },
+      "stacked_vs_mean": {
+        "auc1": 0.9998611111111111,
+        "auc2": 0.9998611111111111,
+        "diff": 0.0,
+        "z": 0.0,
+        "p": 1.0
+      }
+    },
+    "mcnemar_stacked_vs_mean_at_threshold": {
+      "aRightBWrong": 2,
+      "aWrongBRight": 0,
+      "p": 0.5
+    }
+  },
+  "neymanPearson": {
+    "threshold": 0.19080681764331936,
+    "k": 273,
+    "n": 280,
+    "needed": 59,
+    "alpha": 0.05,
+    "delta": 0.05,
+    "violationProbability": 0.02860513947331566,
+    "heldoutRecall": 1.0,
+    "heldoutFalseAlarm": 0.058333333333333334,
+    "heldoutFalseAlarmCi": [
+      0.028541010000220295,
+      0.11552592033630113
+    ]
+  },
+  "expectedCost": {
+    "atDeploymentPrevalence": 0.010547463586137623,
+    "bestThreshold": 0.67,
+    "bestCostPerMerchant": 0.0035158211953792186,
+    "costAtChosenThreshold": 0.007031642390758414,
+    "costFlagNobody": 0.21094927172275246
+  },
+  "uncertainty": {
+    "meanEpistemicBits": 0.017008443852032335,
+    "meanAleatoricBits": 0.13423701938815416,
+    "errorsAtThreshold": 2,
+    "epistemicAurocForErrors": 0.702247191011236
+  },
+  "samples": {
+    "01-sweet-crumbs-betting-front": {
+      "label": 1,
+      "stacked": 0.977,
+      "mean": 0.816,
+      "set": [
+        1
+      ],
+      "novel": true,
+      "distance": 144.2,
+      "epistemicBits": 0.158,
+      "unfamiliar": [
+        "fired_C5",
+        "eff_E1",
+        "eff_F5"
+      ]
+    },
+    "02-merchant-rotation": {
+      "label": 1,
+      "stacked": 0.972,
+      "mean": 0.927,
+      "set": [
+        1
+      ],
+      "novel": true,
+      "distance": 129.1,
+      "epistemicBits": 0.087,
+      "unfamiliar": [
+        "eff_E1",
+        "eff_E3",
+        "llr_G6"
+      ]
+    },
+    "03-fabricated-online-store": {
+      "label": 1,
+      "stacked": 0.003,
+      "mean": 0.043,
+      "set": [
+        0
+      ],
+      "novel": true,
+      "distance": 129.0,
+      "epistemicBits": 0.036,
+      "unfamiliar": [
+        "eff_B9",
+        "fired_B9",
+        "llr_G2"
+      ]
+    },
+    "04-anand-sweets-diwali-genuine": {
+      "label": 0,
+      "stacked": 0.005,
+      "mean": 0.076,
+      "set": [
+        0
+      ],
+      "novel": false,
+      "distance": 7.7,
+      "epistemicBits": 0.11,
+      "unfamiliar": []
+    },
+    "05-chai-corner-night-betting": {
+      "label": 1,
+      "stacked": 0.998,
+      "mean": 0.943,
+      "set": [
+        1
+      ],
+      "novel": true,
+      "distance": 158.4,
+      "epistemicBits": 0.076,
+      "unfamiliar": [
+        "llr_C6",
+        "fired_C6",
+        "fired_C5"
+      ]
+    },
+    "06-shree-ganesh-sweets-genuine": {
+      "label": 0,
+      "stacked": 0.005,
+      "mean": 0.074,
+      "set": [
+        0
+      ],
+      "novel": false,
+      "distance": 6.9,
+      "epistemicBits": 0.106,
+      "unfamiliar": []
+    },
+    "07-udupi-tiffin-steady": {
+      "label": 0,
+      "stacked": 0.003,
+      "mean": 0.035,
+      "set": [
+        0
+      ],
+      "novel": true,
+      "distance": 37.7,
+      "epistemicBits": 0.025,
+      "unfamiliar": [
+        "eff_K1",
+        "eff_C2",
+        "llr_B6"
+      ]
+    },
+    "08-nandi-kirana-genuine": {
+      "label": 0,
+      "stacked": 0.009,
+      "mean": 0.07,
+      "set": [
+        0
+      ],
+      "novel": true,
+      "distance": 38.1,
+      "epistemicBits": 0.076,
+      "unfamiliar": [
+        "eff_K1",
+        "eff_B7",
+        "eff_C2"
+      ]
+    },
+    "09-telegram-betting-no-website": {
+      "label": 1,
+      "stacked": 0.999,
+      "mean": 0.86,
+      "set": [
+        1
+      ],
+      "novel": true,
+      "distance": 14.7,
+      "epistemicBits": 0.089,
+      "unfamiliar": [
+        "eff_C6",
+        "weekend_share",
+        "llr_A4"
+      ]
+    },
+    "10-golden-oven-betting-on-the-side": {
+      "label": 1,
+      "stacked": 1.0,
+      "mean": 0.994,
+      "set": [
+        1
+      ],
+      "novel": false,
+      "distance": 11.3,
+      "epistemicBits": 0.009,
+      "unfamiliar": []
+    },
+    "11-moonlight-bakes-honest-change": {
+      "label": 0,
+      "stacked": 0.448,
+      "mean": 0.28,
+      "set": [],
+      "novel": true,
+      "distance": 12.9,
+      "epistemicBits": 0.153,
+      "unfamiliar": [
+        "eff_C2",
+        "eff_H2",
+        "weekend_share"
+      ]
+    }
+  },
+  "leaveOneKindOut": [
+    {
+      "kind": "camouflage: charity",
+      "n": 19,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.8318207759473837,
+        1.0
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.8318207759473837,
+        1.0
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.8318207759473837,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.05284205654856198,
+      "engine_open_case": 0.3157894736842105
+    },
+    {
+      "kind": "camouflage: fuel",
+      "n": 14,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.7846891972623643,
+        1.0
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.7846891972623643,
+        1.0
+      ],
+      "novelty_flagged": 0.14285714285714285,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.7846891972623643,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.01331092515734499,
+      "engine_open_case": 0.7142857142857143
+    },
+    {
+      "kind": "camouflage: furniture",
+      "n": 13,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.7719046276458016,
+        0.9999999999999999
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.7719046276458016,
+        0.9999999999999999
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.7719046276458016,
+        0.9999999999999999
+      ],
+      "mean_epistemic_bits": 0.008129808960669152,
+      "engine_open_case": 0.9230769230769231
+    },
+    {
+      "kind": "grocer side-stream",
+      "n": 20,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.8388748419471806,
+        1.0
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.8388748419471806,
+        1.0
+      ],
+      "novelty_flagged": 0.25,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.8388748419471806,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.028421252934053863,
+      "engine_open_case": 0.6
+    },
+    {
+      "kind": "large side-stream",
+      "n": 13,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.7719046276458016,
+        0.9999999999999999
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.7719046276458016,
+        0.9999999999999999
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.7719046276458016,
+        0.9999999999999999
+      ],
+      "mean_epistemic_bits": 0.00839875636461991,
+      "engine_open_case": 1.0
+    },
+    {
+      "kind": "low-volume split",
+      "n": 15,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.7961166989641515,
+        1.0
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.7961166989641515,
+        1.0
+      ],
+      "novelty_flagged": 0.7333333333333333,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.7961166989641515,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.15501993480077303,
+      "engine_open_case": 0.4
+    },
+    {
+      "kind": "non-round deposits",
+      "n": 18,
+      "recall_mean_ensemble": 0.0,
+      "recall_mean_ensemble_ci": [
+        0.0,
+        0.17587922364665765
+      ],
+      "recall_stacked": 0.05555555555555555,
+      "recall_stacked_ci": [
+        0.009875190978303097,
+        0.25757300781872594
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 0.05555555555555555,
+      "caught_or_flagged_ci": [
+        0.009875190978303097,
+        0.25757300781872594
+      ],
+      "mean_epistemic_bits": 0.14042773338619544,
+      "engine_open_case": 0.0
+    },
+    {
+      "kind": "obvious deposits",
+      "n": 16,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.8063923194655637,
+        1.0
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.8063923194655637,
+        1.0
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.8063923194655637,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.0015131721841644976,
+      "engine_open_case": 0.9375
+    },
+    {
+      "kind": "perfect mimic",
+      "n": 17,
+      "recall_mean_ensemble": 0.0,
+      "recall_mean_ensemble_ci": [
+        0.0,
+        0.1843181350088518
+      ],
+      "recall_stacked": 0.0,
+      "recall_stacked_ci": [
+        0.0,
+        0.1843181350088518
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 0.0,
+      "caught_or_flagged_ci": [
+        0.0,
+        0.1843181350088518
+      ],
+      "mean_epistemic_bits": 0.0044056403525160265,
+      "engine_open_case": 0.0
+    },
+    {
+      "kind": "same-QR blend",
+      "n": 18,
+      "recall_mean_ensemble": 0.8888888888888888,
+      "recall_mean_ensemble_ci": [
+        0.672002348698212,
+        0.9689804773543876
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.8241207763533425,
+        1.0
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.8241207763533425,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.04550114752330752,
+      "engine_open_case": 0.8333333333333334
+    },
+    {
+      "kind": "small side-stream",
+      "n": 19,
+      "recall_mean_ensemble": 0.5263157894736842,
+      "recall_mean_ensemble_ci": [
+        0.3170780924511316,
+        0.7267019483882042
+      ],
+      "recall_stacked": 0.9473684210526315,
+      "recall_stacked_ci": [
+        0.753612688331012,
+        0.9906480059376995
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 0.9473684210526315,
+      "caught_or_flagged_ci": [
+        0.753612688331012,
+        0.9906480059376995
+      ],
+      "mean_epistemic_bits": 0.093304050826972,
+      "engine_open_case": 0.3157894736842105
+    },
+    {
+      "kind": "uncatalogued category front",
+      "n": 18,
+      "recall_mean_ensemble": 1.0,
+      "recall_mean_ensemble_ci": [
+        0.8241207763533425,
+        1.0
+      ],
+      "recall_stacked": 1.0,
+      "recall_stacked_ci": [
+        0.8241207763533425,
+        1.0
+      ],
+      "novelty_flagged": 0.0,
+      "caught_or_flagged": 1.0,
+      "caught_or_flagged_ci": [
+        0.8241207763533425,
+        1.0
+      ],
+      "mean_epistemic_bits": 0.09966660589050363,
+      "engine_open_case": 0.0
+    }
+  ],
+  "nestedCv": {
+    "merchants": 600,
+    "folds": 5,
+    "stacked": {
+      "ap": 0.9965570613393945,
+      "roc_auc": 0.9981625,
+      "brier": 0.015943574095699832,
+      "log_loss": 0.05100759506028212,
+      "ece": 0.01732605904278144,
+      "threshold": 0.701067615658363,
+      "recall": 0.935,
+      "false_alarm_rate": 0.0,
+      "log_loss_ci": [
+        0.03374141208970226,
+        0.07325014990217038
+      ],
+      "brier_ci": [
+        0.010048071979697253,
+        0.02308077318874424
+      ],
+      "brierDecomposition": {
+        "brier": 0.015943574095699832,
+        "reliability": 0.00556848462507237,
+        "resolution": 0.2121194538182727,
+        "uncertainty": 0.22222222222222224
+      }
+    },
+    "mean": {
+      "ap": 0.9961299894337396,
+      "roc_auc": 0.9979,
+      "brier": 0.018121845981900503,
+      "log_loss": 0.07085271359402441,
+      "ece": 0.029283634172301027,
+      "threshold": 0.701067615658363,
+      "recall": 0.9,
+      "false_alarm_rate": 0.0,
+      "log_loss_ci": [
+        0.055688893175164546,
+        0.08867415403262312
+      ],
+      "brier_ci": [
+        0.012785679672082703,
+        0.024603415431602514
+      ],
+      "brierDecomposition": {
+        "brier": 0.018121845981900503,
+        "reliability": 0.0029731451089231482,
+        "resolution": 0.2063978049186963,
+        "uncertainty": 0.22222222222222224
+      }
+    },
+    "delong_stacked_vs_mean": {
+      "auc1": 0.9981625,
+      "auc2": 0.9979,
+      "diff": 0.00026249999999994333,
+      "z": 0.6876216928994189,
+      "p": 0.49169104388192975
+    },
+    "logLossDelta": {
+      "delta": 0.01984511853374229,
+      "lo": 0.011126921744334451,
+      "hi": 0.028117375693066587,
+      "p_worse": 0.0005
+    }
+  }
+}

@@ -51,17 +51,17 @@ writeFileSync(
 
 // 2. Leak-free behavioral corpus from engine/synthetic.ts (no cloned samples, no feed/age leakage).
 const syntheticMerchants = [...makeSuite(12, 42), ...makePortfolio(240, 77, 0.25)];
-const portfolioRows: Array<{ merchant_id: string; label: number; features: Record<string, number> }> = [];
+const portfolioRows: Array<{ merchant_id: string; label: number; kind: string; features: Record<string, number> }> = [];
 for (const m of syntheticMerchants) {
   const analyzed = analyze(m.dataset, { posteriorDraws: 0 });
   if (!analyzed.ok) continue;
   const merged = { ...features(analyzed.result), ...behavioralFeatures(analyzed.result) };
-  portfolioRows.push({ merchant_id: m.dataset.merchant.id, label: m.label, features: merged });
+  portfolioRows.push({ merchant_id: m.dataset.merchant.id, label: m.label, kind: m.kind, features: merged });
 }
 const portCols = Object.keys(portfolioRows[0].features);
 const portCsv = [
-  ['merchant_id', 'label', ...portCols].join(','),
-  ...portfolioRows.map(r => [r.merchant_id, r.label, ...portCols.map(c => r.features[c] ?? 0)].join(',')),
+  ['merchant_id', 'label', 'kind', ...portCols].join(','),
+  ...portfolioRows.map(r => [r.merchant_id, r.label, JSON.stringify(r.kind), ...portCols.map(c => r.features[c] ?? 0)].join(',')),
 ].join('\n') + '\n';
 writeFileSync(join(out, 'features.csv'), portCsv);
 
