@@ -1,5 +1,5 @@
 /** Ask the local model service. Any failure, including a timeout, leaves the Bayesian decision unchanged. */
-import { features } from '../../engine/features';
+import { behavioralFeatures, features } from '../../engine/features';
 import type { InvestigationResult } from '../../frontend/src/types/investigation';
 import { modelHostConfigured, startModelSandbox, stopModelSandbox } from './modelHost';
 
@@ -11,7 +11,18 @@ export interface MlOpinion {
   modelVersion: string;
   nn?: { p: number; drivers: MlDriver[]; modelVersion: string };
   classical?: { p: number; modelVersion: string }[];
-  ensemble?: { p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean; syntheticTrainingExamples?: number | null };
+  ensemble?: {
+    p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean; syntheticTrainingExamples?: number | null;
+    // Stage 2 v1 only: stacked ensemble, prior shift, cost threshold, conformal set and novelty check.
+    method?: 'stacked'; pTrainScale?: number; weights?: Record<string, number>;
+    priorShift?: { applied: boolean; enginePrior: number | null; trainPrevalence: number };
+    threshold?: number; flag?: boolean; costRatio?: number;
+    conformalSet?: ('front' | 'honest')[]; conformalAlpha?: number; conformalPValues?: { front: number; honest: number };
+    novelty?: { distance: number; threshold: number; flagged: boolean; pValue?: number; unfamiliar: string[] };
+    calibration?: string;
+    uncertainty?: { totalBits: number; aleatoricBits: number; epistemicBits: number };
+    neymanPearson?: { threshold: number; flag: boolean; alpha: number; delta: number } | null;
+  };
   encoder?: { label: string | null; score: number | null; modelVersion: string };
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
 }
@@ -36,7 +47,9 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
     const res = await fetch(`${url}/score`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ features: features(result), context: encoderContext(result) }),
+      // Send every column the models were trained on. Leaving out the behavioural columns scored them as zero
+      // (a zero sweep lag reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
+      body: JSON.stringify({ features: { ...features(result), ...behavioralFeatures(result) }, context: encoderContext(result) }),
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) throw new Error(`ML ${res.status}`);
