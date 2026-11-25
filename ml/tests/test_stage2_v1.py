@@ -92,6 +92,9 @@ def test_v1_service_scores_with_prior_shift_conformal_and_novelty():
     assert set(e['conformalSet']) <= {'front', 'honest'}
     assert all(w >= 0 for w in e['weights'].values())
     assert len(honest['classical']) == 4 and honest['nn']['modelVersion'] == 'neural-net-v1'
+    # The multi-modal encoders added on main must also run on the v1 path, not only on the v0 fallback.
+    if serve._ae_forward({'n_sales': 1.0}) is not None:
+        assert 0.0 <= honest['autoencoder']['anomalyScore'] <= 1.0
     u = e['uncertainty']
     assert u['totalBits'] == pytest.approx(u['aleatoricBits'] + u['epistemicBits'], abs=1e-9) and u['epistemicBits'] >= 0
     pv = e['conformalPValues']

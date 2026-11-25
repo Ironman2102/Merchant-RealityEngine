@@ -1,4 +1,4 @@
-"""Edge-case tests for the FastAPI dual-model service in ml/serve.py."""
+"""Edge-case and multi-encoder tests for the FastAPI model service in ml/serve.py."""
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -25,7 +25,16 @@ def _reset_serve_globals():
     serve._cols = []
     serve._cal = {}
     serve._net = None
+    serve._ae = None
+    serve._seq = None
+    serve._graph = None
     serve._classical = []
+    serve._encoder = None
+    serve._encoder_loading = False
+    serve._encoder_status = 'idle'
+    serve._encoder_error = None
+    serve._encoder_model_loaded = None
+    serve._run_encoder.cache_clear()
 
 
 def test_serve_health_and_score_full_partial_empty():
@@ -38,8 +47,12 @@ def test_serve_health_and_score_full_partial_empty():
     assert body_h['status'] == 'ok'
     assert body_h['model'] in ('m1-v0', 'nn-v0')
     assert body_h['nn'] is True
+    assert body_h['autoencoder'] is True
+    assert body_h['temporal'] is True
+    assert body_h['graph'] is True
+    assert body_h['serveVersion'] == 3
 
-    # Empty features dict -> defaults missing features to 0, returns valid finite probabilities
+    # Empty features dict -> defaults missing features to 0, returns valid finite probabilities + autoencoder
     r_empty = client.post('/score', json={'features': {}})
     assert r_empty.status_code == 200
     b_empty = r_empty.json()
@@ -48,8 +61,10 @@ def test_serve_health_and_score_full_partial_empty():
     assert b_empty['modelVersion'] in ('m1-v0', 'nn-v0')
     assert 0.0 <= b_empty['ensemble']['p'] <= 1.0
     assert b_empty['ensemble']['confidence'] in ('HIGH', 'MEDIUM', 'LOW')
-    assert b_empty['ensemble']['review'] is True  # small synthetic fixture corpus
+    assert b_empty['ensemble']['review'] is True
     assert len(b_empty['classical']) == 3
+    assert 'autoencoder' in b_empty
+    assert 0.0 <= b_empty['autoencoder']['anomalyScore'] <= 1.0
 
     # Full real row from features.csv + extra unknown key
     csv_path = ROOT / 'ml' / 'data' / 'synthetic_features.csv'
@@ -70,6 +85,101 @@ def test_serve_health_and_score_full_partial_empty():
     assert r_ext.status_code == 200
     assert 0.0 <= r_ext.json()['p'] <= 1.0
     assert 0.0 <= r_ext.json()['ensemble']['p'] <= 1.0
+
+
+def test_multi_modal_encoders_end_to_end(monkeypatch):
+    _reset_serve_globals()
+
+    # Mock NLI pipeline so CI never downloads weights
+    def _fake_nli(snippet, candidate_labels, hypothesis_template, multi_label=False):
+        assert hypothesis_template == serve.NLI_HYPOTHESIS_TEMPLATE
+        assert 'Off-domain embeds:' in snippet
+        return {
+            'labels': [
+                'undisclosed gambling, betting, or illicit front activity',
+                'a fabricated storefront or mismatched product catalogue',
+                'activity consistent with the declared merchant category',
+                'a legitimate seasonal surge or declared business change',
+                'insufficient web and text context to assess the merchant',
+            ],
+            'scores': [0.74, 0.14, 0.06, 0.04, 0.02],
+        }
+
+    monkeypatch.setattr(serve, '_encoder', _fake_nli)
+    monkeypatch.setattr(serve, '_encoder_status', 'ready')
+    client = TestClient(serve.app)
+
+    payload = {
+        'features': {'llr_A1': 2.5, 'fired_A1': 1.0, 'n_sales': 120.0},
+        'context': (
+            'Declared business: Bakeries (MCC 5462, Bengaluru). Products: Breads, Cakes.\n'
+            'Off-domain embeds: betwin99.example/deposit [gambling, deposit].'
+        ),
+        'alignment': {
+            'declared': 'Bakeries, Breads, Cakes, Pastries',
+            'observed': [
+                {'text': 'Chocolate Truffle Cake', 'kind': 'catalogue'},
+                {'text': 'betwin99.example deposit gambling cricket', 'kind': 'embed'},
+            ],
+        },
+        'sequence': {
+            'events': [[0.4, 0.65, -0.5, 0.8, 1, 0, 0, 0, 1, 1] for _ in range(12)],
+            'weekly': [1.8, 3.4, 3.2, 0.9, 0.15, 0.9, 0.35, 0.0],
+            'signals': {'nightShare': 0.5, 'outOfStateShare': 0.8, 'upiLinkShare': 0.85, 'weeklyPeakRatio': 3.4},
+        },
+        'graph': {
+            'nodes': [
+                {'id': 'm1', 'type': 'merchant'},
+                {'id': 'l1', 'type': 'link'},
+                {'id': 'w1', 'type': 'website'},
+                {'id': 'd1', 'type': 'device'},
+                {'id': 'p1', 'type': 'peer'},
+            ],
+            'edges': [
+                {'source': 'm1', 'target': 'l1', 'type': 'PAYMENT_FLOW'},
+                {'source': 'l1', 'target': 'w1', 'type': 'WEBSITE_LINK'},
+                {'source': 'm1', 'target': 'd1', 'type': 'SHARED_INFRASTRUCTURE'},
+                {'source': 'p1', 'target': 'd1', 'type': 'SHARED_INFRASTRUCTURE'},
+                {'source': 'm1', 'target': 'p1', 'type': 'BEHAVIOURAL_SIMILARITY'},
+            ],
+        },
+        'force_encoder': True,
+    }
+
+    res = client.post('/score', json=payload)
+    assert res.status_code == 200
+    body = res.json()
+
+    # 1. NLI Cross-Encoder
+    assert body['encoder']['verdict'] == 'SUSPICIOUS'
+    assert body['encoder']['abstained'] is False
+    assert body['encoder']['riskScore'] == pytest.approx(0.88, abs=1e-3)
+    assert len(body['encoder']['scores']) == 5
+
+    # 2. Semantic Bi-Encoder (lexical fallback when neural weights absent)
+    assert body['biEncoder']['backend'] == 'lexical-fallback'
+    assert body['biEncoder']['itemCount'] == 2
+    assert 0.0 <= body['biEncoder']['riskScore'] <= 1.0
+    assert body['biEncoder']['mismatches'][0]['kind'] == 'embed'
+
+    # 3. Tabular Behavioral Autoencoder
+    assert body['autoencoder']['modelVersion'] == 'ae-v0'
+    assert 0.0 <= body['autoencoder']['anomalyScore'] <= 1.0
+    assert body['autoencoder']['reconstructionError'] >= 0.0
+
+    # 4. Temporal 1D-CNN Sequence Encoder
+    assert body['temporal']['modelVersion'] == 'seq-v0'
+    assert 0.0 <= body['temporal']['riskScore'] <= 1.0
+    assert body['temporal']['eventCount'] == 12
+
+    # 5. Entity Graph R-GCN Encoder
+    assert body['graph']['modelVersion'] == 'graph-v0'
+    assert 0.0 <= body['graph']['riskScore'] <= 1.0
+    assert body['graph']['nodeCount'] == 5
+    assert body['graph']['motifs']['sharedInfraEdges'] == 2
+    assert body['graph']['motifs']['websiteLinkEdges'] == 1
+
+    _reset_serve_globals()
 
 
 def test_serve_no_model_and_nn_only_fallbacks(tmp_path, monkeypatch):
