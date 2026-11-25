@@ -49,7 +49,8 @@ def test_serve_health_and_score_full_partial_empty():
     assert body_h['nn'] is True
     assert body_h['autoencoder'] is True
     assert body_h['temporal'] is True
-    assert body_h['graph'] is True
+    assert body_h['graph'] is False  # experimental encoders are off by default
+    assert body_h['experimentalEncoders'] is False
     assert body_h['serveVersion'] == 3
 
     # Empty features dict -> defaults missing features to 0, returns valid finite probabilities + autoencoder
@@ -89,6 +90,7 @@ def test_serve_health_and_score_full_partial_empty():
 
 def test_multi_modal_encoders_end_to_end(monkeypatch):
     _reset_serve_globals()
+    monkeypatch.setattr(serve, 'EXPERIMENTAL_ENCODERS', True)  # this test covers the graph and bi-encoder paths too
 
     # Mock NLI pipeline so CI never downloads weights
     def _fake_nli(snippet, candidate_labels, hypothesis_template, multi_label=False):
@@ -202,4 +204,34 @@ def test_serve_no_model_and_nn_only_fallbacks(tmp_path, monkeypatch):
     nn_res = client.post('/score', json={'features': {'llr_A1': 2.0}}).json()
     assert nn_res['modelVersion'] == 'nn-v0'
     assert 0.0 <= nn_res['p'] <= 1.0
+    _reset_serve_globals()
+
+
+def test_experimental_encoders_are_off_by_default(monkeypatch):
+    """The graph encoder and bi-encoder misread honest demo merchants, so /score leaves them out unless opted in."""
+    _reset_serve_globals()
+    monkeypatch.setattr(serve, 'EXPERIMENTAL_ENCODERS', False)
+    client = TestClient(serve.app)
+    body = client.post('/score', json={
+        'features': {'llr_A1': 1.0, 'n_sales': 80.0},
+        'alignment': {'declared': 'Bakeries, Breads', 'observed': [{'text': 'Sourdough loaf', 'kind': 'catalogue'}]},
+        'graph': {'nodes': [{'id': 'm', 'type': 'merchant'}], 'edges': []},
+    }).json()
+    assert 'biEncoder' not in body and 'graph' not in body
+    assert 'autoencoder' in body
+    _reset_serve_globals()
+
+
+def test_first_score_after_start_includes_encoders(monkeypatch):
+    """A /score that arrives before any /health must still load the autoencoder and temporal encoder (Stage 2 v1 path)."""
+    _reset_serve_globals()
+    monkeypatch.setattr(serve, 'STAGE2', ROOT / 'ml' / 'models' / 'stage2-v1')  # undo the file's v0-only fixture
+    monkeypatch.setattr(serve, '_v1', None)
+    client = TestClient(serve.app)
+    body = client.post('/score', json={'features': {'llr_A1': 1.0, 'n_sales': 80.0},
+                                      'sequence': {'events': [[0.4, 0.6, -0.5, 0.8, 1, 0, 0, 0, 1, 1] for _ in range(12)],
+                                                   'weekly': [1.0] * 8, 'signals': {}}}).json()
+    assert body['modelVersion'] == 'stage2-v1'
+    assert 'autoencoder' in body
+    assert 'temporal' in body
     _reset_serve_globals()
