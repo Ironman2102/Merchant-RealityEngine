@@ -1,0 +1,121 @@
+{
+  "m1": {
+    "name": "M1-v0 (LightGBM+iso)",
+    "ap": 0.8634,
+    "auc": 0.801,
+    "ece": 0.1963,
+    "brier": 0.2269,
+    "thresholds": {
+      "0.10": {
+        "tp": 4227,
+        "fp": 3003,
+        "fn": 773,
+        "tn": 1997,
+        "recall": 0.8454,
+        "precision": 0.5846,
+        "fpr": 0.6006,
+        "f1": 0.6912,
+        "bayesFnRescued": "1227/1632",
+        "hardGenuineFp": "1973/3000"
+      },
+      "0.50": {
+        "tp": 3591,
+        "fp": 1434,
+        "fn": 1409,
+        "tn": 3566,
+        "recall": 0.7182,
+        "precision": 0.7146,
+        "fpr": 0.2868,
+        "f1": 0.7164,
+        "bayesFnRescued": "838/1632",
+        "hardGenuineFp": "1118/3000"
+      }
+    },
+    "byQuarter": {
+      "Q1": {
+        "rec50": 0.6911,
+        "fpr50": 0.2576
+      },
+      "Q2": {
+        "rec50": 0.7026,
+        "fpr50": 0.3376
+      },
+      "Q3": {
+        "rec50": 0.7364,
+        "fpr50": 0.2648
+      },
+      "Q4": {
+        "rec50": 0.7346,
+        "fpr50": 0.2872
+      }
+    }
+  },
+  "nn": {
+    "name": "NN-v0 (MLP+iso)",
+    "ap": 0.8119,
+    "auc": 0.8021,
+    "ece": 0.2247,
+    "brier": 0.2327,
+    "thresholds": {
+      "0.10": {
+        "tp": 3779,
+        "fp": 1419,
+        "fn": 1221,
+        "tn": 3581,
+        "recall": 0.7558,
+        "precision": 0.727,
+        "fpr": 0.2838,
+        "f1": 0.7411,
+        "bayesFnRescued": "1035/1632",
+        "hardGenuineFp": "1328/3000"
+      },
+      "0.50": {
+        "tp": 3634,
+        "fp": 1123,
+        "fn": 1366,
+        "tn": 3877,
+        "recall": 0.7268,
+        "precision": 0.7639,
+        "fpr": 0.2246,
+        "f1": 0.7449,
+        "bayesFnRescued": "941/1632",
+        "hardGenuineFp": "1110/3000"
+      }
+    },
+    "byQuarter": {
+      "Q1": {
+        "rec50": 0.718,
+        "fpr50": 0.2128
+      },
+      "Q2": {
+        "rec50": 0.7124,
+        "fpr50": 0.2416
+      },
+      "Q3": {
+        "rec50": 0.7392,
+        "fpr50": 0.2088
+      },
+      "Q4": {
+        "rec50": 0.7332,
+        "fpr50": 0.2352
+      }
+    }
+  },
+  "fourWay": {
+    "totalFronts": 5000,
+    "caughtByAny": 4709,
+    "caughtByAll3Models": 2669,
+    "onlyBayesian": 591,
+    "onlyM1": 177,
+    "onlyNN": 308,
+    "onlyRing": 187,
+    "consensusBlindSpots": 291
+  },
+  "consensusBlindSpotTypologies": {
+    "rotation-dormant-handoff": 168,
+    "thirdparty-refund-ring": 54,
+    "shell-full-fake": 48,
+    "threshold-hug-epsilon": 14,
+    "hybrid-15pct": 7
+  }
+}

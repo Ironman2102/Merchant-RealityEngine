@@ -66,13 +66,40 @@ export default function (): number {
   ]);
   check('detectRings: 2 shared payers (<3 threshold) does not trigger N5', disjoint.rings.length === 0);
 
-  // Anonymous POS edge: two shops with 2 distinct named payers + anonymous sales ('—') must NOT count '—' as a shared payer!
+  // Anonymous POS edge: 2 shared named payers + anonymous sales ('—') must NOT count '—' as a 3rd shared payer!
   const anonRing = detectRings([
-    mkSc('AN1', { payers: ['U1', 'U2', '__ANON__', '__ANON__', '__ANON__'] }),
-    mkSc('AN2', { payers: ['V1', 'V2', '__ANON__', '__ANON__', '__ANON__'] }),
+    mkSc('AN1', { payers: ['SH1', 'SH2', 'U1', '__ANON__', '__ANON__'] }),
+    mkSc('AN2', { payers: ['SH1', 'SH2', 'V1', '__ANON__', '__ANON__'] }),
   ]);
-  check('detectRings: anonymous payer placeholder "—" alone does not trigger N5',
+  check('detectRings: anonymous payer placeholder "—" is excluded even alongside 2 shared named payers',
     anonRing.rings.length === 0, JSON.stringify(anonRing.rings));
+
+  // Risk-gated suppression: clean multi-branch franchise (N4) & clean tech-park lunch crowd (N5) are suppressed when posteriorByMerchant is supplied
+  const cleanFranchise = detectRings(
+    [mkSc('FR1', { ben: 'CORP-BEN' }), mkSc('FR2', { ben: 'CORP-BEN' })],
+    { posteriorByMerchant: { FR1: 0.002, FR2: 0.003 } },
+  );
+  check('detectRings: clean franchise sharing beneficiary suppressed when risk-gated', cleanFranchise.rings.length === 0);
+
+  const cleanLunch = detectRings(
+    [
+      mkSc('TP1', { payers: ['L1', 'L2', 'L3', 'L4', 'L5', ...Array.from({ length: 20 }, (_, i) => `A${i}`)] }),
+      mkSc('TP2', { payers: ['L1', 'L2', 'L3', 'L4', 'L5', ...Array.from({ length: 20 }, (_, i) => `B${i}`)] }),
+    ],
+    { posteriorByMerchant: { TP1: 0.002, TP2: 0.003 } },
+  );
+  check('detectRings: clean tech-park low-overlap lunch crowd suppressed when risk-gated', cleanLunch.rings.length === 0);
+
+  // Dual-signal quiet ring (shared beneficiary + shared payers) is STILL caught even when individual posteriors are low
+  const quietRing = detectRings(
+    [
+      mkSc('QR1', { ben: 'QUIET-BEN', payers: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'U1'] }),
+      mkSc('QR2', { ben: 'QUIET-BEN', payers: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'V1'] }),
+    ],
+    { posteriorByMerchant: { QR1: 0.002, QR2: 0.003 } },
+  );
+  check('detectRings: dual-signal quiet ring (N4 + N5) still caught when risk-gated',
+    quietRing.rings.some(r => r.kind === 'N4_SHARED_BENEFICIARY') && quietRing.rings.some(r => r.kind === 'N5_PAYER_OVERLAP'));
 
   // Verify 1,200-dataset stress benchmark invariants when report is present
   const reportPath = path.resolve(process.cwd(), 'reports/benchmark-1k-results.json');

@@ -127,16 +127,20 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (list.length > 100) return send(res, { status: 400, body: { error: 'Bulk upload is capped at 100 merchants per request.' } });
       const results: Record<string, unknown>[] = [];
       const scenarios = [];
+      const posteriorByMerchant = new Map<string, number>();
       for (const ds of list) {
         const opened = openInvestigation(ds, actor);
         const caseId = typeof opened.body.id === 'string' ? opened.body.id : '';
         if (opened.status === 200 && caseId) {
           const rec = getCase(caseId);
-          if (rec) scenarios.push(rec.result.scenario);
+          if (rec) {
+            scenarios.push(rec.result.scenario);
+            posteriorByMerchant.set(rec.result.scenario.profile.id, rec.result.fusion.posterior);
+          }
         }
         results.push({ status: opened.status, ...opened.body });
       }
-      const rings = detectRings(scenarios);
+      const rings = detectRings(scenarios, { posteriorByMerchant });
       return send(res, { status: 200, body: { count: results.length, rings, cases: results } });
     }
 

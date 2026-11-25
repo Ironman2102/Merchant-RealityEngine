@@ -47,7 +47,10 @@ export function PortfolioProvider({ children, mode }: { children: ReactNode; mod
   const builtIns = useMemo(() => mode === 'demo' ? SCENARIO_IDS.map(id => analyse(id, 'built-in', getScenario(id), id)) : [], [mode]);
   const [uploaded, setUploaded] = useState<PortfolioEntry[]>([]);
   const entries = useMemo(() => [...uploaded, ...builtIns].sort((a, b) => b.risk - a.risk), [uploaded, builtIns]);
-  const rings = useMemo(() => detectRings(entries.map(e => e.scenario)), [entries]);
+  const rings = useMemo(() => detectRings(
+    entries.map(e => e.scenario),
+    { posteriorByMerchant: new Map(entries.map(e => [e.scenario.profile.id, e.result.fusion.posterior])) },
+  ), [entries]);
   const get = useCallback((key: string) => entries.find(e => e.key === key), [entries]);
   const addUploaded = useCallback((sc: Scenario) => {
     const key = `upload-${sc.profile.id}-${Date.now().toString(36)}`;
