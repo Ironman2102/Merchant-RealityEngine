@@ -126,7 +126,7 @@
       "time": "2026-10-19T08:17:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust110@upi",
+      "payerId": "mob.cust110@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -139,7 +139,7 @@
       "time": "2026-10-19T08:45:04+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust085@upi",
+      "payerId": "mob.cust085@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -152,7 +152,7 @@
       "time": "2026-10-19T08:51:21+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust030@upi",
+      "payerId": "mob.cust030@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -165,7 +165,7 @@
       "time": "2026-10-19T08:55:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust199@upi",
+      "payerId": "mob.cust199@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -178,7 +178,7 @@
       "time": "2026-10-19T09:14:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust034@upi",
+      "payerId": "mob.cust034@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -191,7 +191,7 @@
       "time": "2026-10-19T09:25:15+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust188@upi",
+      "payerId": "mob.cust188@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -204,7 +204,7 @@
       "time": "2026-10-19T11:13:36+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust154@upi",
+      "payerId": "mob.cust154@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -217,7 +217,7 @@
       "time": "2026-10-19T11:18:30+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust220@upi",
+      "payerId": "mob.cust220@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -230,7 +230,7 @@
       "time": "2026-10-19T11:22:53+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust222@upi",
+      "payerId": "mob.cust222@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -243,7 +243,7 @@
       "time": "2026-10-19T13:13:11+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust054@upi",
+      "payerId": "mob.cust054@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -256,7 +256,7 @@
       "time": "2026-10-19T13:28:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust136@upi",
+      "payerId": "mob.cust136@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -269,7 +269,7 @@
       "time": "2026-10-19T17:24:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust154@upi",
+      "payerId": "mob.cust154@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -282,7 +282,7 @@
       "time": "2026-10-19T17:50:13+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust059@upi",
+      "payerId": "mob.cust059@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -295,7 +295,7 @@
       "time": "2026-10-19T17:50:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust018@upi",
+      "payerId": "mob.cust018@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -308,7 +308,7 @@
       "time": "2026-10-19T18:52:14+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "cust179@upi",
+      "payerId": "mob.cust179@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -321,7 +321,7 @@
       "time": "2026-10-19T22:29:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "night327@upi",
+      "payerId": "mob.night327@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -334,7 +334,7 @@
       "time": "2026-10-19T23:05:42+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "night285@upi",
+      "payerId": "mob.night285@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -347,7 +347,7 @@
       "time": "2026-10-19T23:32:48+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "night139@upi",
+      "payerId": "mob.night139@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -360,7 +360,7 @@
       "time": "2026-10-19T23:35:25+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-20T11:00:00+05:30",
-      "payerId": "night396@upi",
+      "payerId": "mob.night396@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -373,7 +373,7 @@
       "time": "2026-10-20T00:22:48+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night252@upi",
+      "payerId": "mob.night252@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -386,7 +386,7 @@
       "time": "2026-10-20T00:28:32+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night201@upi",
+      "payerId": "mob.night201@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -399,7 +399,7 @@
       "time": "2026-10-20T00:34:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night013@upi",
+      "payerId": "mob.night013@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -412,7 +412,7 @@
       "time": "2026-10-20T00:35:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night102@upi",
+      "payerId": "mob.night102@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -425,7 +425,7 @@
       "time": "2026-10-20T00:37:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night139@upi",
+      "payerId": "mob.night139@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -438,7 +438,7 @@
       "time": "2026-10-20T01:06:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night066@upi",
+      "payerId": "mob.night066@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -451,7 +451,7 @@
       "time": "2026-10-20T01:09:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night364@upi",
+      "payerId": "mob.night364@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -464,7 +464,7 @@
       "time": "2026-10-20T01:27:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night327@upi",
+      "payerId": "mob.night327@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -477,7 +477,7 @@
       "time": "2026-10-20T08:43:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust080@upi",
+      "payerId": "mob.cust080@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -489,7 +489,7 @@
       "amount": 10502,
       "time": "2026-10-20T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -500,7 +500,7 @@
       "time": "2026-10-20T13:00:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust091@upi",
+      "payerId": "mob.cust091@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -513,7 +513,7 @@
       "time": "2026-10-20T13:02:31+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust170@upi",
+      "payerId": "mob.cust170@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -526,7 +526,7 @@
       "time": "2026-10-20T13:17:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust171@upi",
+      "payerId": "mob.cust171@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -539,7 +539,7 @@
       "time": "2026-10-20T13:44:38+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust135@upi",
+      "payerId": "mob.cust135@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -552,7 +552,7 @@
       "time": "2026-10-20T17:11:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust200@upi",
+      "payerId": "mob.cust200@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -565,7 +565,7 @@
       "time": "2026-10-20T17:25:49+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust017@upi",
+      "payerId": "mob.cust017@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -578,7 +578,7 @@
       "time": "2026-10-20T17:55:30+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust198@upi",
+      "payerId": "mob.cust198@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -591,7 +591,7 @@
       "time": "2026-10-20T17:56:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust167@upi",
+      "payerId": "mob.cust167@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -604,7 +604,7 @@
       "time": "2026-10-20T18:06:51+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust093@upi",
+      "payerId": "mob.cust093@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -617,7 +617,7 @@
       "time": "2026-10-20T18:32:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust073@upi",
+      "payerId": "mob.cust073@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -630,7 +630,7 @@
       "time": "2026-10-20T20:15:28+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust023@upi",
+      "payerId": "mob.cust023@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -643,7 +643,7 @@
       "time": "2026-10-20T20:40:02+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust148@upi",
+      "payerId": "mob.cust148@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -656,7 +656,7 @@
       "time": "2026-10-20T20:42:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "cust223@upi",
+      "payerId": "mob.cust223@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -669,7 +669,7 @@
       "time": "2026-10-20T22:12:02+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night049@upi",
+      "payerId": "mob.night049@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -682,7 +682,7 @@
       "time": "2026-10-20T22:43:40+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night195@upi",
+      "payerId": "mob.night195@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -695,7 +695,7 @@
       "time": "2026-10-20T22:45:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night138@upi",
+      "payerId": "mob.night138@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -708,7 +708,7 @@
       "time": "2026-10-20T23:19:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-21T11:00:00+05:30",
-      "payerId": "night089@upi",
+      "payerId": "mob.night089@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -721,7 +721,7 @@
       "time": "2026-10-21T00:04:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night359@upi",
+      "payerId": "mob.night359@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -734,7 +734,7 @@
       "time": "2026-10-21T00:07:32+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night405@upi",
+      "payerId": "mob.night405@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -747,7 +747,7 @@
       "time": "2026-10-21T00:51:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night332@upi",
+      "payerId": "mob.night332@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -760,7 +760,7 @@
       "time": "2026-10-21T00:57:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night236@upi",
+      "payerId": "mob.night236@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -773,7 +773,7 @@
       "time": "2026-10-21T01:04:32+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night212@upi",
+      "payerId": "mob.night212@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -786,7 +786,7 @@
       "time": "2026-10-21T08:03:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust121@upi",
+      "payerId": "mob.cust121@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -799,7 +799,7 @@
       "time": "2026-10-21T09:10:48+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust049@upi",
+      "payerId": "mob.cust049@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -812,7 +812,7 @@
       "time": "2026-10-21T09:19:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust032@upi",
+      "payerId": "mob.cust032@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -825,7 +825,7 @@
       "time": "2026-10-21T09:43:40+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust046@upi",
+      "payerId": "mob.cust046@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -838,7 +838,7 @@
       "time": "2026-10-21T09:51:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust234@upi",
+      "payerId": "mob.cust234@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -850,7 +850,7 @@
       "amount": 16960,
       "time": "2026-10-21T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -861,7 +861,7 @@
       "time": "2026-10-21T11:25:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust122@upi",
+      "payerId": "mob.cust122@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -874,7 +874,7 @@
       "time": "2026-10-21T11:25:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust162@upi",
+      "payerId": "mob.cust162@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -887,7 +887,7 @@
       "time": "2026-10-21T13:06:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust227@upi",
+      "payerId": "mob.cust227@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -900,7 +900,7 @@
       "time": "2026-10-21T13:42:24+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust182@upi",
+      "payerId": "mob.cust182@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -913,7 +913,7 @@
       "time": "2026-10-21T17:09:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust006@upi",
+      "payerId": "mob.cust006@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -926,7 +926,7 @@
       "time": "2026-10-21T17:28:15+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust134@upi",
+      "payerId": "mob.cust134@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -939,7 +939,7 @@
       "time": "2026-10-21T17:38:46+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust024@upi",
+      "payerId": "mob.cust024@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -952,7 +952,7 @@
       "time": "2026-10-21T18:00:14+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust175@upi",
+      "payerId": "mob.cust175@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -965,7 +965,7 @@
       "time": "2026-10-21T18:05:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust015@upi",
+      "payerId": "mob.cust015@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -978,7 +978,7 @@
       "time": "2026-10-21T18:47:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust193@upi",
+      "payerId": "mob.cust193@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -991,7 +991,7 @@
       "time": "2026-10-21T20:58:31+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "cust058@upi",
+      "payerId": "mob.cust058@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1004,7 +1004,7 @@
       "time": "2026-10-21T22:09:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night206@upi",
+      "payerId": "mob.night206@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1017,7 +1017,7 @@
       "time": "2026-10-21T22:11:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night287@upi",
+      "payerId": "mob.night287@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1030,7 +1030,7 @@
       "time": "2026-10-21T22:36:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night189@upi",
+      "payerId": "mob.night189@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1043,7 +1043,7 @@
       "time": "2026-10-21T22:49:49+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night015@upi",
+      "payerId": "mob.night015@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1056,7 +1056,7 @@
       "time": "2026-10-21T23:14:32+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night112@upi",
+      "payerId": "mob.night112@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1069,7 +1069,7 @@
       "time": "2026-10-21T23:51:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-22T11:00:00+05:30",
-      "payerId": "night396@upi",
+      "payerId": "mob.night396@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1082,7 +1082,7 @@
       "time": "2026-10-22T00:01:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night072@upi",
+      "payerId": "mob.night072@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1095,7 +1095,7 @@
       "time": "2026-10-22T00:13:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night088@upi",
+      "payerId": "mob.night088@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1108,7 +1108,7 @@
       "time": "2026-10-22T00:22:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night143@upi",
+      "payerId": "mob.night143@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1121,7 +1121,7 @@
       "time": "2026-10-22T00:29:48+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night099@upi",
+      "payerId": "mob.night099@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1134,7 +1134,7 @@
       "time": "2026-10-22T01:08:26+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night108@upi",
+      "payerId": "mob.night108@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1147,7 +1147,7 @@
       "time": "2026-10-22T01:11:59+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night114@upi",
+      "payerId": "mob.night114@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1160,7 +1160,7 @@
       "time": "2026-10-22T08:33:28+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust178@upi",
+      "payerId": "mob.cust178@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1173,7 +1173,7 @@
       "time": "2026-10-22T08:42:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust123@upi",
+      "payerId": "mob.cust123@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1186,7 +1186,7 @@
       "time": "2026-10-22T09:02:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust223@upi",
+      "payerId": "mob.cust223@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1199,7 +1199,7 @@
       "time": "2026-10-22T09:07:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust097@upi",
+      "payerId": "mob.cust097@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1212,7 +1212,7 @@
       "time": "2026-10-22T09:14:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust160@upi",
+      "payerId": "mob.cust160@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1225,7 +1225,7 @@
       "time": "2026-10-22T09:57:11+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust086@upi",
+      "payerId": "mob.cust086@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1237,7 +1237,7 @@
       "amount": 15110,
       "time": "2026-10-22T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -1248,7 +1248,7 @@
       "time": "2026-10-22T11:13:00+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust150@upi",
+      "payerId": "mob.cust150@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1261,7 +1261,7 @@
       "time": "2026-10-22T13:45:00+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust236@upi",
+      "payerId": "mob.cust236@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1274,7 +1274,7 @@
       "time": "2026-10-22T17:46:26+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust093@upi",
+      "payerId": "mob.cust093@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1287,7 +1287,7 @@
       "time": "2026-10-22T18:01:02+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust175@upi",
+      "payerId": "mob.cust175@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1300,7 +1300,7 @@
       "time": "2026-10-22T18:02:05+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust199@upi",
+      "payerId": "mob.cust199@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1313,7 +1313,7 @@
       "time": "2026-10-22T18:23:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust001@upi",
+      "payerId": "mob.cust001@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1326,7 +1326,7 @@
       "time": "2026-10-22T18:30:13+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust173@upi",
+      "payerId": "mob.cust173@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1339,7 +1339,7 @@
       "time": "2026-10-22T20:14:51+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust151@upi",
+      "payerId": "mob.cust151@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1352,7 +1352,7 @@
       "time": "2026-10-22T20:15:37+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust228@upi",
+      "payerId": "mob.cust228@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1365,7 +1365,7 @@
       "time": "2026-10-22T20:33:20+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "cust113@upi",
+      "payerId": "mob.cust113@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1378,7 +1378,7 @@
       "time": "2026-10-22T22:06:11+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night041@upi",
+      "payerId": "mob.night041@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1391,7 +1391,7 @@
       "time": "2026-10-22T22:10:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night323@upi",
+      "payerId": "mob.night323@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1404,7 +1404,7 @@
       "time": "2026-10-22T22:11:51+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night042@upi",
+      "payerId": "mob.night042@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1417,7 +1417,7 @@
       "time": "2026-10-22T22:28:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night083@upi",
+      "payerId": "mob.night083@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1430,7 +1430,7 @@
       "time": "2026-10-22T22:45:13+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night228@upi",
+      "payerId": "mob.night228@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1443,7 +1443,7 @@
       "time": "2026-10-22T23:42:43+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-23T11:00:00+05:30",
-      "payerId": "night069@upi",
+      "payerId": "mob.night069@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1456,7 +1456,7 @@
       "time": "2026-10-23T00:06:37+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night020@upi",
+      "payerId": "mob.night020@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1469,7 +1469,7 @@
       "time": "2026-10-23T00:16:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night416@upi",
+      "payerId": "mob.night416@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1482,7 +1482,7 @@
       "time": "2026-10-23T01:03:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night014@upi",
+      "payerId": "mob.night014@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1495,7 +1495,7 @@
       "time": "2026-10-23T01:25:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night085@upi",
+      "payerId": "mob.night085@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1508,7 +1508,7 @@
       "time": "2026-10-23T09:09:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust040@upi",
+      "payerId": "mob.cust040@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1520,7 +1520,7 @@
       "amount": 18132,
       "time": "2026-10-23T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -1531,7 +1531,7 @@
       "time": "2026-10-23T13:18:02+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust156@upi",
+      "payerId": "mob.cust156@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1544,7 +1544,7 @@
       "time": "2026-10-23T13:23:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust009@upi",
+      "payerId": "mob.cust009@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1557,7 +1557,7 @@
       "time": "2026-10-23T13:50:59+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust164@upi",
+      "payerId": "mob.cust164@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1570,7 +1570,7 @@
       "time": "2026-10-23T13:56:27+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust044@upi",
+      "payerId": "mob.cust044@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1583,7 +1583,7 @@
       "time": "2026-10-23T17:02:34+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust142@upi",
+      "payerId": "mob.cust142@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1596,7 +1596,7 @@
       "time": "2026-10-23T17:29:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust204@upi",
+      "payerId": "mob.cust204@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1609,7 +1609,7 @@
       "time": "2026-10-23T17:36:11+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust167@upi",
+      "payerId": "mob.cust167@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1622,7 +1622,7 @@
       "time": "2026-10-23T17:38:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust195@upi",
+      "payerId": "mob.cust195@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1635,7 +1635,7 @@
       "time": "2026-10-23T17:39:28+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust131@upi",
+      "payerId": "mob.cust131@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1648,7 +1648,7 @@
       "time": "2026-10-23T17:58:27+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust025@upi",
+      "payerId": "mob.cust025@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1661,7 +1661,7 @@
       "time": "2026-10-23T18:02:00+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust037@upi",
+      "payerId": "mob.cust037@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1674,7 +1674,7 @@
       "time": "2026-10-23T18:53:37+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust229@upi",
+      "payerId": "mob.cust229@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1687,7 +1687,7 @@
       "time": "2026-10-23T20:25:27+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "cust149@upi",
+      "payerId": "mob.cust149@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1700,7 +1700,7 @@
       "time": "2026-10-23T22:31:53+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night399@upi",
+      "payerId": "mob.night399@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1713,7 +1713,7 @@
       "time": "2026-10-23T22:53:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night076@upi",
+      "payerId": "mob.night076@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1726,7 +1726,7 @@
       "time": "2026-10-23T23:03:18+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night171@upi",
+      "payerId": "mob.night171@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1739,7 +1739,7 @@
       "time": "2026-10-23T23:11:05+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night323@upi",
+      "payerId": "mob.night323@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1752,7 +1752,7 @@
       "time": "2026-10-23T23:41:25+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night393@upi",
+      "payerId": "mob.night393@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1765,7 +1765,7 @@
       "time": "2026-10-23T23:43:48+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-24T11:00:00+05:30",
-      "payerId": "night140@upi",
+      "payerId": "mob.night140@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1778,7 +1778,7 @@
       "time": "2026-10-24T00:19:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night235@upi",
+      "payerId": "mob.night235@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1791,7 +1791,7 @@
       "time": "2026-10-24T00:27:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night230@upi",
+      "payerId": "mob.night230@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1804,7 +1804,7 @@
       "time": "2026-10-24T00:41:28+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night346@upi",
+      "payerId": "mob.night346@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1817,7 +1817,7 @@
       "time": "2026-10-24T00:51:47+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night066@upi",
+      "payerId": "mob.night066@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1830,7 +1830,7 @@
       "time": "2026-10-24T00:57:18+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night115@upi",
+      "payerId": "mob.night115@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1843,7 +1843,7 @@
       "time": "2026-10-24T01:08:29+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night397@upi",
+      "payerId": "mob.night397@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -1856,7 +1856,7 @@
       "time": "2026-10-24T08:54:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust234@upi",
+      "payerId": "mob.cust234@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1869,7 +1869,7 @@
       "time": "2026-10-24T09:14:19+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust133@upi",
+      "payerId": "mob.cust133@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1882,7 +1882,7 @@
       "time": "2026-10-24T09:20:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust132@upi",
+      "payerId": "mob.cust132@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1895,7 +1895,7 @@
       "time": "2026-10-24T09:46:13+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust083@upi",
+      "payerId": "mob.cust083@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1908,7 +1908,7 @@
       "time": "2026-10-24T09:50:27+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust107@upi",
+      "payerId": "mob.cust107@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1921,7 +1921,7 @@
       "time": "2026-10-24T09:50:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust222@upi",
+      "payerId": "mob.cust222@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1934,7 +1934,7 @@
       "time": "2026-10-24T09:55:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust134@upi",
+      "payerId": "mob.cust134@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1946,7 +1946,7 @@
       "amount": 14755,
       "time": "2026-10-24T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -1957,7 +1957,7 @@
       "time": "2026-10-24T11:32:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust184@upi",
+      "payerId": "mob.cust184@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1970,7 +1970,7 @@
       "time": "2026-10-24T13:16:20+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust206@upi",
+      "payerId": "mob.cust206@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1983,7 +1983,7 @@
       "time": "2026-10-24T13:29:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust044@upi",
+      "payerId": "mob.cust044@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -1996,7 +1996,7 @@
       "time": "2026-10-24T13:31:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust200@upi",
+      "payerId": "mob.cust200@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2009,7 +2009,7 @@
       "time": "2026-10-24T13:37:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust141@upi",
+      "payerId": "mob.cust141@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2022,7 +2022,7 @@
       "time": "2026-10-24T13:38:43+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust183@upi",
+      "payerId": "mob.cust183@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2035,7 +2035,7 @@
       "time": "2026-10-24T17:02:40+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust205@upi",
+      "payerId": "mob.cust205@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2048,7 +2048,7 @@
       "time": "2026-10-24T17:13:26+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust235@upi",
+      "payerId": "mob.cust235@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2061,7 +2061,7 @@
       "time": "2026-10-24T17:38:40+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust127@upi",
+      "payerId": "mob.cust127@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2074,7 +2074,7 @@
       "time": "2026-10-24T17:47:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust077@upi",
+      "payerId": "mob.cust077@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2087,7 +2087,7 @@
       "time": "2026-10-24T18:48:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust188@upi",
+      "payerId": "mob.cust188@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2100,7 +2100,7 @@
       "time": "2026-10-24T18:54:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust129@upi",
+      "payerId": "mob.cust129@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2113,7 +2113,7 @@
       "time": "2026-10-24T20:09:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "cust229@upi",
+      "payerId": "mob.cust229@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2126,7 +2126,7 @@
       "time": "2026-10-24T22:13:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night179@upi",
+      "payerId": "mob.night179@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2139,7 +2139,7 @@
       "time": "2026-10-24T22:37:28+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night070@upi",
+      "payerId": "mob.night070@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2152,7 +2152,7 @@
       "time": "2026-10-24T23:08:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night359@upi",
+      "payerId": "mob.night359@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2165,7 +2165,7 @@
       "time": "2026-10-24T23:21:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-25T11:00:00+05:30",
-      "payerId": "night240@upi",
+      "payerId": "mob.night240@upi",
       "payerState": "TN",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2178,7 +2178,7 @@
       "time": "2026-10-25T00:16:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night128@upi",
+      "payerId": "mob.night128@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2191,7 +2191,7 @@
       "time": "2026-10-25T00:25:11+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night152@upi",
+      "payerId": "mob.night152@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2204,7 +2204,7 @@
       "time": "2026-10-25T00:32:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night300@upi",
+      "payerId": "mob.night300@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2217,7 +2217,7 @@
       "time": "2026-10-25T00:44:18+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night243@upi",
+      "payerId": "mob.night243@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2230,7 +2230,7 @@
       "time": "2026-10-25T01:15:46+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night030@upi",
+      "payerId": "mob.night030@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2243,7 +2243,7 @@
       "time": "2026-10-25T01:27:40+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night368@upi",
+      "payerId": "mob.night368@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2256,7 +2256,7 @@
       "time": "2026-10-25T08:39:20+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust209@upi",
+      "payerId": "mob.cust209@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2269,7 +2269,7 @@
       "time": "2026-10-25T09:32:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust106@upi",
+      "payerId": "mob.cust106@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2282,7 +2282,7 @@
       "time": "2026-10-25T09:43:10+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust217@upi",
+      "payerId": "mob.cust217@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2295,7 +2295,7 @@
       "time": "2026-10-25T09:51:13+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust096@upi",
+      "payerId": "mob.cust096@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2307,7 +2307,7 @@
       "amount": 16702,
       "time": "2026-10-25T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -2318,7 +2318,7 @@
       "time": "2026-10-25T11:02:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust119@upi",
+      "payerId": "mob.cust119@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2331,7 +2331,7 @@
       "time": "2026-10-25T11:23:22+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust017@upi",
+      "payerId": "mob.cust017@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2344,7 +2344,7 @@
       "time": "2026-10-25T11:55:04+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust115@upi",
+      "payerId": "mob.cust115@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2357,7 +2357,7 @@
       "time": "2026-10-25T11:58:10+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust080@upi",
+      "payerId": "mob.cust080@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2370,7 +2370,7 @@
       "time": "2026-10-25T13:40:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust230@upi",
+      "payerId": "mob.cust230@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2383,7 +2383,7 @@
       "time": "2026-10-25T13:47:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust237@upi",
+      "payerId": "mob.cust237@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2396,7 +2396,7 @@
       "time": "2026-10-25T17:02:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust150@upi",
+      "payerId": "mob.cust150@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2409,7 +2409,7 @@
       "time": "2026-10-25T17:13:19+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust041@upi",
+      "payerId": "mob.cust041@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2422,7 +2422,7 @@
       "time": "2026-10-25T17:34:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust100@upi",
+      "payerId": "mob.cust100@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2435,7 +2435,7 @@
       "time": "2026-10-25T17:49:31+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust147@upi",
+      "payerId": "mob.cust147@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2448,7 +2448,7 @@
       "time": "2026-10-25T18:46:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust034@upi",
+      "payerId": "mob.cust034@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2461,7 +2461,7 @@
       "time": "2026-10-25T18:50:21+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust218@upi",
+      "payerId": "mob.cust218@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2474,7 +2474,7 @@
       "time": "2026-10-25T18:51:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust015@upi",
+      "payerId": "mob.cust015@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2487,7 +2487,7 @@
       "time": "2026-10-25T20:28:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust106@upi",
+      "payerId": "mob.cust106@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2500,7 +2500,7 @@
       "time": "2026-10-25T20:46:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "cust052@upi",
+      "payerId": "mob.cust052@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2513,7 +2513,7 @@
       "time": "2026-10-25T22:13:25+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night336@upi",
+      "payerId": "mob.night336@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2526,7 +2526,7 @@
       "time": "2026-10-25T22:22:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night143@upi",
+      "payerId": "mob.night143@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2539,7 +2539,7 @@
       "time": "2026-10-25T22:42:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night095@upi",
+      "payerId": "mob.night095@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2552,7 +2552,7 @@
       "time": "2026-10-25T22:47:43+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night128@upi",
+      "payerId": "mob.night128@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2565,7 +2565,7 @@
       "time": "2026-10-25T23:22:36+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night195@upi",
+      "payerId": "mob.night195@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2578,7 +2578,7 @@
       "time": "2026-10-25T23:44:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-26T11:00:00+05:30",
-      "payerId": "night214@upi",
+      "payerId": "mob.night214@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2591,7 +2591,7 @@
       "time": "2026-10-26T00:24:59+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night310@upi",
+      "payerId": "mob.night310@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2604,7 +2604,7 @@
       "time": "2026-10-26T00:47:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night374@upi",
+      "payerId": "mob.night374@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2617,7 +2617,7 @@
       "time": "2026-10-26T08:39:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust028@upi",
+      "payerId": "mob.cust028@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2630,7 +2630,7 @@
       "time": "2026-10-26T08:53:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust165@upi",
+      "payerId": "mob.cust165@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2643,7 +2643,7 @@
       "time": "2026-10-26T09:07:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust136@upi",
+      "payerId": "mob.cust136@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2656,7 +2656,7 @@
       "time": "2026-10-26T09:26:02+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust089@upi",
+      "payerId": "mob.cust089@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2669,7 +2669,7 @@
       "time": "2026-10-26T09:28:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust036@upi",
+      "payerId": "mob.cust036@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2682,7 +2682,7 @@
       "time": "2026-10-26T09:30:22+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust142@upi",
+      "payerId": "mob.cust142@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2695,7 +2695,7 @@
       "time": "2026-10-26T09:46:57+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust109@upi",
+      "payerId": "mob.cust109@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2708,7 +2708,7 @@
       "time": "2026-10-26T09:57:25+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust050@upi",
+      "payerId": "mob.cust050@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2720,7 +2720,7 @@
       "amount": 19927,
       "time": "2026-10-26T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -2731,7 +2731,7 @@
       "time": "2026-10-26T13:19:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust084@upi",
+      "payerId": "mob.cust084@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2744,7 +2744,7 @@
       "time": "2026-10-26T13:27:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust078@upi",
+      "payerId": "mob.cust078@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2757,7 +2757,7 @@
       "time": "2026-10-26T17:08:15+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust100@upi",
+      "payerId": "mob.cust100@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2770,7 +2770,7 @@
       "time": "2026-10-26T17:18:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust107@upi",
+      "payerId": "mob.cust107@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2783,7 +2783,7 @@
       "time": "2026-10-26T17:58:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust233@upi",
+      "payerId": "mob.cust233@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2796,7 +2796,7 @@
       "time": "2026-10-26T18:25:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust090@upi",
+      "payerId": "mob.cust090@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2809,7 +2809,7 @@
       "time": "2026-10-26T20:03:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust160@upi",
+      "payerId": "mob.cust160@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2822,7 +2822,7 @@
       "time": "2026-10-26T20:41:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "cust179@upi",
+      "payerId": "mob.cust179@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2835,7 +2835,7 @@
       "time": "2026-10-26T22:14:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night148@upi",
+      "payerId": "mob.night148@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2848,7 +2848,7 @@
       "time": "2026-10-26T22:41:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night110@upi",
+      "payerId": "mob.night110@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2861,7 +2861,7 @@
       "time": "2026-10-26T23:14:14+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night368@upi",
+      "payerId": "mob.night368@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2874,7 +2874,7 @@
       "time": "2026-10-26T23:53:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night244@upi",
+      "payerId": "mob.night244@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2887,7 +2887,7 @@
       "time": "2026-10-26T23:56:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-27T11:00:00+05:30",
-      "payerId": "night165@upi",
+      "payerId": "mob.night165@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2900,7 +2900,7 @@
       "time": "2026-10-27T00:27:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night416@upi",
+      "payerId": "mob.night416@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2913,7 +2913,7 @@
       "time": "2026-10-27T00:44:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night130@upi",
+      "payerId": "mob.night130@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2926,7 +2926,7 @@
       "time": "2026-10-27T00:57:30+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night160@upi",
+      "payerId": "mob.night160@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2939,7 +2939,7 @@
       "time": "2026-10-27T01:02:25+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night320@upi",
+      "payerId": "mob.night320@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2952,7 +2952,7 @@
       "time": "2026-10-27T01:33:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night074@upi",
+      "payerId": "mob.night074@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -2965,7 +2965,7 @@
       "time": "2026-10-27T09:04:46+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust231@upi",
+      "payerId": "mob.cust231@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2978,7 +2978,7 @@
       "time": "2026-10-27T09:35:19+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust132@upi",
+      "payerId": "mob.cust132@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -2991,7 +2991,7 @@
       "time": "2026-10-27T09:35:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust231@upi",
+      "payerId": "mob.cust231@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3004,7 +3004,7 @@
       "time": "2026-10-27T09:46:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust226@upi",
+      "payerId": "mob.cust226@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3016,7 +3016,7 @@
       "amount": 15550,
       "time": "2026-10-27T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -3027,7 +3027,7 @@
       "time": "2026-10-27T11:54:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust145@upi",
+      "payerId": "mob.cust145@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3040,7 +3040,7 @@
       "time": "2026-10-27T13:02:53+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust041@upi",
+      "payerId": "mob.cust041@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3053,7 +3053,7 @@
       "time": "2026-10-27T13:12:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust073@upi",
+      "payerId": "mob.cust073@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3066,7 +3066,7 @@
       "time": "2026-10-27T13:17:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust062@upi",
+      "payerId": "mob.cust062@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3079,7 +3079,7 @@
       "time": "2026-10-27T13:20:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust124@upi",
+      "payerId": "mob.cust124@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3092,7 +3092,7 @@
       "time": "2026-10-27T17:41:05+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust147@upi",
+      "payerId": "mob.cust147@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3105,7 +3105,7 @@
       "time": "2026-10-27T17:53:45+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust118@upi",
+      "payerId": "mob.cust118@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3118,7 +3118,7 @@
       "time": "2026-10-27T18:22:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust005@upi",
+      "payerId": "mob.cust005@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3131,7 +3131,7 @@
       "time": "2026-10-27T18:49:38+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust138@upi",
+      "payerId": "mob.cust138@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3144,7 +3144,7 @@
       "time": "2026-10-27T18:53:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust217@upi",
+      "payerId": "mob.cust217@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3157,7 +3157,7 @@
       "time": "2026-10-27T20:26:38+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "cust214@upi",
+      "payerId": "mob.cust214@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3170,7 +3170,7 @@
       "time": "2026-10-27T22:37:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night230@upi",
+      "payerId": "mob.night230@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3183,7 +3183,7 @@
       "time": "2026-10-27T22:45:48+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night137@upi",
+      "payerId": "mob.night137@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3196,7 +3196,7 @@
       "time": "2026-10-27T22:56:40+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night229@upi",
+      "payerId": "mob.night229@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3209,7 +3209,7 @@
       "time": "2026-10-27T23:29:34+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night335@upi",
+      "payerId": "mob.night335@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3222,7 +3222,7 @@
       "time": "2026-10-27T23:55:49+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-28T11:00:00+05:30",
-      "payerId": "night416@upi",
+      "payerId": "mob.night416@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3235,7 +3235,7 @@
       "time": "2026-10-28T00:45:38+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "night098@upi",
+      "payerId": "mob.night098@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3248,7 +3248,7 @@
       "time": "2026-10-28T00:49:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "night052@upi",
+      "payerId": "mob.night052@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3261,7 +3261,7 @@
       "time": "2026-10-28T01:05:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "night219@upi",
+      "payerId": "mob.night219@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3274,7 +3274,7 @@
       "time": "2026-10-28T08:56:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust050@upi",
+      "payerId": "mob.cust050@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3287,7 +3287,7 @@
       "time": "2026-10-28T09:05:15+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust037@upi",
+      "payerId": "mob.cust037@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3300,7 +3300,7 @@
       "time": "2026-10-28T09:17:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust102@upi",
+      "payerId": "mob.cust102@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3313,7 +3313,7 @@
       "time": "2026-10-28T09:18:42+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust227@upi",
+      "payerId": "mob.cust227@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3326,7 +3326,7 @@
       "time": "2026-10-28T09:33:37+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust052@upi",
+      "payerId": "mob.cust052@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3339,7 +3339,7 @@
       "time": "2026-10-28T09:52:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust105@upi",
+      "payerId": "mob.cust105@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3352,7 +3352,7 @@
       "time": "2026-10-28T09:57:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust182@upi",
+      "payerId": "mob.cust182@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3364,7 +3364,7 @@
       "amount": 13766,
       "time": "2026-10-28T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -3375,7 +3375,7 @@
       "time": "2026-10-28T11:18:05+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust025@upi",
+      "payerId": "mob.cust025@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3388,7 +3388,7 @@
       "time": "2026-10-28T11:49:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust090@upi",
+      "payerId": "mob.cust090@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3401,7 +3401,7 @@
       "time": "2026-10-28T13:01:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust187@upi",
+      "payerId": "mob.cust187@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3414,7 +3414,7 @@
       "time": "2026-10-28T13:41:19+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust085@upi",
+      "payerId": "mob.cust085@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3427,7 +3427,7 @@
       "time": "2026-10-28T17:19:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust044@upi",
+      "payerId": "mob.cust044@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3440,7 +3440,7 @@
       "time": "2026-10-28T17:34:31+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust011@upi",
+      "payerId": "mob.cust011@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3453,7 +3453,7 @@
       "time": "2026-10-28T17:35:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust192@upi",
+      "payerId": "mob.cust192@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3466,7 +3466,7 @@
       "time": "2026-10-28T18:19:00+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust017@upi",
+      "payerId": "mob.cust017@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3479,7 +3479,7 @@
       "time": "2026-10-28T18:41:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "cust192@upi",
+      "payerId": "mob.cust192@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3492,7 +3492,7 @@
       "time": "2026-10-28T23:16:50+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "night280@upi",
+      "payerId": "mob.night280@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3505,7 +3505,7 @@
       "time": "2026-10-28T23:29:24+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "night155@upi",
+      "payerId": "mob.night155@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3518,7 +3518,7 @@
       "time": "2026-10-28T23:38:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-29T11:00:00+05:30",
-      "payerId": "night409@upi",
+      "payerId": "mob.night409@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3531,7 +3531,7 @@
       "time": "2026-10-29T00:23:43+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night127@upi",
+      "payerId": "mob.night127@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3544,7 +3544,7 @@
       "time": "2026-10-29T00:38:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night348@upi",
+      "payerId": "mob.night348@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3557,7 +3557,7 @@
       "time": "2026-10-29T00:38:05+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night380@upi",
+      "payerId": "mob.night380@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3570,7 +3570,7 @@
       "time": "2026-10-29T01:27:19+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night036@upi",
+      "payerId": "mob.night036@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3583,7 +3583,7 @@
       "time": "2026-10-29T01:30:09+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night073@upi",
+      "payerId": "mob.night073@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3596,7 +3596,7 @@
       "time": "2026-10-29T01:33:17+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night145@upi",
+      "payerId": "mob.night145@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3609,7 +3609,7 @@
       "time": "2026-10-29T08:39:27+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust115@upi",
+      "payerId": "mob.cust115@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3622,7 +3622,7 @@
       "time": "2026-10-29T08:54:27+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust214@upi",
+      "payerId": "mob.cust214@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3635,7 +3635,7 @@
       "time": "2026-10-29T09:01:15+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust113@upi",
+      "payerId": "mob.cust113@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3648,7 +3648,7 @@
       "time": "2026-10-29T09:10:57+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust116@upi",
+      "payerId": "mob.cust116@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3661,7 +3661,7 @@
       "time": "2026-10-29T09:39:24+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust041@upi",
+      "payerId": "mob.cust041@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3673,7 +3673,7 @@
       "amount": 12651,
       "time": "2026-10-29T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -3684,7 +3684,7 @@
       "time": "2026-10-29T11:40:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust051@upi",
+      "payerId": "mob.cust051@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3697,7 +3697,7 @@
       "time": "2026-10-29T13:19:46+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust188@upi",
+      "payerId": "mob.cust188@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3710,7 +3710,7 @@
       "time": "2026-10-29T13:21:05+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust240@upi",
+      "payerId": "mob.cust240@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3723,7 +3723,7 @@
       "time": "2026-10-29T13:59:00+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust029@upi",
+      "payerId": "mob.cust029@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3736,7 +3736,7 @@
       "time": "2026-10-29T17:29:59+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust133@upi",
+      "payerId": "mob.cust133@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3749,7 +3749,7 @@
       "time": "2026-10-29T17:54:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust058@upi",
+      "payerId": "mob.cust058@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3762,7 +3762,7 @@
       "time": "2026-10-29T18:34:22+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust041@upi",
+      "payerId": "mob.cust041@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3775,7 +3775,7 @@
       "time": "2026-10-29T18:36:00+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust232@upi",
+      "payerId": "mob.cust232@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3788,7 +3788,7 @@
       "time": "2026-10-29T18:48:04+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust049@upi",
+      "payerId": "mob.cust049@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3801,7 +3801,7 @@
       "time": "2026-10-29T20:35:14+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "cust207@upi",
+      "payerId": "mob.cust207@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3814,7 +3814,7 @@
       "time": "2026-10-29T22:14:03+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night217@upi",
+      "payerId": "mob.night217@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3827,7 +3827,7 @@
       "time": "2026-10-29T22:25:23+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night225@upi",
+      "payerId": "mob.night225@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3840,7 +3840,7 @@
       "time": "2026-10-29T22:27:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night381@upi",
+      "payerId": "mob.night381@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3853,7 +3853,7 @@
       "time": "2026-10-29T23:11:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night370@upi",
+      "payerId": "mob.night370@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3866,7 +3866,7 @@
       "time": "2026-10-29T23:56:13+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-30T11:00:00+05:30",
-      "payerId": "night416@upi",
+      "payerId": "mob.night416@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3879,7 +3879,7 @@
       "time": "2026-10-30T00:36:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night225@upi",
+      "payerId": "mob.night225@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3892,7 +3892,7 @@
       "time": "2026-10-30T01:02:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night330@upi",
+      "payerId": "mob.night330@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3905,7 +3905,7 @@
       "time": "2026-10-30T01:09:26+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night416@upi",
+      "payerId": "mob.night416@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -3918,7 +3918,7 @@
       "time": "2026-10-30T08:31:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust206@upi",
+      "payerId": "mob.cust206@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3931,7 +3931,7 @@
       "time": "2026-10-30T09:35:11+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust171@upi",
+      "payerId": "mob.cust171@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3943,7 +3943,7 @@
       "amount": 16593,
       "time": "2026-10-30T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -3954,7 +3954,7 @@
       "time": "2026-10-30T11:35:43+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust118@upi",
+      "payerId": "mob.cust118@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3967,7 +3967,7 @@
       "time": "2026-10-30T11:49:33+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust239@upi",
+      "payerId": "mob.cust239@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3980,7 +3980,7 @@
       "time": "2026-10-30T13:16:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust169@upi",
+      "payerId": "mob.cust169@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -3993,7 +3993,7 @@
       "time": "2026-10-30T17:00:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust046@upi",
+      "payerId": "mob.cust046@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4006,7 +4006,7 @@
       "time": "2026-10-30T17:38:42+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust023@upi",
+      "payerId": "mob.cust023@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4019,7 +4019,7 @@
       "time": "2026-10-30T17:44:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust138@upi",
+      "payerId": "mob.cust138@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4032,7 +4032,7 @@
       "time": "2026-10-30T18:00:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust189@upi",
+      "payerId": "mob.cust189@upi",
       "payerState": "TN",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4045,7 +4045,7 @@
       "time": "2026-10-30T18:00:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust189@upi",
+      "payerId": "mob.cust189@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4058,7 +4058,7 @@
       "time": "2026-10-30T18:34:37+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust043@upi",
+      "payerId": "mob.cust043@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4071,7 +4071,7 @@
       "time": "2026-10-30T18:50:10+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust067@upi",
+      "payerId": "mob.cust067@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4084,7 +4084,7 @@
       "time": "2026-10-30T18:51:58+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust216@upi",
+      "payerId": "mob.cust216@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4097,7 +4097,7 @@
       "time": "2026-10-30T18:55:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust091@upi",
+      "payerId": "mob.cust091@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4110,7 +4110,7 @@
       "time": "2026-10-30T20:35:22+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "cust108@upi",
+      "payerId": "mob.cust108@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4123,7 +4123,7 @@
       "time": "2026-10-30T22:36:39+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night274@upi",
+      "payerId": "mob.night274@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4136,7 +4136,7 @@
       "time": "2026-10-30T22:57:41+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night340@upi",
+      "payerId": "mob.night340@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4149,7 +4149,7 @@
       "time": "2026-10-30T23:10:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night131@upi",
+      "payerId": "mob.night131@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4162,7 +4162,7 @@
       "time": "2026-10-30T23:12:56+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night129@upi",
+      "payerId": "mob.night129@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4175,7 +4175,7 @@
       "time": "2026-10-30T23:18:18+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night020@upi",
+      "payerId": "mob.night020@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4188,7 +4188,7 @@
       "time": "2026-10-30T23:47:52+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-10-31T11:00:00+05:30",
-      "payerId": "night097@upi",
+      "payerId": "mob.night097@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4201,7 +4201,7 @@
       "time": "2026-10-31T00:14:21+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night215@upi",
+      "payerId": "mob.night215@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4214,7 +4214,7 @@
       "time": "2026-10-31T00:17:01+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night091@upi",
+      "payerId": "mob.night091@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4227,7 +4227,7 @@
       "time": "2026-10-31T00:52:07+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night100@upi",
+      "payerId": "mob.night100@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4240,7 +4240,7 @@
       "time": "2026-10-31T01:06:26+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night305@upi",
+      "payerId": "mob.night305@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4253,7 +4253,7 @@
       "time": "2026-10-31T01:07:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night086@upi",
+      "payerId": "mob.night086@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4266,7 +4266,7 @@
       "time": "2026-10-31T01:12:57+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night220@upi",
+      "payerId": "mob.night220@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4279,7 +4279,7 @@
       "time": "2026-10-31T08:14:42+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust018@upi",
+      "payerId": "mob.cust018@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4292,7 +4292,7 @@
       "time": "2026-10-31T08:30:51+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust032@upi",
+      "payerId": "mob.cust032@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4305,7 +4305,7 @@
       "time": "2026-10-31T08:42:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust224@upi",
+      "payerId": "mob.cust224@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4317,7 +4317,7 @@
       "amount": 16354,
       "time": "2026-10-31T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -4328,7 +4328,7 @@
       "time": "2026-10-31T11:11:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust052@upi",
+      "payerId": "mob.cust052@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4341,7 +4341,7 @@
       "time": "2026-10-31T11:25:04+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust240@upi",
+      "payerId": "mob.cust240@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4354,7 +4354,7 @@
       "time": "2026-10-31T11:29:21+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust078@upi",
+      "payerId": "mob.cust078@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4367,7 +4367,7 @@
       "time": "2026-10-31T11:31:19+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust151@upi",
+      "payerId": "mob.cust151@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4380,7 +4380,7 @@
       "time": "2026-10-31T17:03:54+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust090@upi",
+      "payerId": "mob.cust090@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4393,7 +4393,7 @@
       "time": "2026-10-31T17:15:44+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust237@upi",
+      "payerId": "mob.cust237@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4406,7 +4406,7 @@
       "time": "2026-10-31T17:29:53+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust213@upi",
+      "payerId": "mob.cust213@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4419,7 +4419,7 @@
       "time": "2026-10-31T17:57:18+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust173@upi",
+      "payerId": "mob.cust173@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4432,7 +4432,7 @@
       "time": "2026-10-31T18:33:16+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust043@upi",
+      "payerId": "mob.cust043@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4445,7 +4445,7 @@
       "time": "2026-10-31T18:33:25+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust130@upi",
+      "payerId": "mob.cust130@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4458,7 +4458,7 @@
       "time": "2026-10-31T18:41:06+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust091@upi",
+      "payerId": "mob.cust091@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4471,7 +4471,7 @@
       "time": "2026-10-31T18:52:32+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust217@upi",
+      "payerId": "mob.cust217@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4484,7 +4484,7 @@
       "time": "2026-10-31T20:11:24+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust110@upi",
+      "payerId": "mob.cust110@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4497,7 +4497,7 @@
       "time": "2026-10-31T20:22:12+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust176@upi",
+      "payerId": "mob.cust176@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4510,7 +4510,7 @@
       "time": "2026-10-31T20:26:22+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust148@upi",
+      "payerId": "mob.cust148@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4523,7 +4523,7 @@
       "time": "2026-10-31T20:33:07+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust048@upi",
+      "payerId": "mob.cust048@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4536,7 +4536,7 @@
       "time": "2026-10-31T20:55:35+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "cust121@upi",
+      "payerId": "mob.cust121@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4549,7 +4549,7 @@
       "time": "2026-10-31T22:15:08+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night222@upi",
+      "payerId": "mob.night222@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4562,7 +4562,7 @@
       "time": "2026-10-31T22:26:57+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night212@upi",
+      "payerId": "mob.night212@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4575,7 +4575,7 @@
       "time": "2026-10-31T22:38:34+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night416@upi",
+      "payerId": "mob.night416@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4588,7 +4588,7 @@
       "time": "2026-10-31T22:45:20+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night146@upi",
+      "payerId": "mob.night146@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4601,7 +4601,7 @@
       "time": "2026-10-31T23:16:20+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night168@upi",
+      "payerId": "mob.night168@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4614,7 +4614,7 @@
       "time": "2026-10-31T23:26:26+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night311@upi",
+      "payerId": "mob.night311@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4627,7 +4627,7 @@
       "time": "2026-10-31T23:32:55+05:30",
       "channel": "UPI_LINK",
       "settledAt": "2026-11-01T11:00:00+05:30",
-      "payerId": "night032@upi",
+      "payerId": "mob.night032@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4639,7 +4639,7 @@
       "amount": 999,
       "time": "2026-11-01T00:22:47+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night239@upi",
+      "payerId": "mob.night239@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4651,7 +4651,7 @@
       "amount": 999,
       "time": "2026-11-01T00:51:03+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night339@upi",
+      "payerId": "mob.night339@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4663,7 +4663,7 @@
       "amount": 999,
       "time": "2026-11-01T00:51:06+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night099@upi",
+      "payerId": "mob.night099@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4675,7 +4675,7 @@
       "amount": 499,
       "time": "2026-11-01T01:23:59+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night180@upi",
+      "payerId": "mob.night180@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4687,7 +4687,7 @@
       "amount": 165,
       "time": "2026-11-01T08:10:44+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust098@upi",
+      "payerId": "mob.cust098@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4699,7 +4699,7 @@
       "amount": 455,
       "time": "2026-11-01T09:06:29+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust047@upi",
+      "payerId": "mob.cust047@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4711,7 +4711,7 @@
       "amount": 1040,
       "time": "2026-11-01T09:10:32+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust230@upi",
+      "payerId": "mob.cust230@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4723,7 +4723,7 @@
       "amount": 640,
       "time": "2026-11-01T09:10:51+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust016@upi",
+      "payerId": "mob.cust016@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4735,7 +4735,7 @@
       "amount": 312,
       "time": "2026-11-01T09:24:20+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust075@upi",
+      "payerId": "mob.cust075@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4747,7 +4747,7 @@
       "amount": 285,
       "time": "2026-11-01T09:33:33+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust023@upi",
+      "payerId": "mob.cust023@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4759,7 +4759,7 @@
       "amount": 18074,
       "time": "2026-11-01T11:00:00+05:30",
       "channel": "BANK",
-      "beneficiaryAccount": "BEN-001",
+      "beneficiaryAccount": "MOB-BEN-001",
       "sourceFeed": "settlement.ledger"
     },
     {
@@ -4769,7 +4769,7 @@
       "amount": 745,
       "time": "2026-11-01T11:11:39+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust131@upi",
+      "payerId": "mob.cust131@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4781,7 +4781,7 @@
       "amount": 640,
       "time": "2026-11-01T11:22:33+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust194@upi",
+      "payerId": "mob.cust194@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4793,7 +4793,7 @@
       "amount": 640,
       "time": "2026-11-01T13:44:09+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust174@upi",
+      "payerId": "mob.cust174@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4805,7 +4805,7 @@
       "amount": 245,
       "time": "2026-11-01T17:12:38+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust045@upi",
+      "payerId": "mob.cust045@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4817,7 +4817,7 @@
       "amount": 165,
       "time": "2026-11-01T17:16:18+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust121@upi",
+      "payerId": "mob.cust121@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4829,7 +4829,7 @@
       "amount": 455,
       "time": "2026-11-01T17:32:34+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust073@upi",
+      "payerId": "mob.cust073@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4841,7 +4841,7 @@
       "amount": 312,
       "time": "2026-11-01T17:33:26+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust157@upi",
+      "payerId": "mob.cust157@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4853,7 +4853,7 @@
       "amount": 415,
       "time": "2026-11-01T17:35:43+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust168@upi",
+      "payerId": "mob.cust168@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4865,7 +4865,7 @@
       "amount": 745,
       "time": "2026-11-01T17:50:11+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust038@upi",
+      "payerId": "mob.cust038@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4877,7 +4877,7 @@
       "amount": 378,
       "time": "2026-11-01T17:54:00+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust088@upi",
+      "payerId": "mob.cust088@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4889,7 +4889,7 @@
       "amount": 520,
       "time": "2026-11-01T18:00:03+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust156@upi",
+      "payerId": "mob.cust156@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4901,7 +4901,7 @@
       "amount": 640,
       "time": "2026-11-01T18:28:56+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust048@upi",
+      "payerId": "mob.cust048@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4913,7 +4913,7 @@
       "amount": 890,
       "time": "2026-11-01T18:52:22+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust061@upi",
+      "payerId": "mob.cust061@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4925,7 +4925,7 @@
       "amount": 455,
       "time": "2026-11-01T20:28:59+05:30",
       "channel": "UPI_LINK",
-      "payerId": "cust235@upi",
+      "payerId": "mob.cust235@upi",
       "payerState": "KA",
       "paymentLinkId": "QR-COUNTER",
       "sourceFeed": "acquirer.upi"
@@ -4937,7 +4937,7 @@
       "amount": 799,
       "time": "2026-11-01T22:36:32+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night095@upi",
+      "payerId": "mob.night095@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4949,7 +4949,7 @@
       "amount": 499,
       "time": "2026-11-01T22:41:32+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night410@upi",
+      "payerId": "mob.night410@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4961,7 +4961,7 @@
       "amount": 999,
       "time": "2026-11-01T22:54:08+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night399@upi",
+      "payerId": "mob.night399@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4973,7 +4973,7 @@
       "amount": 1099,
       "time": "2026-11-01T22:59:53+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night105@upi",
+      "payerId": "mob.night105@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4985,7 +4985,7 @@
       "amount": 499,
       "time": "2026-11-01T23:07:19+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night381@upi",
+      "payerId": "mob.night381@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
@@ -4997,7 +4997,7 @@
       "amount": 999,
       "time": "2026-11-01T23:20:32+05:30",
       "channel": "UPI_LINK",
-      "payerId": "night377@upi",
+      "payerId": "mob.night377@upi",
       "payerState": "KA",
       "paymentLinkId": "PL-MOB-NIGHT",
       "sourceFeed": "acquirer.upi"
