@@ -92,7 +92,7 @@ export function Footer() {
         </div>
         <div className="md:col-span-3">
           <div className="mre-label text-dim">Contact</div>
-          <a href="mailto:321dhruv.b@gmail.com" className="mt-4 block break-all text-sm text-mute hover:text-ink">321dhruv.b@gmail.com</a>
+          <div className="mt-4 space-y-2.5 text-sm"><a href="mailto:sriyanth007@gmail.com" className="block break-all text-mute hover:text-ink">sriyanth007@gmail.com</a><a href="mailto:321dhruv.b@gmail.com" className="block break-all text-mute hover:text-ink">321dhruv.b@gmail.com</a></div>
         </div>
       </div>
       <div aria-hidden="true" className="pointer-events-none select-none px-4 font-display text-[22vw] font-extrabold leading-[.72] tracking-[-.07em] text-[#1a1511] md:px-8">MRE.</div>
