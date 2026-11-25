@@ -1,0 +1,970 @@
+\documentclass[11pt,a4paper]{article}
+%% Merchant Reality Engine: Mathematical Reference
+%% Generated from the same source as docs/MRE_Mathematical_Reference.pdf. Compile with pdflatex (twice, for the contents).
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=20mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{adjustbox}
+\usepackage{longtable,array,booktabs}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\definecolor{accent}{HTML}{1F5FA8}
+\definecolor{mute}{HTML}{5B6470}
+\titleformat{\section}{\Large\bfseries\color{accent}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing*{\subsection}{0pt}{8pt}{2pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyfoot[L]{\small\color{mute}Merchant Reality Engine: Mathematical Reference}
+\fancyfoot[R]{\small\color{mute}\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\newcommand{\where}[1]{\par{\small\itshape\color{mute}Code: #1}\par}
+\begin{document}
+
+\begin{titlepage}\centering\vspace*{55mm}
+{\Huge\bfseries Merchant Reality Engine\par}\vspace{4mm}
+{\Large\color{mute} Mathematical Reference\par}\vspace{10mm}
+{\large\color{mute} Every formula used in the project: the statistics library, the 28 detectors, Bayesian evidence fusion,
+decision theory, learning from labels, the Stage 2 machine-learning models, the multi-modal encoders,
+the synthetic data generator and the integrity hashing.\par}\vspace{14mm}
+{\color{mute} Prepared by Sriyanth \textperiodcentered{} 25 November 2026 \textperiodcentered{} repository commit 51d3379\par}
+\end{titlepage}
+\tableofcontents\clearpage
+
+\section{Notation and foundations}
+{\color{mute}Symbols used throughout. Probabilities live in [0, 1]; evidence is added on the log-odds scale, measured in nats (natural-log units).}
+
+\subsection*{Logit (log-odds)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{logit}(p)=\ln\frac{p}{1-p}$}\par\smallskip
+Turns a probability into log-odds, where independent evidence adds up. Probabilities are clipped to [10\textasciicircum{}-6, 1-10\textasciicircum{}-6] (Stage 2) or [10\textasciicircum{}-9, 1-10\textasciicircum{}-9] before taking logs.
+\where{everywhere}
+
+\subsection*{Sigmoid (inverse logit)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \sigma(x)=\frac{1}{1+e^{-x}}$}\par\smallskip
+Turns log-odds back into a probability. Arguments are clipped to [-40, 40] (or [-30, 30] in the encoders) to avoid overflow.
+\where{everywhere}
+
+\subsection*{Log-likelihood ratio (evidence weight)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}=\ln\frac{P(E\mid \mathrm{front})}{P(E\mid \mathrm{genuine})}$}\par\smallskip
+How strongly a piece of evidence E favours "front" over "genuine", in nats. Positive supports a front, negative supports a genuine merchant, zero is neutral.
+\where{frontend/src/engines/judge.ts}
+
+\subsection*{Bayes rule on the log-odds scale}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{logit}\,P(\mathrm{front}\mid E)=\mathrm{logit}\,P(\mathrm{front})+\sum_i \mathrm{LLR}_i$}\par\smallskip
+Posterior log-odds = prior log-odds + the sum of evidence weights (exact when the evidence is conditionally independent; the engine shrinks correlated evidence, see Part 11).
+\where{frontend/src/engines/evidenceFusion.ts}
+
+\subsection*{Share and excess share (effect sizes)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \hat{r}=\frac{x}{n},\qquad \mathrm{effect}=\hat{r}-r_0$}\par\smallskip
+x events out of n, compared with a norm rate r0. Used by most rate-based detectors.
+\where{frontend/src/engines/detectors.ts}
+
+\clearpage
+\section{Probability distributions}
+{\color{mute}frontend/src/stats/dist.ts. Special functions (incomplete gamma and beta, erfc, log-gamma) come from the vetted @stdlib library; everything returns a probability clamped to [0, 1].}
+
+\subsection*{Normal CDF, survival and quantile}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \Phi(z)=\frac{1}{2}\,\mathrm{erfc}\!\left(-\frac{z}{\sqrt{2}}\right),\qquad 1-\Phi(z)=\frac{1}{2}\,\mathrm{erfc}\!\left(\frac{z}{\sqrt{2}}\right)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \Phi^{-1}(p)=-\sqrt{2}\;\mathrm{erfc}^{-1}(2p)$}\par\smallskip
+Standard normal probabilities via the complementary error function, accurate far into the tails.
+\where{stats/dist.ts}
+
+\subsection*{Chi-square survival function}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(\chi^2_k\geq x)=Q\!\left(\frac{k}{2},\frac{x}{2}\right)=\frac{\Gamma(k/2,\,x/2)}{\Gamma(k/2)}$}\par\smallskip
+Upper tail of a chi-square with k degrees of freedom, using the regularised upper incomplete gamma function Q. Returns 1 for x \textless{}= 0.
+\where{stats/dist.ts}
+
+\subsection*{Beta CDF and quantile}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle F_{\mathrm{Beta}}(x;a,b)=I_x(a,b),\qquad F^{-1}(p)=I^{-1}_p(a,b)$}\par\smallskip
+Regularised incomplete beta function I and its inverse.
+\where{stats/dist.ts}
+
+\subsection*{Log binomial coefficient}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \ln\mathrm{C}(n,k)=\ln\Gamma(n+1)-\ln\Gamma(k+1)-\ln\Gamma(n-k+1)$}\par\smallskip
+Computed with log-gamma so large n never overflows.
+\where{stats/dist.ts}
+
+\subsection*{Binomial upper tail (exact)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(X\geq k)=I_p(k,\;n-k+1),\qquad X\sim\mathrm{Bin}(n,p)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(X\leq k)=1-P(X\geq k+1)$}\par\smallskip
+Exact binomial tails through the incomplete beta identity. Edge cases: k \textless{}= 0 gives 1, k \textgreater{} n gives 0.
+\where{stats/dist.ts}
+
+\subsection*{Poisson upper tail}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(X\geq k)=P(k,\lambda)=\frac{\gamma(k,\lambda)}{\Gamma(k)},\qquad X\sim\mathrm{Poisson}(\lambda)$}\par\smallskip
+Exact Poisson tail through the regularised lower incomplete gamma function.
+\where{stats/dist.ts}
+
+\subsection*{Hypergeometric upper tail}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(X\geq k)=\sum_{i=k}^{\min(n,K)}\frac{\mathrm{C}(K,i)\,\mathrm{C}(N-K,\,n-i)}{\mathrm{C}(N,n)}$}\par\smallskip
+Drawing n items from N of which K are successes, without replacement. Summed in log space for stability.
+\where{stats/dist.ts}
+
+\subsection*{Beta-binomial (over-dispersed rates)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \ln P(X=k)=\ln\mathrm{C}(n,k)+\ln B(k+a,\;n-k+b)-\ln B(a,b)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \ln B(a,b)=\ln\Gamma(a)+\ln\Gamma(b)-\ln\Gamma(a+b),\qquad P(X\geq k)=\sum_{i=k}^{n}P(X=i)$}\par\smallskip
+The rate itself varies between merchants (Beta(a, b)), so counts are more spread out than a plain binomial. The engine's main rate test.
+\where{stats/dist.ts}
+
+\subsection*{Negative binomial}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \ln P(X=k)=\ln\Gamma(k+\theta)-\ln\Gamma(\theta)-\ln\Gamma(k+1)+\theta\ln p+k\ln(1-p),\quad p=\frac{\theta}{\theta+\mu}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{Var}(X)=\mu+\frac{\mu^2}{\theta},\qquad [\mathrm{lo},\mathrm{hi}]=\mu\mp z_{1-\alpha/2}\sqrt{\mu+\mu^2/\theta}$}\par\smallskip
+Over-dispersed counts with mean mu and size theta; the prediction interval uses a normal approximation on the NB moments (floored at 0).
+\where{stats/dist.ts}
+
+\subsection*{Log-normal CDF}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle F(x)=\Phi\!\left(\frac{\ln(x/m)}{\sigma}\right),\qquad x>0$}\par\smallskip
+Ticket sizes: m is the category median ticket, sigma the log-scale spread.
+\where{stats/dist.ts}
+
+\clearpage
+\section{Hypothesis tests}
+{\color{mute}frontend/src/stats/tests.ts. Every test returns a statistic and a p-value.}
+
+\subsection*{G-test of goodness of fit}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle G=2\sum_i O_i\ln\frac{O_i}{E_i},\qquad E_i=n\,\frac{p_i}{\sum_j p_j},\qquad p=P(\chi^2_{\mathrm{df}}\geq G)$}\par\smallskip
+Cells with expected count below 5 are pooled into one "other" cell; df = cells - 1 (at least 1).
+\where{stats/tests.ts}
+
+\subsection*{Jensen-Shannon divergence (effect size)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{JSD}(P\|Q)=\frac{1}{2}D_{KL}(P\|M)+\frac{1}{2}D_{KL}(Q\|M),\quad M=\frac{P+Q}{2},\quad D_{KL}(A\|B)=\sum_i a_i\log_2\frac{a_i}{b_i}$}\par\smallskip
+Distance between observed and expected shares, in bits, bounded in [0, 1].
+\where{stats/tests.ts}
+
+\subsection*{Two-sample Kolmogorov-Smirnov}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle D=\max_x\left|F_a(x)-F_b(x)\right|,\qquad n_e=\frac{n_a n_b}{n_a+n_b}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \lambda=\left(\sqrt{n_e}+0.12+\frac{0.11}{\sqrt{n_e}}\right)D,\qquad p=2\sum_{k=1}^{100}(-1)^{k-1}e^{-2k^2\lambda^2}$}\par\smallskip
+Largest gap between two empirical CDFs; asymptotic p-value with Stephens' small-sample correction.
+\where{stats/tests.ts}
+
+\subsection*{One-sample Kolmogorov-Smirnov}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle D=\max_i\max\left(\frac{i}{n}-F(x_{(i)}),\;F(x_{(i)})-\frac{i-1}{n}\right),\qquad \lambda=\left(\sqrt{n}+0.12+\frac{0.11}{\sqrt{n}}\right)D$}\par\smallskip
+Sample against a continuous reference CDF (used by detector A1 against the log-normal ticket shape); same series for p.
+\where{stats/tests.ts}
+
+\subsection*{Exact one-sided binomial test}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=P(X\geq x\mid n,p_0),\qquad \mathrm{statistic}=x/n$}\par\smallskip
+Is x successes out of n more than a rate p0 explains?
+\where{stats/tests.ts}
+
+\subsection*{Poisson rate-ratio (exact conditional)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle c_1\mid c_1+c_2\sim\mathrm{Bin}\!\left(c_1+c_2,\;\frac{t_1}{t_1+t_2}\right),\qquad \mathrm{ratio}=\frac{c_1/t_1}{\max(c_2/t_2,\;0.5/t_2)}$}\par\smallskip
+Compares two event rates (counts c over exposure t); one-sided p = P(X \textgreater{}= c1).
+\where{stats/tests.ts}
+
+\subsection*{Permutation test}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=\frac{1+\#\{b:\;T(\pi_b)\geq T_{\mathrm{obs}}\}}{B+1}$}\par\smallskip
+Shuffle group labels B times (2,000 by default) and count statistics at least as extreme. Exact and never zero. Used by detector C5.
+\where{stats/tests.ts}
+
+\subsection*{Mann-Whitney U (tie-corrected)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle U=R_1-\frac{n_1(n_1+1)}{2},\qquad \mu_U=\frac{n_1 n_2}{2}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \sigma_U=\sqrt{\frac{n_1 n_2}{12}\left(N+1-\frac{\sum_j(t_j^3-t_j)}{N(N-1)}\right)},\qquad p=1-\Phi\!\left(\frac{\mu_U-U-0.5}{\sigma_U}\right)$}\par\smallskip
+Rank test that values in one group tend to be smaller; t\_j are tie group sizes; 0.5 is a continuity correction.
+\where{stats/tests.ts}
+
+\subsection*{Fisher's method}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle X=-2\sum_{i=1}^{m}\ln p_i\;\sim\;\chi^2_{2m}$}\par\smallskip
+Combines independent p-values.
+\where{stats/tests.ts}
+
+\subsection*{Cauchy combination (Liu and Xie 2020)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle T=\sum_i w_i\tan\!\left((0.5-p_i)\pi\right),\qquad p=\frac{1}{2}-\frac{\arctan T}{\pi}$}\par\smallskip
+Combines p-values validly under arbitrary dependence; weights default to 1/m.
+\where{stats/tests.ts}
+
+\subsection*{Exact McNemar test}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=\min\!\left(1,\;2\,P\!\left(X\geq\max(b,c)\right)\right),\qquad X\sim\mathrm{Bin}(b+c,\;0.5)$}\par\smallskip
+Paired decisions: b = cases model A gets right and B wrong, c = the reverse.
+\where{stats/tests.ts, ml/stage2\_math.py}
+
+\subsection*{Sellke-Bayarri-Berger bound}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}_{\max}=-\ln\!\left(-e\,p\ln p\right)\quad (p<1/e),\qquad \mathrm{capped\ at\ 4\ nats}$}\par\smallskip
+The largest Bayes factor a p-value can support; a conservative evidence weight until a detector's likelihood ratio has been learned.
+\where{stats/tests.ts}
+
+\clearpage
+\section{Empirical Bayes rate model}
+{\color{mute}frontend/src/stats/eb.ts and detectors.ts. Small merchants are shrunk towards their peers instead of being flagged on a handful of sales.}
+
+\subsection*{Method-of-moments Beta fit to peer rates}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \hat{p}=\frac{\sum x_i}{\sum n_i},\qquad \bar{n}=\frac{\sum n_i}{k},\qquad s^2=\frac{\sum_i n_i\,(x_i/n_i-\hat{p})^2}{(k-1)\,\bar{n}}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \tau^2=\max\!\left(s^2-\frac{\hat{p}(1-\hat{p})}{\bar{n}},\;10^{-6}\right),\qquad a+b=\mathrm{clip}\!\left(\frac{\hat{p}(1-\hat{p})}{\tau^2}-1,\;2,\;10^5\right)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle a=\hat{p}\,(a+b),\qquad b=(1-\hat{p})\,(a+b)$}\par\smallskip
+Fits Beta(a, b) to peers, subtracting binomial sampling noise from the between-merchant variance. Needs at least 3 peers, else Beta(1, 1).
+\where{stats/eb.ts}
+
+\subsection*{Prior from a norm rate}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle a=\max(r\,s,\;10^{-3}),\qquad b=\max((1-r)\,s,\;10^{-3})$}\par\smallskip
+A category norm rate r with strength s "worth s merchant-sales". Detectors use s = 200 (100 for H3).
+\where{stats/eb.ts}
+
+\subsection*{Shrunk (posterior mean) rate}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \tilde{r}=\frac{x+a}{n+a+b}$}\par\smallskip
+The merchant's rate pulled towards the prior.
+\where{stats/eb.ts}
+
+\subsection*{Rate test used by the detectors}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=P(X\geq x),\quad X\sim\mathrm{BetaBin}(n,a,b);\qquad \mathrm{effect}=\frac{x}{n}-r_0;\qquad \mathrm{CI}=\mathrm{Wilson}_{90\%}(x,n)$}\par\smallskip
+Upper-tail beta-binomial p-value against the category norm, the excess share as effect size, and a 90\% Wilson interval.
+\where{engines/detectors.ts}
+
+\clearpage
+\section{Confidence intervals}
+{\color{mute}frontend/src/stats/intervals.ts (also ml/stage2\_math.py and engine/improver.ts).}
+
+\subsection*{Wilson score interval}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \frac{\hat{p}+\frac{z^2}{2n}\;\pm\;z\sqrt{\frac{\hat{p}(1-\hat{p})}{n}+\frac{z^2}{4n^2}}}{1+\frac{z^2}{n}},\qquad z=\Phi^{-1}\!\left(1-\frac{1-\mathrm{level}}{2}\right)$}\par\smallskip
+Reliable interval for a proportion, even near 0 or 1; z = 1.96 at 95\%, 1.645 at 90\%.
+\where{stats/intervals.ts}
+
+\subsection*{Clopper-Pearson (exact) interval}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \left[\,I^{-1}_{\alpha/2}(x,\;n-x+1),\;\;I^{-1}_{1-\alpha/2}(x+1,\;n-x)\,\right]$}\par\smallskip
+Exact binomial interval from beta quantiles (0 when x = 0, 1 when x = n).
+\where{stats/intervals.ts}
+
+\subsection*{Newcombe interval for a difference}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle d=\hat{p}_1-\hat{p}_2,\qquad \left[d-\sqrt{(\hat{p}_1-l_1)^2+(u_2-\hat{p}_2)^2},\;\;d+\sqrt{(u_1-\hat{p}_1)^2+(\hat{p}_2-l_2)^2}\right]$}\par\smallskip
+Hybrid score interval for p1 - p2, built from the two Wilson intervals (l, u).
+\where{stats/intervals.ts}
+
+\subsection*{Interpolated quantile}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle Q(q)=x_{(\lfloor h\rfloor)}+\left(h-\lfloor h\rfloor\right)\left(x_{(\lceil h\rceil)}-x_{(\lfloor h\rfloor)}\right),\qquad h=(n-1)\,q$}\par\smallskip
+Linear interpolation between order statistics.
+\where{stats/intervals.ts}
+
+\subsection*{Percentile bootstrap}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{CI}=\left[Q_{\alpha/2}(\hat{\theta}^{*}_1..\hat{\theta}^{*}_B),\;Q_{1-\alpha/2}(\hat{\theta}^{*}_1..\hat{\theta}^{*}_B)\right]$}\par\smallskip
+Resample the data with replacement B times (1,000 by default) and take quantiles of the recomputed statistic. Stage 2 skips resamples missing a class.
+\where{stats/intervals.ts, ml/stage2\_lib.py}
+
+\clearpage
+\section{Multiple testing}
+{\color{mute}frontend/src/stats/multiple.ts and the Stage 2 drift endpoint (ml/serve.py).}
+
+\subsection*{Holm step-down (family-wise error)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \tilde{p}_{(r)}=\max_{j\leq r}\;\min\!\left(1,\;(m-j+1)\,p_{(j)}\right)$}\par\smallskip
+Adjusted p-values in sorted order, made monotone.
+\where{stats/multiple.ts}
+
+\subsection*{Benjamini-Hochberg q-values (false discovery rate)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle q_{(r)}=\min_{j\geq r}\;\min\!\left(1,\;\frac{m\,p_{(j)}}{j}\right),\qquad \mathbb{E}[\mathrm{false\ discoveries}]\approx q\,R$}\par\smallskip
+Reject hypotheses with q \textless{}= target; R is the number rejected.
+\where{stats/multiple.ts, ml/serve.py}
+
+\subsection*{Multiple-stream log-odds penalty}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \Delta\,\mathrm{logit}=-\ln m$}\par\smallskip
+When a merchant's m QR links and repeat-payer group are each scored separately, every stream's prior is lowered by ln m (a Bonferroni-style correction on the log-odds scale).
+\where{engines/investigationEngine.ts}
+
+\clearpage
+\section{Seeded randomness}
+{\color{mute}frontend/src/stats/rng.ts and utils/prng.ts. Same seed, same result, so every stochastic routine is reproducible.}
+
+\subsection*{FNV-1a string seed}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h_0=2166136261,\qquad h_{i+1}=\left(h_i\oplus c_i\right)\times 16777619\ \ \mathrm{mod}\ 2^{32}$}\par\smallskip
+A stable 32-bit seed from a merchant id, so each merchant's random draws are reproducible.
+\where{stats/rng.ts}
+
+\subsection*{Box-Muller normal draw}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle Z=\sqrt{-2\ln U_1}\,\cos(2\pi U_2),\qquad U_1,U_2\sim\mathrm{U}(0,1)$}\par\smallskip
+Standard normal from two uniforms.
+\where{stats/rng.ts, engine/synthetic.ts}
+
+\subsection*{Marsaglia-Tsang gamma sampler}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle d=a-\frac{1}{3},\quad c=\frac{1}{\sqrt{9d}},\quad v=(1+cZ)^3,\quad \mathrm{accept\ }dv\ \mathrm{if}\ \ln U<\frac{Z^2}{2}+d\,(1-v+\ln v)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{Gamma}(a<1)=\mathrm{Gamma}(a+1)\cdot U^{1/a},\qquad \mathrm{Beta}(a,b)=\frac{G_a}{G_a+G_b}$}\par\smallskip
+Fast exact gamma draws (with the quick squeeze test U \textless{} 1 - 0.0331 Z\textasciicircum{}4); beta draws from two gammas.
+\where{stats/rng.ts}
+
+\subsection*{Fisher-Yates shuffle and bootstrap resample}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{for}\ i=n-1..1:\ j=\lfloor U(i+1)\rfloor,\ \mathrm{swap}(a_i,a_j);\qquad x^*_i=x_{\lfloor Un\rfloor}$}\par\smallskip
+Uniform random permutation (permutation tests) and sampling with replacement (bootstrap).
+\where{stats/rng.ts}
+
+\clearpage
+\section{Volume model and change detection}
+{\color{mute}frontend/src/engines/residualEngine.ts, cusumEngine.ts and stats/changepoint.ts.}
+
+\subsection*{Festival-aware expected weekly volume}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathbb{E}[V_t]=\mathrm{base}\times m_t,\qquad m_t=m^{\mathrm{festival}}_t\times\mathrm{uplift}^{\mathrm{passport}}_t$}\par\smallskip
+Festival multipliers come from the calendar ramp for the merchant's sector (never from the merchant's own upload); a verified Context Passport can add an uplift capped at 3x.
+\where{engines/residualEngine.ts}
+
+\subsection*{Baseline from clean weeks}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \bar{\ell}=\frac{1}{n}\sum_{t\in\mathcal{B}}\ln V_t,\qquad \mathrm{base}=e^{\bar{\ell}}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle cv=\max\!\left(0.05,\;\sqrt{\frac{1}{n-1}\sum_{t\in\mathcal{B}}(\ln V_t-\bar{\ell})^2}\right)$}\par\smallskip
+B = non-festival weeks before the tested window (up to 8 weeks; at least 3 needed, else the declared baseline and cv = 0.15).
+\where{engines/residualEngine.ts}
+
+\subsection*{Standardised log residual}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle z_t=\frac{\ln V_t-\ln\mathbb{E}[V_t]}{\sqrt{cv^2+\sigma_f^2\,\mathbb{1}[m_t>1]}},\qquad \sigma_f=0.35$}\par\smallskip
+Festival weeks are judged more loosely, because their multiplier is itself uncertain.
+\where{engines/residualEngine.ts}
+
+\subsection*{Relative residuals (displayed)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle r^{\mathrm{anch}}_t=\frac{V_t-\mathrm{base}}{\max(\mathrm{base},1)},\quad r^{\mathrm{seas}}_t=\frac{V_t-\mathbb{E}[V_t]}{\max(\mathbb{E}[V_t],1)},\quad r^{\mathrm{roll}}_t=\frac{V_t-\bar{V}_{t-4..t-1}}{\max(\bar{V},1)}$}\par\smallskip
+Actual against the anchored baseline, the seasonal expectation and a 4-week rolling mean.
+\where{engines/residualEngine.ts}
+
+\subsection*{One-sided CUSUM}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle S_t=\max(0,\;S_{t-1}+z_t-k),\qquad \mathrm{alarm\ if}\ S_t>h,\qquad k=0.5,\;h=2.35$}\par\smallskip
+Accumulates sustained upward drift in the residuals.
+\where{engines/cusumEngine.ts, stats/changepoint.ts}
+
+\subsection*{CUSUM threshold calibration (ARL)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h^{*}=\min\{h:\;\mathrm{ARL}_0(k,h)\geq 52\ \mathrm{weeks}\},\qquad \mathrm{ARL}_0=\frac{1}{S}\sum_{s=1}^{S}\mathrm{run\ length}_s$}\par\smallskip
+Simulate N(0,1) data (400 runs, cap 5,000) and bisect h (18 steps, rounded up to 0.05) so a well-behaved merchant raises one false alarm per year.
+\where{stats/changepoint.ts}
+
+\subsection*{Bayesian online changepoint detection (Adams and MacKay 2007)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \pi_t(x)=\mathcal{N}\!\left(x;\;\mu_r,\;\sigma^2_r+1\right),\qquad R_{t+1}(r+1)\propto R_t(r)\,\pi_t\,(1-H),\qquad R_{t+1}(0)\propto\sum_r R_t(r)\,\pi_t\,H$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \sigma^2_{r+1}=\left(\frac{1}{\sigma^2_r}+1\right)^{-1},\qquad \mu_{r+1}=\sigma^2_{r+1}\left(\frac{\mu_r}{\sigma^2_r}+x\right),\qquad P(\mathrm{change\ in\ last\ }w)=\sum_{r=0}^{w}R(r)$}\par\smallskip
+Run-length posterior for a Gaussian mean with unit variance; hazard H = 1/52, prior N(0, tau\textasciicircum{}2 = 4), window w = 4 weeks, run lengths capped at 260.
+\where{stats/changepoint.ts}
+
+\clearpage
+\section{The 28 detectors}
+{\color{mute}frontend/src/engines/detectors.ts with thresholds in rules/detectors.json. Each detector tests the merchant against its category norm (rules/mcc.json), the calendar or an independent source, never against the merchant's own declaration. A detector fires only when p \textless{}= alpha AND effect \textgreater{}= minEffect (Part 10). The table lists each detector's statistic.}
+
+{\small\begin{longtable}{@{}p{9mm}p{28mm}p{84mm}p{38mm}@{}}\toprule
+\textbf{ID} & \textbf{Detector} & \textbf{Statistic} & \textbf{Notes}\\\midrule\endhead
+\textbf{A1} & Ticket sizes vs category & \adjustbox{max width=84mm}{$D=\max|F_n(x)-F_{LN}(x;\,c,\sigma)|,\ \ c=\mathrm{clip}(\tilde{x},\,m/3,\,1.8m)$} & one-sample KS vs log-normal; effect = D\\
+\textbf{A4} & Round-number heaping & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x_{\mathrm{round}}),\ \ x\ \mathrm{multiples\ of\ }500$} & excess round share\\
+\textbf{A5} & Deposit / bonus-tier amounts & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x_{\mathrm{tier}})$} & excess tier share\\
+\textbf{B6} & Payers outside service area & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x_{\mathrm{remote}})$} & outside home + neighbouring states\\
+\textbf{B7} & Heavy repeat payers & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x),\ \ \geq 8\ \mathrm{payments/week}$} & excess share\\
+\textbf{B8} & Repeat deposit-like payers & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x\mid r_0=0.05)$} & Rs 100-multiples \textgreater{}= Rs 200, \textgreater{}= 4 in 14 days\\
+\textbf{B9} & Purchaser verification & \adjustbox{max width=84mm}{$p=P(X\leq c),\ X\sim\mathrm{Bin}(n,0.8);\ \ \mathrm{effect}=0.8-c/n$} & shortfall below 80\% confirmed\\
+\textbf{B10} & Distant regulars & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x\mid r_0=0.04)$} & out-of-area payers, \textgreater{}= 4 in 14 days\\
+\textbf{C2} & Off-hours sales & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x_{\mathrm{off}})$} & outside category hours (overnight wrap)\\
+\textbf{C5} & Pre-match funding & \adjustbox{max width=84mm}{$p=\frac{1+\#\{T(\pi)\geq T\}}{B+1},\ \ \mathrm{ratio}=\frac{r_{\mathrm{match}}}{\max(r_{\mathrm{other}},\,0.5/n)}$} & permutation, 2,000 draws; 45-min windows\\
+\textbf{C6} & Rapid rising top-ups & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x\mid r_0=0.01)$} & 3+ rising payments \textgreater{}= Rs 200 within 2 h\\
+\textbf{D7} & Orphan refunds & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x\mid r_0=0.02)$} & refunds without an original sale\\
+\textbf{D9} & Refund to a third party & \adjustbox{max width=84mm}{$P(\mathrm{BetaBin}\geq x\mid r_0=0.05)$} & excess share\\
+\textbf{D10} & Payments without an order & \adjustbox{max width=84mm}{$p=P(X\geq x),\ X\sim\mathrm{Bin}(n,0.05)$} & excess unmatched share\\
+\textbf{E1} & Shared payment host & \adjustbox{max width=84mm}{$\#\{\mathrm{other\ merchants\ on\ the\ same\ host}\}$} & deterministic\\
+\textbf{E3} & Continuity with a dormant peer & \adjustbox{max width=84mm}{$p=P(\mathrm{Hyper}\geq k\mid N,K=|Q|,n=|P|)$} & payer overlap; effect = continuity score\\
+\textbf{F2} & Opened as a peer went quiet & \adjustbox{max width=84mm}{$\mathrm{age}<45\ \mathrm{days}\ \wedge\ \mathrm{gap}\leq 7\ \mathrm{days}$} & deterministic hand-off\\
+\textbf{F5} & Beneficiary changes & \adjustbox{max width=84mm}{$p=P(\mathrm{Poisson}(\lambda)\geq c),\ \ \lambda=\rho_{\mathrm{year}}\max(T,\,30/365)$} & per-year category rate\\
+\textbf{F7} & Orders not delivered & \adjustbox{max width=84mm}{$p=P(X\leq g),\ X\sim\mathrm{Bin}(n,0.9);\ \ \mathrm{effect}=0.9-g/n$} & reused tracking = undelivered\\
+\textbf{F8} & Settlements missing from bank & \adjustbox{max width=84mm}{$p=P(X\geq u),\ X\sim\mathrm{Bin}(n,0.02)$} & match within +/- Rs 1\\
+\textbf{G2} & Catalogue off-category & \adjustbox{max width=84mm}{$p=P(X\geq x),\ X\sim\mathrm{Bin}(n,0.05)$} & off-category or reused images\\
+\textbf{G6} & Link on undeclared site & \adjustbox{max width=84mm}{$\mathbb{1}[\mathrm{undeclared\ host}]$} & deterministic; betting host also triggers R-01\\
+\textbf{H1} & Volume above expectation & \adjustbox{max width=84mm}{$Z=\frac{1}{\sqrt{k}}\sum_{t=T-k+1}^{T}z_t,\ \ p=1-\Phi(Z),\ \ \mathrm{effect}=\frac{1}{k}\sum\frac{V_t}{\mathbb{E}[V_t]}$} & Stouffer z over last k = 4 weeks\\
+\textbf{H2} & Recent behaviour change & \adjustbox{max width=84mm}{$P(\mathrm{change\ in\ last\ 4\ wk})\ \ \mathrm{and}\ \ \exists\,S_t>h$} & BOCPD + CUSUM\\
+\textbf{H3} & Joint off-profile cluster & \adjustbox{max width=84mm}{$r_0=ab+ad+bd-2abd,\ \ p=P(\mathrm{BetaBin}\geq x\mid r_0,\,s=100)$} & P(\textgreater{}= 2 of 3 independent traits)\\
+\textbf{I2} & Payouts to many accounts & \adjustbox{max width=84mm}{$p=P(\mathrm{Poisson}(\lambda_{\mathrm{norm}})\geq b),\ \ \mathrm{effect}=b/\lambda$} & distinct beneficiaries\\
+\textbf{I3} & Swept out after settlement & \adjustbox{max width=84mm}{$p=P(X\geq s),\ X\sim\mathrm{Bin}(n,0.1)$} & payout within 24 h\\
+\textbf{K1} & Declared profile vs norm & \adjustbox{max width=84mm}{$\chi^2=\sum_j g_j^2,\ \ p=P(\chi^2_4\geq\chi^2),\ \ \mathrm{effect}=\sqrt{\chi^2}$} & standardised gaps, below\\
+\bottomrule\end{longtable}}
+\subsection*{K1 standardised gaps}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle g_{\mathrm{catch}}=3\ \mathrm{if\ declares\ NATIONAL\ for\ a\ LOCAL\ category},\qquad g_{\mathrm{hours}}=\frac{w_{\mathrm{decl}}-w_{\mathrm{norm}}}{3}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle g_{\mathrm{ticket}}=\frac{\ln(t_{\max}/P_{95})}{0.5},\ \ P_{95}=m\,e^{1.645\sigma},\qquad g_{\mathrm{round}}=\frac{r_{\mathrm{decl}}-r_{\mathrm{norm}}}{0.05}$}\par\smallskip
+Only positive gaps count; hours width w = ((close - open) + 24) mod 24 (24 when equal). A declaration matching the norm is BENIGN.
+\where{engines/detectors.ts}
+
+\subsection*{A1 discrete-menu exception}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \frac{\mathrm{top\ 3\ non\text{-}round\ counts}}{n}\geq 0.45\ \wedge\ m/3\leq\tilde{x}\leq 2.5m\ \Rightarrow\ \mathrm{BENIGN}$}\par\smallskip
+A fixed menu of prices is not suspicious even though its distribution looks lumpy.
+\where{engines/detectors.ts}
+
+\clearpage
+\section{The judge: from a test to evidence}
+{\color{mute}frontend/src/engines/judge.ts. Statistical significance and practical size are both required, so large samples cannot flag trivial differences.}
+
+\subsection*{Firing rule}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{fires}\Leftrightarrow n\geq n_{\min}\ \wedge\ p\leq\alpha\ \wedge\ \mathrm{effect}\geq\mathrm{minEffect}$}\par\smallskip
+Thresholds per detector (for example A4: alpha = 0.001, minEffect = 0.08, n\_min = 30).
+\where{engines/judge.ts}
+
+\subsection*{Weight when it fires}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}_{\mathrm{fire}}=\ln\frac{s}{f}\times g,\qquad g=\mathrm{clip}\!\left(\frac{\mathrm{effect}}{\mathrm{effectFull}},\;0.5,\;1.25\right)$}\par\smallskip
+s = sensitivity P(fires | front), f = false-positive rate P(fires | genuine). Bigger effects earn up to 25\% more weight.
+\where{engines/judge.ts}
+
+\subsection*{Weight when it is clearly calm}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}_{\mathrm{calm}}=\max\!\left(-1.5,\;\ln\frac{1-s}{1-f}\times\tau\right),\qquad \tau=0.35+0.65\,\mathrm{fakeDifficulty}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{clearly\ calm}\Leftrightarrow p>0.2\ \vee\ \mathrm{effect}<0.5\,\mathrm{minEffect}$}\par\smallskip
+A calm result counts against "front", but easy-to-fake calm counts less, and never below the -1.5 nat floor.
+\where{engines/judge.ts}
+
+\subsection*{Otherwise UNKNOWN}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}=0$}\par\smallskip
+Grey zone, too little data or a missing feed: never moves the odds.
+\where{engines/judge.ts}
+
+\subsection*{UI evidence weight}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle w=\min\!\left(1,\;\frac{|\mathrm{LLR}|}{4}\right)\ \ (0\ \mathrm{if\ UNKNOWN})$}\par\smallskip
+Shown on screen on a 0-1 scale.
+\where{engines/evidenceFusion.ts}
+
+\clearpage
+\section{Bayesian evidence fusion}
+{\color{mute}frontend/src/engines/evidenceFusion.ts. Combines all detectors into P(front) with an uncertainty interval, then applies the governance gate.}
+
+\subsection*{Prior}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{logit}\,\pi=\mathrm{logit}(r_{\mathrm{MCC}})+\ln(\mathrm{odds}_{\mathrm{age}})+\Delta$}\par\smallskip
+Category base rate (default 1.5\%), multiplied by account-age odds (2.0 under 90 days, 1.3 under a year, 1.0 under 3 years, 0.7 after), plus any stream penalty Delta.
+\where{engines/evidenceFusion.ts, rules/priors.json}
+
+\subsection*{Family LLR with correlation shrinkage}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}_{F}=\ell^{+}_{(1)}+\rho\sum_{j\geq 2}\ell^{+}_{(j)}\;+\;\ell^{-}_{(1)}+\rho\sum_{j\geq 2}\ell^{-}_{(j)},\qquad \rho=0.3$}\par\smallskip
+Detectors in the same family share data, so only the strongest positive and strongest negative count fully; the rest are multiplied by rho.
+\where{engines/evidenceFusion.ts}
+
+\subsection*{Diminishing returns across families}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LLR}_{F_{(i)}}\leftarrow 0.85\,\mathrm{LLR}_{F_{(i)}}\ \ \mathrm{for\ positive\ families\ ranked}\ i>3$}\par\smallskip
+Beyond the three strongest supporting families, each counts 85\%.
+\where{engines/evidenceFusion.ts}
+
+\subsection*{Posterior}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{logit}\,P(\mathrm{front}\mid E)=\mathrm{logit}\,\pi+\sum_{F}\mathrm{LLR}_F+\sum\mathrm{overrides},\qquad P=\sigma(\cdot)$}\par\smallskip
+Hard overrides only add odds: R-01 (link on a known betting host, +3 nats, needs effect \textgreater{}= 1.25) and R-02 (shared beneficiary with a handed-off peer, +2 nats).
+\where{engines/evidenceFusion.ts}
+
+\subsection*{Monte-Carlo 90\% credible interval}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \tilde{s}=\sigma\!\left(\mathrm{logit}\,s+\epsilon\,\sigma_s\right),\quad \sigma_s=\frac{1}{\sqrt{1+k\,s(1-s)}},\quad k=20,\quad \epsilon\sim\mathcal{N}(0,1)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \tilde{\ell}_i=\max\!\left(-1.5,\;\ell_i\,\frac{\mathrm{LLR}(\tilde{s},\tilde{f})}{\mathrm{LLR}(s,f)}\right),\qquad \tilde{r}=\sigma\!\left(\mathrm{logit}\,r+\epsilon\,\frac{1}{\sqrt{1+400\,r(1-r)}}\right)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{CI}_{90}=\left[Q_{0.05}(P^{(d)}),\;Q_{0.95}(P^{(d)})\right],\qquad d=1..1000$}\par\smallskip
+Each detector's sensitivity and false-positive rate, and the base rate, are drawn from logit-normal distributions whose width reflects how much data stands behind them; the whole fusion is repeated 1,000 times.
+\where{engines/evidenceFusion.ts}
+
+\subsection*{Governance gate (case opens only if all hold)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P\geq 0.10\ \ \wedge\ \ \#\mathrm{conduct}>0\ \ \wedge\ \ \left(\#\mathrm{sources}_{\geq 0.5}\geq 2\ \vee\ \#\mathrm{families}_{\geq 0.5}\geq 3\ \vee\ \#\mathrm{behaviours}\geq 2\right)$}\par\smallskip
+Independence: evidence of at least 0.5 nats from two data sources, or three families, or two different conduct behaviours. Volume (H), the declaration (K) and KYC do not count towards independence.
+\where{engines/evidenceFusion.ts, rules/engine.json}
+
+\subsection*{Question instead of a case (ASK)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{ASK}\Leftrightarrow\neg\mathrm{gate}\ \wedge\ \left(\#\mathrm{conduct}>0\ \vee\ (P\geq 0.01\ \wedge\ \#\mathrm{fired\ families}\geq 2)\right)$}\par\smallskip
+A departure from normal alone produces a Context Passport question, never a restriction.
+\where{engines/evidenceFusion.ts}
+
+\subsection*{Mechanism posterior (softmax)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(\mu\mid\mathrm{front})=\frac{\pi_\mu\exp\left(\sum_i\ell^{+}_i\,a_{i\mu}\right)}{\sum_{\nu}\pi_\nu\exp\left(\sum_i\ell^{+}_i\,a_{i\nu}\right)},\qquad \mathrm{score}_\mu=P\cdot P(\mu\mid\mathrm{front})$}\par\smallskip
+Which kind of abuse: laundering (prior 0.40), rotation (0.20), fabricated substance (0.25), other (0.15); a\_i,mu = each detector's affinity.
+\where{engines/evidenceFusion.ts}
+
+\subsection*{Interval-based decision set and priority}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathcal{C}=\{\mathrm{GENUINE}\}\ \mathrm{if}\ u<\tau;\ \ \{\mathrm{FRONT}\}\ \mathrm{if}\ l\geq\tau;\ \ \mathrm{else\ both},\qquad \tau=0.10$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{priority}=\mathrm{HIGH}\ (P\geq 0.8),\ \ \mathrm{MEDIUM}\ (P\geq 0.5),\ \ \mathrm{LOW\ otherwise}$}\par\smallskip
+l and u are the 90\% interval ends; when the interval straddles the bar, abstaining is recommended.
+\where{engines/evidenceFusion.ts}
+
+\clearpage
+\section{Decision theory and the value of information}
+{\color{mute}frontend/src/engines/decision.ts, traceEngine.ts and rules/costs.json.}
+
+\subsection*{Expected loss of an action}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{EL}(a\mid P)=(1-P)\,C^{\mathrm{FA}}_a+P\,m_a\,C^{\mathrm{miss}},\qquad C^{\mathrm{miss}}=\mathrm{Rs}\ 5{,}00{,}000$}\par\smallskip
+C\_FA = cost of acting against an honest merchant; m\_a = share of the miss cost left if this action is taken against a real front (L0 to L5).
+\where{engines/decision.ts}
+
+\subsection*{Chosen action and robust step-down}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle a^{*}=\arg\min_{a\leq a_{\max}}\mathrm{EL}(a\mid P),\qquad \mathrm{EL}(a^{*}\mid l)>\mathrm{EL}(a^{*}-1\mid l)\ \Rightarrow\ a^{*}\leftarrow a^{*}-1$}\par\smallskip
+Evaluated at the posterior and at the low end l of its 90\% interval, so uncertainty never pushes towards a harsher action. Automatic recommendations stop at L3.
+\where{engines/decision.ts}
+
+\subsection*{Value of information of a missing feed}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P_{\mathrm{fire}}=P\,s+(1-P)\,f$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{VOI}=\max\!\left(0,\;\min_a\mathrm{EL}(a\mid P)-\left[P_{\mathrm{fire}}\min_a\mathrm{EL}(a\mid P^{+})+(1-P_{\mathrm{fire}})\min_a\mathrm{EL}(a\mid P^{-})\right]\right)$}\par\smallskip
+How many rupees of expected loss obtaining a feed would save: P+ and P- are the posteriors if its detector fires or stays calm.
+\where{engines/traceEngine.ts}
+
+\subsection*{Log-odds waterfall}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle c_0=\mathrm{logit}\,\pi,\qquad c_j=c_{j-1}+\mathrm{LLR}_{F_j},\qquad P_j=\sigma(c_j)$}\par\smallskip
+The step-by-step explanation shown to analysts, families in order of |LLR|.
+\where{engines/traceEngine.ts}
+
+\clearpage
+\section{Linked merchants, patterns and Context Passports}
+{\color{mute}cohortContinuity.ts, patternPack.ts, passport.ts and learningEngine.ts.}
+
+\subsection*{Payer-overlap (Jaccard) and shape (cosine) similarity}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle J=\frac{|P\cap Q|}{|P\cup Q|},\qquad \cos(a,b)=\frac{a\cdot b}{\|a\|\,\|b\|}$}\par\smallskip
+P, Q = payer sets of the merchant and a peer; a, b = 6-bin ticket-size and 24-bin hour-of-day histograms.
+\where{engines/cohortContinuity.ts}
+
+\subsection*{Continuity score}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{score}=0.35\min(1,1.5J)+0.20\cos_{\mathrm{ticket}}+0.15\cos_{\mathrm{timing}}+0.20\,\mathbb{1}_{\mathrm{handoff}}+0.10\,\mathbb{1}_{\mathrm{beneficiary}}$}\par\smallskip
+A lead for investigation, not proof of common ownership.
+\where{engines/cohortContinuity.ts}
+
+\subsection*{Pattern-pack distance and kernel weights}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle d=\sqrt{\left(\frac{\Delta\log_{10}\mathrm{median}}{0.5}\right)^2+(2\Delta_{\mathrm{round}})^2+(1.5\Delta_{\mathrm{out}})^2+(2\Delta_{\mathrm{night}})^2+(2\Delta_{\mathrm{repeat}})^2+(3\Delta_{\mathrm{refund}})^2}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle w_p=\frac{e^{-d_p/0.25}}{\sum_q e^{-d_q/0.25}}$}\par\smallskip
+Weighted distance between a merchant's fingerprint and each known pattern, turned into weights with an exponential kernel.
+\where{engines/patternPack.ts}
+
+\subsection*{Financial ratios}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{monthlyIn}=\sum\mathrm{sales}\times\frac{30}{\max(\mathrm{days},7)},\qquad \frac{\mathrm{supplier\ payments}}{\mathrm{monthlyIn}},\qquad \frac{\mathrm{monthlyIn}}{\mathrm{GST\ turnover}}$}\par\smallskip
+Inflow annualised to a month and compared with supplier spend and declared tax turnover.
+\where{engines/patternPack.ts}
+
+\subsection*{Context Passport limits}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle [\,t_{\mathrm{from}},\;\min(t_{\mathrm{from}}+180\ \mathrm{days},\;t_{\mathrm{until}})\,],\qquad \mathrm{uplift}\leq 3,\ \ \mathrm{span}\leq 12\ \mathrm{h},\ \ \mathrm{ticket\ ratio}\leq 10,\ \ \mathrm{states}\leq 10$}\par\smallskip
+What a verified declared change may explain; passports are set aside entirely when any conduct signal fires.
+\where{engines/passport.ts}
+
+\subsection*{Reliability and seasonal suggestions after a label}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \rho\leftarrow\rho+0.06\,(1-\rho)\ \ (\mathrm{agreed}),\qquad \rho\leftarrow\rho-0.08\rho\ \mathrm{or}\ \rho-0.04\rho\ \ (\mathrm{disagreed})$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{peak}_{\mathrm{new}}=\frac{1}{2}\,\mathrm{peak}_{\mathrm{prior}}+\frac{1}{2}\,\frac{V_{\mathrm{peak}}}{\mathrm{base}}$}\par\smallskip
+Suggestions only (clamped to [0.05, 0.99]); nothing changes scoring without an approved calibration.
+\where{engines/learningEngine.ts}
+
+\clearpage
+\section{Learning detector rates from analyst labels}
+{\color{mute}engine/learnedRates.ts. Turns confirmed and cleared cases into updated sensitivities and false-positive rates.}
+
+\subsection*{Beta posteriors seeded by the prior}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle a_1=s_0k+\sum_{\mathrm{fronts}}w\,\mathbb{1}[\mathrm{fired}],\quad b_1=(1-s_0)k+\sum_{\mathrm{fronts}}w\,\mathbb{1}[\mathrm{calm}],\quad \hat{s}=\frac{a_1}{a_1+b_1}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle a_0=f_0k+\sum_{\mathrm{genuine}}w\,\mathbb{1}[\mathrm{fired}],\quad b_0=(1-f_0)k+\sum_{\mathrm{genuine}}w\,\mathbb{1}[\mathrm{calm}],\quad \hat{f}=\frac{a_0}{a_0+b_0}$}\par\smallskip
+k = 20 pseudo-observations behind the rules' prior rates; UNRESOLVED labels and merchant disputes are excluded.
+\where{engine/learnedRates.ts}
+
+\subsection*{Per-analyst weight cap}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle w=\min\!\left(1,\;\frac{0.2\,(k+n_{\mathrm{others}})}{n_{\mathrm{analyst}}}\right)$}\par\smallskip
+No single analyst can move a rate by more than about 20\%.
+\where{engine/learnedRates.ts}
+
+\subsection*{Partial pooling by category}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \hat{s}_{\mathrm{MCC}}=\frac{a_1^{\mathrm{MCC}}+\kappa\,\hat{s}}{a_1^{\mathrm{MCC}}+b_1^{\mathrm{MCC}}+\kappa},\qquad \kappa=20,\qquad \hat{s}\in[0.05,0.99],\ \hat{f}\in[0.005,0.5]$}\par\smallskip
+A category's own labels are shrunk towards the global rate.
+\where{engine/learnedRates.ts}
+
+\clearpage
+\section{Rule improvement and drift monitoring}
+{\color{mute}engine/improver.ts and engine/driftMonitor.ts.}
+
+\subsection*{Bands for proposed rule changes}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{minEffect}\in[0.6\,m_0,\;1.4\,m_0],\qquad \alpha\in[0.0005,\;0.05],\qquad n_{\min}\in[8,\;\max(40,n_0)]$}\par\smallskip
+A proposal outside its band is rejected; a proposal is never applied automatically.
+\where{engine/improver.ts}
+
+\subsection*{Champion vs challenger backtest}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{recall}=\frac{TP}{n_{\mathrm{front}}},\quad \mathrm{FPR}=\frac{FP}{n_{\mathrm{genuine}}},\quad \mathrm{Wilson\ CIs},\quad p_{\mathrm{McNemar}}=\min\!\left(1,\frac{2\sum_{i\leq\min(b,c)}\mathrm{C}(n,i)}{2^n}\right)$}\par\smallskip
+Compares opening decisions of the current and proposed rules on a fixed suite.
+\where{engine/improver.ts}
+
+\subsection*{Population Stability Index}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{PSI}=\sum_{i}(a_i-e_i)\ln\frac{a_i}{e_i},\qquad a_i,e_i\geq 10^{-4}$}\par\smallskip
+Posterior bins [0, .05, .2, .5, .8, 1] against reference shares [0.88, 0.04, 0.02, 0.02, 0.04]; \textless{} 0.1 OK, 0.1-0.25 moderate, \textgreater{}= 0.25 significant.
+\where{engine/driftMonitor.ts, ml/stage2\_math.py}
+
+\subsection*{Detector false-positive drift}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{ratio}=\frac{\#\mathrm{fired\ among\ cleared}/\#\mathrm{evaluated}}{f_{\mathrm{prior}}}$}\par\smallskip
+Is a detector firing on cleared merchants more often than its assumed false-positive rate?
+\where{engine/driftMonitor.ts}
+
+\clearpage
+\section{Stage 2 features}
+{\color{mute}engine/features.ts and engine/fraudMath.ts. Computed by the TypeScript engine so training and serving use identical numbers.}
+
+\subsection*{Per-detector features}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{llr}_d=\ell_d,\qquad \mathrm{eff}_d=\mathrm{effect}_d,\qquad \mathrm{fired}_d=\mathbb{1}[\mathrm{ILLICIT}]$}\par\smallskip
+Three columns for each of the 28 detectors; leakage columns (posterior, prior, account age, feed coverage) are excluded from training.
+\where{engine/features.ts}
+
+\subsection*{Behavioural shares}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{night}=\frac{\#\{h\geq 23\ \vee\ h<6\}}{n},\quad \mathrm{weekend}=\frac{\#\{\mathrm{Sat,Sun}\}}{n},\quad \mathrm{refund\ ratio}=\frac{\#\mathrm{refunds}}{n}$}\par\smallskip
+Hours and days in Indian Standard Time (UTC + 5:30).
+\where{engine/features.ts}
+
+\subsection*{Payer concentration and ticket variation}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{HHI}=\sum_i\left(\frac{c_i}{n}\right)^2,\qquad \mathrm{CV}_{\mathrm{ticket}}=\frac{\sqrt{\frac{1}{n}\sum(x-\bar{x})^2}}{\bar{x}}$}\par\smallskip
+Herfindahl-Hirschman index of payer shares; coefficient of variation of ticket amounts.
+\where{engine/features.ts}
+
+\subsection*{Sweep lag}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{lag}_s=t_{\mathrm{next\ payout}}-t_s\ \ (0\leq\mathrm{lag}\leq 72\ \mathrm{h}),\qquad \mathrm{sweep\ lag}=\mathrm{median}(\mathrm{lag}_s)\ \ (72\ \mathrm{if\ none})$}\par\smallskip
+How fast money leaves after each settlement, found by binary search.
+\where{engine/features.ts}
+
+\subsection*{Benford's law (first digit)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P(d)=\log_{10}\!\left(1+\frac{1}{d}\right),\ d=1..9,\qquad \chi^2=\sum_d\frac{(O_d-nP(d))^2}{nP(d)},\ \ p=P(\chi^2_8\geq\chi^2)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{MAD}=\frac{1}{9}\sum_d\left|\frac{O_d}{n}-P(d)\right|,\qquad \chi^2/n,\qquad d=\left\lfloor x/10^{\lfloor\log_{10}x\rfloor}\right\rfloor$}\par\smallskip
+Natural amounts follow Benford's first-digit law; MAD is Nigrini's conformity measure (about 0.006 close, 0.015 nonconforming). Neutral values below 30 sales.
+\where{engine/fraudMath.ts}
+
+\subsection*{Payment timing}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{dispersion}=\frac{\mathrm{Var}(\mathrm{sales/day})}{\mathrm{Mean}(\mathrm{sales/day})},\qquad B=\frac{\sigma_g-\mu_g}{\sigma_g+\mu_g},\qquad \mathrm{CV}_g=\frac{\sigma_g}{\mu_g}$}\par\smallskip
+Index of dispersion (1 for a Poisson process) and Goh-Barabasi burstiness of inter-arrival gaps (-1 periodic, 0 random, towards 1 bursty).
+\where{engine/fraudMath.ts}
+
+\subsection*{Payer entropy and Gini}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle H_{\mathrm{norm}}=-\frac{\sum_i p_i\ln p_i}{\ln K},\qquad G=\frac{2\sum_{i=1}^{K}i\,x_{(i)}}{K\sum_i x_i}-\frac{K+1}{K}$}\par\smallskip
+Normalised Shannon entropy (1 = every payer equally often) and the Gini coefficient of payer counts.
+\where{engine/fraudMath.ts}
+
+\subsection*{Repeat-payer patterns}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{returning\ share}=\frac{\#\mathrm{sales\ from\ payers\ seen}\geq 2\ \mathrm{times}}{n},\qquad \mathrm{repeat\ gap\ CV}=\mathrm{mean}_{\mathrm{payer}}\frac{\sigma_{\mathrm{gaps}}}{\mu_{\mathrm{gaps}}}$}\par\smallskip
+How much business comes from returning payers, and how regular their returns are.
+\where{engine/fraudMath.ts}
+
+\clearpage
+\section{Stage 2 models and training}
+{\color{mute}ml/train\_stage2.py, ml/stage2\_lib.py, ml/focal.py and ml/deep\_ensemble.py.}
+
+\subsection*{Logistic regression}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=\sigma\!\left(\beta_0+\sum_j\beta_j z_j\right),\qquad z_j=\frac{x_j-\mu_j}{\sigma_j},\qquad \min\ -\sum_i w_i\ell_i+\frac{1}{2C}\|\beta\|^2$}\par\smallskip
+Standardised inputs, balanced class weights, C chosen by cross-validation.
+\where{ml/train\_stage2.py}
+
+\subsection*{Decision tree (Gini impurity)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{Gini}=1-\sum_k p_k^2,\qquad \mathrm{split\ maximises}\ \ \mathrm{Gini}(\mathrm{parent})-\sum_{c}\frac{n_c}{n}\mathrm{Gini}(c)$}\par\smallskip
+Shallow tree (depth 3-5).
+\where{ml/train\_stage2.py}
+
+\subsection*{Cost-complexity pruning (opt-in)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle R_\alpha(T)=R(T)+\alpha\,|\mathrm{leaves}(T)|$}\par\smallskip
+Breiman et al. 1984; candidate alpha values from the tree's own pruning path. Enabled with MRE\_EXTENDED\_TREES=1.
+\where{ml/train\_stage2.py}
+
+\subsection*{Random forest}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p(x)=\frac{1}{B}\sum_{b=1}^{B}T_b(x),\qquad B=300$}\par\smallskip
+Trees on bootstrap samples with sqrt(features) per split and balanced sub-sample weights.
+\where{ml/train\_stage2.py}
+
+\subsection*{Gradient-boosted trees (LightGBM)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle F_m(x)=F_{m-1}(x)+\eta\,h_m(x),\qquad p=\sigma(F_M(x)),\qquad \partial p/\partial x_j\geq 0\ \ \mathrm{for\ llr_\ast,\ fired_\ast}$}\par\smallskip
+Boosting with learning rate eta = 0.05 and monotone constraints, so more evidence can never lower the score.
+\where{ml/train\_stage2.py}
+
+\subsection*{Focal loss (opt-in)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle t=2y-1,\quad p_t=\sigma(tz),\qquad \mathrm{FL}=-(1-p_t)^\gamma\ln p_t$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle g=t\left[\gamma\,p_t(1-p_t)^\gamma\ln p_t-(1-p_t)^{\gamma+1}\right]$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h=p_t(1-p_t)\left\{\gamma\left[(1-p_t)^\gamma(\ln p_t+1)-\gamma\,p_t(1-p_t)^{\gamma-1}\ln p_t\right]+(\gamma+1)(1-p_t)^\gamma\right\}$}\par\smallskip
+Lin et al. 2017; gradient g and Hessian h with respect to the raw score z (checked against finite differences). gamma = 0 reduces to log loss (g = p - y, h = p(1 - p)).
+\where{ml/focal.py}
+
+\subsection*{Neural network (MLP 32x16)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h_1=\mathrm{ReLU}(W_1z+b_1),\quad h_2=\mathrm{ReLU}(W_2h_1+b_2),\quad p=\sigma(w_3^\top h_2+b_3),\qquad \mathrm{ReLU}(x)=\max(0,x)$}\par\smallskip
+L2 penalty alpha chosen by cross-validation; class balance through sample weights.
+\where{ml/train\_stage2.py}
+
+\subsection*{Deep ensemble (opt-in)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p(x)=\frac{1}{M}\sum_{m=1}^{M}p_m(x),\qquad M=5,\qquad \mathrm{Var}_m\left[\mathrm{logit}\,p_m(x)\right]$}\par\smallskip
+Lakshminarayanan et al. 2017; members differ only by random seed. Enabled with MRE\_DEEP\_ENSEMBLE=1.
+\where{ml/deep\_ensemble.py}
+
+\subsection*{Coverage-dropout augmentation}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle x^{\mathrm{aug}}_{d}=0\ \ \mathrm{with\ probability}\ 0.4,\quad d\in\{\mathrm{B9,D7,D9,D10,E1,E3,F2,F5,F7,F8,G2,G6,C5}\}$}\par\smallskip
+A copy of each training merchant with optional-feed detectors blanked, so a model cannot learn "feed present = honest".
+\where{ml/stage2\_lib.py}
+
+\subsection*{Grouped cross-validation and log-loss selection}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LL}=-\frac{1}{\sum w_i}\sum_i w_i\left[y_i\ln p_i+(1-y_i)\ln(1-p_i)\right]$}\par\smallskip
+StratifiedGroupKFold (5 folds, group = merchant id); every hyperparameter is chosen by weighted log loss, a proper scoring rule.
+\where{ml/train\_stage2.py}
+
+\subsection*{Analyst labels and prevalence}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle w_{\mathrm{label}}=5,\quad w_{\mathrm{synthetic}}=1,\qquad \pi_{\mathrm{train}}=\frac{\sum w_iy_i}{\sum w_i}$}\par\smallskip
+Real analyst labels count five times a synthetic merchant.
+\where{ml/train\_stage2.py}
+
+\clearpage
+\section{Stage 2 ensemble, calibration and decisions}
+{\color{mute}ml/train\_stage2.py, ml/stage2\_math.py and ml/serve.py.}
+
+\subsection*{Stacked generalisation (Wolpert 1992)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=\sigma\!\left(a+\sum_k w_k\,\mathrm{logit}\,p_k\right),\qquad w_k\geq 0$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \min_{a,w}\;-\frac{1}{\sum v_i}\sum_i v_i\left[y_i\ln p_i+(1-y_i)\ln(1-p_i)\right]+0.01\|w\|^2$}\par\smallskip
+A meta-model over the five base models' out-of-fold logits, fitted with L-BFGS-B; non-negative weights forbid exploiting an anti-correlated model.
+\where{ml/train\_stage2.py}
+
+\subsection*{Platt scaling (v0 models)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle q=\sigma\!\left(A\,\mathrm{logit}(p)+B\right)$}\par\smallskip
+Logistic regression on out-of-fold logits, stored as a 21-point lookup grid.
+\where{ml/train\_m1.py, ml/train\_nn.py}
+
+\subsection*{Beta calibration (Kull et al. 2017)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{logit}\,q=a\ln p-b\ln(1-p)+c,\qquad a,b\geq 0$}\par\smallskip
+Contains Platt scaling (a = b) and the identity (a = b = 1, c = 0).
+\where{ml/stage2\_math.py}
+
+\subsection*{Isotonic calibration (pool-adjacent-violators)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \hat{q}=\arg\min_{q\ \mathrm{non\text{-}decreasing}}\sum_i w_i(y_i-q(p_i))^2$}\par\smallskip
+Best monotone fit; the calibrator (identity, beta or isotonic) is chosen by cross-fitted log loss. Identity currently wins.
+\where{ml/stage2\_math.py}
+
+\subsection*{Prior-shift correction (Saerens et al. 2002)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{logit}\,p^\prime=\mathrm{logit}\,p-\mathrm{logit}\,\pi_{\mathrm{train}}+\mathrm{logit}\,\pi_{\mathrm{engine}}$}\par\smallskip
+Moves the probability from the training base rate (about 34\%) onto the engine's prior for that merchant (about 1-1.5\%).
+\where{ml/serve.py}
+
+\subsection*{Bayes cost threshold (Elkan 2001)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{flag}\Leftrightarrow p^\prime\geq\frac{C_{FP}}{C_{FP}+C_{FN}}=\frac{1}{1+20}\approx 0.048$}\par\smallskip
+A missed front counted as 20 needless reviews. On the training scale: logit t = logit(1/21) - logit(pi\_engine) + logit(pi\_train).
+\where{ml/train\_stage2.py}
+
+\subsection*{Neyman-Pearson threshold (Tong, Feng and Li 2018)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle k^{*}=\min\left\{k:\;\sum_{j=k}^{n}\mathrm{C}(n,j)(1-\alpha)^j\alpha^{n-j}\leq\delta\right\},\qquad t=s_{(k^{*})}$}\par\smallskip
+From the sorted honest-merchant scores; guarantees P(false-alarm rate \textgreater{} alpha) \textless{}= delta (alpha = delta = 0.05). Needs n \textgreater{}= ln(delta) / ln(1 - alpha) = 59 honest merchants.
+\where{ml/stage2\_math.py}
+
+\subsection*{Expected cost curve}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{EC}(t)=C_{FN}\,\pi\,(1-\mathrm{TPR}(t))+C_{FP}\,(1-\pi)\,\mathrm{FPR}(t)$}\par\smallskip
+Re-weighted to the deployment prevalence pi.
+\where{ml/stage2\_math.py}
+
+\subsection*{Mondrian split-conformal prediction (Vovk et al. 2005)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle s_1=1-p\ (\mathrm{fronts}),\quad s_0=p\ (\mathrm{honest}),\qquad q_c=\mathrm{Quantile}\!\left(s_c;\;\frac{\lceil(n_c+1)(1-\alpha)\rceil}{n_c}\right)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p_c=\frac{\#\{s_i\geq s\}+1}{n_c+1},\qquad \mathcal{C}=\{c:\ p_c>\alpha\},\qquad \alpha=0.1$}\par\smallskip
+A 90\% prediction set per class. \{front\} or \{honest\} is a confident call; both or neither means "unsure". Class-conditional validity survives the prior shift.
+\where{ml/train\_stage2.py, ml/serve.py}
+
+\subsection*{Smoothed conformal p-value}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p=\frac{\#\{s_i>s\}+U\,(\#\{s_i=s\}+1)}{n+1},\qquad U\sim\mathrm{U}(0,1)$}\par\smallskip
+Exactly uniform under exchangeability.
+\where{ml/stage2\_math.py}
+
+\subsection*{Novelty detection (Mahalanobis + Ledoit-Wolf)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle z=\mathrm{clip}\!\left(\Phi^{-1}(\hat{F}_j(x_j)),\;-5.2,\;5.2\right),\qquad \hat{\Sigma}=(1-\lambda)S+\lambda F$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle d(x)=\sqrt{(z-\bar{z})^\top\hat{\Sigma}^{-1}(z-\bar{z})},\qquad \mathrm{novel}\Leftrightarrow d>Q_{0.995}(d^{\mathrm{OOF}})$}\par\smallskip
+Quantile-normal transform per feature, shrunk covariance, and a threshold set on out-of-fold distances. Drivers: largest z\_j (Sigma\textasciicircum{}-1 z)\_j terms.
+\where{ml/stage2\_lib.py}
+
+\subsection*{Novelty p-value}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p_{\mathrm{nov}}=\frac{\#\{d^{\mathrm{OOF}}_i\geq d\}+1}{n+1}$}\par\smallskip
+How unusual a merchant is compared with training.
+\where{ml/serve.py}
+
+\subsection*{Entropy decomposition of uncertainty}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle H(p)=-p\log_2 p-(1-p)\log_2(1-p)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle H_{\mathrm{total}}=H\!\left(\sum_k w_kp_k\right),\qquad H_{\mathrm{aleatoric}}=\sum_k w_kH(p_k)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle H_{\mathrm{total}}=H_{\mathrm{aleatoric}}+I(y;k),\qquad H_{\mathrm{epistemic}}=I(y;k)\geq 0$}\par\smallskip
+Depeweg et al. 2018 / BALD: noise the members agree on vs disagreement between members, in bits.
+\where{ml/stage2\_math.py}
+
+\subsection*{Confidence rule}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{LOW}\ \mathrm{if\ novel}\ \vee\ |\mathcal{C}|\neq 1;\quad \mathrm{MEDIUM\ if}\ I(y;k)>0.1\ \mathrm{bit};\quad \mathrm{HIGH\ otherwise}$}\par\smallskip
+\where{ml/serve.py}
+
+\subsection*{Stage 1 + Stage 2 blend}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle P_{\mathrm{comb}}=\sigma\!\left((1-\omega)\,\mathrm{logit}\,P_{\mathrm{stat}}+\omega\,\mathrm{logit}\,p_{\mathrm{ML}}\right),\qquad \omega=0.30\ /\ 0.15\ /\ 0.05\ \ (\mathrm{HIGH/MEDIUM/LOW})$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{HIGH\_RISK}\ (P_{\mathrm{comb}}\geq 0.8),\quad \mathrm{LOW\_RISK}\ (P_{\mathrm{comb}}\leq 0.1),\quad \mathrm{REVIEW\ otherwise}$}\par\smallskip
+A shown assessment only: the case decision still comes from the Stage 1 gate.
+\where{backend/src/workflow.ts}
+
+\clearpage
+\section{Stage 2 evaluation and continuous learning}
+{\color{mute}ml/stage2\_math.py, ml/stage2\_lib.py and ml/train\_stage2.py.}
+
+\subsection*{Average precision and ROC AUC}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{AP}=\sum_n(R_n-R_{n-1})\,P_n,\qquad \mathrm{AUC}=P(s_{\mathrm{front}}>s_{\mathrm{genuine}})$}\par\smallskip
+Area under the precision-recall curve (the right ranking metric for rare positives) and the probability a random front outranks a random genuine merchant.
+\where{ml/stage2\_lib.py}
+
+\subsection*{Brier score and Murphy decomposition}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{BS}=\frac{1}{N}\sum_i(p_i-y_i)^2=\mathrm{REL}-\mathrm{RES}+\mathrm{UNC}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{REL}=\frac{1}{N}\sum_kn_k(\bar{p}_k-\bar{o}_k)^2,\qquad \mathrm{RES}=\frac{1}{N}\sum_kn_k(\bar{o}_k-\bar{o})^2,\qquad \mathrm{UNC}=\bar{o}(1-\bar{o})$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{BSS}=1-\frac{\mathrm{BS}}{\bar{o}(1-\bar{o})}$}\par\smallskip
+Murphy 1973; exact when forecasts are constant within each of the 10 bins.
+\where{ml/stage2\_math.py}
+
+\subsection*{Expected Calibration Error}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{ECE}=\sum_{k=1}^{10}\frac{n_k}{N}\left|\bar{o}_k-\bar{p}_k\right|$}\par\smallskip
+Guo et al. 2017, equal-width bins.
+\where{ml/stage2\_lib.py, scripts/benchmark-10k.ts}
+
+\subsection*{Recall, false-alarm rate, precision}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{recall}=\frac{TP}{TP+FN},\quad \mathrm{FAR}=\frac{FP}{FP+TN},\quad \mathrm{precision}=\frac{TP}{\max(1,TP+FP)}$}\par\smallskip
+\where{ml/stage2\_lib.py, scripts/benchmark-10k.ts}
+
+\subsection*{DeLong test for two correlated AUCs (DeLong et al. 1988)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle V_{10}(x_i)=\frac{1}{n}\sum_j\psi(x_i,y_j),\quad V_{01}(y_j)=\frac{1}{m}\sum_i\psi(x_i,y_j),\quad \psi=\mathbb{1}[x>y]+\frac{1}{2}\mathbb{1}[x=y]$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{Var}=\frac{S_{10}}{m}+\frac{S_{01}}{n},\qquad z=\frac{\widehat{\mathrm{AUC}}_1-\widehat{\mathrm{AUC}}_2}{\sqrt{\mathrm{Var}_{11}+\mathrm{Var}_{22}-2\,\mathrm{Var}_{12}}},\qquad p=2(1-\Phi(|z|))$}\par\smallskip
+Computed in O(n log n) with midranks (Sun and Xu 2014).
+\where{ml/stage2\_math.py}
+
+\subsection*{Paired bootstrap difference}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \Delta^{*}_b=\mathrm{metric}(y^{*}_b,p^{\mathrm{new}*}_b)-\mathrm{metric}(y^{*}_b,p^{\mathrm{old}*}_b),\qquad \mathrm{CI}=[Q_{0.025},Q_{0.975}],\ \ P(\mathrm{worse})=\overline{\mathbb{1}[\Delta^{*}<0]}$}\par\smallskip
+2,000 resamples of the same merchants for both models.
+\where{ml/stage2\_lib.py}
+
+\subsection*{Champion/challenger promotion rule}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{promote}\Leftrightarrow \mathrm{lo}(\Delta\mathrm{AP})\geq-0.01\ \wedge\ \mathrm{lo}(-\Delta\mathrm{Brier})\geq-0.01\ \wedge\ \mathrm{lo}(-\Delta\mathrm{LL})\geq-0.02$}\par\smallskip
+Non-inferiority on three scores; the old model is kept for rollback and every decision is logged.
+\where{ml/train\_stage2.py}
+
+\subsection*{Nested cross-validation (Varma and Simon 2006)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \hat{\mathrm{err}}=\frac{1}{N}\sum_{f=1}^{5}\sum_{i\in f}L\!\left(y_i,\;\mathcal{A}(\mathcal{D}\setminus f)(x_i)\right)$}\par\smallskip
+Search, stacking and calibration are refitted inside every outer fold, so each merchant is scored once by a pipeline that never saw it.
+\where{ml/train\_stage2.py}
+
+\subsection*{Leave-one-fraud-type-out}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{recall}_k=\frac{\#\{p(x)\geq t:\ x\in k\}}{|k|},\qquad \mathrm{model\ trained\ on}\ \mathcal{D}\setminus k$}\par\smallskip
+Generalisation to a fraud type never seen in training, with Wilson intervals.
+\where{ml/train\_stage2.py}
+
+\subsection*{Batch drift and fraud-rate estimation}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle D=\max|F_{\mathrm{new}}-F_{\mathrm{ref}}|\ \ (\mathrm{KS\ per\ feature,\ BH\ q\ values}),\qquad \mathrm{PSI\ on\ score\ deciles}$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle p_i^\prime=\frac{(\pi/\pi_0)\,p_i}{(\pi/\pi_0)\,p_i+((1-\pi)/(1-\pi_0))(1-p_i)},\qquad \pi\leftarrow\frac{1}{n}\sum_ip_i^\prime\ \ \mathrm{(EM\ until\ |\Delta\pi|<10^{-8})}$}\par\smallskip
+Saerens et al. 2002: estimates the real fraud rate of an unlabelled batch from scores calibrated at the training rate pi0.
+\where{ml/serve.py, ml/stage2\_math.py}
+
+\clearpage
+\section{Explanations (SHAP and integrated gradients)}
+{\color{mute}ml/explain.py. Attributions in the stacked logit space, so they add up to the score.}
+
+\subsection*{Ensemble attribution}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle L=a+\sum_kw_k\,\mathrm{logit}\,p_k,\qquad \phi_j=\sum_kw_k\,\phi_{k,j},\qquad b+\sum_j\phi_j=L,\ \ b=a+\sum_kw_kb_k$}\par\smallskip
+Each base model k contributes attributions phi\_k with b\_k + sum phi\_k = logit p\_k.
+\where{ml/explain.py}
+
+\subsection*{TreeSHAP (LightGBM)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \phi_j=\sum_{S\subseteq F\setminus\{j\}}\frac{|S|!\,(|F|-|S|-1)!}{|F|!}\left[f(S\cup\{j\})-f(S)\right]$}\par\smallskip
+Exact Shapley values in log-odds (Lundberg et al. 2020).
+\where{ml/explain.py}
+
+\subsection*{Linear SHAP (logistic regression)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \phi_j=\beta_j\,(z_j-\bar{z}_j)$}\par\smallskip
+Exact for a linear model on scaled inputs.
+\where{ml/explain.py}
+
+\subsection*{Probability-to-log-odds rescaling (trees, forest)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \phi^{\mathrm{logit}}_j=\phi^{\mathrm{prob}}_j\cdot\frac{\mathrm{logit}(p)-\mathrm{logit}(\mathbb{E}[p])}{p-\mathbb{E}[p]}$}\par\smallskip
+Exact sum, approximate split.
+\where{ml/explain.py}
+
+\subsection*{Integrated gradients (neural network)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \phi_j=(x_j-x^\prime_j)\int_0^1\frac{\partial F(x^\prime+\alpha(x-x^\prime))}{\partial x_j}\,d\alpha\ \approx\ (x_j-x^\prime_j)\sum_{s}\frac{\Delta\alpha}{2}\left[g_s+g_{s+1}\right]$}\par\smallskip
+Trapezoid rule with 512 steps from the training-mean baseline x'; completeness error about 0.02 logit.
+\where{ml/explain.py}
+
+\clearpage
+\section{Multi-modal encoders}
+{\color{mute}ml/serve.py, ml/train\_autoencoder.py, ml/train\_temporal.py and ml/train\_graph.py.}
+
+\subsection*{NLI cross-encoder risk score}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{risk}=\sum_{\ell\in\mathrm{illicit\ labels}}P(\ell\mid\mathrm{text}),\qquad \mathrm{abstain}\Leftrightarrow\ell_{\mathrm{top}}=\mathrm{insufficient}\ \vee\ P_{\mathrm{top}}<0.45$}\par\smallskip
+Zero-shot classification of website and description text; verdict SUSPICIOUS if the top label is illicit or risk \textgreater{}= 0.5.
+\where{ml/serve.py}
+
+\subsection*{Bi-encoder alignment (lexical fallback)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle v(\mathrm{text})=\mathrm{token\ counts}+0.35\times\mathrm{character\ 3,4\text{-}grams},\qquad \cos(v_{\mathrm{declared}},v_i)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{risk}=0.65\,\mathrm{mismatch\ share}+0.35\max\!\left(0,\;1-\frac{\min_i\cos}{\max(2\theta,\,0.25)}\right)$}\par\smallskip
+How well observed catalogue items and embeds match the declared business (theta = mismatch threshold).
+\where{ml/serve.py}
+
+\subsection*{Bi-encoder (neural) mean pooling}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle e=\frac{\sum_t m_t\,h_t}{\max(\sum_t m_t,\;10^{-6})}$}\par\smallskip
+Attention-masked mean of token embeddings.
+\where{ml/serve.py}
+
+\subsection*{Behavioural autoencoder}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{MSE}=\frac{1}{d}\|z-\hat{z}\|^2,\qquad \mathrm{scale}=\max\!\left(Q_{95}-Q_{50},\;\sigma_{\mathrm{MSE}},\;10^{-4}\right)$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{anomaly}=\sigma\!\left(2\,\frac{\mathrm{MSE}-Q_{95}}{\mathrm{scale}}\right)$}\par\smallskip
+Trained on honest merchants only; high reconstruction error flags unusual behaviour without fraud labels.
+\where{ml/train\_autoencoder.py, ml/serve.py}
+
+\subsection*{Temporal 1D-CNN}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle a^{(1)}=\mathrm{ReLU}(W_1\ast x+b_1)\odot m,\quad a^{(2)}=\mathrm{ReLU}(W_2\ast a^{(1)}+b_2)\odot m$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{GAP}=\frac{\sum_tm_ta^{(2)}_t}{\max(\sum_tm_t,1)},\quad \mathrm{GMP}=\max_{t:\,m_t=1}a^{(2)}_t,\quad p=\sigma\!\left(w^\top\mathrm{ReLU}(W_3[\mathrm{GAP};\mathrm{GMP};\mathrm{weekly}]+b_3)\right)$}\par\smallskip
+Up to 64 events x 10 channels, masked global average and max pooling, plus an 8-number weekly summary.
+\where{ml/train\_temporal.py}
+
+\subsection*{Relational graph convolution (R-GCN)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h^{(l+1)}=\mathrm{ReLU}\!\left(h^{(l)}W^{(l)}_{\mathrm{self}}+\sum_{r=1}^{6}\hat{A}_r\,h^{(l)}W^{(l)}_r+b^{(l)}\right),\qquad \hat{A}_r=D_r^{-1}A_r$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{readout}=[\mathrm{mean}(h);\ \max(h);\ h_{\mathrm{merchant}}],\qquad p=\sigma(w^\top\mathrm{readout}+b)$}\par\smallskip
+Typed nodes (merchant, payer, account, link, website, device, beneficiary, peer) and 6 edge types; degree features ln(1 + deg) / 2.5.
+\where{ml/train\_graph.py}
+
+\subsection*{Weight initialisation}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle W_{\mathrm{self}}\sim\mathcal{N}\!\left(0,\frac{2}{n_{\mathrm{in}}}\right)\ (\mathrm{He}),\qquad W_r\sim\mathcal{N}\!\left(0,\frac{1}{n_{\mathrm{in}}R}\right)$}\par\smallskip
+\where{ml/train\_graph.py, ml/train\_temporal.py}
+
+\clearpage
+\section{Synthetic data generator}
+{\color{mute}engine/synthetic.ts. The merchants Stage 2 trains on.}
+
+\subsection*{Ticket amounts (log-normal)}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle x=\max\!\left(8,\;\mathrm{round}\!\left(m\,e^{\sigma Z}\right)\right),\qquad Z\sim\mathcal{N}(0,1)$}\par\smallskip
+m = median ticket, sigma = log spread (for example a bakery: m = 520, sigma = 0.58).
+\where{engine/synthetic.ts}
+
+\subsection*{Mixtures and discrete menus}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle x=A\ \ \mathrm{with\ probability}\ p,\qquad x=B\ \ \mathrm{with\ probability}\ 1-p$}\par\smallskip
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle x\sim\mathrm{Uniform}\{v_1,\ldots,v_k\}$}\par\smallskip
+For example 7\% round amounts, otherwise log-normal; or a fixed price list.
+\where{engine/synthetic.ts}
+
+\subsection*{Hours of day}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h\sim\mathrm{U}(a,b)\quad\mathrm{or}\quad h=\left((\mu+sZ)\ \mathrm{mod}\ 24+24\right)\ \mathrm{mod}\ 24$}\par\smallskip
+Uniform opening hours, or a wrapped normal peak.
+\where{engine/synthetic.ts}
+
+\subsection*{Portfolio composition}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{label}\sim\mathrm{Bernoulli}(\pi_{\mathrm{front}}),\qquad \mathrm{kind}\sim\mathrm{Uniform}(\mathrm{FRONTS\ or\ HONEST})$}\par\smallskip
+Front rate 0.25 for training portfolios, 0.08 for realistic ones.
+\where{engine/synthetic.ts}
+
+\clearpage
+\section{Security and integrity}
+{\color{mute}backend/src/store.ts, auth.ts, integrity.ts and adapters/pseudonym.ts.}
+
+\subsection*{Hash-chained audit trail}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle h_0=0^{64},\qquad h_i=\mathrm{SHA256}\!\left(h_{i-1}\,\|\,\mathrm{canonical}(e_i)\right)$}\par\smallskip
+Editing any past audit entry breaks every later hash.
+\where{backend/src/store.ts}
+
+\subsection*{Signed tokens and seals}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{tag}=\mathrm{HMAC\text{-}SHA256}(K,\;m)$}\par\smallskip
+Keyed message authentication for sessions and row seals; compared in constant time.
+\where{backend/src/auth.ts, integrity.ts}
+
+\subsection*{Password storage}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{hash}=\mathrm{scrypt}(\mathrm{password},\ \mathrm{salt}),\qquad \mathrm{salt}=16\ \mathrm{random\ bytes}$}\par\smallskip
+A memory-hard key-derivation function.
+\where{backend/src/auth.ts}
+
+\subsection*{Dataset fingerprint}
+\par\smallskip\noindent\adjustbox{max width=\linewidth}{$\displaystyle \mathrm{digest}=\mathrm{SHA256}(\mathrm{file})$}\par\smallskip
+Identifies the uploaded file without storing it.
+\where{backend/src/integrity.ts}
+
+\clearpage
+\section{Appendix: parameter values}
+{\color{mute}The numbers the formulas above use, as configured in the repository.}
+
+{\small\begin{longtable}{@{}p{52mm}p{78mm}p{36mm}@{}}\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Source}\\\midrule\endhead
+Category base rate (default) & 1.5\%, prior strength 400 & \texttt{rules/priors.json}\\
+Account-age odds & 2.0 (\textless{} 90 d), 1.3 (\textless{} 1 y), 1.0 (\textless{} 3 y), 0.7 (older) & \texttt{rules/priors.json}\\
+Within-family correlation rho & 0.3 & \texttt{rules/engine.json}\\
+Detector prior strength k & 20 pseudo-observations & \texttt{rules/engine.json}\\
+Calm-evidence floor & -1.5 nats & \texttt{rules/engine.json}\\
+Monte-Carlo draws & 1,000 (90\% interval) & \texttt{rules/engine.json}\\
+Gate: open posterior / ask posterior & 0.10 / 0.01 & \texttt{rules/engine.json}\\
+Gate: min nats, sources, families, behaviours & 0.5, 2, 3, 2 & \texttt{rules/engine.json}\\
+Priority bands & HIGH \textgreater{}= 0.8, MEDIUM \textgreater{}= 0.5 & \texttt{rules/engine.json}\\
+Mechanism priors & laundering 0.40, rotation 0.20, fabricated 0.25, other 0.15 & \texttt{rules/engine.json}\\
+CUSUM k, h, target ARL & 0.5, 2.35, 52 weeks & \texttt{rules/engine.json}\\
+Volume baseline / recent weeks & 8 / 4 (min 6) & \texttt{rules/engine.json}\\
+Festival multiplier uncertainty sigma\_f & 0.35 & \texttt{rules/calendar.json}\\
+Ticket-median band (A1) & 1/3 to 1.8 x category median & \texttt{rules/engine.json}\\
+Conduct window & \textgreater{}= 4 payments within 14 days; deposits \textgreater{}= Rs 200, Rs 100 steps & \texttt{rules/engine.json}\\
+Pre-match window / permutations & 45 minutes / 2,000 draws & \texttt{rules/engine.json}\\
+Overrides & R-01 +3 nats (betting host), R-02 +2 nats (shared beneficiary) & \texttt{rules/overrides.json}\\
+Miss cost & Rs 5,00,000 & \texttt{rules/costs.json}\\
+Actions (false-alarm cost, miss factor) & L0 (0, 1.0), L1 (300, 0.9), L2 (1,500, 0.6), L3 (15,000, 0.2), L4 (60,000, 0.1), L5 (2,00,000, 0.05); auto up to L3 & \texttt{rules/costs.json}\\
+Passport limits & 180 days, uplift 3x, 12 h span, ticket ratio 10, 10 states & \texttt{rules/engine.json}\\
+Learned rates & pooling kappa 20, analyst cap 20\%, s in [0.05, 0.99], f in [0.005, 0.5] & \texttt{engine/learnedRates.ts}\\
+Stage 2 training rows & 1,802 (synthetic, incl. coverage-dropout copies) & \texttt{ml/models/stage2-v1}\\
+Stage 2 training prevalence & 0.339 & \texttt{ml/models/stage2-v1}\\
+Stage 2 stacker weights & LR 0.186, tree 0.075, forest 0.250, LightGBM 0.383, MLP 0.197; intercept 0.366 & \texttt{ml/models/stage2-v1}\\
+Stage 2 calibration & identity (beat beta and isotonic on cross-fitted log loss) & \texttt{ml/models/stage2-v1}\\
+Cost ratio / Bayes threshold & 20 / 0.0476 & \texttt{ml/models/stage2-v1}\\
+Neyman-Pearson alpha, delta, threshold & 0.05, 0.05, 0.197 & \texttt{ml/models/stage2-v1}\\
+Conformal alpha / quantiles & 0.10 / front 0.102, honest 0.025 & \texttt{ml/models/stage2-v1}\\
+Novelty quantile / threshold & 0.995 / distance 19.27 & \texttt{ml/models/stage2-v1}\\
+Blend trust omega & 0.30 HIGH, 0.15 MEDIUM, 0.05 LOW & \texttt{backend/src/workflow.ts}\\
+\bottomrule\end{longtable}}
+\end{document}
