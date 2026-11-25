@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import time
 from datetime import datetime, timezone
@@ -49,6 +50,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 
+from ml.focal import FocalLGBMClassifier
+
 from ml.stage2_math import (BetaCalibrator, IdentityCalibrator, IsotonicCalibrator, apply_calibration, brier_decomposition, brier_skill_score,
                             delong_test, entropy_decomposition, expected_cost_curve, mcnemar_exact, np_threshold,
                             reliability_curve, wilson_interval)
@@ -60,6 +63,7 @@ CANDIDATE = MODELS / 'stage2-candidate'
 CHAMPION = MODELS / 'stage2-v1'
 LABELS = ROOT / 'ml' / 'data' / 'labelled_cases.csv'
 VERSION = 'stage2-v1'
+ML_JOBS = int(os.environ.get('MRE_ML_JOBS', '-1'))   # random-forest parallelism; set 1 on low-memory hosts
 ALPHA = 0.10            # conformal miscoverage: 90% prediction sets
 COST_RATIO = 20.0       # a missed front costs this many needless reviews (configurable in ensemble.json)
 REAL_LABEL_WEIGHT = 5.0
@@ -74,14 +78,20 @@ def make_model(name: str, params: dict, cols: list[str]):
     if name == 'logistic_regression':
         return make_pipeline(StandardScaler(), LogisticRegression(C=params['C'], class_weight='balanced', max_iter=5000, random_state=SEED))
     if name == 'decision_tree':
-        return DecisionTreeClassifier(max_depth=params['max_depth'], min_samples_leaf=params['min_samples_leaf'], class_weight='balanced', random_state=SEED)
+        # Minimal cost-complexity pruning (Breiman et al. 1984): keep the subtree minimising R(T) + ccp_alpha * |leaves|.
+        return DecisionTreeClassifier(max_depth=params['max_depth'], min_samples_leaf=params['min_samples_leaf'],
+                                      ccp_alpha=params.get('ccp_alpha', 0.0), class_weight='balanced', random_state=SEED)
     if name == 'random_forest':
+        # max_samples < 1 draws smaller bootstrap samples: less correlated trees, lower ensemble variance.
         return RandomForestClassifier(n_estimators=300, max_depth=params['max_depth'], min_samples_leaf=params['min_samples_leaf'],
-                                      max_features='sqrt', class_weight='balanced_subsample', random_state=SEED, n_jobs=-1)
+                                      max_samples=params.get('max_samples'), max_features='sqrt', class_weight='balanced_subsample',
+                                      random_state=SEED, n_jobs=ML_JOBS)
     if name == 'lightgbm':
+        # gamma = 0: the v1 log-loss booster; gamma > 0: focal loss (Lin et al. 2017), see ml/focal.py.
         mono = [1 if c.startswith(('llr_', 'fired_')) else 0 for c in cols]
-        return lgb.LGBMClassifier(objective='binary', random_state=SEED, deterministic=True, n_jobs=1, verbosity=-1, is_unbalance=True,
-                                  monotone_constraints=mono, colsample_bytree=0.5, subsample=0.8, subsample_freq=1, max_depth=4, **params)
+        return FocalLGBMClassifier(gamma=params.get('gamma', 0.0), monotone_constraints=mono, num_leaves=params['num_leaves'],
+                                   min_child_samples=params['min_child_samples'], learning_rate=params['learning_rate'],
+                                   n_estimators=params['n_estimators'], reg_lambda=params['reg_lambda'], random_state=SEED)
     if name == 'neural_net':
         return make_pipeline(StandardScaler(), MLPClassifier(hidden_layer_sizes=(32, 16), alpha=params['alpha'], max_iter=600,
                                                              early_stopping=False, random_state=SEED))
@@ -90,12 +100,25 @@ def make_model(name: str, params: dict, cols: list[str]):
 
 GRIDS = {
     'logistic_regression': [{'C': c} for c in (0.03, 0.1, 0.3, 1.0)],
-    'decision_tree': [{'max_depth': d, 'min_samples_leaf': l} for d in (3, 4, 5) for l in (5, 15)],
-    'random_forest': [{'max_depth': d, 'min_samples_leaf': l} for d in (5, 8, None) for l in (2, 5)],
-    'lightgbm': [{'num_leaves': nl, 'min_child_samples': mc, 'learning_rate': 0.05, 'n_estimators': ne, 'reg_lambda': 5.0}
-                 for nl in (7, 15) for mc in (10, 20) for ne in (150, 300)],
+    'decision_tree': lambda X, y, w: decision_tree_grid(X, y, w),
+    'random_forest': [{'max_depth': d, 'min_samples_leaf': l, 'max_samples': s} for d in (8, None) for l in (2, 5) for s in (None, 0.6)],
+    'lightgbm': [{'num_leaves': nl, 'min_child_samples': mc, 'learning_rate': 0.05, 'n_estimators': ne, 'reg_lambda': 5.0, 'gamma': g}
+                 for nl in (7, 15) for mc in (10, 20) for ne in (150, 300) for g in (0.0, 1.0, 2.0)],
     'neural_net': [{'alpha': a} for a in (1e-3, 1e-2, 1e-1)],
 }
+
+
+def decision_tree_grid(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> list[dict]:
+    """Candidate ccp_alpha values read off the tree's own pruning path, plus the unpruned v1 setting.
+
+    cost_complexity_pruning_path returns the alphas at which successive weakest links are cut; quantiles of the positive
+    ones give a spread from light to heavy pruning. Selection is by grouped-CV log loss like every other model.
+    """
+    path = DecisionTreeClassifier(min_samples_leaf=5, class_weight='balanced', random_state=SEED).cost_complexity_pruning_path(X, y, sample_weight=w)
+    alphas = np.unique(path.ccp_alphas[path.ccp_alphas > 0])
+    picks = sorted({0.0, *(float(a) for a in np.quantile(alphas, [0.5, 0.75, 0.9, 0.97]))}) if len(alphas) else [0.0]
+    return [{'max_depth': 3, 'min_samples_leaf': 5, 'ccp_alpha': 0.0}] + [
+        {'max_depth': d, 'min_samples_leaf': 5, 'ccp_alpha': a} for d in (6, None) for a in picks]
 
 
 def fit(model, X, y, w):
@@ -210,7 +233,8 @@ def train_ensemble(train: pd.DataFrame, cols: list[str], real: pd.DataFrame | No
     chosen, oof = {}, {}
     for name in BASE:
         best = None
-        for cand in ([params[name]] if params else GRIDS[name]):
+        grid = GRIDS[name](X, y, w) if callable(GRIDS[name]) else GRIDS[name]
+        for cand in ([params[name]] if params else grid):
             p = oof_predictions(name, cand, X, y, w, groups, cols, folds)
             ll = log_loss(y, np.clip(p, 1e-6, 1 - 1e-6), sample_weight=w)
             if best is None or ll < best[0]:
