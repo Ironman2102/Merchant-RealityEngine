@@ -8,7 +8,7 @@ import { scrub } from '../adapters/privacy';
 import { parseCsv, toCsv } from '../adapters/csv';
 import { analyseCanonical } from '../backend/src/algorithms/analyze';
 import { syncLiveRules } from '../backend/src/rulesState';
-import { buildPack, FEATURE_COLUMNS, features, RULES } from '../engine/index';
+import { buildPack, MODEL_FEATURE_COLUMNS, modelFeatures, RULES } from '../engine/index';
 
 const num = (n: number) => Number.isFinite(n) ? n.toFixed(12) : '';
 
@@ -23,7 +23,7 @@ export function runBatch(opts: BatchOptions): { merchants: number; opened: numbe
     ...(opts.ml ? ['ml_p', 'ml_top_drivers'] : []),
   ];
   const scoreRows: (string | number | null)[][] = [header];
-  const featLines: string[] = [`merchant_id,${FEATURE_COLUMNS.join(',')}`];
+  const featLines: string[] = [`merchant_id,${MODEL_FEATURE_COLUMNS.join(',')}`];
   let failed = 0;
   const packNames = new Set<string>();
   const cases: string[] = [];
@@ -46,8 +46,8 @@ export function runBatch(opts: BatchOptions): { merchants: number; opened: numbe
       continue;
     }
     if (opts.ml) {
-      const feat = features(ran.result);
-      featLines.push([dataset.merchant.id, ...FEATURE_COLUMNS.map(c => feat[c])].join(','));
+      const feat = modelFeatures(ran.result);
+      featLines.push([dataset.merchant.id, ...MODEL_FEATURE_COLUMNS.map(c => feat[c])].join(','));
     }
     const f = ran.result.fusion;
     const fired = ran.result.evidence.filter(e => e.status === 'ILLICIT').sort((a, b) => b.llr - a.llr || a.id.localeCompare(b.id)).slice(0, 3);

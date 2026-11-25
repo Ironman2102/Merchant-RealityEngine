@@ -20,7 +20,7 @@ All figures below were measured locally against synthetic generators (`engine/sy
 | Synthetic benchmark (`n = 1,000`, `seed = 7`) | Recall `33/81` (`0.407`), Opened/Asked `67/81` (`0.827`), Precision `33/33` (`1.000`), Honest FP `0/919` (`0.000`) | `npm run benchmark` |
 | 1,200-case stress benchmark (`rules=mre-bayes-0.3.0`) | TP `457`, FP `0`, TN `600`, Recall `0.7617`, Precision `1.0000`, FPR `0.0000`, `0` integrity errors | `npx tsx scripts/benchmark-1k.ts` -> `reports/benchmark-1k.md` |
 | One-shot multi-dataset verification (`100` datasets) | `57/60` multi-source fronts opened (single-source fronts routed to `ASK`), `0/40` genuine FPs | `npm run test:stats` (`one-shot-portfolio`) |
-| Stage 2 M1 vs Bayesian on leak-free `engine/synthetic.ts` | M1 AUC-PR `0.999` (`ECE 0.023`, `60/60` at `0.10`, FP `8/120`); Bayesian AUC-PR `0.840` (`0/120` FP) | `.venv/bin/python -m ml.compare` |
+| Stage 2 M1 vs Bayesian on leak-free `engine/synthetic.ts` | M1 AUC-PR `0.997` (`ECE 0.014`, `130/131` at `0.10`, FP `8/256`); Bayesian AUC-PR `0.936` (`0/256` FP). On the 11 demo samples, which are never used for training, M1 opens all 6 fronts and none of the 5 honest merchants at `0.10` | `.venv/bin/python -m ml.compare` |
 
 ML models (`m1-v0`, `nn-v0`, `classical-v0`) are second opinions only and never open cases or override the independent Bayesian conduct gate.
 
@@ -41,7 +41,7 @@ Optional benchmark & ML commands:
 npm run benchmark                                # 1,000-merchant leak-free synthetic benchmark
 npm run redteam                                  # 8 evasion operators across 98 caught fronts
 .venv/bin/pytest ml/tests/                       # 18 Python Stage 2 ML & FastAPI tests
-npx tsx ml/generate_synthetic_features.ts        # Regenerate leak-free ml/data/features.csv (600 merchants)
+npx tsx ml/generate_synthetic_features.ts        # Regenerate leak-free ml/data/features.csv (1,288 merchants)
 ```
 
 > **Note on upgrading an existing local SQLite DB:** databases created prior to table HMAC sealing require running `npm run mre -- seal-db --reason "initial seal"` once, or using `MRE_CASE_STORE=memory` in test runs.

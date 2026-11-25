@@ -1,5 +1,5 @@
 /** Ask the local model service. Any failure, including a timeout, leaves the Bayesian decision unchanged. */
-import { features } from '../../engine/features';
+import { modelFeatures } from '../../engine/features';
 import type { InvestigationResult } from '../../frontend/src/types/investigation';
 import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 
@@ -37,7 +37,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
     const res = await fetch(`${url}/score`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ features: features(result), context: encoderContext(result) }),
+      body: JSON.stringify({ features: modelFeatures(result), context: encoderContext(result) }),
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) throw new Error(`ML ${res.status}`);

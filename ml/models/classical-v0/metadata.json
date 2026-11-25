@@ -1,9 +1,9 @@
 {
   "synthetic": true,
-  "training_examples": 840,
-  "heldout_examples": 180,
-  "positive": 280,
-  "negative": 560,
+  "training_examples": 1802,
+  "heldout_examples": 387,
+  "positive": 610,
+  "negative": 1192,
   "features": [
     "llr_A1",
     "eff_A1",
@@ -100,19 +100,19 @@
   "source": "ml/data/features.csv",
   "metrics": {
     "logistic-regression-v0": {
-      "heldout_ap": 0.9978,
-      "recall_at_0_10": 1.0,
-      "genuine_fp_at_0_10": 0.1583
+      "heldout_ap": 0.9906,
+      "recall_at_0_10": 0.9771,
+      "genuine_fp_at_0_10": 0.0742
     },
     "decision-tree-v0": {
-      "heldout_ap": 0.9939,
-      "recall_at_0_10": 1.0,
-      "genuine_fp_at_0_10": 0.25
+      "heldout_ap": 0.9207,
+      "recall_at_0_10": 0.8931,
+      "genuine_fp_at_0_10": 0.0273
     },
     "random-forest-v0": {
-      "heldout_ap": 0.9989,
-      "recall_at_0_10": 1.0,
-      "genuine_fp_at_0_10": 0.1333
+      "heldout_ap": 0.9916,
+      "recall_at_0_10": 0.9847,
+      "genuine_fp_at_0_10": 0.1133
     }
   },
   "note": "Leakage-free behavioral training with 40% coverage-dropout augmentation and sigmoid calibration."

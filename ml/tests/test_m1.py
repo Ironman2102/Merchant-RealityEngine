@@ -47,20 +47,23 @@ def test_raising_an_illicit_weight_does_not_lower_the_score():
 
 
 def test_shuffled_labels_collapse_to_the_base_rate():
+    # One shuffle is noisy (single-shuffle gaps spread with sd ~0.02), so average ten and hold the mean to a tighter bar.
     df = pd.read_csv(ROOT / 'ml' / 'data' / 'features.csv')
-    y = df['label'].to_numpy().copy()
-    rng = np.random.default_rng(7)
-    rng.shuffle(y)
     X = df.drop(columns=['merchant_id', 'label'])
     cols = [c for c in X.columns if c.startswith('llr_') or c.startswith('fired_')]
     mono = [1] * len(cols)
-    pos = max(int((y == 1).sum()), 1)
-    clf = lgb.LGBMClassifier(objective='binary', n_estimators=30, num_leaves=7, random_state=7, deterministic=True, n_jobs=1,
-                             scale_pos_weight=(len(y) - pos) / pos, monotone_constraints=mono, verbosity=-1)
     cut = int(len(df) * 0.7)
-    clf.fit(X.iloc[:cut][cols], y[:cut])
-    pred = clf.predict_proba(X.iloc[cut:][cols])[:, 1]
-    rate = float(y[cut:].mean())
-    ap = average_precision_score(y[cut:], pred) if len(np.unique(y[cut:])) > 1 else rate
-    assert abs(ap - rate) <= 0.05 or ap <= rate + 0.05
-    json.dumps({'ap': ap, 'rate': rate})
+    gaps = []
+    for seed in range(10):
+        y = df['label'].to_numpy().copy()
+        np.random.default_rng(seed).shuffle(y)
+        pos = max(int((y == 1).sum()), 1)
+        clf = lgb.LGBMClassifier(objective='binary', n_estimators=30, num_leaves=7, random_state=7, deterministic=True, n_jobs=1,
+                                 scale_pos_weight=(len(y) - pos) / pos, monotone_constraints=mono, verbosity=-1)
+        clf.fit(X.iloc[:cut][cols], y[:cut])
+        pred = clf.predict_proba(X.iloc[cut:][cols])[:, 1]
+        rate = float(y[cut:].mean())
+        gaps.append((average_precision_score(y[cut:], pred) if len(np.unique(y[cut:])) > 1 else rate) - rate)
+    mean_gap = float(np.mean(gaps))
+    assert mean_gap <= 0.02, f'shuffled labels still beat the base rate by {mean_gap:.3f} on average'
+    json.dumps({'mean_gap': mean_gap, 'gaps': gaps})
