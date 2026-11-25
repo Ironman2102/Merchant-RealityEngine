@@ -6,7 +6,7 @@ import { RULES } from '../../../rules/index';
 import { cusum } from './cusumEngine';
 import { cohortContinuity } from './cohortContinuity';
 import { runDetectors } from './detectors';
-import { passportCover, passportsInForce } from './passport';
+import { deliveredOrderCover, passportCover, passportsInForce, type Axis } from './passport';
 import { narrowSuspects, splitStreams } from './streams';
 import { fuse } from './evidenceFusion';
 import { buildReview } from './analystEngine';
@@ -58,16 +58,18 @@ export type LearnedRateOverride = Map<string, { sensitivity: number; falsePositi
  * `draws: 0` skips the Monte-Carlo interval, for backtests that only need the decision (the gate never reads the interval).
  *
  * A Context Passport explains a change and never conduct. So the merchant is scored without passports first: if a conduct
- * signal fires in any scope, that score stands and the passports are suspended.
+ * signal fires in any scope, that score stands and the passports are suspended. Sales matched to delivered online
+ * orders are set aside from the out-of-state payer test the same way, and through the same two passes.
  */
 export function runInvestigation(
   sc: Scenario,
   options: { draws?: number; posteriorDraws?: number; learnedRates?: LearnedRateOverride } = {},
 ): InvestigationResult {
   const opts = { draws: options.draws ?? options.posteriorDraws, learnedRates: options.learnedRates };
-  if (!passportsInForce(sc).length) return investigate(sc, opts).result;
-  const bare = investigate({ ...sc, passports: [] }, opts);
-  const asScored: InvestigationResult = { ...bare.result, scenario: sc, passportsSuspended: true };
+  const inForce = passportsInForce(sc), excused = deliveredOrderCover(sc).size;
+  if (!inForce.length && !excused) return investigate(sc, opts).result;
+  const bare = investigate({ ...sc, passports: [] }, { ...opts, orderExcuse: false });
+  const asScored: InvestigationResult = inForce.length ? { ...bare.result, scenario: sc, passportsSuspended: true } : { ...bare.result, scenario: sc };
   if (bare.conduct) return asScored;
   const explained = investigate(sc, opts);
   // Setting payments aside shifts the shares of the rest. An explanation must not create a conduct signal either.
@@ -75,15 +77,18 @@ export function runInvestigation(
   const { result } = explained;
   if (bare.result.fusion.followUp === 'ASK' && result.fusion.followUp === 'NONE') {
     // The question is answered, not erased: whoever reads the case sees that it was raised and what answered it.
-    result.passportAnswered = passportsInForce(sc).map(p => p.id);
-    result.fusion.gateReason += ` A question about this change was answered by passport ${result.passportAnswered.join(', ')}. Revoking it reopens the question. Once it expires, a later file asks again.`;
+    if (inForce.length) {
+      result.passportAnswered = inForce.map(p => p.id);
+      result.fusion.gateReason += ` A question about this change was answered by passport ${result.passportAnswered.join(', ')}. Revoking it reopens the question. Once it expires, a later file asks again.`;
+    }
+    if (excused) result.fusion.gateReason += ` ${excused} out-of-state payments were set aside as delivered online orders.`;
   }
   return result;
 }
 
 function investigate(
   sc: Scenario,
-  opts: { draws?: number; learnedRates?: LearnedRateOverride },
+  opts: { draws?: number; learnedRates?: LearnedRateOverride; orderExcuse?: boolean },
 ): { result: InvestigationResult; conduct: boolean } {
   const events: PaymentEvent[] = [];
   const sales: PaymentEvent[] = [], refunds: PaymentEvent[] = [], settlements: PaymentEvent[] = [], transfers: PaymentEvent[] = [], chargebacks: PaymentEvent[] = [];
@@ -97,7 +102,8 @@ function investigate(
     else if (e.type === 'CHARGEBACK') chargebacks.push(e);
   }
   const vol = volumeModel(sc), rows = vol.rows, cs = cusum(rows, vol.z), cohort = cohortContinuity(sc);
-  const norm = RULES.mcc(sc.profile.mcc), covered = passportCover(sc);
+  const excused = opts.orderExcuse === false ? new Set<string>() : deliveredOrderCover(sc), pass = passportCover(sc);
+  const norm = RULES.mcc(sc.profile.mcc), covered = (e: PaymentEvent, axis: Axis) => pass(e, axis) || (axis === 'area' && excused.has(e.id));
   const detect = (xs: PaymentEvent[], scope: Scope, pre?: { s: PaymentEvent[]; r: PaymentEvent[]; st: PaymentEvent[]; tr: PaymentEvent[]; cb: PaymentEvent[] }) => {
     const view = scope.kind === 'link' ? { ...sc, web: { ...sc.web, embeds: sc.web.embeds.filter(e => e.merchantId !== sc.primaryMerchantId || e.linkId === scope.id) } }
       : scope.kind === 'repeat-payers' || scope.kind === 'channel' ? { ...sc, web: { embeds: [], catalogue: sc.web.catalogue } } : sc;

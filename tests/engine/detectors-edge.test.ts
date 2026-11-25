@@ -8,6 +8,7 @@ import { volumeModel } from '../../frontend/src/engines/residualEngine';
 import { cusum } from '../../frontend/src/engines/cusumEngine';
 import { cohortContinuity } from '../../frontend/src/engines/cohortContinuity';
 import { deliveredOrderCover } from '../../frontend/src/engines/passport';
+import { runInvestigation } from '../../frontend/src/engines/investigationEngine';
 import { RULES } from '../../rules/index';
 import type { EvidenceItem } from '../../frontend/src/types/evidence';
 import type { CoverageKey, CoverageState, Scenario } from '../../frontend/src/types/merchant';
@@ -295,6 +296,18 @@ export default function (): number {
 
     const unmatched = mkBaseScenario({ events: base.events, orders: base.orders.slice(0, 20) });
     check('unmatched still counts', !deliveredOrderCover(unmatched).has('S-30') && deliveredOrderCover(unmatched).has('S-0'));
+  }
+
+  // B6 delivered-order excuse, wired into scoring
+  {
+    const far = (i: number) => mkSale(i, { payerState: ['DL', 'UP', 'WB', 'PB'][i % 4] });
+    const b6 = (sc: Scenario) => runInvestigation(sc, { draws: 0 }).evidence.find(e => e.id === 'B6')!;
+    const shipped = mkBaseScenario({ events: Array.from({ length: 40 }, (_, i) => far(i)) });
+    check('delivered online orders clear B6', b6(shipped).status !== 'ILLICIT');
+    const unshipped = mkBaseScenario({ events: shipped.events, orders: shipped.orders.map(o => ({ ...o, status: 'NONE' as const })) });
+    check('undelivered orders still fire B6', b6(unshipped).status === 'ILLICIT');
+    const none = mkBaseScenario({ events: shipped.events, orders: [] });
+    check('no orders unchanged', b6(none).status === 'ILLICIT');
   }
 
   // 7. B7: Heavy repeat payers (boundary 7 vs 8 payments in same epoch week)
