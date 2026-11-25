@@ -102,6 +102,41 @@ Full numbers: `reports/stage2-v1-evaluation.json` and `reports/stage2-v0-baselin
   Broadening `engine/synthetic.ts`, or analyst labels, fixes this.
 - **Non-round deposits and perfect mimics** are not caught: payment features cannot separate them.
 
+## Continuous learning, verified end to end
+
+**Labels teach the model a new pattern.** "Small side-stream" fronts were removed from the synthetic training data, so
+the model had never seen them. Analysts then opened and labelled 80 cases (40 fronts, 40 honest) through the real
+workflow (`openInvestigation`, `labelInvestigation`; 47 needed a second reviewer) in a scratch database. After export
+and retraining, both models were scored on 120 fresh merchants nobody labelled (`ml/experiment_continuous_learning.py`,
+`reports/continuous-learning-experiment.json`):
+
+| | A: no labels | B: with 80 labels |
+|---|---|---|
+| Fronts caught at the bar | 88.3% [78%, 94%] | **100%** [94%, 100%] |
+| False alarms | 0% | 0% |
+| Log loss | 0.078 | **0.005** |
+
+Recall gain +11.7 points, 95% CI [+4.5, +20.3]; McNemar 7–0, p = 0.016. Other kinds were not harmed: log loss on 178
+held-out merchants went from 0.050 to 0.030, false alarms stayed at 0. The real gate promoted B.
+
+**The gate rejects worse models** (`ml/tests/test_promotion_gate.py`):
+
+| Challenger | AP Δ [95% CI] | Brier Δ (negated) | Log loss Δ (negated) | Decision |
+|---|---|---|---|---|
+| 60 merchants, 30% labels wrong | −0.666 [−0.733, −0.599] | −0.235 | −0.648 | rejected, champion unchanged |
+| all merchants, 10% labels wrong | −0.005 [−0.014, −0.000] | −0.042 [−0.053, −0.032] | −0.195 [−0.221, −0.171] | rejected |
+| identical model | 0 | 0 | 0 | promoted, rollback copy kept |
+
+The second row is why log loss is in the gate: ranking barely moved (AP 0.995), but calibration collapsed.
+
+Reproduce:
+
+```
+MRE_DB_FILE=<scratch.db> npx tsx ml/simulate_analyst_labels.ts "small side-stream" 40 60
+MRE_DB_FILE=<scratch.db> npx tsx ml/export_labels.ts <labels.csv>
+python -m ml.experiment_continuous_learning --labels <labels.csv> --kind "small side-stream" --work <dir>
+```
+
 ## Continuous learning loop
 
 ```

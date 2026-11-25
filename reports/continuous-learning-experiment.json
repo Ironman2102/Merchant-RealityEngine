@@ -1,0 +1,122 @@
+{
+  "pattern": "small side-stream",
+  "threshold": 0.701067615658363,
+  "analystLabels": 80,
+  "freshMerchants": 120,
+  "fresh": {
+    "A_noLabels": {
+      "recall": 0.8833333333333333,
+      "recallCi": [
+        0.7782121197582914,
+        0.9423227935994396
+      ],
+      "falseAlarm": 0.0,
+      "falseAlarmCi": [
+        0.0,
+        0.06017185214208986
+      ],
+      "ap": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.015959041605271517,
+      "log_loss": 0.07834349796642698,
+      "ece": 0.06792098795358215,
+      "threshold": 0.701067615658363,
+      "false_alarm_rate": 0.0
+    },
+    "B_withLabels": {
+      "recall": 1.0,
+      "recallCi": [
+        0.93982814785791,
+        0.9999999999999998
+      ],
+      "falseAlarm": 0.0,
+      "falseAlarmCi": [
+        0.0,
+        0.06017185214208986
+      ],
+      "ap": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.00012899692698705142,
+      "log_loss": 0.004802894664048663,
+      "ece": 0.0047364235443474526,
+      "threshold": 0.701067615658363,
+      "false_alarm_rate": 0.0
+    },
+    "recallGain": {
+      "delta": 0.1166666666666667,
+      "lo": 0.045454545454545414,
+      "hi": 0.20347749853886568,
+      "p_worse": 0.0
+    },
+    "logLossReduction": {
+      "delta": 0.07354060330237831,
+      "lo": 0.053246586010252464,
+      "hi": 0.09881307134192871,
+      "p_worse": 0.0
+    },
+    "mcnemar": {
+      "aRightBWrong": 7,
+      "aWrongBRight": 0,
+      "p": 0.015625
+    }
+  },
+  "noHarm": {
+    "merchants": 178,
+    "A_noLabels": {
+      "ap": 0.9994252873563219,
+      "roc_auc": 0.9997126436781608,
+      "brier": 0.013409224663809713,
+      "log_loss": 0.05036349027194398,
+      "ece": 0.03569639213747817,
+      "threshold": 0.701067615658363,
+      "recall": 0.9655172413793104,
+      "false_alarm_rate": 0.0
+    },
+    "B_withLabels": {
+      "ap": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.007916867568583149,
+      "log_loss": 0.029648800655803102,
+      "ece": 0.018003289836710585,
+      "threshold": 0.701067615658363,
+      "recall": 0.9655172413793104,
+      "false_alarm_rate": 0.0
+    },
+    "logLossDelta_B_minus_A": {
+      "delta": -0.020714689616140876,
+      "lo": -0.03264967089670462,
+      "hi": -0.009239516773820506,
+      "p_worse": 1.0
+    }
+  },
+  "gate": {
+    "at": "2026-11-25T06:35:51+00:00",
+    "candidate": {
+      "file": "ml\\data\\features.csv",
+      "sha256": "04e8958a6415f34a7f82f5ddb1579a4e8e9389483b19cb2fc26a1685a09c21e8",
+      "synthetic": true,
+      "trainingRows": 886,
+      "analystLabels": 80
+    },
+    "ap": {
+      "delta": 0.001340098881082441,
+      "lo": -1.1102230246251565e-16,
+      "hi": 0.005195128919414367,
+      "p_worse": 0.028
+    },
+    "negBrier": {
+      "delta": 0.006580720248436964,
+      "lo": 0.0017589730592841315,
+      "hi": 0.012344654002743856,
+      "p_worse": 0.0045
+    },
+    "negLogLoss": {
+      "delta": 0.02383382802576052,
+      "lo": 0.01139620847040442,
+      "hi": 0.03806334700374841,
+      "p_worse": 0.0
+    },
+    "rule": "promote if the 95% lower bound of each delta is >= -0.01 (AP, Brier) and >= -0.02 (log loss)",
+    "promoted": true
+  }
+}

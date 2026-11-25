@@ -182,14 +182,19 @@ def load_training() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame | None, li
     cols = feature_columns(df)
     train_i, test_i = holdout_split(df)
     train, test = df.iloc[train_i].reset_index(drop=True), df.iloc[test_i].reset_index(drop=True)
-    real = None
-    if LABELS.exists():
-        real = pd.read_csv(LABELS)
-        real['merchant_id'] = 'case:' + real['merchant_id'].astype(str)
-        real['kind'] = 'analyst label'
-        if len(real) == 0:
-            real = None
-    return train, test, real, cols
+    return train, test, load_labels(LABELS), cols
+
+
+def load_labels(path) -> pd.DataFrame | None:
+    """Analyst-labelled cases exported by ml/export_labels.ts, or None when there are none."""
+    if not path.exists():
+        return None
+    real = pd.read_csv(path)
+    if len(real) == 0:
+        return None
+    real['merchant_id'] = 'case:' + real['merchant_id'].astype(str)
+    real['kind'] = 'analyst label'
+    return real
 
 
 def train_ensemble(train: pd.DataFrame, cols: list[str], real: pd.DataFrame | None, params: dict | None = None, verbose: bool = True):
@@ -425,27 +430,30 @@ def nested_cv(df_all: pd.DataFrame, cols: list[str], t: float, folds: int = 5) -
     return out
 
 
-def promote() -> None:
+def bundle_scores(path, frame: pd.DataFrame) -> np.ndarray:
+    """Calibrated stacked probabilities from a saved bundle (ensemble.json + models.joblib)."""
+    bundle = joblib.load(path / 'models.joblib')
+    meta = json.loads((path / 'ensemble.json').read_text())
+    X = matrix(frame, bundle['features'])
+    Z = np.column_stack([logit(bundle['models'][n].predict_proba(X)[:, 1]) for n in meta['baseModels']])
+    raw = stack(Z, meta['stacker']['intercept'], np.array([meta['stacker']['weights'][n] for n in meta['baseModels']]))
+    return np.clip(apply_calibration(meta.get('calibration', {'method': 'identity'}), raw), 1e-6, 1 - 1e-6)
+
+
+def promote(candidate=None, champion=None, models_dir=None, test: pd.DataFrame | None = None, verbose: bool = True) -> dict:
     """Champion/challenger: promote the candidate only if it is not worse on the fixed held-out merchants."""
-    if not (CANDIDATE / 'ensemble.json').exists():
+    candidate, champion, models_dir = candidate or CANDIDATE, champion or CHAMPION, models_dir or MODELS
+    if not (candidate / 'ensemble.json').exists():
         raise SystemExit('No candidate. Run python -m ml.train_stage2 first.')
-    df = load_portfolio()
-    _, test_i = holdout_split(df)
-    test = df.iloc[test_i].reset_index(drop=True)
+    if test is None:
+        df = load_portfolio()
+        _, test_i = holdout_split(df)
+        test = df.iloc[test_i].reset_index(drop=True)
     y = test['label'].to_numpy()
-
-    def scores(path):
-        bundle = joblib.load(path / 'models.joblib')
-        meta = json.loads((path / 'ensemble.json').read_text())
-        X = matrix(test, bundle['features'])
-        Z = np.column_stack([logit(bundle['models'][n].predict_proba(X)[:, 1]) for n in meta['baseModels']])
-        raw = stack(Z, meta['stacker']['intercept'], np.array([meta['stacker']['weights'][n] for n in meta['baseModels']]))
-        return np.clip(apply_calibration(meta.get('calibration', {'method': 'identity'}), raw), 1e-6, 1 - 1e-6)
-
-    new = scores(CANDIDATE)
-    decision = {'at': datetime.now(timezone.utc).isoformat(timespec='seconds'), 'candidate': json.loads((CANDIDATE / 'ensemble.json').read_text())['data']}
-    if (CHAMPION / 'ensemble.json').exists():
-        old = scores(CHAMPION)
+    new = bundle_scores(candidate, test)
+    decision = {'at': datetime.now(timezone.utc).isoformat(timespec='seconds'), 'candidate': json.loads((candidate / 'ensemble.json').read_text())['data']}
+    if (champion / 'ensemble.json').exists():
+        old = bundle_scores(champion, test)
         # Non-inferiority on three proper or ranking scores; log loss is the most sensitive when AP is saturated.
         ap = paired_bootstrap_delta(y, new, old, average_precision_score)
         neg_brier = paired_bootstrap_delta(y, new, old, lambda a, b: -brier_score_loss(a, b))
@@ -457,16 +465,18 @@ def promote() -> None:
         ok = True
         decision['note'] = 'No champion yet; first promotion.'
     decision['promoted'] = bool(ok)
-    with (MODELS / 'promotions.jsonl').open('a', encoding='utf-8', newline='\n') as f:
+    with (models_dir / 'promotions.jsonl').open('a', encoding='utf-8', newline='\n') as f:
         f.write(json.dumps(decision, default=float) + '\n')
     if ok:
-        prev = MODELS / 'stage2-v1.previous'
+        prev = champion.parent / f'{champion.name}.previous'
         if prev.exists():
             shutil.rmtree(prev)
-        if CHAMPION.exists():
-            CHAMPION.rename(prev)
-        shutil.copytree(CANDIDATE, CHAMPION)
-    print(json.dumps(decision, indent=2, default=float))
+        if champion.exists():
+            champion.rename(prev)
+        shutil.copytree(candidate, champion)
+    if verbose:
+        print(json.dumps(decision, indent=2, default=float))
+    return decision
 
 
 def main() -> None:

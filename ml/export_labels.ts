@@ -1,7 +1,7 @@
 /**
  * Continuous learning, step 1: turn analyst-labelled cases into training rows for Stage 2.
  *
- *   npx tsx ml/export_labels.ts            # reads the case database (MRE_DB_FILE or backend/data/mre.db)
+ *   npx tsx ml/export_labels.ts [out.csv]  # reads the case database (MRE_DB_FILE or backend/data/mre.db)
  *   python -m ml.train_stage2              # trains a candidate with these labels weighted 5x
  *   python -m ml.train_stage2 --promote    # promotes it only if it is not worse than the current model
  *
@@ -34,10 +34,11 @@ const byMerchant = new Map(rows.map(r => [r.id, r]));
 const out = join(root, 'ml', 'data');
 mkdirSync(out, { recursive: true });
 const cols = byMerchant.size ? Object.keys([...byMerchant.values()][0].f) : [];
-writeFileSync(join(out, 'labelled_cases.csv'), [
+const target = process.argv[2] ?? join(out, 'labelled_cases.csv');
+writeFileSync(target, [
   ['merchant_id', 'label', ...cols].join(','),
   ...[...byMerchant.values()].map(r => [r.id, r.label, ...cols.map(c => r.f[c] ?? 0)].join(',')),
 ].join('\n') + '\n');
 const fronts = [...byMerchant.values()].filter(r => r.label === 1).length;
-console.log(`Exported ${byMerchant.size} labelled merchants (${fronts} fronts, ${byMerchant.size - fronts} honest) to ml/data/labelled_cases.csv; skipped ${skipped}.`);
+console.log(`Exported ${byMerchant.size} labelled merchants (${fronts} fronts, ${byMerchant.size - fronts} honest) to ${target}; skipped ${skipped}.`);
 if (byMerchant.size === 0) console.log('No final labels yet. Stage 2 trains on synthetic data only until analysts label cases.');
