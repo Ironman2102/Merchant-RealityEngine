@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@theme {
+/* static: chart and graph code reads these as var(--color-*) at runtime, so emit every token. */
+@theme static {
   --color-bg: #000000;
   --color-panel: #080808;
   --color-panel2: #111111;
@@ -14,6 +15,20 @@
   --color-ok: #34d399;
   --color-warn: #f59e0b;
   --color-bad: #f87171;
+  /* Home-page accents, shared by the demo and the AI Engine. */
+  --color-accent: #6ee7b7;
+  --color-accent-hi: #a7f3d0;
+  --color-quiet: #64748b;
+  /* Categorical colours for the evidence graph and charts, tuned for the black background. */
+  --color-viz-green: #4ade80;
+  --color-viz-amber: #fbbf24;
+  --color-viz-red: #f87171;
+  --color-viz-violet: #c084fc;
+  --color-viz-blue: #60a5fa;
+  --color-viz-cyan: #22d3ee;
+  --color-viz-orange: #fb923c;
+  --color-viz-teal: #2dd4bf;
+  --tracking-label: .18em;
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 }
@@ -80,36 +95,47 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; lette
   .anim-dash, .anim-pulse, .blink, .scanbar::after, .fade-in { animation: none !important; }
 }
 
-.mre-light {
-  --color-bg: #f8fafc;
-  --color-panel: #ffffff;
-  --color-panel2: #f1f5f9;
-  --color-line: #e2e8f0;
-  --color-line2: #cbd5e1;
-  --color-ink: #0f172a;
-  --color-mute: #475569;
-  --color-dim: #64748b;
-  --color-cy: #0284c7;
-  --color-sky: #0ea5e9;
-  --color-ok: #059669;
-  --color-warn: #d97706;
-  --color-bad: #e11d48;
-  background: var(--color-bg);
-  color: var(--color-ink);
-}
-.mre-light ::selection { background: rgba(79, 70, 229, .18); }
-.mre-light :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
-.mre-light * { scrollbar-color: #cbd5e1 transparent; }
+/* Shared app chrome for the guided demo and the AI Engine: the home page's black canvas,
+   hairline borders, mono labels and pill buttons. */
+.mre-app { background: var(--color-bg); color: var(--color-ink); }
+.mre-eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-mute); }
+.mre-app input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), .mre-app select, .mre-app textarea { color-scheme: dark; }
+.mre-app input::placeholder, .mre-app textarea::placeholder { color: var(--color-dim); }
 
 @media print {
   aside, nav, .no-print { display: none !important; }
-  .mre-light { background: #ffffff !important; color: #0f172a !important; }
+  /* Case reports print on white paper, so the app falls back to its light palette. */
+  .mre-app {
+    --color-bg: #ffffff; --color-panel: #ffffff; --color-panel2: #f1f5f9; --color-line: #e2e8f0; --color-line2: #cbd5e1;
+    --color-ink: #0f172a; --color-mute: #475569; --color-dim: #64748b; --color-ok: #059669; --color-warn: #b45309; --color-bad: #e11d48;
+    background: #ffffff !important; color: #0f172a !important;
+  }
   main { max-width: 100% !important; padding: 0 !important; }
 }
 
 .react-flow__attribution { display: none; }
-.react-flow { --xy-background-color: transparent; }
-.react-flow__controls button { background: #ffffff; color: #334155; border-bottom: 1px solid #e2e8f0; }
-.react-flow__controls button:hover { background: #f1f5f9; }
+/* Prefixed so it outranks @xyflow/react/dist/style.css, which loads later with the graph chunk. */
+.mre-app .react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-label-color-default: var(--color-ink);
+  --xy-minimap-background-color-default: var(--color-panel);
+  --xy-minimap-mask-background-color-default: rgba(0, 0, 0, .55);
+  --xy-minimap-mask-stroke-color-default: var(--color-line2);
+  --xy-minimap-mask-stroke-width-default: 1;
+  --xy-minimap-node-background-color-default: var(--color-dim);
+  --xy-controls-button-background-color-default: var(--color-panel2);
+  --xy-controls-button-background-color-hover-default: var(--color-line);
+  --xy-controls-button-color-default: var(--color-mute);
+  --xy-controls-button-color-hover-default: var(--color-ink);
+  --xy-controls-button-border-color-default: var(--color-line);
+}
+.react-flow__controls { box-shadow: none; border: 1px solid var(--color-line2); border-radius: 6px; overflow: hidden; }
+.react-flow__controls button { background: var(--color-panel2); color: var(--color-mute); border-bottom: 1px solid var(--color-line); }
+.react-flow__controls button:hover { background: var(--color-line); color: var(--color-ink); }
+.react-flow__controls button:last-child { border-bottom: 0; }
 .react-flow__controls button svg { fill: currentColor; }
-.react-flow__minimap { background: #f8fafc !important; border: 1px solid #e2e8f0; }
+.react-flow__minimap { background: var(--color-panel) !important; border: 1px solid var(--color-line2); border-radius: 6px; }
+
+/* Recharts on the black canvas: hairline grids, muted ticks, the same panel as the tooltip. */
+.recharts-default-tooltip { border-radius: 6px; box-shadow: 0 12px 30px -12px #000; }
+.recharts-legend-item-text { color: var(--color-mute) !important; }

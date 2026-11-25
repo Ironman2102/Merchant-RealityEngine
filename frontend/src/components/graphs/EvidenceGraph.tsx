@@ -6,14 +6,15 @@ import type { EdgeType, GraphEdgeSpec, GraphNodeSpec, Scenario } from '../../typ
 import type { EvidenceItem } from '../../types/evidence';
 import { Badge, Btn, Callout, StatusBadge } from '../ui/ui';
 import { cx } from '../../utils/format';
+import { C, tint } from '../charts/theme';
 
 export const EDGE_STYLE: Record<EdgeType, { color: string; dash?: string; label: string; blurb: string }> = {
-  ENTITY_RESOLUTION: { color: '#16a34a', label: 'Entity resolution', blurb: 'Deterministic identifier match, such as a link issued to a merchant.' },
-  BEHAVIOURAL_SIMILARITY: { color: '#d97706', dash: '6 4', label: 'Behavioural similarity', blurb: 'Statistical resemblance. Not proof of common ownership or identity.' },
-  PAYMENT_FLOW: { color: '#dc2626', label: 'Payment flow', blurb: 'Money moving between parties.' },
-  SHARED_INFRASTRUCTURE: { color: '#9333ea', dash: '3 4', label: 'Shared infrastructure', blurb: 'Common hosting, device, template or asset.' },
-  WEBSITE_LINK: { color: '#2563eb', dash: '8 3', label: 'Website link', blurb: 'A payment link or checkout embedded on a page.' },
-  SETTLEMENT_RELATIONSHIP: { color: '#0891b2', label: 'Settlement relationship', blurb: 'Where collected funds are paid out.' },
+  ENTITY_RESOLUTION: { color: C.green, label: 'Entity resolution', blurb: 'Deterministic identifier match, such as a link issued to a merchant.' },
+  BEHAVIOURAL_SIMILARITY: { color: C.amber, dash: '6 4', label: 'Behavioural similarity', blurb: 'Statistical resemblance. Not proof of common ownership or identity.' },
+  PAYMENT_FLOW: { color: C.red, label: 'Payment flow', blurb: 'Money moving between parties.' },
+  SHARED_INFRASTRUCTURE: { color: C.violet, dash: '3 4', label: 'Shared infrastructure', blurb: 'Common hosting, device, template or asset.' },
+  WEBSITE_LINK: { color: C.blue, dash: '8 3', label: 'Website link', blurb: 'A payment link or checkout embedded on a page.' },
+  SETTLEMENT_RELATIONSHIP: { color: C.cyan, label: 'Settlement relationship', blurb: 'Where collected funds are paid out.' },
 };
 
 const ICON: Record<GraphNodeSpec['type'], typeof Building2> = {
@@ -28,14 +29,14 @@ const ICON: Record<GraphNodeSpec['type'], typeof Building2> = {
 };
 
 const NCOL: Record<GraphNodeSpec['type'], string> = {
-  merchant: '#0284c7',
-  payer: '#16a34a',
-  account: '#ea580c',
-  link: '#dc2626',
-  website: '#2563eb',
-  device: '#9333ea',
-  beneficiary: '#d97706',
-  peer: '#0d9488',
+  merchant: C.sky,
+  payer: C.green,
+  account: C.orange,
+  link: C.red,
+  website: C.blue,
+  device: C.violet,
+  beneficiary: C.amber,
+  peer: C.teal,
 };
 
 const STAGE_META = [
@@ -71,9 +72,9 @@ function SubgraphNode({ data }: NodeProps) {
   return (
     <div
       style={{ width, height }}
-      className="pointer-events-none rounded-xl border border-dashed border-slate-300/90 bg-slate-100/55 px-3 py-2"
+      className="pointer-events-none rounded-md border border-dashed border-line2 bg-panel/70 px-3 py-2"
     >
-      <div className="inline-flex items-center rounded bg-white/90 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-600 shadow-2xs ring-1 ring-slate-200/80">
+      <div className="inline-flex items-center rounded bg-bg px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-label text-mute ring-1 ring-line2">
         {title}
       </div>
     </div>
@@ -96,7 +97,7 @@ function MreNode({ data }: NodeProps) {
           : spec.type === 'peer'
             ? 'rounded-lg border-2 border-dashed px-3'
             : spec.type === 'merchant'
-              ? 'rounded-xl border-2 px-3.5 ring-4 ring-sky-100/80'
+              ? 'rounded-xl border-2 px-3.5 ring-4 ring-ink/10'
               : 'rounded-lg border px-3';
 
   return (
@@ -104,14 +105,14 @@ function MreNode({ data }: NodeProps) {
       style={{
         width: NODE_W,
         minHeight: NODE_H,
-        borderColor: sel ? '#4f46e5' : illicitCount > 0 && spec.type !== 'merchant' ? '#ef4444' : path ? color : spec.type === 'merchant' ? '#0284c7' : '#cbd5e1',
-        backgroundColor: spec.type === 'merchant' ? '#f0f9ff' : '#ffffff',
+        borderColor: sel ? C.ink : illicitCount > 0 && spec.type !== 'merchant' ? C.bad : path ? color : spec.type === 'merchant' ? C.sky : C.axis,
+        backgroundColor: spec.type === 'merchant' ? tint(C.sky, 10) : C.panel2,
       }}
       className={cx(
-        'relative flex items-center gap-2.5 py-2 shadow-xs transition-all',
+        'relative flex items-center gap-2.5 py-2 text-ink transition-all',
         shapeCls,
         dim && 'opacity-25',
-        sel ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:shadow-md',
+        sel ? 'ring-2 ring-ink/60' : 'hover:brightness-125',
       )}
     >
       <Handle id="t-left" type="target" position={Position.Left} style={hs} isConnectable={false} />
@@ -123,19 +124,19 @@ function MreNode({ data }: NodeProps) {
       <Handle id="s-top" type="source" position={Position.Top} style={hs} isConnectable={false} />
       <Handle id="s-bottom" type="source" position={Position.Bottom} style={hs} isConnectable={false} />
 
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md" style={{ background: `${color}18`, color }}>
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md" style={{ background: tint(color, 16), color }}>
         <Icon size={16} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-1">
-          <span className="truncate text-[12px] font-semibold text-slate-900" title={spec.label}>{spec.label}</span>
+          <span className="truncate text-[12px] font-semibold text-ink" title={spec.label}>{spec.label}</span>
           {illicitCount > 0 && (
-            <span className="shrink-0 rounded-full bg-rose-100 px-1.5 py-0.5 text-[9.5px] font-semibold text-rose-700">
+            <span className="shrink-0 rounded-full bg-bad/15 px-1.5 py-0.5 text-[9.5px] font-semibold text-bad">
               {illicitCount} flag{illicitCount > 1 ? 's' : ''}
             </span>
           )}
         </div>
-        {spec.sub && <div className="truncate text-[10.5px] text-slate-500" title={spec.sub}>{spec.sub}</div>}
+        {spec.sub && <div className="truncate text-[10.5px] text-dim" title={spec.sub}>{spec.sub}</div>}
       </div>
     </div>
   );
@@ -402,14 +403,14 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
       animated: e.type === 'PAYMENT_FLOW' && (!focus || lit),
       label: showLabel && fullLabel ? fullLabel : undefined,
       labelStyle: {
-        fill: fired.length ? '#9f1239' : '#1e293b',
+        fill: fired.length ? C.bad : C.ink,
         fontSize: 10.5,
         fontWeight: fired.length || lit ? 600 : 500,
       },
       labelBgStyle: {
-        fill: fired.length ? '#fff1f2' : '#ffffff',
-        fillOpacity: 0.95,
-        stroke: fired.length ? '#fecdd3' : '#e2e8f0',
+        fill: C.bg,
+        fillOpacity: 0.92,
+        stroke: fired.length ? C.bad : C.axis,
         strokeWidth: 0.8,
       },
       labelBgPadding: [6, 3] as [number, number],
@@ -452,7 +453,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
                   title={st.blurb}
                   className={cx(
                     'flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs transition-colors',
-                    on ? 'border-slate-300 bg-white text-slate-900 shadow-2xs' : 'border-slate-200 bg-slate-50 text-slate-400',
+                    on ? 'border-line2 bg-panel2 text-ink' : 'border-line bg-transparent text-dim',
                   )}
                 >
                   <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke={st.color} strokeWidth="2.2" strokeDasharray={st.dash} opacity={on ? 1 : 0.35} /></svg>
@@ -464,32 +465,32 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
+            <div className="inline-flex rounded-full border border-line bg-panel p-0.5 text-xs">
               <button
                 onClick={() => setDir('LR')}
-                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'LR' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded-full px-2 py-1 font-medium transition', dir === 'LR' ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
                 title="Left-to-right Mermaid layout"
               >
                 <ArrowLeftRight size={13} /> LR
               </button>
               <button
                 onClick={() => setDir('TD')}
-                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'TD' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded-full px-2 py-1 font-medium transition', dir === 'TD' ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
                 title="Top-down Mermaid layout"
               >
                 <ArrowDownUp size={13} /> TD
               </button>
             </div>
-            <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
+            <div className="inline-flex rounded-full border border-line bg-panel p-0.5 text-xs">
               <button
                 onClick={() => setViewMode('diagram')}
-                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'diagram' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded-full px-2.5 py-1 font-medium transition', viewMode === 'diagram' ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
               >
                 <GitFork size={13} /> Diagram
               </button>
               <button
                 onClick={() => setViewMode('mermaid')}
-                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'mermaid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded-full px-2.5 py-1 font-medium transition', viewMode === 'mermaid' ? 'bg-ink text-bg' : 'text-mute hover:text-ink')}
               >
                 <Code2 size={13} /> Mermaid
               </button>
@@ -498,7 +499,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
         </div>
 
         {viewMode === 'diagram' ? (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs" style={{ height }}>
+          <div className="overflow-hidden rounded-md border border-line bg-bg" style={{ height }}>
             <ReactFlow
               key={`${scenario.id}-${dir}`}
               nodes={nodes}
@@ -514,20 +515,20 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
               onEdgeClick={(_, e) => { setSelE(e.id); setSelN(null); }}
               onPaneClick={() => { setSelN(null); setSelE(null); }}
             >
-              <Background variant={BackgroundVariant.Dots} color="#cbd5e1" gap={22} size={1.1} />
-              <MiniMap pannable zoomable nodeStrokeWidth={2} nodeColor={n => n.type === 'subgraph' ? '#f1f5f9' : '#cbd5e1'} className="!border !border-slate-200 !bg-white/95" />
+              <Background variant={BackgroundVariant.Dots} color={C.axis} gap={22} size={1.1} />
+              <MiniMap pannable zoomable nodeStrokeWidth={2} nodeColor={n => n.type === 'subgraph' ? C.panel2 : C.dim} className="!border !border-line2 !bg-panel" />
               <Controls showInteractive={false} />
             </ReactFlow>
           </div>
         ) : (
-          <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-950 text-slate-100 shadow-xs" style={{ height }}>
-            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-2.5 text-xs">
-              <span className="font-mono text-slate-300">flowchart {dir} · Mermaid specification ({ns.length} nodes, {vis.length} edges)</span>
+          <div className="flex flex-col overflow-hidden rounded-md border border-line bg-bg text-ink" style={{ height }}>
+            <div className="flex items-center justify-between border-b border-line bg-panel px-4 py-2.5 text-xs">
+              <span className="font-mono text-mute">flowchart {dir} · Mermaid specification ({ns.length} nodes, {vis.length} edges)</span>
               <Btn size="sm" variant="outline" onClick={copyMermaid}>
                 {copied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy Mermaid</>}
               </Btn>
             </div>
-            <pre className="flex-1 overflow-auto p-4 font-mono text-xs leading-relaxed text-emerald-200">{mermaidText}</pre>
+            <pre className="flex-1 overflow-auto p-4 font-mono text-xs leading-relaxed text-accent">{mermaidText}</pre>
           </div>
         )}
         <div className="text-xs text-mute">
@@ -537,7 +538,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
 
       <div className="space-y-3">
         <Callout tone="warn" title="Similarity is not identity">Behavioural-similarity and shared-infrastructure edges are leads for a human to verify. They are never treated as proof of common ownership.</Callout>
-        <div className="rounded-xl border border-line bg-panel shadow-xs">
+        <div className="rounded-md border border-line bg-panel">
           <div className="border-b border-line px-4 py-3 text-sm font-semibold">{node ? node.label : selEdge ? `${nm(selEdge.source)} → ${nm(selEdge.target)}` : 'Inspector'}</div>
           <div className="space-y-3 p-4 text-sm">
             {!node && !selEdge && <div className="text-mute">Select a node or an edge to see its relationships and the evidence behind them.</div>}
@@ -545,7 +546,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
               <div className="space-y-1 text-mute">
                 <Badge tone="info">{node.type}</Badge>
                 {node.sub && <div>{node.sub}</div>}
-                {node.note && <div className="text-slate-700">{node.note}</div>}
+                {node.note && <div className="text-ink/80">{node.note}</div>}
                 {hl.es.size > 0 && <div className="text-xs text-dim">Path from merchant: {hl.es.size} hop{hl.es.size > 1 ? 's' : ''} highlighted.</div>}
               </div>
             )}
@@ -553,7 +554,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
               <div key={e.id} className="rounded border border-line bg-panel2 p-3">
                 <div className="mb-1 flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: EDGE_STYLE[e.type].color }} /><span className="text-xs font-medium">{EDGE_STYLE[e.type].label}</span></div>
                 <div className="text-[13px] text-ink">{nm(e.source)} → {nm(e.target)}</div><div className="text-xs text-mute">{e.label}</div>
-                {e.note && <div className="mt-1.5 text-xs text-slate-700">{e.note}</div>}
+                {e.note && <div className="mt-1.5 text-xs text-ink/80">{e.note}</div>}
                 {evOf(e.evidence).map(ev => (
                   <div key={ev.id} className="mt-2 border-t border-line pt-2">
                     <div className="flex items-center justify-between gap-2"><span className="text-xs font-medium">{ev.id} {ev.name}</span><StatusBadge s={ev.status} /></div>

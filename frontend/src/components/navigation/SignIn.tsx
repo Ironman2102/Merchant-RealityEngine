@@ -23,8 +23,8 @@ export function SignInGate({ children }: { children: (user: SessionUser, logout:
     <div className="mx-auto max-w-sm py-10">
       <Panel title="Sign in to the AI Engine" subtitle="Cases hold merchant data, so every action is tied to a named user and role.">
         <form onSubmit={submit} className="space-y-3">
-          <label className="block text-xs text-mute">Username<input autoComplete="username" value={username} onChange={e => setUsername(e.target.value)} className="mt-1 w-full rounded border border-line2 bg-bg px-3 py-2 text-sm text-ink" required /></label>
-          <label className="block text-xs text-mute">Password<input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full rounded border border-line2 bg-bg px-3 py-2 text-sm text-ink" required /></label>
+          <label className="block text-xs text-mute">Username<input autoComplete="username" value={username} onChange={e => setUsername(e.target.value)} className="mt-1 w-full rounded-md border border-line2 bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-ink" required /></label>
+          <label className="block text-xs text-mute">Password<input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full rounded-md border border-line2 bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-ink" required /></label>
           {error && <p role="alert" className="text-xs text-stone-200">{error}</p>}
           <Btn variant="primary" disabled={busy}><LogIn size={14} />{busy ? 'Signing in…' : 'Sign in'}</Btn>
         </form>
@@ -39,7 +39,7 @@ export function SignedInAs({ user, logout }: { user: SessionUser; logout: () => 
     <div className="space-y-1 border-t border-line p-4 text-xs text-mute">
       <div className="flex items-center justify-between gap-2">
         <span>Signed in as <b className="text-ink">{user.username}</b> · <span className="font-mono">{user.role}</span></span>
-        <button onClick={logout} className="inline-flex items-center gap-1 hover:text-ink" aria-label="Sign out"><LogOut size={13} />Sign out</button>
+        <button onClick={logout} className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap hover:text-ink" aria-label="Sign out"><LogOut size={13} />Sign out</button>
       </div>
       <p className="text-[10px] text-dim">Approvals need a different person signed in with their own account.</p>
     </div>

@@ -67,30 +67,30 @@ export function ActionPack({ result }: { result: InvestigationResult }) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-slate-50/80 px-5 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-panel2/80 px-5 py-3.5">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-sm font-semibold text-ink">Analyst Action Pack</h3>
           <Badge tone="info">Drafts. A person sends or files</Badge>
         </div>
         <div className="no-print flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-lg border border-line bg-panel p-0.5 text-xs">
+          <div className="inline-flex rounded-full border border-line bg-panel p-0.5 text-xs">
             <button
               type="button"
               onClick={() => setTab('outreach')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition-colors ${tab === 'outreach' ? 'bg-indigo-50 text-indigo-700' : 'text-mute hover:text-ink'}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors ${tab === 'outreach' ? 'bg-ink text-bg' : 'text-mute hover:text-ink'}`}
             >
               <Mail size={13} />Letter to merchant
             </button>
             <button
               type="button"
               onClick={() => setTab('str')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition-colors ${tab === 'str' ? 'bg-indigo-50 text-indigo-700' : 'text-mute hover:text-ink'}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors ${tab === 'str' ? 'bg-ink text-bg' : 'text-mute hover:text-ink'}`}
             >
               <FileText size={13} />Internal STR facts
             </button>
           </div>
           <Btn size="sm" variant="outline" onClick={() => void copy(tab, activeText)}>
-            {copied === tab ? <><Check size={13} className="text-emerald-600" />Copied</> : <><Copy size={13} />Copy text</>}
+            {copied === tab ? <><Check size={13} className="text-ok" />Copied</> : <><Copy size={13} />Copy text</>}
           </Btn>
           <Btn size="sm" variant="primary" onClick={() => window.print()}>
             <Printer size={13} />Print / Save PDF
@@ -102,7 +102,7 @@ export function ActionPack({ result }: { result: InvestigationResult }) {
         <p className="mb-3 text-xs text-mute">{tab === 'outreach'
           ? 'The same neutral letter for every merchant, whatever fired, so it cannot tip anyone off. If a suspicious-transaction report is being considered, check with the Principal Officer before contact.'
           : 'Internal only. Never send this to the merchant.'}</p>
-        <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-line bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-800">
+        <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-line bg-panel2 p-4 font-mono text-xs leading-relaxed text-ink">
           {activeText}
         </pre>
       </div>

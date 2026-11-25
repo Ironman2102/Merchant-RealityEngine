@@ -2,7 +2,7 @@ import { NavLink, Link, Outlet } from 'react-router-dom';
 import { Activity, BarChart3, Briefcase, Boxes, FileSearch, GitFork, ListChecks, ScrollText, ShieldAlert, Store } from 'lucide-react';
 import { PublicNav } from './PublicNav';
 import { useInvestigation } from '../../hooks/useInvestigation';
-import { cx } from '../../utils/format';
+import { pillLink, shellAside, shellBody, shellMain, shellMobileNav, shellRoot, sideLink } from './appNav';
 
 const NAV = [
   { to: '/demo', label: 'Six merchant scenarios', icon: Briefcase, end: true },
@@ -22,16 +22,16 @@ export function DemoShell() {
   const { detailsOpen } = useInvestigation();
   const visibleNav = detailsOpen ? NAV : NAV.slice(0, 1);
   return (
-    <div className="mre-light min-h-screen bg-bg text-ink">
+    <div className={shellRoot}>
       <PublicNav />
-      <div className="flex min-h-[calc(100vh-3.5rem)] bg-bg">
-        <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 flex-col border-r border-line bg-panel lg:flex">
-          <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="Guided demo">{visibleNav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors', isActive ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-mute hover:bg-panel2 hover:text-ink')}><n.icon size={16} />{n.label}</NavLink>)}</nav>
-          <Link to="/ai-engine" className="border-t border-line p-4 text-xs font-medium text-indigo-700 transition hover:bg-indigo-50/50">Have your own data? Open AI Engine →</Link>
+      <div className={shellBody}>
+        <aside className={shellAside}>
+          <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="Guided demo"><div className="mre-eyebrow px-3 pb-3 pt-2">MRE / Guided demo</div>{visibleNav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={sideLink}><n.icon size={16} />{n.label}</NavLink>)}</nav>
+          <Link to="/ai-engine" className="border-t border-line p-4 text-[11px] font-semibold uppercase leading-relaxed tracking-label text-accent transition hover:text-accent-hi">Have your own data? Open AI Engine →</Link>
         </aside>
         <div className="min-w-0 flex-1">
-          <main className="mx-auto max-w-[1280px] space-y-6 px-5 py-6">
-            <nav className="flex w-full gap-1 overflow-x-auto pb-1 lg:hidden" aria-label="Guided demo mobile">{visibleNav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium', isActive ? 'bg-indigo-50 text-indigo-700' : 'text-mute')}>{n.label}</NavLink>)}</nav>
+          <main className={shellMain}>
+            <nav className={shellMobileNav} aria-label="Guided demo mobile">{visibleNav.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={pillLink}>{n.label}</NavLink>)}</nav>
             <Outlet />
           </main>
         </div>

@@ -5,21 +5,20 @@ import type { MerchantProfile } from '../../types/merchant';
 import { istDayKey, istHour, istMinuteOfDay, inrK } from '../../utils/format';
 import { CUSUM_H } from '../../engines/cusumEngine';
 
-const tip = { contentStyle: { background: '#151515', border: '1px solid #343434', borderRadius: 6, fontSize: 12, color: '#ececec' }, labelStyle: { color: '#989898' }, itemStyle: { color: '#ececec' } };
-const axis = { stroke: '#6a6a6a', fontSize: 11, tickLine: false, axisLine: { stroke: '#242424' } } as const;
+import { C, chartAxis as axis, chartCursor, chartLegend, chartTooltip as tip } from './theme';
 
 export function BaselineChart({ rows, height = 280 }: { rows: WeeklyRow[]; height?: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={rows} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-        <CartesianGrid stroke="#1f1f1f" vertical={false} />
+        <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="week" {...axis} /><YAxis {...axis} tickFormatter={inrK} width={56} />
         <Tooltip {...tip} formatter={(v: number) => inrK(v)} />
-        <Legend wrapperStyle={{ fontSize: 12, color: '#989898' }} />
-        <Line name="Actual" dataKey="actual" stroke="#22c55e" strokeWidth={2.5} dot={{ r: 2.5 }} connectNulls={false} />
-        <Line name="Anchored baseline" dataKey="anchored" stroke="#64748b" strokeDasharray="5 4" dot={false} />
-        <Line name="Seasonal expectation" dataKey="seasonal" stroke="#38bdf8" strokeWidth={1.8} dot={false} />
-        <Line name="Rolling challenger" dataKey="rolling" stroke="#f59e0b" strokeWidth={1.4} strokeDasharray="2 3" dot={false} connectNulls={false} />
+        <Legend {...chartLegend} />
+        <Line name="Actual" dataKey="actual" stroke={C.ok} strokeWidth={2.5} dot={{ r: 2.5, fill: C.panel }} connectNulls={false} />
+        <Line name="Anchored baseline" dataKey="anchored" stroke={C.quiet} strokeDasharray="5 4" dot={false} />
+        <Line name="Seasonal expectation" dataKey="seasonal" stroke={C.sky} strokeWidth={1.8} dot={false} />
+        <Line name="Rolling challenger" dataKey="rolling" stroke={C.warn} strokeWidth={1.4} strokeDasharray="2 3" dot={false} connectNulls={false} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -29,12 +28,12 @@ export function CusumChart({ points, height = 200 }: { points: CusumPoint[]; hei
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={d} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-        <CartesianGrid stroke="#1f1f1f" vertical={false} />
+        <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="week" {...axis} /><YAxis {...axis} width={40} />
-        <Tooltip {...tip} /><Legend wrapperStyle={{ fontSize: 12, color: '#989898' }} />
-        <ReferenceLine y={CUSUM_H} stroke="#ef4444" strokeDasharray="4 3" label={{ value: `h = ${CUSUM_H}`, fill: '#f87171', fontSize: 11, position: 'insideTopLeft' }} />
-        <Line name="Residual R (seasonal)" dataKey="R" stroke="#38bdf8" dot={{ r: 2 }} connectNulls={false} />
-        <Line name="CUSUM S" dataKey="S" stroke="#f97316" strokeWidth={2.2} dot={{ r: 2.5 }} />
+        <Tooltip {...tip} /><Legend {...chartLegend} />
+        <ReferenceLine y={CUSUM_H} stroke={C.bad} strokeDasharray="4 3" label={{ value: `h = ${CUSUM_H}`, fill: C.bad, fontSize: 11, position: 'insideTopLeft' }} />
+        <Line name="Residual R (seasonal)" dataKey="R" stroke={C.sky} dot={{ r: 2, fill: C.panel }} connectNulls={false} />
+        <Line name="CUSUM S" dataKey="S" stroke={C.orange} strokeWidth={2.2} dot={{ r: 2.5, fill: C.panel }} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -54,10 +53,10 @@ export function TicketHistogram({ sales, profile, height = 230 }: { sales: Payme
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid stroke="#1f1f1f" vertical={false} />
+        <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="label" {...axis} interval={0} fontSize={10} /><YAxis {...axis} width={32} />
-        <Tooltip {...tip} cursor={{ fill: 'rgba(255, 255, 255,.04)' }} formatter={(v: number) => [`${v} sales`, '']} />
-        <Bar dataKey="n" radius={[3, 3, 0, 0]}>{data.map((d, i) => <Cell key={i} fill={d.round ? '#f59e0b' : '#22c55e'} fillOpacity={d.round ? 0.9 : 0.7} />)}</Bar>
+        <Tooltip {...tip} cursor={chartCursor} formatter={(v: number) => [`${v} sales`, '']} />
+        <Bar dataKey="n" radius={[3, 3, 0, 0]}>{data.map((d, i) => <Cell key={i} fill={d.round ? C.bad : C.quiet} fillOpacity={d.round ? 0.9 : 0.8} />)}</Bar>
       </BarChart>
     </ResponsiveContainer>
   );
@@ -73,13 +72,13 @@ export function HourChart({ sales, fixtures, profile, height = 230 }: { sales: P
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid stroke="#1f1f1f" vertical={false} />
+        <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="h" {...axis} /><YAxis {...axis} width={32} />
-        <Tooltip {...tip} cursor={{ fill: 'rgba(255, 255, 255,.04)' }} /><Legend wrapperStyle={{ fontSize: 12, color: '#989898' }} />
-        <ReferenceLine x={`${profile.hours[0]}`} stroke="#22c55e" strokeDasharray="3 3" />
-        {profile.hours[1] < 24 && <ReferenceLine x={`${profile.hours[1]}`} stroke="#22c55e" strokeDasharray="3 3" label={{ value: 'closes', fill: '#86efac', fontSize: 10 }} />}
-        <Bar name="Sales (hour of day, IST)" dataKey="normal" stackId="a" fill="#22c55e" fillOpacity={0.7} />
-        {fixtures.length > 0 && <Bar name="In 45 min before a match start" dataKey="prematch" stackId="a" fill="#ef4444" radius={[3, 3, 0, 0]} />}
+        <Tooltip {...tip} cursor={chartCursor} /><Legend {...chartLegend} />
+        <ReferenceLine x={`${profile.hours[0]}`} stroke={C.ok} strokeDasharray="3 3" />
+        {profile.hours[1] < 24 && <ReferenceLine x={`${profile.hours[1]}`} stroke={C.ok} strokeDasharray="3 3" label={{ value: 'closes', fill: C.accent, fontSize: 10 }} />}
+        <Bar name="Sales (hour of day, IST)" dataKey="normal" stackId="a" fill={C.ok} fillOpacity={0.7} />
+        {fixtures.length > 0 && <Bar name="In 45 min before a match start" dataKey="prematch" stackId="a" fill={C.bad} radius={[3, 3, 0, 0]} />}
       </BarChart>
     </ResponsiveContainer>
   );
@@ -92,10 +91,10 @@ export function StateBars({ sales, local, height = 230 }: { sales: PaymentEvent[
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
-        <CartesianGrid stroke="#1f1f1f" horizontal={false} />
+        <CartesianGrid stroke={C.grid} horizontal={false} />
         <XAxis type="number" {...axis} /><YAxis type="category" dataKey="k" {...axis} width={30} />
-        <Tooltip {...tip} cursor={{ fill: 'rgba(255, 255, 255,.04)' }} />
-        <Bar dataKey="n" name="Sales" radius={[0, 3, 3, 0]}>{data.map(d => <Cell key={d.k} fill={local.includes(d.k) || !local.length ? '#22c55e' : '#ef4444'} fillOpacity={0.8} />)}</Bar>
+        <Tooltip {...tip} cursor={chartCursor} />
+        <Bar dataKey="n" name="Sales" radius={[0, 3, 3, 0]}>{data.map(d => <Cell key={d.k} fill={local.includes(d.k) || !local.length ? C.ok : C.bad} fillOpacity={0.8} />)}</Bar>
       </BarChart>
     </ResponsiveContainer>
   );
@@ -105,10 +104,10 @@ export function ReliabilityBars({ data, height = 260 }: { data: { id: string; be
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid stroke="#1f1f1f" vertical={false} />
+        <CartesianGrid stroke={C.grid} vertical={false} />
         <XAxis dataKey="id" {...axis} /><YAxis {...axis} domain={[0, 1]} width={32} />
-        <Tooltip {...tip} cursor={{ fill: 'rgba(255, 255, 255,.04)' }} formatter={(v: number) => v.toFixed(3)} /><Legend wrapperStyle={{ fontSize: 12, color: '#989898' }} />
-        <Bar name="Before" dataKey="before" fill="#ef4444" radius={[2, 2, 0, 0]} /><Bar name="After" dataKey="after" fill="#22c55e" radius={[2, 2, 0, 0]} />
+        <Tooltip {...tip} cursor={chartCursor} formatter={(v: number) => v.toFixed(3)} /><Legend {...chartLegend} />
+        <Bar name="Before" dataKey="before" fill={C.bad} radius={[2, 2, 0, 0]} /><Bar name="After" dataKey="after" fill={C.ok} radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -70,7 +70,7 @@ export function PassportPanel() {
             <div className="flex items-end gap-2"><Btn size="sm" variant="primary" type="submit">Submit for checking</Btn><Btn size="sm" type="button" onClick={() => setAdding(false)}>Cancel</Btn></div>
           </form>
         ) : <Btn size="sm" onClick={() => setAdding(true)}>Record a change</Btn>)}
-        {syncError && <p role="alert" className="text-xs text-rose-700">{syncError}</p>}
+        {syncError && <p role="alert" className="text-xs text-bad">{syncError}</p>}
       </div>
     </Panel>
   );

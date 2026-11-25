@@ -185,10 +185,10 @@ export function PortfolioPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {[
               ['Merchants reviewed', entries.length, 'text-ink', loading ? 'loading…' : userMode ? 'your uploaded data' : 'four demo merchants'],
-              ['Cases opened', sus.length, 'text-rose-700', `${batchReport.fdr.expectedFalseAlarms.toFixed(2)} expected false alarms (FDR)`],
-              ['Cleared (live)', clear.length, 'text-emerald-700', 'no disruption to genuine sales'],
-              ['Monthly GMV at risk', inr(Math.round(batchReport.gmvAtRisk)), 'text-rose-700', `of ${inr(Math.round(batchReport.totalGmv))} total`],
-              ['Genuine GMV preserved', inr(Math.round(batchReport.gmvPreserved)), 'text-emerald-700', `${rings.rings.length} cross-MID ring(s) found`],
+              ['Cases opened', sus.length, 'text-bad', `${batchReport.fdr.expectedFalseAlarms.toFixed(2)} expected false alarms (FDR)`],
+              ['Cleared (live)', clear.length, 'text-ok', 'no disruption to genuine sales'],
+              ['Monthly GMV at risk', inr(Math.round(batchReport.gmvAtRisk)), 'text-bad', `of ${inr(Math.round(batchReport.totalGmv))} total`],
+              ['Genuine GMV preserved', inr(Math.round(batchReport.gmvPreserved)), 'text-ok', `${rings.rings.length} cross-MID ring(s) found`],
             ].map(([l, v, c, s]) => (
               <Card key={l as string} className="px-4 py-3.5">
                 <div className="text-xs font-medium text-mute">{l}</div>
@@ -209,7 +209,7 @@ export function PortfolioPage() {
                           <div className="font-medium text-ink">{m.name}</div>
                           <div className="text-xs text-mute">{m.count} merchant(s)</div>
                         </div>
-                        <div className="font-mono text-xs font-semibold text-rose-700">{inr(Math.round(m.gmv))} / mo</div>
+                        <div className="font-mono text-xs font-semibold text-bad">{inr(Math.round(m.gmv))} / mo</div>
                       </div>
                     ))}
                   </div>
@@ -225,12 +225,12 @@ export function PortfolioPage() {
                 ) : (
                   <div className="space-y-2.5 text-xs">
                     {rings.rings.map(r => (
-                      <div key={r.key} className="rounded-lg border border-rose-200 bg-rose-50/60 px-3 py-2">
+                      <div key={r.key} className="rounded-lg border border-bad/30 bg-bad/10 px-3 py-2">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="flex items-center gap-1.5 font-semibold text-rose-900"><GitFork size={13} />{r.label}</span>
+                          <span className="flex items-center gap-1.5 font-semibold text-bad"><GitFork size={13} />{r.label}</span>
                           <Badge tone={r.severity === 'HIGH' ? 'bad' : 'info'}>{r.metricLabel}</Badge>
                         </div>
-                        <div className="mt-1 text-rose-800">{r.merchants.map(m => `${m.name} (${m.id})`).join(' · ')}</div>
+                        <div className="mt-1 text-bad">{r.merchants.map(m => `${m.name} (${m.id})`).join(' · ')}</div>
                       </div>
                     ))}
                   </div>
@@ -255,14 +255,14 @@ export function PortfolioPage() {
                   {batchReport.drift.detectorDrifts.length > 0 ? (
                     <div className="space-y-1.5 pt-1">
                       {batchReport.drift.detectorDrifts.map(d => (
-                        <div key={d.id} className="flex items-center justify-between rounded border border-amber-200 bg-amber-50/60 px-2.5 py-1.5 text-amber-900">
+                        <div key={d.id} className="flex items-center justify-between rounded border border-warn/30 bg-warn/10 px-2.5 py-1.5 text-warn">
                           <span><Mono>{d.id}</Mono> {d.name}</span>
                           <span className="font-mono">{(d.observedFireRate * 100).toFixed(1)}% vs prior {(d.priorFalsePositive * 100).toFixed(1)}% ({d.ratio.toFixed(1)}×)</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-emerald-700">All evaluated detectors match prior false-positive calibration within bounds.</div>
+                    <div className="text-ok">All evaluated detectors match prior false-positive calibration within bounds.</div>
                   )}
                 </div>
               </Panel>
@@ -295,25 +295,25 @@ export function PortfolioPage() {
 
           <Card className="overflow-x-auto">
             <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-              <thead className="bg-slate-50 text-xs text-mute"><tr>
+              <thead className="bg-panel2 text-xs text-mute"><tr>
                 {['Merchant', 'Declared business', 'Verdict', 'Monthly GMV', 'Main reason', 'Flags', 'Next step', ''].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead>
               <tbody>{rows.map(e => {
                 const v = verdictOf(e), p = e.scenario.profile, step = LADDER.find(l => l.id === e.pack.ladder)!;
                 const reality = computeMerchantReality(e.result);
                 return (
-                  <tr key={e.key} onClick={() => { if (userMode) loadCustom(e.scenario, true, true); nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`); }} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-slate-50', e.suspicious && 'bg-rose-50/30')}>
-                    <td className="px-4 py-3"><div className="flex items-center gap-2.5">{e.suspicious ? <ShieldAlert size={17} className="shrink-0 text-rose-600" /> : <ShieldCheck size={17} className="shrink-0 text-emerald-600" />}
-                      <div><div className="font-semibold text-ink">{p.name}</div><div className="text-xs text-mute">{p.city.split(',')[0]} · <span className="font-mono">{p.id}</span>{e.source === 'uploaded' && <span className="ml-1.5 font-medium text-indigo-600">uploaded</span>}</div></div></div></td>
+                  <tr key={e.key} onClick={() => { if (userMode) loadCustom(e.scenario, true, true); nav(`${userMode ? '/ai-engine' : '/demo'}/portfolio/${e.key}`); }} className={cx('cursor-pointer border-t border-line transition-colors hover:bg-panel2', e.suspicious && 'bg-bad/5')}>
+                    <td className="px-4 py-3"><div className="flex items-center gap-2.5">{e.suspicious ? <ShieldAlert size={17} className="shrink-0 text-bad" /> : <ShieldCheck size={17} className="shrink-0 text-ok" />}
+                      <div><div className="font-semibold text-ink">{p.name}</div><div className="text-xs text-mute">{p.city.split(',')[0]} · <span className="font-mono">{p.id}</span>{e.source === 'uploaded' && <span className="ml-1.5 font-medium text-ink">uploaded</span>}</div></div></div></td>
                     <td className="px-4 py-3"><div className="text-ink">{p.category}</div><div className="text-xs text-mute">MCC {p.mcc}</div></td>
                     <td className="px-4 py-3"><Badge tone={v.tone}>{v.label}{e.suspicious ? ` · ${v.priority}` : ''}</Badge></td>
                     <td className="px-4 py-3">
                       <div className="font-mono text-xs font-semibold text-ink">{inr(reality.monthlyGmv)}</div>
-                      <div className={cx('text-[10px]', e.suspicious ? 'text-rose-700' : 'text-emerald-700')}>
+                      <div className={cx('text-[10px]', e.suspicious ? 'text-bad' : 'text-ok')}>
                         {e.suspicious ? 'at risk' : 'protected'}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-[13px] text-ink">{v.reason}</td>
-                    <td className="px-4 py-3 tabular-nums"><span className={e.coreFlags + e.patternFlags ? 'font-semibold text-rose-700' : 'text-mute'}>{e.coreFlags + e.patternFlags}</span><span className="text-xs text-dim"> / {e.result.evidence.length + e.pack.results.length - 1}</span></td>
+                    <td className="px-4 py-3 tabular-nums"><span className={e.coreFlags + e.patternFlags ? 'font-semibold text-bad' : 'text-mute'}>{e.coreFlags + e.patternFlags}</span><span className="text-xs text-dim"> / {e.result.evidence.length + e.pack.results.length - 1}</span></td>
                     <td className="px-4 py-3 text-xs text-mute">{step.name}: {step.action.split(';')[0]}</td>
                     <td className="px-3 py-3 text-mute"><ChevronRight size={16} /></td>
                   </tr>);
@@ -329,7 +329,7 @@ export function PortfolioPage() {
           <Card className="p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink/5 text-ink">
                   <Sliders size={18} />
                 </div>
                 <div>
@@ -353,7 +353,7 @@ export function PortfolioPage() {
                 value={effectiveCap}
                 onChange={e => setCapacity(Number(e.target.value))}
                 aria-label="Daily analyst review capacity"
-                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-indigo-600"
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-line accent-zinc-300"
               />
               <div className="mt-1 flex justify-between font-mono text-[10px] text-dim">
                 <span>1/day</span>
@@ -363,17 +363,17 @@ export function PortfolioPage() {
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 px-4 py-3">
+              <div className="rounded-xl border border-ink/20 bg-ink/5 px-4 py-3">
                 <div className="text-xs font-medium text-mute">Suspicious Loss Captured</div>
-                <div className="mt-0.5 font-mono text-xl font-bold text-indigo-700">{inr(Math.round(activeLoss))}</div>
-                <div className="text-[11px] text-indigo-700/80">{lossCoveredPct.toFixed(1)}% of total queue exposure</div>
+                <div className="mt-0.5 font-mono text-xl font-bold text-ink">{inr(Math.round(activeLoss))}</div>
+                <div className="text-[11px] text-ink/80">{lossCoveredPct.toFixed(1)}% of total queue exposure</div>
               </div>
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-3">
+              <div className="rounded-xl border border-ok/30 bg-ok/5 px-4 py-3">
                 <div className="text-xs font-medium text-mute">Estimated Hidden Fronts Caught</div>
-                <div className="mt-0.5 font-mono text-xl font-bold text-emerald-700">{estRecallPct.toFixed(1)}%</div>
-                <div className="text-[11px] text-emerald-700/80">~{activeExpectedFronts.toFixed(1)} of {activeBenchmarkFronts} flagged fronts</div>
+                <div className="mt-0.5 font-mono text-xl font-bold text-ok">{estRecallPct.toFixed(1)}%</div>
+                <div className="text-[11px] text-ok/80">~{activeExpectedFronts.toFixed(1)} of {activeBenchmarkFronts} flagged fronts</div>
               </div>
-              <div className="rounded-xl border border-line bg-slate-50 px-4 py-3">
+              <div className="rounded-xl border border-line bg-panel2 px-4 py-3">
                 <div className="text-xs font-medium text-mute">Expected False Alarms</div>
                 <div className="mt-0.5 font-mono text-xl font-bold text-ink">{activeFalseAlarms.toFixed(2)}</div>
                 <div className="text-[11px] text-dim">Bayesian FDR q ≤ 10%</div>
@@ -387,7 +387,7 @@ export function PortfolioPage() {
             bodyClass="p-0 overflow-x-auto"
           >
             <table className={tableCls}>
-              <thead className="bg-slate-50">
+              <thead className="bg-panel2">
                 <tr>
                   <Th>Rank</Th>
                   <Th>Merchant</Th>
@@ -406,7 +406,7 @@ export function PortfolioPage() {
                       <Td className="font-mono text-xs text-mute">#{idx + 1}</Td>
                       <Td><div className="font-semibold text-ink">{item.name}</div><Mono className="text-xs text-dim">{item.merchantId}</Mono></Td>
                       <Td><Badge tone={inToday ? 'info' : 'mute'}>{inToday ? 'Today’s shift' : 'Next shift'}</Badge></Td>
-                      <Td className="font-mono text-xs font-semibold text-rose-700">{fmtProb(item.posterior)}</Td>
+                      <Td className="font-mono text-xs font-semibold text-bad">{fmtProb(item.posterior)}</Td>
                       <Td className="font-mono text-xs text-mute">{fmtInterval(item.ci)}</Td>
                       <Td><Badge tone="bad">{item.action}</Badge></Td>
                       <Td className="font-mono text-xs font-semibold text-ink">{inr(Math.round(item.expectedLoss))}</Td>

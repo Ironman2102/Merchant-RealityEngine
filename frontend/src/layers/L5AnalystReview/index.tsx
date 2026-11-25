@@ -26,7 +26,7 @@ function Chain({ title, tone, items, mode, sel, onSel }: { title: string; tone: 
       <ol className="divide-y divide-line">
         {items.map((it, i) => (
           <li key={it.label}><button onClick={() => onSel(it.label)} className={cx('flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-panel2/60', sel === it.label && 'bg-panel2')}>
-            <span className="relative mt-0.5 flex flex-col items-center"><span className={cx('h-2.5 w-2.5 rounded-full', vTone[mode][it.verdict] === 'bad' ? 'bg-neutral-400' : vTone[mode][it.verdict] === 'ok' ? 'bg-gray-400' : vTone[mode][it.verdict] === 'warn' ? 'bg-stone-400' : 'bg-slate-500')} />{i < items.length - 1 && <span className="absolute top-3 h-8 w-px bg-line2" />}</span>
+            <span className="relative mt-0.5 flex flex-col items-center"><span className={cx('h-2.5 w-2.5 rounded-full', vTone[mode][it.verdict] === 'bad' ? 'bg-neutral-400' : vTone[mode][it.verdict] === 'ok' ? 'bg-gray-400' : vTone[mode][it.verdict] === 'warn' ? 'bg-stone-400' : 'bg-dim')} />{i < items.length - 1 && <span className="absolute top-3 h-8 w-px bg-line2" />}</span>
             <span className="min-w-0 flex-1"><span className="block text-[13px] font-medium">{it.label}</span>{sel === it.label && <><span className="block text-xs text-mute">{it.detail}</span><span className="mt-1 block text-[11px] text-dim">Tests: {it.evidenceIds.join(', ')}</span></>}</span>
             <Badge tone={vTone[mode][it.verdict]}>{vLabel[mode][it.verdict]}</Badge></button></li>))}
       </ol>

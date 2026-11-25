@@ -185,7 +185,7 @@ export function MlPanel({ caseId, scenarioId, posterior }: { caseId: string | nu
               {ml.ensemble.method === 'stacked' && (
                 <ul className="mt-2 space-y-0.5 text-xs text-mute">
                   {ml.ensemble.novelty?.flagged && (
-                    <li className="text-rose-700"><b>Unfamiliar pattern:</b> this merchant is unlike anything in training (distance {ml.ensemble.novelty.distance.toFixed(1)} vs {ml.ensemble.novelty.threshold.toFixed(1)}). The scores below are not reliable for it{ml.ensemble.novelty.unfamiliar.length ? `; unusual: ${ml.ensemble.novelty.unfamiliar.map(words).join(', ')}` : ''}.</li>
+                    <li className="text-bad"><b>Unfamiliar pattern:</b> this merchant is unlike anything in training (distance {ml.ensemble.novelty.distance.toFixed(1)} vs {ml.ensemble.novelty.threshold.toFixed(1)}). The scores below are not reliable for it{ml.ensemble.novelty.unfamiliar.length ? `; unusual: ${ml.ensemble.novelty.unfamiliar.map(words).join(', ')}` : ''}.</li>
                   )}
                   {ml.ensemble.conformalSet && (
                     <li>{Math.round((1 - (ml.ensemble.conformalAlpha ?? 0.1)) * 100)}% conformal prediction set: <b className="text-ink">{ml.ensemble.conformalSet.length === 1 ? ml.ensemble.conformalSet[0] : ml.ensemble.conformalSet.length === 0 ? 'none (atypical)' : 'front or honest (uncertain)'}</b></li>

@@ -173,7 +173,7 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
     <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
       {/* Left: Claimed vs. Reality table */}
       <Card className="overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-slate-50/80 px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-panel2/80 px-5 py-3.5">
           <div>
             <h3 className="text-sm font-semibold text-ink">Declared KYC Profile vs. Observed Payment Reality</h3>
             <p className="text-xs text-mute">{result.scope.kind === 'link' ? `${result.scope.label}: ` : 'Whole account: '}{r.salesCount.toLocaleString()} observed sales ({Math.round(r.windowDays)} days)</p>
@@ -185,22 +185,22 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
 
         <div className="divide-y divide-line">
           {rows.map(row => (
-            <div key={row.label} className={cx('grid gap-3 px-5 py-3.5 sm:grid-cols-[1fr_1.15fr_auto] sm:items-center', row.mismatch && 'bg-rose-50/40')}>
+            <div key={row.label} className={cx('grid gap-3 px-5 py-3.5 sm:grid-cols-[1fr_1.15fr_auto] sm:items-center', row.mismatch && 'bg-bad/5')}>
               <div>
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-ink">
-                  <row.icon size={14} className={row.mismatch ? 'text-rose-600' : 'text-slate-500'} />
+                  <row.icon size={14} className={row.mismatch ? 'text-bad' : 'text-dim'} />
                   {row.label}
                 </div>
                 <div className="mt-1 text-xs text-mute">
-                  <span className="font-medium text-slate-500">Claimed:</span> {row.claimed}
+                  <span className="font-medium text-dim">Claimed:</span> {row.claimed}
                 </div>
               </div>
               <div>
                 <div className="text-xs font-medium text-ink">{row.observed}</div>
                 <div className="mt-1.5 flex items-center gap-2">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
                     <div
-                      className={cx('h-full rounded-full transition-all', row.mismatch ? 'bg-rose-500' : row.warn ? 'bg-amber-500' : 'bg-emerald-500')}
+                      className={cx('h-full rounded-full transition-all', row.mismatch ? 'bg-bad' : row.warn ? 'bg-warn' : 'bg-ok')}
                       style={{ width: `${Math.max(4, Math.min(100, row.barValue * 100))}%` }}
                     />
                   </div>
@@ -217,7 +217,7 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
 
       {/* Right: 24-Hour IST Activity Chart */}
       <Card className="flex flex-col overflow-hidden">
-        <div className="border-b border-line bg-slate-50/80 px-5 py-3.5">
+        <div className="border-b border-line bg-panel2/80 px-5 py-3.5">
           <h3 className="text-sm font-semibold text-ink">24-Hour Payment Activity (IST)</h3>
           <p className="text-xs text-mute">
             {!hoursKnown || (openH === 0 && closeH === 24)
@@ -239,10 +239,10 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
                     className={cx(
                       'w-full rounded-t transition-all',
                       count === 0
-                        ? 'bg-slate-100'
+                        ? 'bg-panel2'
                         : isOffSpike
-                          ? 'bg-rose-500 hover:bg-rose-600'
-                          : 'bg-indigo-500/80 hover:bg-indigo-600',
+                          ? 'bg-bad hover:bg-bad'
+                          : 'bg-quiet hover:bg-dim',
                     )}
                     style={{ height: `${heightPct}%` }}
                   />
@@ -259,12 +259,12 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
             <span>23:00</span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-slate-50 px-3.5 py-2.5 text-xs">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-panel2 px-3.5 py-2.5 text-xs">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-indigo-500/80" />Open hours</span>
-              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />Closed hours</span>
+              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-quiet" />Open hours</span>
+              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-bad" />Closed hours</span>
             </div>
-            <span className={cx('font-semibold', status('C2').warn ? 'text-rose-700' : 'text-emerald-700')}>
+            <span className={cx('font-semibold', status('C2').warn ? 'text-bad' : 'text-ok')}>
               {hoursKnown ? `${pct(r.offHoursShare)} outside declared hours` : 'Hours not declared'}
             </span>
           </div>

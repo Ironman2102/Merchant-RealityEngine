@@ -161,14 +161,14 @@ function Cleared({ e }: { e: PortfolioEntry }) {
   const ask = e.result.fusion.followUp === 'ASK';
   return (
     <div className="space-y-4">
-      {(alarm || ask) && <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
-        <div className="font-semibold text-amber-900">{ask ? 'Change detected — ask the merchant before acting' : 'Profile change noted, no conduct signal'}</div>
+      {(alarm || ask) && <div className="rounded-lg border border-warn/30 bg-warn/5 p-4">
+        <div className="font-semibold text-warn">{ask ? 'Change detected — ask the merchant before acting' : 'Profile change noted, no conduct signal'}</div>
         <p className="mt-1 text-sm text-mute">{alarm ? `${alarm.observed}. ` : ''}Everything that fired is a departure from normal, not conduct. No case is opened and nothing is restricted; the merchant gets a Context Passport request.</p>
         <div className="mt-3"><ChartBox title="Weekly collections vs baselines"><BaselineChart rows={e.result.l2.rows} height={220} /></ChartBox></div>
       </div>}
       <div className="rounded-lg border border-line bg-panel p-4">
         <div className="font-semibold text-ink">Why it behaves like the business it declared ({e.scenario.profile.category})</div>
-        <div className="mt-3 grid gap-2 md:grid-cols-2">{benign.map(x => <div key={x.id} className="rounded border border-line bg-panel2 p-2.5 text-[12.5px]"><div className="font-medium"><span className="mr-1.5 font-mono text-xs font-semibold text-indigo-700">{x.id}</span>{x.name}</div><div className="mt-0.5 text-ink">{x.observed}</div><div className="text-[11px] text-dim">Hard to fake: {pct(x.fakeDifficulty)}</div></div>)}</div>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">{benign.map(x => <div key={x.id} className="rounded border border-line bg-panel2 p-2.5 text-[12.5px]"><div className="font-medium"><span className="mr-1.5 font-mono text-xs font-semibold text-ink">{x.id}</span>{x.name}</div><div className="mt-0.5 text-ink">{x.observed}</div><div className="text-[11px] text-dim">Hard to fake: {pct(x.fakeDifficulty)}</div></div>)}</div>
         <div className="mt-3 grid gap-3 lg:grid-cols-2"><ChartBox title="Ticket sizes"><TicketHistogram sales={sales(e)} profile={e.scenario.profile} height={200} /></ChartBox><ChartBox title="Payer states"><StateBars sales={sales(e)} local={e.scenario.profile.localStates} height={200} /></ChartBox></div>
       </div>
     </div>);
@@ -183,7 +183,7 @@ export function CasePage() {
   const e = get(key);
   const portfolioPath = mode === 'user' ? '/ai-engine/portfolio' : '/demo/portfolio';
   const investigationPath = mode === 'user' ? '/ai-engine/investigations' : '/demo/investigations';
-  if (!e) return <div className="py-16 text-center text-mute">{loading ? 'Loading merchant…' : <>Merchant not found. <Link to={portfolioPath} className="font-medium text-indigo-700 hover:underline">Back to the portfolio</Link></>}</div>;
+  if (!e) return <div className="py-16 text-center text-mute">{loading ? 'Loading merchant…' : <>Merchant not found. <Link to={portfolioPath} className="font-medium text-ink hover:underline">Back to the portfolio</Link></>}</div>;
 
   const p = e.scenario.profile, f = e.result.fusion, v = verdictOf(e);
   const reasons = THEMES.filter(t => items(e, t.ids).some(i => i.flagged));
@@ -196,9 +196,9 @@ export function CasePage() {
     <>
       <Link to={portfolioPath} className="inline-flex items-center gap-1.5 text-sm text-mute hover:text-ink"><ArrowLeft size={15} />Portfolio</Link>
 
-      <div className={cx('rounded-lg border p-5', e.suspicious ? 'border-rose-200 bg-rose-50/50' : 'border-emerald-200 bg-emerald-50/50')}>
+      <div className={cx('rounded-lg border p-5', e.suspicious ? 'border-bad/30 bg-bad/5' : 'border-ok/30 bg-ok/5')}>
         <div className="flex flex-wrap items-start gap-4">
-          {e.suspicious ? <ShieldAlert className="text-rose-600" size={36} /> : <ShieldCheck className="text-emerald-600" size={36} />}
+          {e.suspicious ? <ShieldAlert className="text-bad" size={36} /> : <ShieldCheck className="text-ok" size={36} />}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-semibold tracking-tight">{p.name}</h1><Badge tone={v.tone}>{v.label}{e.suspicious ? ` · ${f.priority} priority` : ''}</Badge></div>
             <div className="mt-0.5 text-sm text-mute">{p.city} · {p.category} (MCC {p.mcc}) · account {p.accountAgeDays.toLocaleString('en-IN')} days old · <span className="font-mono">{p.id}</span></div>
@@ -212,7 +212,7 @@ export function CasePage() {
             </div>
           </div>
         </div>
-        {e.suspicious && <div className="mt-4 rounded border border-line bg-panel px-3 py-2.5 text-sm"><span className="text-mute">Proposed action: </span>{plan.actions[0]}{plan.keepsRunning.length > 0 && <span className="font-medium text-emerald-700"> · keeps running: {plan.keepsRunning.join(', ')}</span>}</div>}
+        {e.suspicious && <div className="mt-4 rounded border border-line bg-panel px-3 py-2.5 text-sm"><span className="text-mute">Proposed action: </span>{plan.actions[0]}{plan.keepsRunning.length > 0 && <span className="font-medium text-ok"> · keeps running: {plan.keepsRunning.join(', ')}</span>}</div>}
         <div className="mt-4 flex flex-wrap gap-2"><Btn variant="primary" onClick={open7}>Investigate in the 7-layer console <ArrowRight size={14} /></Btn></div>
       </div>
 

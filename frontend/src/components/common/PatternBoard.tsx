@@ -13,8 +13,8 @@ type Row = { id: string; name: string; status: PatternStatus; observed: string; 
 
 const STYLE: Record<PatternStatus, { label: string; cls: string; card: string; Icon: typeof AlertTriangle }> = {
   FLAGGED: { label: 'Flagged', cls: 'bg-neutral-400/15 text-neutral-300', card: 'border-neutral-400/40 bg-neutral-400/[0.04]', Icon: AlertTriangle },
-  CLEAR: { label: 'Clear', cls: 'bg-emerald-50 text-emerald-700', card: 'border-line bg-panel', Icon: CheckCircle2 },
-  UNKNOWN: { label: 'Unknown · no data', cls: 'bg-slate-500/20 text-slate-400', card: 'border-line border-dashed bg-panel', Icon: CircleHelp },
+  CLEAR: { label: 'Clear', cls: 'bg-ok/10 text-ok', card: 'border-line bg-panel', Icon: CheckCircle2 },
+  UNKNOWN: { label: 'Unknown · no data', cls: 'bg-dim/20 text-dim', card: 'border-line border-dashed bg-panel', Icon: CircleHelp },
   INPUT: { label: 'Needs merchant input', cls: 'bg-stone-400/15 text-stone-300', card: 'border-stone-400/40 bg-stone-400/[0.04]', Icon: MessageSquareText },
 };
 const fromEvidence = (e: EvidenceItem): Row => ({
@@ -28,7 +28,7 @@ function Card({ r, children }: { r: Row; children?: React.ReactNode }) {
   return (
     <div className={cx('rounded-md border p-3.5', s.card)}>
       <div className="flex items-start justify-between gap-3">
-        <div className="text-sm font-medium"><span className="mr-1.5 font-mono text-xs font-semibold text-indigo-700">{r.id}</span>{r.name}</div>
+        <div className="text-sm font-medium"><span className="mr-1.5 font-mono text-xs font-semibold text-ink">{r.id}</span>{r.name}</div>
         <span className={cx('flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium', s.cls)}><s.Icon size={11} />{s.label}</span>
       </div>
       <div className="mt-2 grid gap-2 text-[12.5px] sm:grid-cols-2">
@@ -48,7 +48,7 @@ function Passport({ res }: { res: InvestigationResult }) {
   return (
     <div className="mt-3 rounded-md border border-line bg-panel2 p-3 text-xs text-mute">
       {change.length > 0 && <div>A verified Context Passport could explain: {change.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
-      {conduct.length > 0 && <div className="font-medium text-rose-700">No passport can explain conduct signals: {conduct.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
+      {conduct.length > 0 && <div className="font-medium text-bad">No passport can explain conduct signals: {conduct.map(e => `${e.id} ${e.name}`).join(' · ')}</div>}
       {!change.length && !conduct.length && <div>No profile or conduct anomalies flagged.</div>}
     </div>
   );
@@ -67,7 +67,7 @@ export function PatternBoard({ res, label = null }: { res: InvestigationResult; 
   return (
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[['Patterns checked', all.length, 'text-ink'], ['Flagged', n('FLAGGED'), 'text-rose-700'], ['Clear', n('CLEAR'), 'text-emerald-700'], ['Needs merchant input', n('INPUT'), 'text-amber-700'], ['Unknown (no data)', n('UNKNOWN'), 'text-slate-500']].map(([l, v, c]) => (
+        {[['Patterns checked', all.length, 'text-ink'], ['Flagged', n('FLAGGED'), 'text-bad'], ['Clear', n('CLEAR'), 'text-ok'], ['Needs merchant input', n('INPUT'), 'text-warn'], ['Unknown (no data)', n('UNKNOWN'), 'text-dim']].map(([l, v, c]) => (
           <div key={l as string} className="rounded-md border border-line bg-panel p-4"><div className="text-xs text-mute">{l}</div><div className={cx('mt-1 text-2xl font-semibold tabular-nums', c as string)}>{v}</div></div>))}
       </div>
 
@@ -102,7 +102,7 @@ export function PatternBoard({ res, label = null }: { res: InvestigationResult; 
           if (!rows.length) return null;
           return (
             <div key={f.id}>
-              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mute"><span className="font-mono font-semibold text-indigo-700">{f.id}</span> · {f.name}</div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mute"><span className="font-mono font-semibold text-ink">{f.id}</span> · {f.name}</div>
               <div className="grid gap-3 lg:grid-cols-2">{rows.map(r => <Card key={r.id} r={r} />)}</div>
             </div>);
         })}

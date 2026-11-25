@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { Logo } from '../common/Logo';
-import { Btn } from '../ui/ui';
 
 export function useScrollTo() {
   const nav = useNavigate(), loc = useLocation();
@@ -21,31 +20,33 @@ export function PublicNav({ landing = false }: { landing?: boolean }) {
   if (landing) return (
     <header className="sticky top-0 z-40 bg-black px-5 pt-3 md:px-8">
       <nav className="mx-auto grid h-12 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center md:grid-cols-5" aria-label="Primary">
-        <Link to="/demo" className="hidden justify-self-start text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-1 md:block">DEMO</Link>
-        <Link to="/ai-engine" className="hidden justify-self-center text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-2 md:block">AI ENGINE</Link>
+        <Link to="/demo" className="hidden justify-self-start text-[11px] font-semibold tracking-[.18em] text-accent transition hover:text-accent-hi md:col-start-1 md:block">DEMO</Link>
+        <Link to="/ai-engine" className="hidden justify-self-center text-[11px] font-semibold tracking-[.18em] text-accent transition hover:text-accent-hi md:col-start-2 md:block">AI ENGINE</Link>
         <Link to="/" aria-label="Merchant Reality Engine home" className="col-start-2 justify-self-center text-[27px] font-black leading-none tracking-[-.07em] md:col-start-3">MRE.</Link>
-        <button onClick={() => go('how')} className="hidden justify-self-center text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-4 md:block">HOW IT WORKS</button>
-        <button onClick={() => go('workflow')} className="hidden justify-self-end text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-5 md:block">FLOWCHART</button>
-        <button className="col-start-3 row-start-1 justify-self-end rounded p-2 text-[#6ee7b7] md:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button>
+        <button onClick={() => go('how')} className="hidden justify-self-center text-[11px] font-semibold tracking-[.18em] text-accent transition hover:text-accent-hi md:col-start-4 md:block">HOW IT WORKS</button>
+        <button onClick={() => go('workflow')} className="hidden justify-self-end text-[11px] font-semibold tracking-[.18em] text-accent transition hover:text-accent-hi md:col-start-5 md:block">FLOWCHART</button>
+        <button className="col-start-3 row-start-1 justify-self-end rounded p-2 text-accent md:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button>
       </nav>
-      {open && <div className="absolute inset-x-0 top-full z-50 grid gap-4 border-y border-white/15 bg-black px-6 py-5 text-xs font-semibold tracking-[.18em] text-[#6ee7b7] md:hidden"><Link onClick={() => setOpen(false)} to="/demo">DEMO</Link><Link onClick={() => setOpen(false)} to="/ai-engine">AI ENGINE</Link><button className="text-left" onClick={() => { setOpen(false); go('how'); }}>HOW IT WORKS</button><button className="text-left" onClick={() => { setOpen(false); go('workflow'); }}>FLOWCHART</button></div>}
+      {open && <div className="absolute inset-x-0 top-full z-50 grid gap-4 border-y border-white/15 bg-black px-6 py-5 text-xs font-semibold tracking-[.18em] text-accent md:hidden"><Link onClick={() => setOpen(false)} to="/demo">DEMO</Link><Link onClick={() => setOpen(false)} to="/ai-engine">AI ENGINE</Link><button className="text-left" onClick={() => { setOpen(false); go('how'); }}>HOW IT WORKS</button><button className="text-left" onClick={() => { setOpen(false); go('workflow'); }}>FLOWCHART</button></div>}
     </header>
   );
+  const link = 'rounded px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-label transition';
+  const route = ({ isActive }: { isActive: boolean }) => `${link} ${isActive ? 'text-ink' : 'text-accent hover:text-accent-hi'}`;
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
-        <Link to="/" aria-label="Merchant Reality Engine home"><Logo /></Link>
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-          {ITEMS.map(([l, id]) => <button key={id} onClick={() => go(id)} className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">{l}</button>)}
-          <Link to="/architecture" className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">Architecture</Link>
-          <Link to="/ai-engine" className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">AI Engine</Link>
-          <Link to="/demo" className="rounded px-3 py-1.5 text-sm text-mute hover:text-ink">Guided demo</Link>
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-4 px-5">
+        <Link to="/" aria-label="Merchant Reality Engine home" className="flex items-baseline gap-3"><span className="text-[24px] font-black leading-none tracking-[-.07em]">MRE.</span><span className="mre-eyebrow hidden !text-[10px] sm:inline">Merchant Reality Engine</span></Link>
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+          {ITEMS.map(([l, id]) => <button key={id} onClick={() => go(id)} className={`${link} text-accent hover:text-accent-hi`}>{l}</button>)}
+          <NavLink to="/architecture" className={route}>Architecture</NavLink>
+          <NavLink to="/ai-engine" className={route}>AI Engine</NavLink>
+          <NavLink to="/demo" className={route}>Guided demo</NavLink>
         </nav>
-        <div className="flex items-center gap-2"><Link to="/ai-engine"><Btn variant="primary" size="sm">Open AI Engine</Btn></Link>
-          <button className="rounded p-1.5 text-mute md:hidden" onClick={() => setOpen(o => !o)} aria-label="Menu" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button></div>
+        <div className="flex items-center gap-2"><Link to="/ai-engine" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-ink px-4 py-1.5 text-[11px] font-bold uppercase tracking-label transition hover:bg-ink hover:text-bg">Open AI Engine <ArrowUpRight size={14} strokeWidth={2.5} /></Link>
+          <button className="rounded p-1.5 text-accent lg:hidden" onClick={() => setOpen(o => !o)} aria-label="Menu" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button></div>
       </div>
-      {open && <div className="border-t border-line px-5 py-3 md:hidden">{ITEMS.map(([l, id]) => <button key={id} onClick={() => { setOpen(false); go(id); }} className="block w-full py-2 text-left text-sm text-mute">{l}</button>)}
-        <Link to="/architecture" className="block py-2 text-sm text-mute" onClick={() => setOpen(false)}>Architecture</Link><Link to="/ai-engine" className="block py-2 text-sm text-mute" onClick={() => setOpen(false)}>AI Engine</Link><Link to="/demo" className="block py-2 text-sm text-mute" onClick={() => setOpen(false)}>Guided demo</Link></div>}
+      {open && <div className="grid gap-1 border-t border-line bg-bg px-5 py-4 text-[11px] font-semibold uppercase tracking-label lg:hidden">{ITEMS.map(([l, id]) => <button key={id} onClick={() => { setOpen(false); go(id); }} className="block w-full py-2 text-left text-accent">{l}</button>)}
+        <Link to="/architecture" className="block py-2 text-accent" onClick={() => setOpen(false)}>Architecture</Link><Link to="/ai-engine" className="block py-2 text-accent" onClick={() => setOpen(false)}>AI Engine</Link><Link to="/demo" className="block py-2 text-accent" onClick={() => setOpen(false)}>Guided demo</Link></div>}
     </header>
   );
 }

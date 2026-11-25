@@ -21,7 +21,7 @@ export function L2Body({ r }: { r: InvestigationResult }) {
     <>
       <Panel title="What the merchant declared at onboarding" subtitle="Their KYC profile—used to see what they claim to sell, NOT blindly trusted as the only rulebook."><ProfileCard r={r} /></Panel>
       <div className="grid gap-4 lg:grid-cols-3">
-        {[['Onboarding baseline', 'Their normal weekly volume when they first signed up. Catches slow, steady drift over months.', 'bg-slate-500'], ['Festival-adjusted expectation', `Raises expected sales during festivals (from the category calendar, not the merchant’s claim) so genuine holiday rushes don't look like fraud.`, 'bg-stone-400'], ['Recent 4-week trend', 'Rolling average of the last 4 weeks. Helps spot sudden jumps vs gradual organic growth.', 'bg-zinc-400']].map(([t, d, c]) => (
+        {[['Onboarding baseline', 'Their normal weekly volume when they first signed up. Catches slow, steady drift over months.', 'bg-dim'], ['Festival-adjusted expectation', `Raises expected sales during festivals (from the category calendar, not the merchant’s claim) so genuine holiday rushes don't look like fraud.`, 'bg-stone-400'], ['Recent 4-week trend', 'Rolling average of the last 4 weeks. Helps spot sudden jumps vs gradual organic growth.', 'bg-zinc-400']].map(([t, d, c]) => (
           <div key={t} className="rounded-md border border-line bg-panel p-4"><div className="flex items-center gap-2 text-sm font-semibold"><span className={`h-2 w-2 rounded-full ${c}`} />{t}</div><p className="mt-1.5 text-[13px] text-mute">{d}</p></div>))}
       </div>
       <Panel title="Expected versus actual weekly collections" subtitle="Comparing actual money collected each week against what is normal for this season.">

@@ -30,19 +30,19 @@ export function AIEnginePage() {
         </div>
         <Link to="/ai-engine/analyze"><Btn variant="primary"><FileUp size={15} />Check a merchant <ArrowRight size={14} /></Btn></Link>
       </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The problem</div><p className="mt-2 text-sm">A registered shop can take payments that do not belong to the business it declared.</p></div>
-        <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The output</div><p className="mt-2 text-sm">Open a case, or do not. You also get a probability and a range, not a bare yes.</p></div>
-        <div className="rounded-lg border border-line bg-panel p-4"><div className="text-xs text-mute">The limit</div><p className="mt-2 text-sm">A second person approves anything that restricts funds. The trained model is a second opinion and does not decide.</p></div>
+      <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-3">
+        <div className="bg-panel p-5"><div className="mre-eyebrow">The problem</div><p className="mt-2 text-sm">A registered shop can take payments that do not belong to the business it declared.</p></div>
+        <div className="bg-panel p-5"><div className="mre-eyebrow">The output</div><p className="mt-2 text-sm">Open a case, or do not. You also get a probability and a range, not a bare yes.</p></div>
+        <div className="bg-panel p-5"><div className="mre-eyebrow">The limit</div><p className="mt-2 text-sm">A second person approves anything that restricts funds. The trained model is a second opinion and does not decide.</p></div>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Link to="/ai-engine/analyze?sample=01-sweet-crumbs-betting-front.json" className="rounded-xl border border-rose-200 bg-panel p-4 shadow-xs transition hover:border-rose-300 hover:bg-rose-50/30">
-          <div className="flex items-center justify-between"><span className="text-xs font-medium text-mute">Worked example · case expected</span><Badge tone="bad">Suspicious</Badge></div>
+        <Link to="/ai-engine/analyze?sample=01-sweet-crumbs-betting-front.json" className="rounded-xl border border-bad/30 bg-panel p-4 transition hover:border-bad/45 hover:bg-bad/5">
+          <div className="flex items-center justify-between"><span className="mre-eyebrow">Worked example · case expected</span><Badge tone="bad">Suspicious</Badge></div>
           <div className="mt-2 font-semibold text-ink">Sweet Crumbs Bakery</div>
           <p className="mt-1 text-sm text-mute">Declared as a local bakery. Payments look like betting deposits. The tool opens a case.</p>
         </Link>
-        <Link to="/ai-engine/analyze?sample=04-anand-sweets-diwali-genuine.json" className="rounded-xl border border-emerald-200 bg-panel p-4 shadow-xs transition hover:border-emerald-300 hover:bg-emerald-50/30">
-          <div className="flex items-center justify-between"><span className="text-xs font-medium text-mute">Worked example · no case expected</span><Badge tone="ok">Legitimate</Badge></div>
+        <Link to="/ai-engine/analyze?sample=04-anand-sweets-diwali-genuine.json" className="rounded-xl border border-ok/30 bg-panel p-4 transition hover:border-ok/45 hover:bg-ok/5">
+          <div className="flex items-center justify-between"><span className="mre-eyebrow">Worked example · no case expected</span><Badge tone="ok">Legitimate</Badge></div>
           <div className="mt-2 font-semibold text-ink">Anand Sweets &amp; Bakes</div>
           <p className="mt-1 text-sm text-mute">Sales jump in the Diwali fortnight and still look like a sweet shop. Spared from a false freeze.</p>
         </Link>
@@ -53,8 +53,8 @@ export function AIEnginePage() {
       </div>
 
       {custom && started && <div className="rounded-lg border border-line bg-panel p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><div className="text-xs text-mute">CURRENT RUN</div><h2 className="mt-1 text-xl font-semibold">{custom.profile.name}</h2><p className="mt-1 text-sm text-mute">{custom.profile.city} · {custom.profile.category} · {custom.events.length.toLocaleString()} records</p></div><Badge tone={allDone ? 'ok' : 'info'}>{allDone ? 'Analysis complete' : `Running · ${completedLayers} of 7 layers`}</Badge></div>
-        {allDone ? <><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded border border-line bg-bg p-3"><div className="text-xs text-mute">Case decision</div><div className="mt-1 font-semibold">{result.fusion.decision === 'OPEN_CASE' ? 'Review recommended' : 'No case opened'}</div></div><div className="rounded border border-line bg-bg p-3"><div className="text-xs text-mute">Signals needing review</div><div className="mt-1 font-semibold">{findings}</div></div><div className="rounded border border-line bg-bg p-3"><div className="text-xs text-mute">Priority</div><div className="mt-1 font-semibold">{result.fusion.priority}</div></div></div><p className="mt-3 text-sm text-mute">{result.fusion.gateReason}</p><Link to="/ai-engine/investigations" className="mt-4 inline-flex"><Btn>Open findings <ArrowRight size={14} /></Btn></Link></> : <div className="mt-5 h-1.5 overflow-hidden rounded bg-panel2"><div className="h-full rounded bg-indigo-600 transition-all" style={{ width: `${(completedLayers / 7) * 100}%` }} /></div>}
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><div className="mre-eyebrow">Current run</div><h2 className="mt-1 text-xl font-semibold">{custom.profile.name}</h2><p className="mt-1 text-sm text-mute">{custom.profile.city} · {custom.profile.category} · {custom.events.length.toLocaleString()} records</p></div><Badge tone={allDone ? 'ok' : 'info'}>{allDone ? 'Analysis complete' : `Running · ${completedLayers} of 7 layers`}</Badge></div>
+        {allDone ? <><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded border border-line bg-bg p-3"><div className="text-xs text-mute">Case decision</div><div className="mt-1 font-semibold">{result.fusion.decision === 'OPEN_CASE' ? 'Review recommended' : 'No case opened'}</div></div><div className="rounded border border-line bg-bg p-3"><div className="text-xs text-mute">Signals needing review</div><div className="mt-1 font-semibold">{findings}</div></div><div className="rounded border border-line bg-bg p-3"><div className="text-xs text-mute">Priority</div><div className="mt-1 font-semibold">{result.fusion.priority}</div></div></div><p className="mt-3 text-sm text-mute">{result.fusion.gateReason}</p><Link to="/ai-engine/investigations" className="mt-4 inline-flex"><Btn>Open findings <ArrowRight size={14} /></Btn></Link></> : <div className="mt-5 h-1.5 overflow-hidden rounded bg-panel2"><div className="h-full rounded bg-ink transition-all" style={{ width: `${(completedLayers / 7) * 100}%` }} /></div>}
       </div>}
 
       <section className="rounded-lg border border-line bg-panel">

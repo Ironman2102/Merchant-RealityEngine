@@ -39,7 +39,7 @@ export function LayerFrame({
     <div className="space-y-4">
       <Card>
         <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-          <span className="flex h-8 w-10 items-center justify-center rounded border border-indigo-200 bg-indigo-50 font-mono text-sm font-semibold text-indigo-700">{m.code}</span>
+          <span className="flex h-8 w-10 items-center justify-center rounded border border-ink/20 bg-ink/5 font-mono text-sm font-semibold text-ink">{m.code}</span>
           <div className="min-w-0 flex-1">
             <div className="text-base font-semibold">{m.name}</div>
             <div className="text-xs text-mute">{m.tagline}</div>
@@ -54,15 +54,15 @@ export function LayerFrame({
         {brief ? (
           <div className="grid gap-px border-t border-line bg-line md:grid-cols-3">
             <div className="bg-panel p-4">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-mute">1. What this layer checks</div>
+              <div className="font-mono text-[10.5px] font-medium uppercase tracking-label text-mute">1. What this layer checks</div>
               <p className="mt-1.5 text-[13px] leading-relaxed text-ink/90">{brief.checks}</p>
             </div>
             <div className="bg-panel p-4">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-mute">2. What happened here</div>
+              <div className="font-mono text-[10.5px] font-medium uppercase tracking-label text-mute">2. What happened here</div>
               <div className="mt-1.5 text-[13px] leading-relaxed text-ink">{brief.happened}</div>
             </div>
             <div className="bg-panel p-4">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-mute">3. Why it matters &amp; next step</div>
+              <div className="font-mono text-[10.5px] font-medium uppercase tracking-label text-mute">3. Why it matters &amp; next step</div>
               <div className="mt-1.5 text-[13px] leading-relaxed text-mute">{brief.whyItMatters}</div>
             </div>
           </div>

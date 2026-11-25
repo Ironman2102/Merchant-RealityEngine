@@ -68,7 +68,7 @@ export function L3View() {
             return <button key={f.id} onClick={() => setFam(fam === f.id ? 'ALL' : f.id)} aria-pressed={fam === f.id} className={cx('rounded border p-2.5 text-left transition-colors', fam === f.id ? 'border-zinc-400 bg-zinc-400/5' : 'border-line bg-panel2 hover:border-line2')}>
               <div className="flex items-center justify-between"><span className="font-mono text-sm font-semibold text-zinc-300">{f.id}</span><span className="text-[10px] text-dim">{x.length} live</span></div>
               <div className="mt-1 text-[11px] leading-tight text-mute">{f.short}</div>
-              <div className="mt-2 flex gap-1 text-[10px]"><span className="text-neutral-300">{il} flag</span><span className="text-dim">·</span><span className="text-gray-300">{be} ok</span><span className="text-dim">·</span><span className="text-slate-400">{un} n/a</span></div></button>;
+              <div className="mt-2 flex gap-1 text-[10px]"><span className="text-neutral-300">{il} flag</span><span className="text-dim">·</span><span className="text-gray-300">{be} ok</span><span className="text-dim">·</span><span className="text-dim">{un} n/a</span></div></button>;
           })}
         </div>
       </Panel>

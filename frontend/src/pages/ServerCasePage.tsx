@@ -45,7 +45,7 @@ export function ServerCasePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (error) return <div className="space-y-4 py-8"><p className="text-sm text-rose-700" role="alert">{error}</p><Link to="/ai-engine"><Btn><ArrowLeft size={14} />Back to workspace</Btn></Link></div>;
+  if (error) return <div className="space-y-4 py-8"><p className="text-sm text-bad" role="alert">{error}</p><Link to="/ai-engine"><Btn><ArrowLeft size={14} />Back to workspace</Btn></Link></div>;
   if (!item || caseId !== id) return <div className="py-12 text-center text-sm text-mute" role="status">Loading case…</div>;
   const View = VIEWS[view] ?? VIEWS.investigations;
   const res = item.result as { decision: string; priority: string } | undefined;
@@ -62,8 +62,8 @@ export function ServerCasePage() {
       </div>
     </div>
     {syncError && <Callout tone="warn" title="Not saved">{syncError}</Callout>}
-    <div className="no-print rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs leading-relaxed text-amber-900">Saved case: notes, responses and labels you record below are written to the case record and its audit history. Nothing here acts on payment rails.</div>
-    {!!item.history?.some(h => !h.label && (h.decision === 'OPEN_CASE' || h.followUp === 'ASK')) && <div role="status" className="no-print rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs text-amber-900">
+    <div className="no-print rounded-lg border border-warn/30 bg-warn/10 px-4 py-2.5 text-xs leading-relaxed text-warn">Saved case: notes, responses and labels you record below are written to the case record and its audit history. Nothing here acts on payment rails.</div>
+    {!!item.history?.some(h => !h.label && (h.decision === 'OPEN_CASE' || h.followUp === 'ASK')) && <div role="status" className="no-print rounded-lg border border-warn/30 bg-warn/10 px-4 py-2.5 text-xs text-warn">
       <b>Still open on this merchant:</b>{' '}
       {item.history.filter(h => !h.label && (h.decision === 'OPEN_CASE' || h.followUp === 'ASK')).map((h, i) => <span key={h.id}>{i > 0 && ' · '}<Link className="underline" to={`/ai-engine/cases/${h.id}`}>{h.id}</Link> {h.decision === 'OPEN_CASE' ? 'case' : 'question'}</span>)}. This file does not close them.
     </div>}

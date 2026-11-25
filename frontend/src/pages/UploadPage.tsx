@@ -320,10 +320,10 @@ export function UploadPage() {
   const level = RESPONSE_LEVELS.find(l => l.id === result.review.recommended);
   const s = parsed?.summary;
   const datasetPanel = parsed && (
-    <Panel title={<span className="flex items-center gap-2">{csvData ? <FileSpreadsheet size={15} className="text-indigo-600" /> : <FileJson size={15} className="text-indigo-600" />}{fileName}</span>}
+    <Panel title={<span className="flex items-center gap-2">{csvData ? <FileSpreadsheet size={15} className="text-ink" /> : <FileJson size={15} className="text-ink" />}{fileName}</span>}
       right={!analysed && parsed.ok ? <Btn variant="primary" onClick={analyse} disabled={posting}><Play size={14} />{posting ? 'Running on the server…' : 'Run all seven layers'}</Btn> : parsed.ok ? <Badge tone="ok">Dataset analyzed</Badge> : <Badge tone="bad">Cannot run</Badge>}>
-      {serverError && !analysed && <div className="mb-3 flex gap-2 text-sm text-rose-700"><X size={15} className="mt-0.5 shrink-0" />{serverError}</div>}
-      {!parsed.ok && <div className="space-y-1.5">{parsed.errors.map(e => <div key={e} className="flex gap-2 text-sm text-rose-700"><X size={15} className="mt-0.5 shrink-0" />{e}</div>)}</div>}
+      {serverError && !analysed && <div className="mb-3 flex gap-2 text-sm text-bad"><X size={15} className="mt-0.5 shrink-0" />{serverError}</div>}
+      {!parsed.ok && <div className="space-y-1.5">{parsed.errors.map(e => <div key={e} className="flex gap-2 text-sm text-bad"><X size={15} className="mt-0.5 shrink-0" />{e}</div>)}</div>}
       {s && (
         <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <div><div className="text-xs text-mute">Merchant</div><div className="font-semibold text-ink">{s.merchant}</div><div className="text-xs text-mute">{s.city} · {s.category}</div></div>
@@ -331,7 +331,7 @@ export function UploadPage() {
           <div><div className="text-xs text-mute">Window</div><div className="font-semibold text-ink">{s.from} → {s.to}</div><div className="text-xs text-mute">{s.weeks} weeks of history · {s.fixtures} match fixtures</div></div>
           <div><div className="text-xs text-mute">Data available</div><div className="flex flex-wrap gap-1">{s.available.map(k => <Badge key={k} tone="ok">{k}</Badge>)}{s.missing.map(k => <Badge key={k} tone="mute">{k}: missing</Badge>)}</div></div>
         </div>)}
-      {parsed.warnings.length > 0 && <div className="mt-3 space-y-1">{parsed.warnings.map(w => <div key={w} className="flex gap-2 text-xs text-amber-800"><AlertTriangle size={13} className="mt-0.5 shrink-0" />{w}</div>)}</div>}
+      {parsed.warnings.length > 0 && <div className="mt-3 space-y-1">{parsed.warnings.map(w => <div key={w} className="flex gap-2 text-xs text-warn"><AlertTriangle size={13} className="mt-0.5 shrink-0" />{w}</div>)}</div>}
     </Panel>
   );
 
@@ -348,8 +348,8 @@ export function UploadPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}
-          className={cx('flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors', over ? 'border-indigo-500 bg-indigo-50/50' : 'border-line2 bg-panel')}>
-          <FileUp className="text-indigo-600" size={28} />
+          className={cx('flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-md border-2 border-dashed p-6 text-center transition-colors', over ? 'border-ink bg-ink/5' : 'border-line2 bg-panel')}>
+          <FileUp className="text-ink" size={28} />
           <div className="text-sm font-semibold text-ink">Drop one or multiple CSV / JSON / JSONL files</div>
           <div className="text-xs text-mute">Auto-detects columns, paise/rupee scaling, and multi-merchant files</div>
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -365,7 +365,7 @@ export function UploadPage() {
               <Play size={14} />{loadingSample ? 'Loading…' : 'Load 9-merchant bulk portfolio'}
             </Btn>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <select value={sampleFile} onChange={e => setSampleFile(e.target.value)} disabled={loadingSample} className="min-h-10 min-w-0 flex-1 rounded-lg border border-line2 bg-panel px-3 text-sm text-ink outline-none focus:border-indigo-500 disabled:opacity-50">
+              <select value={sampleFile} onChange={e => setSampleFile(e.target.value)} disabled={loadingSample} className="min-h-10 min-w-0 flex-1 rounded-lg border border-line2 bg-panel px-3 text-sm text-ink outline-none focus:border-ink disabled:opacity-50">
                 <option value="">Choose a single test file…</option>
                 {TEST_DATASETS.map(sample => <option key={sample.file} value={sample.file}>{sample.title}</option>)}
               </select>
@@ -387,7 +387,7 @@ export function UploadPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Column Mapping */}
             <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">1. Column Mapping</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-dim">1. Column Mapping</div>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {([
                   ['amount', 'Amount *'],
@@ -408,7 +408,7 @@ export function UploadPage() {
                         setCsvMap(next);
                         applyCsv(csvData, next, csvMeta, fileName);
                       }}
-                      className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                      className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-ink"
                     >
                       <option value="">— Not present —</option>
                       {csvData.headers.map(h => <option key={h} value={h}>{h}</option>)}
@@ -427,7 +427,7 @@ export function UploadPage() {
                       setCsvMap(next);
                       applyCsv(csvData, next, csvMeta, fileName);
                     }}
-                    className={cx('rounded-md border px-2.5 py-1 font-medium capitalize', csvMap.amountUnit === unit ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-line bg-panel text-mute')}
+                    className={cx('rounded-md border px-2.5 py-1 font-medium capitalize', csvMap.amountUnit === unit ? 'border-ink bg-ink text-bg' : 'border-line bg-panel text-mute')}
                   >
                     {unit} {unit === 'paise' ? '(÷100)' : '(₹)'}
                   </button>
@@ -437,14 +437,14 @@ export function UploadPage() {
 
             {/* Declared Merchant KYC */}
             <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">2. Declared Merchant KYC Profile</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-dim">2. Declared Merchant KYC Profile</div>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 <label className="block text-xs">
                   <span className="font-medium text-mute">Merchant Name</span>
                   <input
                     value={csvMeta.name}
                     onChange={e => { const m = { ...csvMeta, name: e.target.value }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
-                    className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                    className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-ink"
                   />
                 </label>
                 <label className="block text-xs">
@@ -452,7 +452,7 @@ export function UploadPage() {
                   <input
                     value={csvMeta.category}
                     onChange={e => { const m = { ...csvMeta, category: e.target.value }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
-                    className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                    className="mt-1 w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-ink"
                   />
                 </label>
                 <label className="block text-xs">
@@ -461,13 +461,13 @@ export function UploadPage() {
                     <input
                       value={csvMeta.city}
                       onChange={e => { const m = { ...csvMeta, city: e.target.value }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
-                      className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                      className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-ink"
                     />
                     <input
                       value={csvMeta.state}
                       maxLength={2}
                       onChange={e => { const m = { ...csvMeta, state: e.target.value.toUpperCase() }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
-                      className="w-16 rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-center font-mono text-xs uppercase text-ink outline-none focus:border-indigo-500"
+                      className="w-16 rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-center font-mono text-xs uppercase text-ink outline-none focus:border-ink"
                     />
                   </div>
                 </label>
@@ -478,20 +478,20 @@ export function UploadPage() {
                       type="number"
                       value={csvMeta.ticketMin}
                       onChange={e => { const m = { ...csvMeta, ticketMin: Number(e.target.value) || 100 }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
-                      className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                      className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-ink"
                     />
                     <span className="text-mute">–</span>
                     <input
                       type="number"
                       value={csvMeta.ticketMax}
                       onChange={e => { const m = { ...csvMeta, ticketMax: Number(e.target.value) || 1000 }; setCsvMeta(m); applyCsv(csvData, csvMap, m, fileName); }}
-                      className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-indigo-500"
+                      className="w-full rounded-lg border border-line2 bg-panel px-2.5 py-1.5 text-xs text-ink outline-none focus:border-ink"
                     />
                   </div>
                 </label>
               </div>
-              <div className="overflow-x-auto rounded-lg border border-line bg-slate-50 p-2.5">
-                <div className="mb-1.5 text-[11px] font-semibold text-slate-500">Live 3-row preview</div>
+              <div className="overflow-x-auto rounded-lg border border-line bg-panel2 p-2.5">
+                <div className="mb-1.5 text-[11px] font-semibold text-dim">Live 3-row preview</div>
                 <table className="w-full text-left font-mono text-[11px]">
                   <thead><tr className="text-dim">{csvData.headers.slice(0, 5).map(h => <th key={h} className="pr-3 pb-1">{h}</th>)}</tr></thead>
                   <tbody>
@@ -516,7 +516,7 @@ export function UploadPage() {
           subtitle={fileName}
           right={<Btn variant="primary" onClick={runBulkAnalysis}><Play size={14} />Score all {bulkScenarios.length} &amp; open overall report</Btn>}
         >
-          {bulkErrors.length > 0 && <div className="mb-3 text-xs text-rose-700">{bulkErrors.slice(0, 3).join(' ')}</div>}
+          {bulkErrors.length > 0 && <div className="mb-3 text-xs text-bad">{bulkErrors.slice(0, 3).join(' ')}</div>}
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 text-xs">
             {bulkScenarios.slice(0, 9).map(sc => (
               <div key={sc.profile.id} className="rounded-lg border border-line bg-panel2 px-3 py-2">
@@ -550,11 +550,11 @@ export function UploadPage() {
 
         {detailsOpen && pack && <div id="analysis-evidence" className="scroll-mt-20 space-y-6">
           {datasetPanel}
-          <div className={cx('rounded-lg border p-5', fu.decision === 'OPEN_CASE' ? 'border-rose-200 bg-rose-50/70' : 'border-emerald-200 bg-emerald-50/70')}>
+          <div className={cx('rounded-lg border p-5', fu.decision === 'OPEN_CASE' ? 'border-bad/30 bg-bad/10' : 'border-ok/30 bg-ok/10')}>
             <div className="flex flex-wrap items-start gap-4">
-              {fu.decision === 'OPEN_CASE' ? <ShieldAlert className="text-rose-600" size={34} /> : <ShieldCheck className="text-emerald-600" size={34} />}
+              {fu.decision === 'OPEN_CASE' ? <ShieldAlert className="text-bad" size={34} /> : <ShieldCheck className="text-ok" size={34} />}
               <div className="min-w-0 flex-1">
-                <div className={cx('text-xl font-semibold', fu.decision === 'OPEN_CASE' ? 'text-rose-900' : 'text-emerald-900')}>{fu.decision === 'OPEN_CASE' ? `Case opened · ${fu.priority} priority` : 'No case opened'}</div>
+                <div className={cx('text-xl font-semibold', fu.decision === 'OPEN_CASE' ? 'text-bad' : 'text-ok')}>{fu.decision === 'OPEN_CASE' ? `Case opened · ${fu.priority} priority` : 'No case opened'}</div>
                 <div className="mt-1 text-sm text-mute">{fu.gateReason}</div>
                 <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                   <div><div className="text-xs text-mute">Leading hypothesis</div><div className="font-medium">{fu.decision === 'OPEN_CASE' && top ? `${MECHANISMS.find(m => m.id === top.id)?.name ?? top.id} (${top.score.toFixed(2)})` : 'None: alarm explained'}</div></div>

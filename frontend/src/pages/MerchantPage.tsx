@@ -17,7 +17,7 @@ export function MerchantPage() {
       <Panel title={demoMode ? 'The four demo merchants' : 'Uploaded merchant'} subtitle={demoMode ? 'Select a merchant to make it the active demo scenario.' : 'Only the merchant in your current dataset appears here.'} bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Merchant</Th><Th>ID</Th><Th>Category</Th><Th>Monitoring status</Th></tr></thead>
           <tbody>{merchants.map(({ id, scenario }) => { const on = id === scenarioId; return (
-            <tr key={id} className={cx(rowCls, on && 'bg-indigo-50/50')}><Td>{demoMode ? <button disabled={running} onClick={() => setScenario(id as typeof scenarioId)} className="font-medium text-indigo-700 hover:underline disabled:opacity-50">{scenario.profile.name}</button> : <span className="font-medium text-ink">{scenario.profile.name}</span>}</Td><Td><Mono>{scenario.profile.id}</Mono></Td><Td className="text-mute">{scenario.profile.category}</Td>
+            <tr key={id} className={cx(rowCls, on && 'bg-ink/5')}><Td>{demoMode ? <button disabled={running} onClick={() => setScenario(id as typeof scenarioId)} className="font-medium text-ink hover:underline disabled:opacity-50">{scenario.profile.name}</button> : <span className="font-medium text-ink">{scenario.profile.name}</span>}</Td><Td><Mono>{scenario.profile.id}</Mono></Td><Td className="text-mute">{scenario.profile.category}</Td>
               <Td>{on ? (decision ? <Badge tone={decision === 'OPEN_CASE' ? 'bad' : 'ok'}>{decision === 'OPEN_CASE' ? 'Case open' : 'No case'}</Badge> : <Badge tone="info">Active scenario</Badge>) : <Badge>Not selected</Badge>}</Td></tr>); })}
           </tbody></table>
       </Panel>

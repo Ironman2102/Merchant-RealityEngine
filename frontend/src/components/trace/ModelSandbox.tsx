@@ -49,7 +49,7 @@ export function ModelSandbox({ onReady }: { onReady?: () => void }) {
   return (
     <div className="space-y-2 text-sm">
       <div className="flex flex-wrap items-center gap-3">
-        <span className={host.online ? 'font-medium text-emerald-700' : 'text-amber-700'}>
+        <span className={host.online ? 'font-medium text-ok' : 'text-warn'}>
           {host.online
             ? 'Stage 2 AI/ML service online. Starting or stopping it does not change the Bayesian case decision.'
             : (host.detail || 'Stage 2 AI/ML service offline — running in Bayesian-only mode.')}
