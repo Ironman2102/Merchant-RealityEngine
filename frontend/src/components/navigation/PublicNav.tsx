@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
-import { LoafMark } from '../common/Logo';
+import { BrandLogo, BrandMark } from '../common/Logo';
 import { cx } from '../../utils/format';
 
 export function useScrollTo() {
@@ -35,8 +35,8 @@ export function PublicNav({ landing = false }: { landing?: boolean }) {
     <header className={cx('top-0 z-50 w-full transition-[background,border-color] duration-500', landing ? 'fixed' : 'sticky', solid ? 'border-b border-line bg-bg/85 backdrop-blur-xl' : 'border-b border-transparent bg-transparent')}>
       <nav className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-8" aria-label="Primary">
         <Link to="/" aria-label="Merchant Reality Engine home" className="flex shrink-0 items-center gap-2">
-          <LoafMark size={24} />
-          <span className="font-display text-[22px] font-extrabold leading-none tracking-[-.06em]">MRE.</span>
+          <BrandLogo height={34} className="hidden sm:block" />
+          <BrandMark size={34} className="sm:hidden" />
         </Link>
         <div className="hidden items-center gap-6 xl:flex">
           {ITEMS.map(([l, id], i) => (
@@ -78,7 +78,7 @@ export function Footer() {
     <footer className="relative overflow-hidden border-t border-line bg-bg">
       <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-14 md:grid-cols-12 md:px-8">
         <div className="md:col-span-6">
-          <div className="flex items-center gap-2"><LoafMark size={28} /><span className="font-display text-2xl font-extrabold tracking-[-.05em]">MRE.</span></div>
+          <BrandLogo height={46} />
           <p className="mt-4 max-w-md text-[15px] leading-relaxed text-mute">Does a merchant’s declared business match its financial, operational and digital behaviour?</p>
         </div>
         <div className="md:col-span-3">
@@ -95,7 +95,7 @@ export function Footer() {
           <div className="mt-4 space-y-2.5 text-sm"><a href="mailto:sriyanth007@gmail.com" className="block break-all text-mute hover:text-ink">sriyanth007@gmail.com</a><a href="mailto:321dhruv.b@gmail.com" className="block break-all text-mute hover:text-ink">321dhruv.b@gmail.com</a></div>
         </div>
       </div>
-      <div aria-hidden="true" className="pointer-events-none select-none px-4 font-display text-[22vw] font-extrabold leading-[.72] tracking-[-.07em] text-[#1a1511] md:px-8">MRE.</div>
+      <div aria-hidden="true" className="pointer-events-none select-none px-4 pb-6 opacity-[.07] md:px-8"><img src={`${import.meta.env.BASE_URL}logo-dark.svg`} alt="" className="w-full max-w-[1100px]" /></div>
       <div id="disclaimer" className="border-t border-line px-4 py-6 md:px-8"><p className="mx-auto max-w-[1440px] text-xs leading-relaxed text-dim">Disclaimer. Merchant Reality Engine is a prototype. All merchants, transactions, websites and figures are synthetic and illustrate the architecture; none is verified real-world evidence. References to other companies describe design inspiration only and imply no partnership, endorsement or use of proprietary technology. The response design is a product proposal, not a statement of legal or regulatory requirements, and the system never freezes funds automatically. There are no customers, testimonials or performance claims on this site.</p></div>
     </footer>
   );

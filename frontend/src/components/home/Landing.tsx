@@ -36,6 +36,7 @@ export function Loader({ ready }: { ready: boolean }) {
   return (
     <div className={cx('mre-loader grain', exiting && 'is-exiting')} role="status" aria-label={`Loading ${Math.round(pct)} percent`}>
       <div className="flex w-[min(360px,80vw)] flex-col items-center">
+        <img src={`${import.meta.env.BASE_URL}logo-dark.svg`} alt="Merchant Reality Engine" className="mb-10 h-12 w-auto" />
         <svg viewBox="0 0 220 140" className="w-44" aria-hidden="true">
           <defs><linearGradient id="crustG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff8a4c" /><stop offset="1" stopColor="#b9501f" /></linearGradient></defs>
           <g className="loaf-rise" style={{ transform: `scaleY(${rise})` }}>
@@ -175,7 +176,7 @@ export function SceneHero({ facts, detectors, onReady }: { facts: { states: numb
 
         <div ref={hero} className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center" style={{ opacity: 0 }}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_50%,rgba(13,11,9,.82),rgba(13,11,9,.35)_70%,transparent)]" />
-          <div className="relative mre-label mb-6 text-butter">Merchant Reality Engine</div>
+          <img src={`${import.meta.env.BASE_URL}logo-dark.svg`} alt="Merchant Reality Engine" className="relative mb-8 h-12 w-auto md:h-14" />
           <h1 className="relative mre-hero-title">See the business<br />behind <em>every</em> payment.</h1>
           <p className="relative mt-6 max-w-xl text-[15px] leading-relaxed text-[#d9cdbb] md:text-lg">Not whether one payment looks fraudulent, but whether the merchant behaves like the business it claims to be.</p>
           <div className="relative mt-9 flex flex-wrap justify-center gap-3">
