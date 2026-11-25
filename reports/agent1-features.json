@@ -1,0 +1,34 @@
+{
+  "experiment": "Stage 2 v1 retrained with 10 fraud-statistics features (engine/fraudMath.ts); everything else unchanged",
+  "synthetic": true,
+  "features": {
+    "benford_chi2_per_n": "Benford first-digit chi-square / n (Nigrini 2012)",
+    "benford_p": "upper chi-square tail, 8 df",
+    "benford_mad": "Nigrini mean absolute deviation from Benford shares",
+    "daily_dispersion": "Var / Mean of sales per day (1 = Poisson)",
+    "gap_burstiness": "(sigma - mu) / (sigma + mu) of inter-arrival gaps (Goh & Barabasi 2008)",
+    "gap_cv": "sigma / mu of inter-arrival gaps",
+    "payer_entropy": "normalised Shannon entropy of sales per payer",
+    "payer_gini": "Gini coefficient of sales per payer",
+    "returning_share": "share of identified sales from payers seen at least twice",
+    "repeat_gap_cv": "mean CV of each repeat payer's own gaps"
+  },
+  "univariateAucVsHonest": {
+    "nonRoundDeposits": {"returning_share": 0.995, "benford_chi2_per_n": 0.888, "repeat_gap_cv": 0.869, "benford_mad": 0.858, "payer_entropy": 0.824, "daily_dispersion": 0.513},
+    "perfectMimic": {"gap_burstiness": 0.872, "gap_cv": 0.872, "benford_chi2_per_n": 0.668}
+  },
+  "heldout180": {
+    "baseline_v1": {"logLoss": 0.034, "brier": 0.010, "ece": 0.019, "recallAt0701": 0.967, "falseAlarmAt0701": 0.0, "epistemicAurocForErrors": 0.70},
+    "with_features": {"logLoss": 0.041, "brier": 0.012, "ece": 0.023, "recallAt0701": 0.967, "falseAlarmAt0701": 0.008, "epistemicAurocForErrors": 0.93}
+  },
+  "nestedCv600": {
+    "baseline_v1": {"logLoss": 0.051, "logLossCi": [0.0337, 0.0733], "brier": 0.0159, "ece": 0.0173},
+    "with_features": {"logLoss": 0.0505, "logLossCi": [0.0323, 0.072], "brier": 0.0155, "ece": 0.0093}
+  },
+  "leaveOneKindOutStackedRecall": {
+    "baseline_v1": {"non-round deposits": 0.06, "perfect mimic": 0.0, "small side-stream": 0.95, "low-volume split": 1.0},
+    "with_features": {"non-round deposits": 0.83, "non-round deposits CI": [0.61, 0.94], "perfect mimic": 0.0, "small side-stream": 0.84, "small side-stream CI": [0.62, 0.94], "low-volume split": 1.0},
+    "ablation_without_benford_p_daily_dispersion_payer_entropy": {"non-round deposits": 0.22, "perfect mimic": 0.0, "small side-stream": 0.79}
+  },
+  "verdict": "Non-round deposits (unseen type) 6% -> 83%, but fragile: dropping three weak features gives 22%, so treat as promising, not proven. Perfect mimic unchanged at 0% (burstiness separates it univariately, AUC 0.87, but not after training without the type). Small side-stream 95% -> 84% (CIs overlap). In-distribution: nested-CV log loss unchanged, ECE improved 0.017 -> 0.009; single hold-out slightly worse (log loss 0.034 -> 0.041, one false alarm)."
+}

@@ -6,19 +6,19 @@
       "name": "Neural network",
       "version": "nn-v0",
       "kind": "Two hidden layers, 32 and 16 units",
-      "averagePrecision": 0.9937027885103586,
-      "ece": 0.027766177589292392,
-      "recall": "129/131",
-      "genuineFp": "10/256"
+      "averagePrecision": 0.9958185328871159,
+      "ece": 0.021486509937423404,
+      "recall": "130/131",
+      "genuineFp": "9/256"
     },
     {
       "name": "LightGBM tree model",
       "version": "m1-v0",
       "kind": "Gradient-boosted trees",
-      "averagePrecision": 0.9970746799409358,
-      "ece": 0.013960236321295843,
-      "recall": "130/131",
-      "genuineFp": "8/256"
+      "averagePrecision": 0.9974933018282426,
+      "ece": 0.017061417950633737,
+      "recall": "129/131",
+      "genuineFp": "7/256"
     },
     {
       "name": "Bayesian engine",
@@ -32,8 +32,8 @@
   ],
   "rsi": {
     "definition": "Relative score improvement on held-out synthetic fronts (including stealth split-account evasions before rule promotion). Positive means the challenger catches or ranks held-out fronts higher than the baseline.",
-    "versusLightGBM": -0.0033817842318259327,
-    "versusBayesian": 0.6753246753246753,
-    "apVersusBayesian": 0.06184017483422623
+    "versusLightGBM": -0.0016789776312854901,
+    "versusBayesian": 0.6883116883116883,
+    "apVersusBayesian": 0.06410099407001424
   }
 }

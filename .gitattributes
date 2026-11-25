@@ -1,0 +1,2 @@
+# Trained model files are byte-exact; never convert their line endings (LightGBM seeks by byte offset).
+ml/models/** -text

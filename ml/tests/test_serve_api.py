@@ -13,6 +13,13 @@ except ImportError as exc:
 ROOT = Path(__file__).resolve().parents[2]
 
 
+@pytest.fixture(autouse=True)
+def _legacy_v0_only(tmp_path, monkeypatch):
+    """These tests cover the v0 fallback path; Stage 2 v1 has its own tests in test_stage2_v1.py."""
+    monkeypatch.setattr(serve, 'STAGE2', tmp_path / 'no-stage2')
+    monkeypatch.setattr(serve, '_v1', None)
+
+
 def _reset_serve_globals():
     serve._booster = None
     serve._cols = []

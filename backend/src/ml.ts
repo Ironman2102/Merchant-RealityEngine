@@ -4,6 +4,11 @@ import type { InvestigationResult } from '../../frontend/src/types/investigation
 import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 
 export interface MlDriver { feature: string; shap: number }
+/** Stage 2 v1: exact-sum attribution of the stacked logit (ml/explain.py); `drivers` are its top five. */
+export interface MlExplanation {
+  method: string; baseLogit: number; stackedLogit: number; sumOfAttributions: number; residual: number; preCalibration: boolean;
+  perModel: Record<string, { weight: number; method: string; baseLogit: number; logit: number; completenessError: number; top: { feature: string; value: number }[] }>;
+}
 export interface MlOpinion {
   p: number;
   pRaw: number;
@@ -11,9 +16,21 @@ export interface MlOpinion {
   modelVersion: string;
   nn?: { p: number; drivers: MlDriver[]; modelVersion: string };
   classical?: { p: number; modelVersion: string }[];
-  ensemble?: { p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean; syntheticTrainingExamples?: number | null };
+  ensemble?: {
+    p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean; syntheticTrainingExamples?: number | null;
+    // Stage 2 v1 only: stacked ensemble, prior shift, cost threshold, conformal set and novelty check.
+    method?: 'stacked'; pTrainScale?: number; weights?: Record<string, number>;
+    priorShift?: { applied: boolean; enginePrior: number | null; trainPrevalence: number };
+    threshold?: number; flag?: boolean; costRatio?: number;
+    conformalSet?: ('front' | 'honest')[]; conformalAlpha?: number; conformalPValues?: { front: number; honest: number };
+    novelty?: { distance: number; threshold: number; flagged: boolean; pValue?: number; unfamiliar: string[] };
+    calibration?: string;
+    uncertainty?: { totalBits: number; aleatoricBits: number; epistemicBits: number };
+    neymanPearson?: { threshold: number; flag: boolean; alpha: number; delta: number } | null;
+  };
   encoder?: { label: string | null; score: number | null; modelVersion: string };
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
+  explanation?: MlExplanation;
 }
 
 function encoderContext(result: InvestigationResult): string {
@@ -37,6 +54,8 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
     const res = await fetch(`${url}/score`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
+      // Send every column the models were trained on (modelFeatures). Leaving out the behavioural columns scored them as
+      // zero (a zero sweep lag reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
       body: JSON.stringify({ features: modelFeatures(result), context: encoderContext(result) }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -50,6 +69,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       classical?: MlOpinion['classical'];
       ensemble?: MlOpinion['ensemble'];
       encoder?: MlOpinion['encoder'];
+      explanation?: MlExplanation;
     };
     if (typeof body.p !== 'number' || !body.modelVersion) return null;
     const nn = body.nn && typeof body.nn.p === 'number' && body.nn.modelVersion
@@ -57,7 +77,8 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       : undefined;
     return { p: body.p, pRaw: body.p_raw ?? body.p, drivers: body.drivers ?? [], modelVersion: body.modelVersion,
       ...(nn ? { nn } : {}), ...(body.classical ? { classical: body.classical } : {}),
-      ...(body.ensemble ? { ensemble: body.ensemble } : {}), ...(body.encoder ? { encoder: body.encoder } : {}) };
+      ...(body.ensemble ? { ensemble: body.ensemble } : {}), ...(body.encoder ? { encoder: body.encoder } : {}),
+      ...(body.explanation ? { explanation: body.explanation } : {}) };
   } catch (err) {
     if (!logged) { console.error('AI model offline. The decision does not depend on it.', err instanceof Error ? err.message : err); logged = true; }
     return null;
