@@ -102,6 +102,31 @@ Full numbers: `reports/stage2-v1-evaluation.json` and `reports/stage2-v0-baselin
   Broadening `engine/synthetic.ts`, or analyst labels, fixes this.
 - **Non-round deposits and perfect mimics** are not caught: payment features cannot separate them.
 
+## Round 3: four parallel improvements, measured
+
+| Track | What was added | Measured effect | Merged? |
+|---|---|---|---|
+| Fraud-statistics features (`engine/fraudMath.ts`) | Benford χ², p-value and Nigrini MAD; daily index of dispersion; gap burstiness B = (σ−μ)/(σ+μ) and CV; payer Shannon entropy and Gini; returning-payer share; repeat-gap regularity | Unseen **non-round deposits 6% → 83%** [61%, 94%] (fragile: 22% without three of the features, n = 18); nested ECE 0.017 → **0.009**; epistemic AUROC for errors 0.70 → **0.93**; perfect mimics still 0% | **Yes** |
+| Exact SHAP explanations (`ml/explain.py`) | Ensemble attributions in stacked-logit space: φ = Σ wₖφₖ. TreeSHAP for LightGBM; linear SHAP for LR; TreeSHAP for the tree and forest rescaled to log-odds (exact sum); integrated gradients for the MLP | base + Σφ equals the stacked logit to about 0.005 (exact for the tree models and LR) | **Yes** |
+| Deep-ensemble MLP (branch `ml/agent2-deep-ensemble`) | 5 seeds averaged; member logit spread as extra uncertainty | Neutral: stacked log loss 0.034 → 0.035; no clear uncertainty gain; 5× slower NN training | No, kept on branch |
+| Pruning and focal loss (branch `ml/agent4-trees`) | Cost-complexity pruning R_α(T) = R(T) + α\|T\|; RF bootstrap fraction; focal-loss LightGBM with derived gradient and Hessian (checked by finite differences) | Neutral: CV re-selected the v1 settings; focal loss hurt calibration (LightGBM log loss 0.043 → 0.081 → 0.138 for γ = 0, 1, 2) | No, kept on branch |
+
+**Combined model (features + SHAP), promoted by the gate.** Held-out change vs the previous champion, 95% CI:
+AP −0.001 [−0.004, 0.000], Brier −0.002 [−0.006, +0.003], log loss −0.006 [−0.017, +0.004]: non-inferior.
+
+| | Previous v1 | With round 3 |
+|---|---|---|
+| Nested CV log loss / ECE | 0.051 / 0.017 | 0.0505 / **0.009** |
+| Unseen non-round deposits | 6% | **83%** |
+| Unseen small side-stream | 95% | 84% (intervals overlap) |
+| Held-out log loss / false alarms | 0.034 / 0% | 0.041 / 0.8% (1 merchant) |
+| Epistemic AUROC for errors | 0.70 | 0.93 |
+
+**Side effect:** on the hand-built demo shops, the new payer features look unlike the generator's merchants, so honest
+demo shops now get an empty conformal set (LOW confidence, review suggested) although none is flagged. SHAP shows
+`payer_entropy`, `payer_gini` and `returning_share` (and earlier `weekend_share`) as the drivers. The fix is a more
+realistic payer model in `engine/synthetic.ts`.
+
 ## Continuous learning, verified end to end
 
 **Labels teach the model a new pattern.** "Small side-stream" fronts were removed from the synthetic training data, so

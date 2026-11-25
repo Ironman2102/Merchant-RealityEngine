@@ -21,3 +21,6 @@ reports/benchmark-1k-results.json
 # Stage 2 training staging and rollback copies (the promoted model is ml/models/stage2-v1)
 ml/models/stage2-candidate/
 ml/models/stage2-v1.previous/
+
+# Local agent worktrees
+.claude/worktrees/
