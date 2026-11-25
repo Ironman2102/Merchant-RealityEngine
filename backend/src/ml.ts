@@ -4,6 +4,11 @@ import type { InvestigationResult } from '../../frontend/src/types/investigation
 import { modelHostConfigured, startModelSandbox, stopModelSandbox } from './modelHost';
 
 export interface MlDriver { feature: string; shap: number }
+/** Stage 2 v1: exact-sum attribution of the stacked logit (ml/explain.py); `drivers` are its top five. */
+export interface MlExplanation {
+  method: string; baseLogit: number; stackedLogit: number; sumOfAttributions: number; residual: number; preCalibration: boolean;
+  perModel: Record<string, { weight: number; method: string; baseLogit: number; logit: number; completenessError: number; top: { feature: string; value: number }[] }>;
+}
 export interface MlOpinion {
   p: number;
   pRaw: number;
@@ -25,6 +30,7 @@ export interface MlOpinion {
   };
   encoder?: { label: string | null; score: number | null; modelVersion: string };
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
+  explanation?: MlExplanation;
 }
 
 function encoderContext(result: InvestigationResult): string {
@@ -62,6 +68,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       classical?: MlOpinion['classical'];
       ensemble?: MlOpinion['ensemble'];
       encoder?: MlOpinion['encoder'];
+      explanation?: MlExplanation;
     };
     if (typeof body.p !== 'number' || !body.modelVersion) return null;
     const nn = body.nn && typeof body.nn.p === 'number' && body.nn.modelVersion
@@ -69,7 +76,8 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       : undefined;
     return { p: body.p, pRaw: body.p_raw ?? body.p, drivers: body.drivers ?? [], modelVersion: body.modelVersion,
       ...(nn ? { nn } : {}), ...(body.classical ? { classical: body.classical } : {}),
-      ...(body.ensemble ? { ensemble: body.ensemble } : {}), ...(body.encoder ? { encoder: body.encoder } : {}) };
+      ...(body.ensemble ? { ensemble: body.ensemble } : {}), ...(body.encoder ? { encoder: body.encoder } : {}),
+      ...(body.explanation ? { explanation: body.explanation } : {}) };
   } catch (err) {
     if (!logged) { console.error('AI model offline. The decision does not depend on it.', err instanceof Error ? err.message : err); logged = true; }
     return null;

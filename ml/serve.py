@@ -145,6 +145,25 @@ def _rank_pvalue(sorted_reference: np.ndarray, value: float) -> float:
     return float((n - np.searchsorted(sorted_reference, value, side='left') + 1) / (n + 1))
 
 
+def _v1_explain(x: np.ndarray) -> tuple[list[dict], dict | None]:
+    """Top-5 drivers of the stacked logit (ml/explain.py). Bundles trained before explanations fall back to LightGBM SHAP."""
+    meta = _v1['meta']
+    background = meta.get('explain', {}).get('backgroundMean')
+    if background is not None:
+        try:
+            if '_explainer' not in _v1:
+                from ml.explain import EnsembleExplainer
+                _v1['_explainer'] = EnsembleExplainer(_v1['models'], meta['baseModels'], meta['stacker'], background,
+                                                      _v1['features'], meta.get('calibration', {}).get('method', 'identity'))
+            r = _v1['_explainer'].explain(x)
+            return r['drivers'], r['explanation']
+        except Exception as err:  # an explanation failure must never block the score
+            print('Ensemble explanation failed; using LightGBM SHAP.', err)
+    contrib = _v1['models']['lightgbm'].booster_.predict(x.reshape(1, -1), pred_contrib=True)[0][:-1]
+    order = np.argsort(-np.abs(contrib))[:5]
+    return [{'feature': _v1['features'][i], 'shap': float(contrib[i])} for i in order], None
+
+
 def _v1_score(body: 'ScoreIn') -> dict:
     meta = _v1['meta']
     s = _v1_scores([body.features])
@@ -169,14 +188,13 @@ def _v1_score(body: 'ScoreIn') -> dict:
     # 0.1 bit). HIGH otherwise.
     confidence = 'LOW' if novel or len(cset) != 1 else ('MEDIUM' if epistemic > 0.1 else 'HIGH')
     npt = meta.get('neymanPearson', {}).get('threshold')
-    contrib = _v1['models']['lightgbm'].booster_.predict(s['X'], pred_contrib=True)[0][:-1]
-    order = np.argsort(-np.abs(contrib))[:5]
-    drivers = [{'feature': _v1['features'][i], 'shap': float(contrib[i])} for i in order]
+    drivers, explanation = _v1_explain(s['X'][0])
     names = {'logistic_regression': 'logistic-regression-v1', 'decision_tree': 'decision-tree-v1',
              'random_forest': 'random-forest-v1', 'lightgbm': 'lightgbm-v1', 'neural_net': 'neural-net-v1'}
     encoder = _contextual_score(body.context) if (novel or len(cset) != 1) else None
     return {
         'p_raw': p_train, 'p': p, 'drivers': drivers, 'modelVersion': meta['version'],
+        **({'explanation': explanation} if explanation else {}),
         'classical': [{'p': base[n], 'modelVersion': names[n]} for n in meta['baseModels'] if n != 'neural_net'],
         'nn': {'p': base['neural_net'], 'drivers': [], 'modelVersion': names['neural_net']},
         'ensemble': {

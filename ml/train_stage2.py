@@ -260,6 +260,8 @@ def train_ensemble(train: pd.DataFrame, cols: list[str], real: pd.DataFrame | No
         'train_prevalence': train_prev, 'oof_stacked': cal_oof, 'oof_y': yo,
         'oof_mean': np.mean(np.column_stack([oof[n] for n in BASE]), axis=1)[orig], 'n_train': int(len(y)),
         'n_real': int(0 if real is None else len(real)), 'constant_features': constant,
+        # Baseline for the linear-SHAP and integrated-gradients explanations (ml/explain.py): the training-input mean.
+        'background_mean': X.mean(axis=0),
     }
 
 
@@ -344,6 +346,7 @@ def save(ens: dict, cols: list[str], report: dict, out) -> None:
                     'featuresNeverSeenVarying': ens['constant_features']},
         'psi': {'score': psi_reference(ens['oof_stacked'])},
         'reference': ens['reference'],
+        'explain': {'method': 'stacked-logit SHAP (ml/explain.py)', 'backgroundMean': ens['background_mean'].tolist()},
         'evaluation': report,
     })
 
