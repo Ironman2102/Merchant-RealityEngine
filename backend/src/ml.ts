@@ -4,6 +4,11 @@ import type { InvestigationResult } from '../../frontend/src/types/investigation
 import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
 
 export interface MlDriver { feature: string; shap: number }
+/** Stage 2 v1: exact-sum attribution of the stacked logit (ml/explain.py); `drivers` are its top five. */
+export interface MlExplanation {
+  method: string; baseLogit: number; stackedLogit: number; sumOfAttributions: number; residual: number; preCalibration: boolean;
+  perModel: Record<string, { weight: number; method: string; baseLogit: number; logit: number; completenessError: number; top: { feature: string; value: number }[] }>;
+}
 export interface NliEncoderOpinion {
   label: string | null;
   score: number | null;
@@ -64,13 +69,25 @@ export interface MlOpinion {
   modelVersion: string;
   nn?: { p: number; drivers: MlDriver[]; modelVersion: string };
   classical?: { p: number; modelVersion: string }[];
-  ensemble?: { p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean; syntheticTrainingExamples?: number | null };
+  ensemble?: {
+    p: number; models: string[]; disagreement: number; confidence: 'HIGH' | 'MEDIUM' | 'LOW'; review: boolean; syntheticTrainingExamples?: number | null;
+    // Stage 2 v1 only: stacked ensemble, prior shift, cost threshold, conformal set and novelty check.
+    method?: 'stacked'; pTrainScale?: number; weights?: Record<string, number>;
+    priorShift?: { applied: boolean; enginePrior: number | null; trainPrevalence: number };
+    threshold?: number; flag?: boolean; costRatio?: number;
+    conformalSet?: ('front' | 'honest')[]; conformalAlpha?: number; conformalPValues?: { front: number; honest: number };
+    novelty?: { distance: number; threshold: number; flagged: boolean; pValue?: number; unfamiliar: string[] };
+    calibration?: string;
+    uncertainty?: { totalBits: number; aleatoricBits: number; epistemicBits: number };
+    neymanPearson?: { threshold: number; flag: boolean; alpha: number; delta: number } | null;
+  };
   encoder?: NliEncoderOpinion;
   biEncoder?: BiEncoderOpinion;
   autoencoder?: AutoencoderOpinion;
   temporal?: TemporalEncoderOpinion;
   graph?: GraphEncoderOpinion;
   assessment?: { statisticalP: number; combinedP: number; classification: 'HIGH_RISK' | 'LOW_RISK' | 'REVIEW'; review: boolean };
+  explanation?: MlExplanation;
 }
 
 /** Structured, non-leaky premise for the NLI cross-encoder (omits scenario.blurb narration). */
@@ -243,6 +260,8 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
     const res = await fetch(`${url}/score`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
+      // Send every column the models were trained on (modelFeatures). Leaving out the behavioural columns scored them as
+      // zero (a zero sweep lag reads as "swept instantly"), which cut v0 neural-net recall on held-out fronts from 100% to 40%.
       body: JSON.stringify({
         features: modelFeatures(result),
         context: encoderContext(result),
@@ -266,6 +285,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       autoencoder?: AutoencoderOpinion;
       temporal?: TemporalEncoderOpinion;
       graph?: GraphEncoderOpinion;
+      explanation?: MlExplanation;
     };
     if (typeof body.p !== 'number' || !body.modelVersion) return null;
     const nn = body.nn && typeof body.nn.p === 'number' && body.nn.modelVersion
@@ -281,6 +301,7 @@ export async function mlScore(result: InvestigationResult): Promise<MlOpinion | 
       ...(body.autoencoder ? { autoencoder: body.autoencoder } : {}),
       ...(body.temporal ? { temporal: body.temporal } : {}),
       ...(body.graph ? { graph: body.graph } : {}),
+      ...(body.explanation ? { explanation: body.explanation } : {}),
     };
   } catch (err) {
     if (!logged) { console.error('AI model offline. The decision does not depend on it.', err instanceof Error ? err.message : err); logged = true; }

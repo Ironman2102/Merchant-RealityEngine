@@ -1,0 +1,207 @@
+{
+  "heldout_merchants": 180,
+  "as_trained": {
+    "lightgbm": {
+      "ap": 0.999462365591398,
+      "roc_auc": 0.9997222222222222,
+      "brier": 0.012219199066145455,
+      "log_loss": 0.03485594564182306,
+      "ece": 0.023381938767078832,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.06666666666666667
+    },
+    "neural_net": {
+      "ap": 0.9970685852276508,
+      "roc_auc": 0.9984722222222222,
+      "brier": 0.0144156017750207,
+      "log_loss": 0.040811390315857406,
+      "ece": 0.019956249775318156,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.041666666666666664
+    },
+    "decision-tree": {
+      "ap": 0.9939393939393939,
+      "roc_auc": 0.9975,
+      "brier": 0.022901975763053854,
+      "log_loss": 0.09966090883324444,
+      "ece": 0.05682918208467486,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.25
+    },
+    "logistic-regression": {
+      "ap": 0.9978169892415231,
+      "roc_auc": 0.9988888888888888,
+      "brier": 0.019227687361334685,
+      "log_loss": 0.07777797959087966,
+      "ece": 0.042267383997152644,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.15833333333333333
+    },
+    "random-forest": {
+      "ap": 0.9988791559809612,
+      "roc_auc": 0.9994444444444445,
+      "brier": 0.015768399355713517,
+      "log_loss": 0.06467047243493983,
+      "ece": 0.043051497057145525,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.13333333333333333
+    },
+    "ensemble_mean": {
+      "ap": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.012186528792720383,
+      "log_loss": 0.05777128025383763,
+      "ece": 0.0395717813083926,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.14166666666666666
+    }
+  },
+  "as_served": {
+    "lightgbm": {
+      "ap": 0.9836317437217253,
+      "roc_auc": 0.9909722222222223,
+      "brier": 0.11647147738630778,
+      "log_loss": 0.574554616296739,
+      "ece": 0.14427991162926046,
+      "threshold": 0.1,
+      "recall": 0.75,
+      "false_alarm_rate": 0.0
+    },
+    "neural_net": {
+      "ap": 0.9304889081237533,
+      "roc_auc": 0.9627777777777777,
+      "brier": 0.21161047953543902,
+      "log_loss": 1.6550241614298926,
+      "ece": 0.22222505017932245,
+      "threshold": 0.1,
+      "recall": 0.4,
+      "false_alarm_rate": 0.0
+    },
+    "decision-tree": {
+      "ap": 0.8957225202333898,
+      "roc_auc": 0.9099999999999999,
+      "brier": 0.07314614271516415,
+      "log_loss": 0.28352737621817037,
+      "ece": 0.06978157263087788,
+      "threshold": 0.1,
+      "recall": 0.8666666666666667,
+      "false_alarm_rate": 0.23333333333333334
+    },
+    "logistic-regression": {
+      "ap": 0.9508778741209218,
+      "roc_auc": 0.9615277777777779,
+      "brier": 0.09197324823673357,
+      "log_loss": 0.30638766895661174,
+      "ece": 0.10603853229406375,
+      "threshold": 0.1,
+      "recall": 0.9166666666666666,
+      "false_alarm_rate": 0.10833333333333334
+    },
+    "random-forest": {
+      "ap": 0.9988791559809612,
+      "roc_auc": 0.9994444444444445,
+      "brier": 0.0244197373384615,
+      "log_loss": 0.09974535415929871,
+      "ece": 0.06894685986061813,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.13333333333333333
+    },
+    "ensemble_mean": {
+      "ap": 0.9949231006506317,
+      "roc_auc": 0.9972222222222222,
+      "brier": 0.07632102984720333,
+      "log_loss": 0.22777169938588374,
+      "ece": 0.130808438580318,
+      "threshold": 0.1,
+      "recall": 1.0,
+      "false_alarm_rate": 0.08333333333333333
+    }
+  },
+  "samples": {
+    "lightgbm": {
+      "01-sweet-crumbs-betting-front": 1.0,
+      "02-merchant-rotation": 1.0,
+      "03-fabricated-online-store": 0.0,
+      "04-anand-sweets-diwali-genuine": 0.0,
+      "05-chai-corner-night-betting": 1.0,
+      "06-shree-ganesh-sweets-genuine": 0.0,
+      "07-udupi-tiffin-steady": 0.0,
+      "08-nandi-kirana-genuine": 0.0,
+      "09-telegram-betting-no-website": 1.0,
+      "10-golden-oven-betting-on-the-side": 1.0,
+      "11-moonlight-bakes-honest-change": 0.004
+    },
+    "neural_net": {
+      "01-sweet-crumbs-betting-front": 1.0,
+      "02-merchant-rotation": 1.0,
+      "03-fabricated-online-store": 0.0,
+      "04-anand-sweets-diwali-genuine": 0.0,
+      "05-chai-corner-night-betting": 1.0,
+      "06-shree-ganesh-sweets-genuine": 0.0,
+      "07-udupi-tiffin-steady": 0.0,
+      "08-nandi-kirana-genuine": 0.0,
+      "09-telegram-betting-no-website": 1.0,
+      "10-golden-oven-betting-on-the-side": 1.0,
+      "11-moonlight-bakes-honest-change": 0.933
+    },
+    "decision-tree": {
+      "01-sweet-crumbs-betting-front": 0.644,
+      "02-merchant-rotation": 0.96,
+      "03-fabricated-online-store": 0.025,
+      "04-anand-sweets-diwali-genuine": 0.025,
+      "05-chai-corner-night-betting": 0.96,
+      "06-shree-ganesh-sweets-genuine": 0.025,
+      "07-udupi-tiffin-steady": 0.025,
+      "08-nandi-kirana-genuine": 0.025,
+      "09-telegram-betting-no-website": 0.644,
+      "10-golden-oven-betting-on-the-side": 0.96,
+      "11-moonlight-bakes-honest-change": 0.113
+    },
+    "logistic-regression": {
+      "01-sweet-crumbs-betting-front": 0.788,
+      "02-merchant-rotation": 1.0,
+      "03-fabricated-online-store": 0.021,
+      "04-anand-sweets-diwali-genuine": 0.04,
+      "05-chai-corner-night-betting": 0.798,
+      "06-shree-ganesh-sweets-genuine": 0.053,
+      "07-udupi-tiffin-steady": 0.049,
+      "08-nandi-kirana-genuine": 0.074,
+      "09-telegram-betting-no-website": 1.0,
+      "10-golden-oven-betting-on-the-side": 1.0,
+      "11-moonlight-bakes-honest-change": 0.003
+    },
+    "random-forest": {
+      "01-sweet-crumbs-betting-front": 0.875,
+      "02-merchant-rotation": 0.99,
+      "03-fabricated-online-store": 0.039,
+      "04-anand-sweets-diwali-genuine": 0.077,
+      "05-chai-corner-night-betting": 0.973,
+      "06-shree-ganesh-sweets-genuine": 0.06,
+      "07-udupi-tiffin-steady": 0.027,
+      "08-nandi-kirana-genuine": 0.069,
+      "09-telegram-betting-no-website": 0.973,
+      "10-golden-oven-betting-on-the-side": 0.994,
+      "11-moonlight-bakes-honest-change": 0.265
+    },
+    "ensemble_mean": {
+      "01-sweet-crumbs-betting-front": 0.861,
+      "02-merchant-rotation": 0.99,
+      "03-fabricated-online-store": 0.017,
+      "04-anand-sweets-diwali-genuine": 0.028,
+      "05-chai-corner-night-betting": 0.946,
+      "06-shree-ganesh-sweets-genuine": 0.028,
+      "07-udupi-tiffin-steady": 0.02,
+      "08-nandi-kirana-genuine": 0.034,
+      "09-telegram-betting-no-website": 0.923,
+      "10-golden-oven-betting-on-the-side": 0.991,
+      "11-moonlight-bakes-honest-change": 0.264
+    }
+  }
+}

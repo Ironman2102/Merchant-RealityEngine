@@ -1,0 +1,165 @@
+{
+  "method": "Deep ensemble of 5 MLPs (32x16, seeds differ), Lakshminarayanan et al. 2017; members expanded into the entropy decomposition with weight w_nn/5 each",
+  "heldout": {
+    "neural_net": {
+      "before": {
+        "log_loss": 0.04241793257649336,
+        "brier": 0.01480105983961026,
+        "ece": 0.0193252847336559,
+        "ap": 0.9969989602781149
+      },
+      "after": {
+        "log_loss": 0.04700056718423921,
+        "brier": 0.016240780098754976,
+        "ece": 0.01832199535403161,
+        "ap": 0.9973559415494899
+      }
+    },
+    "stacked": {
+      "before": {
+        "log_loss": 0.034400815912466604,
+        "brier": 0.010022440548303346,
+        "ece": 0.01895751086862224,
+        "ap": 0.9997267759562843
+      },
+      "after": {
+        "log_loss": 0.0352414470546523,
+        "brier": 0.010243329407562814,
+        "ece": 0.019064187507076093,
+        "ap": 0.9997267759562843
+      }
+    },
+    "mean": {
+      "before": {
+        "log_loss": 0.05951592309678581,
+        "brier": 0.012284121346220651,
+        "ece": 0.03912526047933699,
+        "ap": 0.9997267759562843
+      },
+      "after": {
+        "log_loss": 0.06037973720014579,
+        "brier": 0.012533432348460972,
+        "ece": 0.039393844935788166,
+        "ap": 0.9997267759562843
+      }
+    }
+  },
+  "nnGroupedCvLogLoss": {
+    "before": 0.0812,
+    "after": 0.0775
+  },
+  "nested": {
+    "before": {
+      "log_loss": 0.051,
+      "brier": 0.0159,
+      "ece": 0.0173,
+      "ap": 0.9966
+    },
+    "after": {
+      "log_loss": 0.05025851620980049,
+      "brier": 0.01569730159215411,
+      "ece": 0.01385622377112202,
+      "ap": 0.9966199654594179
+    },
+    "afterLogLossCi": [
+      0.03490893978061397,
+      0.07002686389659114
+    ]
+  },
+  "uncertainty": {
+    "epistemicAurocForErrors": {
+      "before": 0.702247191011236,
+      "after": 0.9157303370786517,
+      "errors": 2
+    },
+    "nnLogitVarHeldoutMean": 0.8973594215861708,
+    "nnLogitVarAurocForErrors": 0.2584269662921348
+  },
+  "leaveOneKindOut": [
+    {
+      "kind": "camouflage: charity",
+      "epistemicBefore": 0.05284205654856198,
+      "epistemicAfter": 0.05320527499014807,
+      "nnLogitVar": 0.8814142473885527,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "camouflage: fuel",
+      "epistemicBefore": 0.01331092515734499,
+      "epistemicAfter": 0.013527422758812373,
+      "nnLogitVar": 0.9112830022188058,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "camouflage: furniture",
+      "epistemicBefore": 0.008129808960669152,
+      "epistemicAfter": 0.008608295040933968,
+      "nnLogitVar": 0.8537636214500939,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "grocer side-stream",
+      "epistemicBefore": 0.028421252934053863,
+      "epistemicAfter": 0.03335310752018806,
+      "nnLogitVar": 0.780960422543248,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "large side-stream",
+      "epistemicBefore": 0.00839875636461991,
+      "epistemicAfter": 0.008838713707489204,
+      "nnLogitVar": 1.1767986858542563,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "low-volume split",
+      "epistemicBefore": 0.15501993480077303,
+      "epistemicAfter": 0.1540912892685487,
+      "nnLogitVar": 4.254558266529142,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "non-round deposits",
+      "epistemicBefore": 0.14042773338619544,
+      "epistemicAfter": 0.14757498399952812,
+      "nnLogitVar": 1.930767010169417,
+      "recallStacked": 0.05555555555555555
+    },
+    {
+      "kind": "obvious deposits",
+      "epistemicBefore": 0.0015131721841644976,
+      "epistemicAfter": 0.0014777847662370601,
+      "nnLogitVar": 0.1508146891135779,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "perfect mimic",
+      "epistemicBefore": 0.0044056403525160265,
+      "epistemicAfter": 0.0046963218354601054,
+      "nnLogitVar": 0.21297597557662595,
+      "recallStacked": 0.0
+    },
+    {
+      "kind": "same-QR blend",
+      "epistemicBefore": 0.04550114752330752,
+      "epistemicAfter": 0.046127135329858286,
+      "nnLogitVar": 0.566759550969352,
+      "recallStacked": 1.0
+    },
+    {
+      "kind": "small side-stream",
+      "epistemicBefore": 0.093304050826972,
+      "epistemicAfter": 0.09063595714061097,
+      "nnLogitVar": 0.5671114341569197,
+      "recallStacked": 0.9473684210526315
+    },
+    {
+      "kind": "uncatalogued category front",
+      "epistemicBefore": 0.09966660589050363,
+      "epistemicAfter": 0.09754483037073289,
+      "nnLogitVar": 1.5505159413779164,
+      "recallStacked": 1.0
+    }
+  ],
+  "verdict": "Neutral on accuracy and calibration (all changes inside noise). Cross-model epistemic per unseen kind unchanged. NN seed logit variance rises on some unseen kinds (low-volume split 4.3, non-round deposits 1.9, uncatalogued 1.6 vs held-out mean 0.9) but not on small side-stream (0.6) or perfect mimic (0.2). Error-detection AUROC 0.70->0.92 rests on only 2 errors and is not meaningful."
+}

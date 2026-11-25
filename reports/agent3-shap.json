@@ -1,0 +1,322 @@
+{
+  "bundle": "stage2-candidate",
+  "calibration": "identity",
+  "completeness": {
+    "heldout": {
+      "merchants": 180,
+      "secondsPerExplanation": 0.08017496930228339,
+      "ensembleResidual": {
+        "max": 0.005426045531121915,
+        "mean": 0.0007141375339606084
+      },
+      "perModelMaxAbsError": {
+        "logistic_regression": 3.4019009831354197e-11,
+        "decision_tree": 5.329070518200751e-15,
+        "random_forest": 6.039613253960852e-14,
+        "lightgbm": 7.460698725481052e-14,
+        "neural_net": 0.018565054460257358
+      }
+    },
+    "samples": {
+      "merchants": 11,
+      "secondsPerExplanation": 0.08143973350524902,
+      "ensembleResidual": {
+        "max": 0.011042685643079864,
+        "mean": 0.0022948057595814186
+      },
+      "perModelMaxAbsError": {
+        "logistic_regression": 3.645084234449314e-12,
+        "decision_tree": 5.329070518200751e-15,
+        "random_forest": 1.554312234475219e-14,
+        "lightgbm": 1.7763568394002505e-14,
+        "neural_net": 0.03778222264722064
+      }
+    }
+  },
+  "examples": {
+    "01-sweet-crumbs-betting-front": {
+      "stackedLogit": 3.7302861544753867,
+      "baseLogit": -0.5367535099404906,
+      "residual": -0.004745610691868407,
+      "drivers": [
+        {
+          "feature": "weekend_share",
+          "shap": -5.379329293961578
+        },
+        {
+          "feature": "llr_C5",
+          "shap": 4.813779233091362
+        },
+        {
+          "feature": "refund_ratio",
+          "shap": 3.9675748691149124
+        },
+        {
+          "feature": "eff_D9",
+          "shap": -3.7800568829361283
+        },
+        {
+          "feature": "llr_D7",
+          "shap": -2.897154041443885
+        }
+      ],
+      "perModelTop": {
+        "random_forest": [
+          {
+            "feature": "eff_B8",
+            "value": 0.29286919345953344
+          },
+          {
+            "feature": "payer_hhi",
+            "value": 0.25056498032545516
+          },
+          {
+            "feature": "eff_A4",
+            "value": 0.2314962641593523
+          }
+        ],
+        "lightgbm": [
+          {
+            "feature": "eff_B8",
+            "value": 2.682449092150711
+          },
+          {
+            "feature": "payer_hhi",
+            "value": 1.5670333590495111
+          },
+          {
+            "feature": "eff_H3",
+            "value": 0.8769628177827931
+          }
+        ],
+        "neural_net": [
+          {
+            "feature": "weekend_share",
+            "value": -18.349252882232957
+          },
+          {
+            "feature": "llr_C5",
+            "value": 16.475814274919955
+          },
+          {
+            "feature": "refund_ratio",
+            "value": 13.387999319944473
+          }
+        ]
+      }
+    },
+    "03-fabricated-online-store": {
+      "stackedLogit": -5.796778163473638,
+      "baseLogit": -0.5367535099404906,
+      "residual": 0.001118641442525714,
+      "drivers": [
+        {
+          "feature": "weekend_share",
+          "shap": -1.306142753000653
+        },
+        {
+          "feature": "eff_B8",
+          "shap": -0.773942760074911
+        },
+        {
+          "feature": "eff_H1",
+          "shap": -0.634658475062923
+        },
+        {
+          "feature": "llr_F2",
+          "shap": -0.42648252837969597
+        },
+        {
+          "feature": "eff_A4",
+          "shap": -0.4214331692078957
+        }
+      ],
+      "perModelTop": {
+        "random_forest": [
+          {
+            "feature": "eff_B8",
+            "value": -0.32732707729149363
+          },
+          {
+            "feature": "fired_B8",
+            "value": -0.22938396281393017
+          },
+          {
+            "feature": "payer_hhi",
+            "value": -0.17853815882902666
+          }
+        ],
+        "lightgbm": [
+          {
+            "feature": "eff_B8",
+            "value": -0.9720069034728405
+          },
+          {
+            "feature": "eff_A5",
+            "value": 0.5151317422369533
+          },
+          {
+            "feature": "eff_A4",
+            "value": -0.4591777493248652
+          }
+        ],
+        "neural_net": [
+          {
+            "feature": "weekend_share",
+            "value": -4.34860322098058
+          },
+          {
+            "feature": "eff_H1",
+            "value": -2.1046133620705434
+          },
+          {
+            "feature": "llr_F2",
+            "value": -1.4731698616575808
+          }
+        ]
+      }
+    },
+    "06-shree-ganesh-sweets-genuine": {
+      "stackedLogit": -5.223622918723013,
+      "baseLogit": -0.5367535099404906,
+      "residual": 0.003385107816881394,
+      "drivers": [
+        {
+          "feature": "eff_B8",
+          "shap": -0.7799712322712335
+        },
+        {
+          "feature": "weekend_share",
+          "shap": -0.6502203423275432
+        },
+        {
+          "feature": "llr_C5",
+          "shap": -0.6300919569132648
+        },
+        {
+          "feature": "llr_H2",
+          "shap": -0.5535533558164849
+        },
+        {
+          "feature": "eff_C2",
+          "shap": -0.46551087458012314
+        }
+      ],
+      "perModelTop": {
+        "random_forest": [
+          {
+            "feature": "eff_B8",
+            "value": -0.2391999433451951
+          },
+          {
+            "feature": "eff_H1",
+            "value": 0.19193873748049942
+          },
+          {
+            "feature": "fired_B8",
+            "value": -0.1754322073333559
+          }
+        ],
+        "lightgbm": [
+          {
+            "feature": "eff_B8",
+            "value": -0.8988376592711093
+          },
+          {
+            "feature": "eff_H1",
+            "value": 0.5787476592275603
+          },
+          {
+            "feature": "eff_A5",
+            "value": 0.5269258064365827
+          }
+        ],
+        "neural_net": [
+          {
+            "feature": "llr_C5",
+            "value": -2.1558108099591875
+          },
+          {
+            "feature": "payer_hhi",
+            "value": 2.124910263221098
+          },
+          {
+            "feature": "weekend_share",
+            "value": -2.0716010248997794
+          }
+        ]
+      }
+    },
+    "10-golden-oven-betting-on-the-side": {
+      "stackedLogit": 8.194190003467483,
+      "baseLogit": -0.5367535099404906,
+      "residual": 8.881784197001252e-15,
+      "drivers": [
+        {
+          "feature": "eff_B8",
+          "shap": 1.8209304145317025
+        },
+        {
+          "feature": "eff_H1",
+          "shap": 0.7291851662007276
+        },
+        {
+          "feature": "llr_B8",
+          "shap": 0.7235395415688685
+        },
+        {
+          "feature": "eff_C2",
+          "shap": 0.6671635508172806
+        },
+        {
+          "feature": "eff_H3",
+          "shap": 0.6352800842795323
+        }
+      ],
+      "perModelTop": {
+        "random_forest": [
+          {
+            "feature": "eff_B8",
+            "value": 0.46848099931756954
+          },
+          {
+            "feature": "fired_B8",
+            "value": 0.3225993969108492
+          },
+          {
+            "feature": "llr_A4",
+            "value": 0.24106582284242525
+          }
+        ],
+        "lightgbm": [
+          {
+            "feature": "eff_B8",
+            "value": 2.1940638309935996
+          },
+          {
+            "feature": "eff_H3",
+            "value": 1.011832327785607
+          },
+          {
+            "feature": "llr_B8",
+            "value": 0.6302720463386134
+          }
+        ],
+        "neural_net": [
+          {
+            "feature": "eff_B8",
+            "value": 2.211849689894413
+          },
+          {
+            "feature": "eff_H1",
+            "value": 1.5449841793910697
+          },
+          {
+            "feature": "eff_C2",
+            "value": 1.3496688139872464
+          }
+        ]
+      }
+    }
+  }
+}

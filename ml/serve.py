@@ -633,9 +633,9 @@ def _should_run_nli(ensemble_p: float, disagreement: float, features: dict[str, 
     return (low <= ensemble_p <= high) or (disagreement >= 0.15) or low_cov or has_high_signal_text
 
 
-def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float) -> dict[str, Any]:
+def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float, skip_nli: bool = False) -> dict[str, Any]:
     out: dict[str, Any] = {}
-    if _should_run_nli(ensemble_p, disagreement, body.features, body.context, body.force_encoder):
+    if not skip_nli and _should_run_nli(ensemble_p, disagreement, body.features, body.context, body.force_encoder):
         enc = _contextual_score(body.context)
         if enc:
             out['encoder'] = enc
@@ -654,14 +654,181 @@ def _run_aux_encoders(body: ScoreIn, ensemble_p: float, disagreement: float) -> 
     return out
 
 
+# ------------------------------------------------------------------ Stage 2 v1 (stacked ensemble)
+STAGE2 = ROOT / 'ml' / 'models' / 'stage2-v1'
+_v1: dict | None = None
+
+
+def v1_ready() -> bool:
+    global _v1
+    if _v1 is None and (STAGE2 / 'ensemble.json').exists() and (STAGE2 / 'models.joblib').exists():
+        try:
+            import joblib
+            import ml.stage2_lib  # noqa: F401  (the novelty detector class is pickled from this module)
+            _v1 = {**joblib.load(STAGE2 / 'models.joblib'), 'meta': json.loads((STAGE2 / 'ensemble.json').read_text())}
+        except Exception as err:  # a broken v1 bundle falls back to v0, never takes the service down
+            print('Stage 2 v1 bundle could not be loaded; using v0.', err)
+            _v1 = {}
+    return bool(_v1)
+
+
+def _logit(p):
+    p = np.clip(np.asarray(p, dtype=float), 1e-6, 1 - 1e-6)
+    return np.log(p / (1 - p))
+
+
+def _sigmoid(z):
+    return 1 / (1 + np.exp(-np.clip(z, -40, 40)))
+
+
+def _v1_scores(features: list[dict[str, float]]) -> dict:
+    """Base models -> stacked logit -> post-hoc calibration, plus the novelty distance and ensemble entropy terms."""
+    from ml.stage2_math import apply_calibration, entropy_decomposition
+    meta, cols = _v1['meta'], _v1['features']
+    X = np.asarray([[float(f.get(c, 0) or 0) for c in cols] for f in features], dtype=float)
+    X[~np.isfinite(X)] = 0.0
+    names = meta['baseModels']
+    base = {n: _v1['models'][n].predict_proba(X)[:, 1] for n in names}
+    w = np.asarray([meta['stacker']['weights'][n] for n in names])
+    raw = _sigmoid(meta['stacker']['intercept'] + np.column_stack([_logit(base[n]) for n in names]) @ w)
+    p_train = np.clip(apply_calibration(meta.get('calibration', {'method': 'identity'}), raw), 1e-6, 1 - 1e-6)
+    from ml.deep_ensemble import expand_members  # deep-ensemble members count towards epistemic uncertainty
+    rows, mix = expand_members(_v1['models'], names, base, w, X)
+    unc = entropy_decomposition(rows, mix)
+    return {'X': X, 'base': base, 'p_train': p_train, 'distance': _v1['novelty'].distance(X), **unc}
+
+
+def _rank_pvalue(sorted_reference: np.ndarray, value: float) -> float:
+    """Conformal p-value (n_greater_or_equal + 1) / (n + 1) against sorted reference scores."""
+    n = len(sorted_reference)
+    return float((n - np.searchsorted(sorted_reference, value, side='left') + 1) / (n + 1))
+
+
+def _v1_explain(x: np.ndarray) -> tuple[list[dict], dict | None]:
+    """Top-5 drivers of the stacked logit (ml/explain.py). Bundles trained before explanations fall back to LightGBM SHAP."""
+    meta = _v1['meta']
+    background = meta.get('explain', {}).get('backgroundMean')
+    if background is not None:
+        try:
+            if '_explainer' not in _v1:
+                from ml.explain import EnsembleExplainer
+                _v1['_explainer'] = EnsembleExplainer(_v1['models'], meta['baseModels'], meta['stacker'], background,
+                                                      _v1['features'], meta.get('calibration', {}).get('method', 'identity'))
+            r = _v1['_explainer'].explain(x)
+            return r['drivers'], r['explanation']
+        except Exception as err:  # an explanation failure must never block the score
+            print('Ensemble explanation failed; using LightGBM SHAP.', err)
+    contrib = _v1['models']['lightgbm'].booster_.predict(x.reshape(1, -1), pred_contrib=True)[0][:-1]
+    order = np.argsort(-np.abs(contrib))[:5]
+    return [{'feature': _v1['features'][i], 'shap': float(contrib[i])} for i in order], None
+
+
+def _v1_score(body: 'ScoreIn') -> dict:
+    meta = _v1['meta']
+    s = _v1_scores([body.features])
+    p_train = float(s['p_train'][0])
+    base = {n: float(v[0]) for n, v in s['base'].items()}
+    # Prior shift (Saerens et al. 2002): move from the training base rate onto the engine's prior for this merchant.
+    prior = body.features.get('prior')
+    shifted = prior is not None and 0 < float(prior) < 1
+    p = float(_sigmoid(_logit(p_train) - _logit(meta['trainPrevalence']) + _logit(float(prior)))) if shifted else p_train
+    threshold = meta['bayesThreshold'] if shifted else meta['evaluation']['threshold']
+    # Mondrian conformal: per-class p-values and the 90% set. Class-conditional validity survives label shift,
+    # because each class is calibrated only against its own members.
+    conf = meta['conformal']
+    pv = {'front': _rank_pvalue(np.asarray(conf['scores']['1']), 1 - p_train),
+          'honest': _rank_pvalue(np.asarray(conf['scores']['0']), p_train)}
+    cset = [c for c in ('front', 'honest') if pv[c] > conf['alpha']]
+    distance = float(s['distance'][0])
+    nov_p = _rank_pvalue(np.asarray(meta['novelty']['oofDistances']), distance)
+    novel = distance > meta['novelty']['threshold']
+    epistemic, aleatoric = float(s['epistemic'][0]), float(s['aleatoric'][0])
+    # LOW: unfamiliar, or the conformal set is not one class. MEDIUM: the members disagree (mutual information above
+    # 0.1 bit). HIGH otherwise.
+    confidence = 'LOW' if novel or len(cset) != 1 else ('MEDIUM' if epistemic > 0.1 else 'HIGH')
+    npt = meta.get('neymanPearson', {}).get('threshold')
+    drivers, explanation = _v1_explain(s['X'][0])
+    names = {'logistic_regression': 'logistic-regression-v1', 'decision_tree': 'decision-tree-v1',
+             'random_forest': 'random-forest-v1', 'lightgbm': 'lightgbm-v1', 'neural_net': 'neural-net-v1'}
+    encoder = _contextual_score(body.context) if (novel or len(cset) != 1) else None
+    return {
+        'p_raw': p_train, 'p': p, 'drivers': drivers, 'modelVersion': meta['version'],
+        **({'explanation': explanation} if explanation else {}),
+        'classical': [{'p': base[n], 'modelVersion': names[n]} for n in meta['baseModels'] if n != 'neural_net'],
+        'nn': {'p': base['neural_net'], 'drivers': [], 'modelVersion': names['neural_net']},
+        'ensemble': {
+            'p': p, 'pTrainScale': p_train, 'method': 'stacked', 'models': [names[n] for n in meta['baseModels']],
+            'weights': {names[n]: float(v) for n, v in meta['stacker']['weights'].items()},
+            'calibration': meta.get('calibration', {}).get('method', 'identity'),
+            'disagreement': float(max(base.values()) - min(base.values())), 'confidence': confidence, 'review': confidence == 'LOW',
+            'uncertainty': {'totalBits': float(s['total'][0]), 'aleatoricBits': aleatoric, 'epistemicBits': epistemic},
+            'priorShift': {'applied': shifted, 'enginePrior': float(prior) if shifted else None, 'trainPrevalence': meta['trainPrevalence']},
+            'threshold': float(threshold), 'flag': bool(p >= threshold), 'costRatio': meta['costRatio'],
+            'neymanPearson': None if npt is None else {'threshold': npt, 'flag': bool(p_train > npt),
+                                                        'alpha': meta['neymanPearson']['alpha'], 'delta': meta['neymanPearson']['delta']},
+            'conformalSet': cset, 'conformalAlpha': conf['alpha'], 'conformalPValues': pv,
+            'novelty': {'distance': distance, 'threshold': meta['novelty']['threshold'], 'flagged': bool(novel), 'pValue': nov_p,
+                        'unfamiliar': _v1['novelty'].drivers(s['X'], _v1['features']) if novel else []},
+            'syntheticTrainingExamples': meta['data']['trainingRows'],
+        },
+        **({'encoder': encoder} if encoder else {}),
+    }
+
+
+class DriftIn(BaseModel):
+    rows: list[dict[str, float]]
+
+
+@app.post('/drift')
+def drift(body: DriftIn):
+    """Batch shift report against the training reference.
+
+    - score PSI and KS against the calibrated out-of-fold score distribution
+    - per-feature PSI (training deciles) and KS, top movers listed, Benjamini-Hochberg control of the KS p-values
+    - the EM estimate of the batch's fraud rate (Saerens et al. 2002), with and without the novelty-flagged rows
+    """
+    from ml.stage2_math import em_prevalence, ks_statistic, psi
+    if not v1_ready() or not body.rows:
+        return {'n': len(body.rows), 'psi': None, 'status': 'UNAVAILABLE'}
+    meta = _v1['meta']
+    s = _v1_scores(body.rows)
+    score_psi = psi(s['p_train'], meta['psi']['score']['edges'], meta['psi']['score']['shares'])
+    score_ks = ks_statistic(s['p_train'], meta['reference']['score'])
+    feats = []
+    for j, c in enumerate(_v1['features']):
+        q = np.asarray(meta['reference']['features'][c])
+        if q[0] == q[-1]:
+            continue  # constant in training: covered by the novelty detector instead
+        edges = np.unique(q[10:100:10])
+        ref_shares = np.diff(np.concatenate([[0.0], np.searchsorted(q, edges, side='right') / len(q), [1.0]]))
+        feats.append({'feature': c, 'psi': psi(s['X'][:, j], edges, ref_shares), **ks_statistic(s['X'][:, j], q)})
+    m = len(feats)
+    for rank, f in enumerate(sorted(feats, key=lambda f: f['p']), start=1):
+        f['qValue'] = min(1.0, f['p'] * m / rank)
+    shifted = [f for f in feats if f['qValue'] < 0.05]
+    status = 'SIGNIFICANT' if score_psi > 0.25 else 'MODERATE' if score_psi > 0.1 else 'OK'
+    novel = s['distance'] > meta['novelty']['threshold']
+    familiar = s['p_train'][~novel]
+    return {
+        'n': len(body.rows), 'psi': score_psi, 'status': status, 'scoreKs': score_ks,
+        'novelShare': float(novel.mean()), 'expectedNovelShare': 1 - meta['novelty']['quantile'],
+        'prevalence': {'trainPrevalence': meta['trainPrevalence'], **em_prevalence(s['p_train'], meta['trainPrevalence']),
+                       'familiarOnly': em_prevalence(familiar, meta['trainPrevalence'])['prevalence'] if len(familiar) else None},
+        'featuresShifted': len(shifted), 'featuresTested': m,
+        'topShiftedFeatures': sorted(feats, key=lambda f: -f['psi'])[:10],
+    }
+
+
 @app.get('/health')
 def health():
     ok = ready()
+    v1 = v1_ready()
     return {
-        'status': 'ok' if ok else 'no-model',
-        'model': 'm1-v0' if _booster is not None else ('nn-v0' if _net is not None else None),
-        'nn': _net is not None,
-        'classical': bool(_classical),
+        'status': 'ok' if (ok or v1) else 'no-model',
+        'model': 'stage2-v1' if v1 else ('m1-v0' if _booster is not None else ('nn-v0' if _net is not None else None)),
+        'nn': _net is not None or v1,
+        'classical': bool(_classical) or v1,
+        'stage2': v1,
         'encoder': _encoder is not None,
         'encoderStatus': _encoder_status,
         'encoderModel': _encoder_model_loaded or os.getenv('MRE_ENCODER_MODEL', DEFAULT_NLI_MODEL).strip(),
@@ -677,6 +844,14 @@ def health():
 
 @app.post('/score')
 def score(body: ScoreIn):
+    if v1_ready():
+        # The stacked ensemble scores the merchant; the alignment, autoencoder, temporal and graph encoders still add
+        # their supporting views. v1 decides on its own when to run the NLI encoder, so it is not run a second time.
+        out = _v1_score(body)
+        ens = out.get('ensemble') or {}
+        aux = _run_aux_encoders(body, float(ens.get('pTrainScale', out.get('p') or 0.0)), float(ens.get('disagreement', 0.0)),
+                                skip_nli='encoder' in out)
+        return {**out, **aux}
     if not ready():
         return {'p_raw': None, 'p': None, 'drivers': [], 'modelVersion': None}
     nn_out = None
