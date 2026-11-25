@@ -8,7 +8,7 @@ const toneCls: Record<Tone, string> = {
   warn: 'text-amber-300 bg-amber-500/10 border-amber-500/30',
   bad: 'text-rose-300 bg-rose-500/10 border-rose-500/30',
   info: 'text-cyan-300 bg-cyan-500/10 border-cyan-500/30',
-  mute: 'text-zinc-300 bg-white/[0.06] border-line2',
+  mute: 'text-[#d9cdbb] bg-white/[0.05] border-line2',
 };
 export const toneText: Record<Tone, string> = {
   ok: 'text-emerald-300',
@@ -33,14 +33,14 @@ export const statusLabel = (s: EvidenceStatus) => (s === 'ILLICIT' ? 'Red flag' 
 export const StatusBadge = ({ s }: { s: EvidenceStatus }) => <Badge tone={statusTone(s)}>{statusLabel(s)}</Badge>;
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cx('rounded-xl border border-line bg-panel shadow-[0_1px_2px_rgba(0,0,0,0.4)]', className)}>{children}</div>;
+  return <div className={cx('rounded-2xl border border-line bg-panel shadow-[0_1px_0_rgba(246,239,228,0.03)_inset,0_10px_30px_-18px_rgba(0,0,0,0.8)]', className)}>{children}</div>;
 }
 export function Panel({ title, subtitle, right, children, className, bodyClass }: { title?: ReactNode; subtitle?: ReactNode; right?: ReactNode; children: ReactNode; className?: string; bodyClass?: string }) {
   return (
     <Card className={className}>
       {(title || right) && (
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-3.5">
-          <div><div className="text-sm font-semibold text-ink">{title}</div>{subtitle && <div className="mt-0.5 text-xs text-mute">{subtitle}</div>}</div>
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
+          <div><div className="font-display text-[15px] font-semibold tracking-tight text-ink">{title}</div>{subtitle && <div className="mt-0.5 text-xs text-mute">{subtitle}</div>}</div>
           {right}
         </div>
       )}
@@ -51,8 +51,8 @@ export function Panel({ title, subtitle, right, children, className, bodyClass }
 export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: Tone }) {
   return (
     <Card className="px-4 py-3.5">
-      <div className="text-xs font-medium text-mute">{label}</div>
-      <div className={cx('mt-1 text-2xl font-bold tabular-nums tracking-tight', tone ? toneText[tone] : 'text-ink')}>{value}</div>
+      <div className="font-mono text-[10.5px] font-medium uppercase tracking-[.14em] text-mute">{label}</div>
+      <div className={cx('mt-1.5 font-display text-[26px] font-bold tabular-nums tracking-tight', tone ? toneText[tone] : 'text-ink')}>{value}</div>
       {sub && <div className="mt-0.5 text-[11px] text-dim">{sub}</div>}
     </Card>
   );
@@ -60,20 +60,20 @@ export function Stat({ label, value, sub, tone }: { label: string; value: ReactN
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'outline' | 'danger'; size?: 'sm' | 'md' | 'lg' };
 export function Btn({ variant = 'outline', size = 'md', className, ...p }: BtnProps) {
   const v = {
-    primary: 'bg-white text-black hover:bg-zinc-200 border-white shadow-xs',
-    outline: 'border-line2 bg-panel text-ink hover:bg-panel2 hover:border-zinc-400',
+    primary: 'bg-crust text-[#140b05] hover:bg-[#ff8a4c] border-crust font-semibold',
+    outline: 'border-line2 bg-panel text-ink hover:bg-panel2 hover:border-[#7a6754]',
     ghost: 'border-transparent text-mute hover:text-ink hover:bg-panel2',
     danger: 'border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20',
   }[variant];
   const s = { sm: 'px-2.5 py-1.5 text-xs', md: 'px-3.5 py-2 text-sm', lg: 'px-5 py-2.5 text-sm' }[size];
-  return <button {...p} className={cx('inline-flex items-center justify-center gap-2 rounded-lg border font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40', v, s, className)} />;
+  return <button {...p} className={cx('inline-flex items-center justify-center gap-2 rounded-full border font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40', v, s, className)} />;
 }
 export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: T; label: ReactNode }[]; value: T; onChange: (v: T) => void }) {
   return (
     <div className="flex flex-wrap gap-1 border-b border-line" role="tablist">
       {tabs.map(t => (
         <button key={t.id} role="tab" aria-selected={value === t.id} onClick={() => onChange(t.id)}
-          className={cx('-mb-px border-b-2 px-3.5 py-2 text-sm font-medium transition-colors', value === t.id ? 'border-white text-white' : 'border-transparent text-mute hover:text-ink')}>{t.label}</button>
+          className={cx('-mb-px border-b-2 px-3.5 py-2 text-sm font-medium transition-colors', value === t.id ? 'border-crust text-ink' : 'border-transparent text-mute hover:text-ink')}>{t.label}</button>
       ))}
     </div>
   );
