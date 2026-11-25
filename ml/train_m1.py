@@ -90,7 +90,7 @@ Features: {len(cols)} columns from the TypeScript engine. Monotone +1 on llr_* a
 
 Params: {json.dumps(best)}. Cross-validated average precision {best_score:.4f}.
 
-Limits: trained on synthetic data derived from nine hand-built samples. Not a measure of real-world accuracy. Second opinion only.
+Limits: trained on synthetic merchants from engine/synthetic.ts, never on the demo samples. Not a measure of real-world accuracy. Second opinion only.
 """
     (OUT / 'model_card.md').write_text(card)
     (ROOT / 'ml' / 'data' / 'test_ids.csv').write_text('merchant_id\n' + '\n'.join(ids.iloc[test_i].astype(str)) + '\n')
