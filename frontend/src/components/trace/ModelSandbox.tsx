@@ -55,7 +55,7 @@ export function ModelSandbox({ onReady }: { onReady?: () => void }) {
             : (host.detail || 'Stage 2 AI/ML service offline — running in Bayesian-only mode.')}
         </span>
         {!host.online && host.configured !== false && <Btn size="sm" variant="primary" onClick={() => void start()} disabled={busy}>{busy ? 'Starting…' : 'Start model sandbox'}</Btn>}
-        {host.online && host.configured && <Btn size="sm" onClick={() => void stop()} disabled={busy}>{busy ? 'Stopping…' : 'Stop sandbox'}</Btn>}
+        {host.online && host.configured && <Btn size="sm" onClick={() => void stop()} disabled={busy}>{busy ? 'Stopping…' : 'Stop model server'}</Btn>}
       </div>
       {host.online && h && (
         <div className="flex flex-wrap gap-1.5 text-[11px]">

@@ -153,7 +153,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to stop the model sandbox.' } });
       if (actor.role !== 'admin') return send(res, { status: 403, body: { error: 'Only an admin can stop the model sandbox.' } });
       await stopModelSandbox();
-      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model sandbox stopped.' } });
+      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model server stopped. The sandbox keeps running; start it again with the button.' } });
     }
 
     if (path.startsWith('/v1')) {

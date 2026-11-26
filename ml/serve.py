@@ -826,6 +826,7 @@ def drift(body: DriftIn):
 
 
 @app.get('/health')
+@app.get('/status')  # same answer; Daytona's public preview proxy answers /health itself
 def health():
     ok = ready()
     v1 = v1_ready()
