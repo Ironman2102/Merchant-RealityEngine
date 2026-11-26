@@ -78,6 +78,8 @@ export function InvestigationProvider({ children }: { children: ReactNode }) {
         if (token.current !== my) return;
         setStatus(s => ({ ...s, [n]: 'done' }));
       }
+      // Show the evidence as soon as the run finishes; "Hide evidence" still collapses it.
+      if (token.current === my) setDetailsOpen(true);
     })();
   }, [fast]);
   const run = useCallback((id?: ActiveId) => { if (id) { setCaseId(null); setSaved(null); setChecked([]); setScenarioId(id); } start(id ? runInvestigation(pick(id)) : result); }, [result, pick, start]);

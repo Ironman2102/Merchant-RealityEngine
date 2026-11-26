@@ -1,51 +1,73 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { Logo } from '../common/Logo';
-import { Btn } from '../ui/ui';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { BrandLogo, BrandMark } from '../common/Logo';
+import { cx } from '../../utils/format';
 
 export function useScrollTo() {
   const nav = useNavigate(), loc = useLocation();
   return (id: string) => {
-    if (loc.pathname === '/' && loc.hash === `#${id}`) {
+    if (loc.pathname === '/' && (loc.hash === `#${id}` || document.getElementById(id))) {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
     nav({ pathname: '/', hash: `#${id}` }, { state: { scroll: id }, preventScrollReset: true });
   };
 }
-const ITEMS = [['Platform', 'platform'], ['How It Works', 'how'], ['Technology', 'technology'], ['Use Cases', 'use-cases']] as const;
+
+const ITEMS = [['Platform', 'platform'], ['How it works', 'how'], ['Technology', 'technology'], ['Use cases', 'use-cases'], ['Flowchart', 'workflow']] as const;
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 export function PublicNav({ landing = false }: { landing?: boolean }) {
-  const go = useScrollTo(), [open, setOpen] = useState(false);
-  if (landing) return (
-    <header className="sticky top-0 z-40 bg-black px-5 pt-3 md:px-8">
-      <nav className="mx-auto grid h-12 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center md:grid-cols-5" aria-label="Primary">
-        <Link to="/demo" className="hidden justify-self-start text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-1 md:block">DEMO</Link>
-        <Link to="/ai-engine" className="hidden justify-self-center text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-2 md:block">AI ENGINE</Link>
-        <Link to="/" aria-label="Merchant Reality Engine home" className="col-start-2 justify-self-center text-[27px] font-black leading-none tracking-[-.07em] md:col-start-3">MRE.</Link>
-        <button onClick={() => go('how')} className="hidden justify-self-center text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-4 md:block">HOW IT WORKS</button>
-        <button onClick={() => go('workflow')} className="hidden justify-self-end text-[11px] font-semibold tracking-[.18em] text-[#6ee7b7] transition hover:text-[#a7f3d0] md:col-start-5 md:block">FLOWCHART</button>
-        <button className="col-start-3 row-start-1 justify-self-end rounded p-2 text-[#6ee7b7] md:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button>
-      </nav>
-      {open && <div className="absolute inset-x-0 top-full z-50 grid gap-4 border-y border-white/15 bg-black px-6 py-5 text-xs font-semibold tracking-[.18em] text-[#6ee7b7] md:hidden"><Link onClick={() => setOpen(false)} to="/demo">DEMO</Link><Link onClick={() => setOpen(false)} to="/ai-engine">AI ENGINE</Link><button className="text-left" onClick={() => { setOpen(false); go('how'); }}>HOW IT WORKS</button><button className="text-left" onClick={() => { setOpen(false); go('workflow'); }}>FLOWCHART</button></div>}
-    </header>
-  );
+  const go = useScrollTo(), [open, setOpen] = useState(false), loc = useLocation();
+  const [solid, setSolid] = useState(!landing);
+  useEffect(() => {
+    if (!landing) return;
+    const on = () => setSolid(window.scrollY > window.innerHeight * 4.6);
+    on(); window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, [landing]);
+  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
+  const pick = (id: string) => { setOpen(false); go(id); };
+  const active = (p: string) => loc.pathname.startsWith(p);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-black/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
-        <Link to="/" aria-label="Merchant Reality Engine home"><Logo /></Link>
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-          {ITEMS.map(([l, id]) => <button key={id} onClick={() => go(id)} className="rounded px-3 py-1.5 text-xs font-medium tracking-wide text-mute hover:text-ink">{l}</button>)}
-          <Link to="/architecture" className="rounded px-3 py-1.5 text-xs font-medium tracking-wide text-mute hover:text-ink">Architecture</Link>
-          <Link to="/ai-engine" className="rounded px-3 py-1.5 text-xs font-semibold tracking-wide text-[#6ee7b7] hover:text-[#a7f3d0]">AI Engine</Link>
-          <Link to="/demo" className="rounded px-3 py-1.5 text-xs font-semibold tracking-wide text-[#6ee7b7] hover:text-[#a7f3d0]">Guided demo</Link>
-        </nav>
-        <div className="flex items-center gap-2"><Link to="/ai-engine"><Btn variant="primary" size="sm">Open AI Engine</Btn></Link>
-          <button className="rounded p-1.5 text-[#6ee7b7] md:hidden" onClick={() => setOpen(o => !o)} aria-label="Menu" aria-expanded={open}>{open ? <X size={20} /> : <Menu size={20} />}</button></div>
-      </div>
-      {open && <div className="border-t border-line bg-black px-5 py-3 md:hidden">{ITEMS.map(([l, id]) => <button key={id} onClick={() => { setOpen(false); go(id); }} className="block w-full py-2 text-left text-sm text-mute hover:text-ink">{l}</button>)}
-        <Link to="/architecture" className="block py-2 text-sm text-mute hover:text-ink" onClick={() => setOpen(false)}>Architecture</Link><Link to="/ai-engine" className="block py-2 text-sm text-[#6ee7b7]" onClick={() => setOpen(false)}>AI Engine</Link><Link to="/demo" className="block py-2 text-sm text-[#6ee7b7]" onClick={() => setOpen(false)}>Guided demo</Link></div>}
+    <header className={cx('top-0 z-50 w-full transition-[background,border-color] duration-500', landing ? 'fixed' : 'sticky', solid ? 'border-b border-line bg-bg/85 backdrop-blur-xl' : 'border-b border-transparent bg-transparent')}>
+      <nav className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-8" aria-label="Primary">
+        <Link to="/" aria-label="Merchant Reality Engine home" className="flex shrink-0 items-center gap-2">
+          <BrandLogo height={34} className="hidden sm:block" />
+          <BrandMark size={34} className="sm:hidden" />
+        </Link>
+        <div className="hidden items-center gap-6 xl:flex">
+          {ITEMS.map(([l, id], i) => (
+            <button key={id} onClick={() => go(id)} className="group flex items-baseline gap-1.5 font-mono text-[11px] font-medium uppercase tracking-[.16em] text-mute transition hover:text-ink">
+              <span className="text-crust">0{i + 1}.</span>{l}
+            </button>
+          ))}
+          <Link to="/architecture" className={cx('flex items-baseline gap-1.5 font-mono text-[11px] font-medium uppercase tracking-[.16em] transition hover:text-ink', active('/architecture') ? 'text-ink' : 'text-mute')}><span className="text-crust">06.</span>Architecture</Link>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/demo" className={cx('hidden rounded-full border px-4 py-2 font-mono text-[11px] font-bold tracking-[.16em] transition sm:inline-flex', active('/demo') ? 'border-ink text-ink' : 'border-line2 text-ink hover:border-ink')}>DEMO</Link>
+          <Link to="/ai-engine" className="hidden items-center gap-1.5 rounded-full bg-crust px-4 py-2 font-mono text-[11px] font-bold tracking-[.16em] text-[#140b05] transition hover:bg-[#ff8a4c] sm:inline-flex">AI ENGINE <ArrowUpRight size={14} strokeWidth={2.6} /></Link>
+          <button className="rounded-full border border-line2 p-2 text-ink xl:hidden" onClick={() => setOpen(v => !v)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X size={18} /> : <Menu size={18} />}</button>
+        </div>
+      </nav>
+      {open && (
+        <div className="fixed inset-x-0 bottom-0 top-14 z-50 overflow-y-auto bg-bg px-6 pb-10 pt-6 xl:hidden">
+          <div className="grid gap-1">
+            {ITEMS.map(([l, id], i) => (
+              <button key={id} onClick={() => pick(id)} className="flex items-baseline gap-4 border-b border-line py-4 text-left">
+                <span className="w-8 font-mono text-xs text-crust">{ROMAN[i]}</span><span className="font-display text-3xl font-semibold tracking-tight">{l}</span>
+              </button>
+            ))}
+            <Link onClick={() => setOpen(false)} to="/architecture" className="flex items-baseline gap-4 border-b border-line py-4"><span className="w-8 font-mono text-xs text-crust">{ROMAN[5]}</span><span className="font-display text-3xl font-semibold tracking-tight">Architecture</span></Link>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link onClick={() => setOpen(false)} to="/demo" className="mre-pill mre-pill-ghost">GUIDED DEMO</Link>
+            <Link onClick={() => setOpen(false)} to="/ai-engine" className="mre-pill mre-pill-solid">AI ENGINE <ArrowUpRight size={15} /></Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -53,13 +75,28 @@ export function PublicNav({ landing = false }: { landing?: boolean }) {
 export function Footer() {
   const go = useScrollTo();
   return (
-    <footer className="border-t border-line bg-black">
-      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 md:grid-cols-4">
-        <div className="md:col-span-2"><Logo small /><p className="mt-3 max-w-sm text-sm text-mute">Does a merchant’s declared business match its financial, operational and digital behaviour?</p></div>
-        <div className="text-sm"><div className="mb-2 font-medium">Product</div><div className="space-y-1.5 text-mute"><button onClick={() => go('platform')} className="block hover:text-ink">Platform</button><Link to="/architecture" className="block hover:text-ink">Architecture</Link><Link to="/ai-engine" className="block hover:text-ink">AI Engine</Link><Link to="/demo" className="block hover:text-ink">Demo</Link></div></div>
-        <div className="text-sm"><div className="mb-2 font-medium">Contact</div><a href="mailto:321dhruv.b@gmail.com" className="text-mute hover:text-ink">321dhruv.b@gmail.com</a></div>
+    <footer className="relative overflow-hidden border-t border-line bg-bg">
+      <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-14 md:grid-cols-12 md:px-8">
+        <div className="md:col-span-6">
+          <BrandLogo height={46} />
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-mute">Does a merchant’s declared business match its financial, operational and digital behaviour?</p>
+        </div>
+        <div className="md:col-span-3">
+          <div className="mre-label text-dim">Product</div>
+          <div className="mt-4 space-y-2.5 text-sm text-mute">
+            <button onClick={() => go('platform')} className="block hover:text-ink">Platform</button>
+            <Link to="/architecture" className="block hover:text-ink">Architecture</Link>
+            <Link to="/ai-engine" className="block hover:text-ink">AI Engine</Link>
+            <Link to="/demo" className="block hover:text-ink">Demo</Link>
+          </div>
+        </div>
+        <div className="md:col-span-3">
+          <div className="mre-label text-dim">Contact</div>
+          <div className="mt-4 space-y-2.5 text-sm"><a href="mailto:sriyanth007@gmail.com" className="block break-all text-mute hover:text-ink">sriyanth007@gmail.com</a><a href="mailto:321dhruv.b@gmail.com" className="block break-all text-mute hover:text-ink">321dhruv.b@gmail.com</a></div>
+        </div>
       </div>
-      <div id="disclaimer" className="border-t border-line px-5 py-5"><p className="mx-auto max-w-7xl text-xs leading-relaxed text-dim">Disclaimer. Merchant Reality Engine is a prototype. All merchants, transactions, websites and figures are synthetic and illustrate the architecture; none is verified real-world evidence. References to other companies describe design inspiration only and imply no partnership, endorsement or use of proprietary technology. The response design is a product proposal, not a statement of legal or regulatory requirements, and the system never freezes funds automatically. There are no customers, testimonials or performance claims on this site.</p></div>
+      <div aria-hidden="true" className="pointer-events-none select-none px-4 pb-6 opacity-[.07] md:px-8"><img src={`${import.meta.env.BASE_URL}logo-dark.svg`} alt="" className="w-full max-w-[1100px]" /></div>
+      <div id="disclaimer" className="border-t border-line px-4 py-6 md:px-8"><p className="mx-auto max-w-[1440px] text-xs leading-relaxed text-dim">Disclaimer. Merchant Reality Engine is a prototype. All merchants, transactions, websites and figures are synthetic and illustrate the architecture; none is verified real-world evidence. References to other companies describe design inspiration only and imply no partnership, endorsement or use of proprietary technology. The response design is a product proposal, not a statement of legal or regulatory requirements, and the system never freezes funds automatically. There are no customers, testimonials or performance claims on this site.</p></div>
     </footer>
   );
 }

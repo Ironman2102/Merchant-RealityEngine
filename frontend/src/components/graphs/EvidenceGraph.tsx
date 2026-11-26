@@ -71,7 +71,7 @@ function SubgraphNode({ data }: NodeProps) {
   return (
     <div
       style={{ width, height }}
-      className="pointer-events-none rounded-xl border border-dashed border-slate-300/90 bg-slate-100/55 px-3 py-2"
+      className="pointer-events-none rounded-xl border border-dashed border-line2 bg-white/[.025] px-3 py-2"
     >
       <div className="inline-flex items-center rounded bg-white/90 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-600 shadow-2xs ring-1 ring-slate-200/80">
         {title}
@@ -104,14 +104,14 @@ function MreNode({ data }: NodeProps) {
       style={{
         width: NODE_W,
         minHeight: NODE_H,
-        borderColor: sel ? '#4f46e5' : illicitCount > 0 && spec.type !== 'merchant' ? '#ef4444' : path ? color : spec.type === 'merchant' ? '#0284c7' : 'var(--color-line2)',
-        backgroundColor: spec.type === 'merchant' ? '#0b1b26' : 'var(--color-panel2)',
+        borderColor: sel ? '#ff6a2b' : illicitCount > 0 && spec.type !== 'merchant' ? '#ff5d73' : path ? color : spec.type === 'merchant' ? '#ff8a4c' : '#3e352c',
+        backgroundColor: spec.type === 'merchant' ? '#2a1a10' : '#17130f',
       }}
       className={cx(
         'relative flex items-center gap-2.5 py-2 shadow-xs transition-all',
         shapeCls,
         dim && 'opacity-25',
-        sel ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:shadow-md',
+        sel ? 'ring-2 ring-[#ff6a2b] shadow-md' : 'hover:shadow-md',
       )}
     >
       <Handle id="t-left" type="target" position={Position.Left} style={hs} isConnectable={false} />
@@ -130,7 +130,7 @@ function MreNode({ data }: NodeProps) {
         <div className="flex items-center justify-between gap-1">
           <span className="truncate text-[12px] font-semibold text-slate-900" title={spec.label}>{spec.label}</span>
           {illicitCount > 0 && (
-            <span className="shrink-0 rounded-full bg-rose-100 px-1.5 py-0.5 text-[9.5px] font-semibold text-rose-700">
+            <span className="shrink-0 rounded-full bg-rose-500/20 px-1.5 py-0.5 text-[9.5px] font-semibold text-rose-300">
               {illicitCount} flag{illicitCount > 1 ? 's' : ''}
             </span>
           )}
@@ -402,14 +402,14 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
       animated: e.type === 'PAYMENT_FLOW' && (!focus || lit),
       label: showLabel && fullLabel ? fullLabel : undefined,
       labelStyle: {
-        fill: fired.length ? '#9f1239' : '#1e293b',
+        fill: fired.length ? '#ffb3bf' : '#e0d4c2',
         fontSize: 10.5,
         fontWeight: fired.length || lit ? 600 : 500,
       },
       labelBgStyle: {
-        fill: fired.length ? '#fff1f2' : '#ffffff',
+        fill: fired.length ? '#2a1216' : '#17130f',
         fillOpacity: 0.95,
-        stroke: fired.length ? '#fecdd3' : '#e2e8f0',
+        stroke: fired.length ? '#6b2a36' : '#3e352c',
         strokeWidth: 0.8,
       },
       labelBgPadding: [6, 3] as [number, number],
@@ -452,7 +452,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
                   title={st.blurb}
                   className={cx(
                     'flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs transition-colors',
-                    on ? 'border-slate-300 bg-white text-slate-900 shadow-2xs' : 'border-slate-200 bg-slate-50 text-slate-400',
+                    on ? 'border-line2 bg-panel2 text-ink shadow-2xs' : 'border-line bg-bg text-dim',
                   )}
                 >
                   <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke={st.color} strokeWidth="2.2" strokeDasharray={st.dash} opacity={on ? 1 : 0.35} /></svg>
@@ -464,32 +464,32 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
+            <div className="inline-flex rounded-md border border-line bg-panel2 p-0.5 text-xs">
               <button
                 onClick={() => setDir('LR')}
-                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'LR' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'LR' ? 'bg-crust text-[#140b05] shadow-2xs' : 'text-mute')}
                 title="Left-to-right Mermaid layout"
               >
                 <ArrowLeftRight size={13} /> LR
               </button>
               <button
                 onClick={() => setDir('TD')}
-                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'TD' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2 py-1 font-medium transition', dir === 'TD' ? 'bg-crust text-[#140b05] shadow-2xs' : 'text-mute')}
                 title="Top-down Mermaid layout"
               >
                 <ArrowDownUp size={13} /> TD
               </button>
             </div>
-            <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-0.5 text-xs">
+            <div className="inline-flex rounded-md border border-line bg-panel2 p-0.5 text-xs">
               <button
                 onClick={() => setViewMode('diagram')}
-                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'diagram' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'diagram' ? 'bg-crust text-[#140b05] shadow-2xs' : 'text-mute')}
               >
                 <GitFork size={13} /> Diagram
               </button>
               <button
                 onClick={() => setViewMode('mermaid')}
-                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'mermaid' ? 'bg-white text-black shadow-2xs' : 'text-slate-600')}
+                className={cx('flex items-center gap-1 rounded px-2.5 py-1 font-medium transition', viewMode === 'mermaid' ? 'bg-crust text-[#140b05] shadow-2xs' : 'text-mute')}
               >
                 <Code2 size={13} /> Mermaid
               </button>
@@ -515,7 +515,7 @@ export function EvidenceGraph({ scenario, evidence, height = 700 }: { scenario: 
               onPaneClick={() => { setSelN(null); setSelE(null); }}
             >
               <Background variant={BackgroundVariant.Dots} color="#cbd5e1" gap={22} size={1.1} />
-              <MiniMap pannable zoomable nodeStrokeWidth={2} nodeColor={n => n.type === 'subgraph' ? '#1a1a1a' : '#525252'} bgColor="var(--color-panel)" maskColor="rgba(0,0,0,0.55)" className="!border !border-slate-200" />
+              <MiniMap pannable zoomable maskColor="rgba(13,11,9,0.72)" bgColor="#14110e" maskStrokeColor="#ff6a2b" nodeStrokeWidth={2} nodeColor={n => n.type === 'subgraph' ? '#2a241e' : '#5a4a3b'} className="!border !border-line !bg-[#14110e]" />
               <Controls showInteractive={false} />
             </ReactFlow>
           </div>
