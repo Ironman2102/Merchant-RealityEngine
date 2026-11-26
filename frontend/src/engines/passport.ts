@@ -4,6 +4,7 @@ import type { PaymentEvent } from '../types/payment';
 import { RULES } from '../../../rules/index';
 import { istHour } from '../utils/format';
 import { instant } from '../utils/time';
+import { homeAndNeighbours } from './detectors';
 
 const DAY = 86400000;
 export type Axis = 'hours' | 'area' | 'amount';
@@ -78,15 +79,24 @@ export function passportCover(sc: Scenario): (e: PaymentEvent, axis: Axis) => bo
   });
 }
 
-/** Primary-merchant sales backed by a delivered order with unique tracking; excused on `area` only when the order feed itself is sound. */
+/**
+ * Out-of-area primary-merchant sales backed by a delivered order with unique tracking (by saleId, or by an orderId only
+ * one sale carries); excused on `area` only when the order and fulfilment feeds are connected and sound.
+ */
 export function deliveredOrderCover(sc: Scenario): Set<string> {
+  const local = homeAndNeighbours(sc.profile);
+  if (!local || sc.coverage.fulfillment !== 'AVAILABLE' || sc.coverage.orders !== 'AVAILABLE') return new Set();
   const cnt = new Map<string, number>();
   for (const o of sc.orders) if (o.trackingId) cnt.set(o.trackingId, (cnt.get(o.trackingId) ?? 0) + 1);
   const ok = sc.orders.filter(o => o.status === 'DELIVERED' && !(o.trackingId && cnt.get(o.trackingId)! > 1));
   if (!sc.orders.length || ok.length / sc.orders.length < 0.9) return new Set(); // same bar and count as F7
   const good = ok.filter(o => o.trackingId); // an excused sale needs its own tracking
-  return new Set(sc.events
-    .filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SALE' && good.some(o => o.saleId === e.id || (!!e.orderId && o.orderId === e.orderId)))
+  const bySale = new Set(good.map(o => o.saleId)), byOrder = new Set(good.map(o => o.orderId));
+  const sales = sc.events.filter(e => e.merchantId === sc.primaryMerchantId && e.type === 'SALE'), perOrder = new Map<string, number>();
+  for (const e of sales) if (e.orderId) perOrder.set(e.orderId, (perOrder.get(e.orderId) ?? 0) + 1);
+  return new Set(sales
+    .filter(e => e.payerState && e.payerState !== '—' && e.payerState !== 'UNKNOWN' && !local.has(e.payerState)) // B6's "out of area"
+    .filter(e => bySale.has(e.id) || (!!e.orderId && byOrder.has(e.orderId) && perOrder.get(e.orderId) === 1))
     .map(e => e.id));
 }
 

@@ -41,7 +41,7 @@ const unknown = (why: string, expected = '—', expectedSource = '—'): Obs => 
 /** Outside trading hours. Overnight businesses (open > close, e.g. [22, 6]) wrap past midnight. */
 export const outsideHours = (h: number, [open, close]: [number, number] | number[]) => open < close ? h < open || h >= close : h < open && h >= close;
 const isRound = (a: number) => a >= RULES.amounts.roundMin && a % RULES.amounts.roundStep === 0;
-const homeAndNeighbours = (p: MerchantProfile) => { const home = p.localStates[0]; return home ? new Set([home, ...RULES.neighbours(home)]) : null; };
+export const homeAndNeighbours = (p: MerchantProfile) => { const home = p.localStates[0]; return home ? new Set([home, ...RULES.neighbours(home)]) : null; };
 const isRemote = (e: PaymentEvent, local: Set<string>) => !!e.payerState && e.payerState !== '—' && e.payerState !== 'UNKNOWN' && !local.has(e.payerState);
 const hasPayer = (e: PaymentEvent) => !!e.payerHash && e.payerHash !== '—';
 

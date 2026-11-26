@@ -296,6 +296,25 @@ export default function (): number {
 
     const unmatched = mkBaseScenario({ events: base.events, orders: base.orders.slice(0, 20) });
     check('unmatched still counts', !deliveredOrderCover(unmatched).has('S-30') && deliveredOrderCover(unmatched).has('S-0'));
+
+    // One sale per order: 200 sales reusing 10 delivered orderIds excuse nothing.
+    const reusedIds = mkBaseScenario({
+      events: Array.from({ length: 200 }, (_, i) => mkSale(i, { payerState: 'DL', orderId: `ORD-${i % 10}` })),
+      orders: base.orders.slice(0, 10).map(o => ({ ...o, saleId: 'none' })),
+    });
+    check('reused orderIds excuse nothing', deliveredOrderCover(reusedIds).size === 0);
+
+    const noFulfil = mkBaseScenario({ events: base.events, coverage: { ...base.coverage, fulfillment: 'MISSING' } });
+    check('fulfilment source missing excuses nothing', deliveredOrderCover(noFulfil).size === 0);
+    const partOrders = mkBaseScenario({ events: base.events, coverage: { ...base.coverage, orders: 'PARTIAL' } });
+    check('orders PARTIAL excuses nothing', deliveredOrderCover(partOrders).size === 0);
+
+    const oneLocal = mkBaseScenario({ events: base.events.map((e, i) => i === 0 ? { ...e, payerState: 'KA' } : e) });
+    check('in-state delivered sale not excused', !deliveredOrderCover(oneLocal).has('S-0') && deliveredOrderCover(oneLocal).size === 39);
+
+    const dupPair = mkBaseScenario({ events: base.events, orders: base.orders.map((o, i) => i < 2 ? { ...o, trackingId: 'TRK-DUP' } : o) });
+    const dupCover = deliveredOrderCover(dupPair);
+    check('duplicated tracking pair not excused, rest are', !dupCover.has('S-0') && !dupCover.has('S-1') && dupCover.size === 38);
   }
 
   // B6 delivered-order excuse, wired into scoring
@@ -303,11 +322,28 @@ export default function (): number {
     const far = (i: number) => mkSale(i, { payerState: ['DL', 'UP', 'WB', 'PB'][i % 4] });
     const b6 = (sc: Scenario) => runInvestigation(sc, { draws: 0 }).evidence.find(e => e.id === 'B6')!;
     const shipped = mkBaseScenario({ events: Array.from({ length: 40 }, (_, i) => far(i)) });
-    check('delivered online orders clear B6', b6(shipped).status !== 'ILLICIT');
+    check('delivered online orders clear B6', b6(shipped).status === 'UNKNOWN');
     const unshipped = mkBaseScenario({ events: shipped.events, orders: shipped.orders.map(o => ({ ...o, status: 'NONE' as const })) });
     check('undelivered orders still fire B6', b6(unshipped).status === 'ILLICIT');
     const none = mkBaseScenario({ events: shipped.events, orders: [] });
     check('no orders unchanged', b6(none).status === 'ILLICIT');
+
+    // Local bakery: 60 in-state delivered online sales + 40 walk-in QR sales (10 out-of-state). Nothing is excused,
+    // so B6 scores exactly as without the excuse rather than turning ILLICIT on the walk-ins.
+    const bakery = mkBaseScenario({
+      events: Array.from({ length: 100 }, (_, i) => i < 60 ? mkSale(i)
+        : mkSale(i, { channel: 'UPI_QR', linkId: undefined, orderId: null, payerState: i < 70 ? 'DL' : 'KA' })),
+      orders: Array.from({ length: 60 }, (_, i) => ({ orderId: `ORD-${i}`, saleId: `S-${i}`, status: 'DELIVERED' as const, trackingId: `TRK-${i}` })),
+    });
+    check('in-state delivered sales not set aside', deliveredOrderCover(bakery).size === 0 && b6(bakery).status !== 'ILLICIT');
+
+    // Conduct (D10: 30 online sales with no order) fires in the bare pass, so the bare score stands although 40 sales are excusable.
+    const conduct = mkBaseScenario({ events: [...shipped.events, ...Array.from({ length: 30 }, (_, i) => far(40 + i)).map(e => ({ ...e, orderId: null }))] });
+    const noExcuse = mkBaseScenario({ events: conduct.events, orders: conduct.orders.map(o => ({ ...o, trackingId: undefined })) }); // same F7, empty excuse
+    const [rc, rn] = [runInvestigation(conduct, { draws: 0 }), runInvestigation(noExcuse, { draws: 0 })];
+    check('conduct in bare pass: bare score stands', deliveredOrderCover(conduct).size === 40 && deliveredOrderCover(noExcuse).size === 0
+      && b6(conduct).status === 'ILLICIT' && rc.fusion.decision === rn.fusion.decision && rc.fusion.posterior === rn.fusion.posterior,
+      `${rc.fusion.decision}/${rc.fusion.posterior} vs ${rn.fusion.decision}/${rn.fusion.posterior}`);
   }
 
   // 7. B7: Heavy repeat payers (boundary 7 vs 8 payments in same epoch week)

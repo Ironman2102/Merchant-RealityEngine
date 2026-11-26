@@ -67,6 +67,7 @@ export function runInvestigation(
 ): InvestigationResult {
   const opts = { draws: options.draws ?? options.posteriorDraws, learnedRates: options.learnedRates };
   const inForce = passportsInForce(sc), excused = deliveredOrderCover(sc).size;
+  // ponytail: excused sales cost two full investigate passes; skip the second when no B6/H3 evidence is affected.
   if (!inForce.length && !excused) return investigate(sc, opts).result;
   const bare = investigate({ ...sc, passports: [] }, { ...opts, orderExcuse: false });
   const asScored: InvestigationResult = inForce.length ? { ...bare.result, scenario: sc, passportsSuspended: true } : { ...bare.result, scenario: sc };
@@ -81,7 +82,7 @@ export function runInvestigation(
       result.passportAnswered = inForce.map(p => p.id);
       result.fusion.gateReason += ` A question about this change was answered by passport ${result.passportAnswered.join(', ')}. Revoking it reopens the question. Once it expires, a later file asks again.`;
     }
-    if (excused) result.fusion.gateReason += ` ${excused} payments matched to delivered online orders were set aside from the out-of-state check.`;
+    if (excused) result.fusion.gateReason += ` ${excused} out-of-state payments matched to delivered online orders were set aside from the out-of-state check.`;
   }
   return result;
 }
