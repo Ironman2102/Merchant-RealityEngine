@@ -1,11 +1,16 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
-import { actorFromToken, clearCookie, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { approveInvestigation, auditStatus, getInvestigation, labelInvestigation, listInvestigations, openInvestigation, openInvestigationWithStage2, respondInvestigation, reviewInvestigation, type ApiReply } from './workflow';
+import { actorFromToken, assertSecrets, bootAccounts, clearCookie, createUser, login, loginWithIdToken, logout, readCookie, sessionCookie, userCount, type Actor } from './auth';
+import { getDb } from './db';
 import { oidcCheckFromEnv } from './oidc';
 import { caseTrace, evidencePack } from './trace';
 import { llmEnabled, summarise } from './llm';
 import { v1FromNode } from './v1';
-import { modelHostConfigured, modelOnline, startModelSandbox, stopModelSandbox } from './modelHost';
+import { modelHealth, modelHostConfigured, startModelSandbox, stopModelSandbox } from './modelHost';
+import { mlScore } from './ml';
+import { getScenario, SCENARIO_IDS } from '../../frontend/src/data/scenarios';
+import { runInvestigation } from '../../frontend/src/engines/investigationEngine';
+import type { ScenarioId } from '../../frontend/src/types/merchant';
 import { detectRings } from '../../engine/ringDetector';
 import { listPassports, proposePassport, reviewPassport, revokePassport } from './passports';
 import { getCase } from './store';
@@ -13,6 +18,21 @@ import { atomic } from './integrity';
 import { approveRuleProposal, getRulesStatus, promoteRuleProposal, rollbackRulesLive, runImproverProposal } from './improverApi';
 
 const LIMIT = 6_000_000;
+
+let serverlessSeeded = false;
+/** Seed ephemeral serverless SQLite instance (/tmp/mre.db) with boot accounts and stateless sessions. */
+export function ensureServerlessBoot(): void {
+  if (serverlessSeeded) return;
+  if (!process.env.MRE_DB_FILE) process.env.MRE_DB_FILE = '/tmp/mre.db';
+  process.env.MRE_STATELESS_SESSIONS = '1';
+  assertSecrets();
+  serverlessSeeded = true;
+  const db = getDb();
+  for (const u of bootAccounts()) {
+    const row = db.prepare('SELECT id FROM users WHERE username = ?').get(u.username);
+    if (!row) createUser(u.username, u.password, u.role);
+  }
+}
 
 /** Per-client token bucket: 60 requests per minute. ponytail: in-memory, per process; move to a shared store with >1 API process. */
 const buckets = new Map<string, { tokens: number; at: number }>();
@@ -24,6 +44,18 @@ function allowed(key: string, perMin = 60, now = Date.now()): boolean {
 }
 
 async function readBody(req: IncomingMessage): Promise<unknown> {
+  const pre = (req as IncomingMessage & { body?: unknown }).body;
+  if (pre !== undefined && pre !== null) {
+    if (typeof pre === 'string') {
+      if (!pre.trim()) return {};
+      try { return JSON.parse(pre); } catch { throw Object.assign(new Error('Body is not JSON.'), { status: 400 }); }
+    }
+    if (Buffer.isBuffer(pre)) {
+      if (!pre.length) return {};
+      try { return JSON.parse(pre.toString('utf8')); } catch { throw Object.assign(new Error('Body is not JSON.'), { status: 400 }); }
+    }
+    return pre;
+  }
   const chunks: Buffer[] = [];
   let n = 0;
   for await (const chunk of req) {
@@ -96,10 +128,20 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       const [, propId, propAction] = rulesMatch;
       return send(res, atomic(() => (propAction === 'approve' ? approveRuleProposal(propId, actor) : promoteRuleProposal(propId, actor))));
     }
+    if (path === '/demo/ml-score' && method === 'POST') {
+      if (!allowed(`demo-ml:${ip}`, 30)) return send(res, { status: 429, body: { error: 'Too many demo score requests. Wait a minute.' } });
+      const b = await readBody(req) as { scenarioId?: unknown };
+      const sid = typeof b.scenarioId === 'string' ? b.scenarioId : '';
+      if (!SCENARIO_IDS.includes(sid as ScenarioId)) return send(res, { status: 400, body: { error: 'Unknown demo scenario.' } });
+      const result = runInvestigation(getScenario(sid as ScenarioId));
+      const ml = await mlScore(result);
+      return send(res, { status: 200, body: { ml: ml ? { ...ml, synthetic: true } : null } });
+    }
     if (path === '/model' && method === 'GET') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to see the model sandbox.' } });
-      const online = await modelOnline();
-      return send(res, { status: 200, body: { online, configured: modelHostConfigured(), detail: online ? 'The model is answering.' : 'The model sandbox is not answering.' } });
+      const health = await modelHealth();
+      const online = health !== null;
+      return send(res, { status: 200, body: { online, configured: modelHostConfigured(), health, detail: online ? 'The Stage 2 AI/ML service is answering.' : 'The Stage 2 AI/ML service is not answering.' } });
     }
     if (path === '/model/start' && method === 'POST') {
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to start the model sandbox.' } });
@@ -111,7 +153,7 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
       if (!actor) return send(res, { status: 401, body: { error: 'Sign in to stop the model sandbox.' } });
       if (actor.role !== 'admin') return send(res, { status: 403, body: { error: 'Only an admin can stop the model sandbox.' } });
       await stopModelSandbox();
-      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model sandbox stopped.' } });
+      return send(res, { status: 200, body: { online: false, state: 'stopped', configured: modelHostConfigured(), detail: 'Model server stopped. The sandbox keeps running; start it again with the button.' } });
     }
 
     if (path.startsWith('/v1')) {
@@ -152,12 +194,12 @@ export async function handle(req: IncomingMessage, res: ServerResponse): Promise
     if (!id) {
       if (method === 'GET') { const caseId = url.searchParams.get('id'); return send(res, caseId ? getInvestigation(caseId) : listInvestigations()); }
       if (method !== 'POST') return send(res, { status: 405, body: { error: 'POST a dataset to open a case.' } });
-      const opened = openInvestigation(await readBody(req), actor);
+      const opened = await openInvestigationWithStage2(await readBody(req), actor);
       return send(res, opened);
     }
     if (method === 'GET') {
       if (!action) return send(res, getInvestigation(id));
-      if (action === 'trace') return send(res, await caseTrace(id));
+      if (action === 'trace') return send(res, await caseTrace(id, url.searchParams.get('refresh') === '1'));
       if (action === 'pack') return send(res, evidencePack(id, actor));
       if (action === 'audit') return send(res, auditStatus(id));
       if (action === 'passport') return send(res, listPassports(id));

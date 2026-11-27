@@ -28,26 +28,26 @@ export function EngineShell() {
   // A saved case keeps its views under /ai-engine/cases/:id/... so every page survives a reload.
   const caseNav = caseId ? RESULT_NAV.map(n => ({ ...n, to: n.to.replace('/ai-engine/', `/ai-engine/cases/${caseId}/`), end: true })) : RESULT_NAV;
   return (
-    <div className="mre-light min-h-screen bg-bg text-ink">
+    <div className="mre-app min-h-screen bg-bg text-ink">
+      {import.meta.env.VITE_CONSOLE === '1' ? null : <PublicNav />}
       <SignInGate>{(me, logout) => (
       <>
-        {import.meta.env.VITE_CONSOLE === '1' ? null : <PublicNav />}
         <div className="flex min-h-[calc(100vh-3.5rem)] bg-bg">
-          <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 flex-col border-r border-line bg-panel lg:flex">
-            <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="AI Engine">{BASE_NAV.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors', isActive ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-mute hover:bg-panel2 hover:text-ink')}><n.icon size={16} />{n.label}</NavLink>)}</nav>
+          <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 flex-col border-r border-line bg-[#100d0b] lg:flex">
+            <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="AI Engine"><div className="mre-label px-3 pb-3 pt-2 text-[10px] text-dim">AI Engine</div>{BASE_NAV.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors', isActive ? 'bg-[#2a1a10] text-ink font-semibold shadow-[inset_2px_0_0_#ff6a2b] [&>svg]:text-crust' : 'text-mute hover:bg-panel2 hover:text-ink')}><n.icon size={16} />{n.label}</NavLink>)}</nav>
             <SignedInAs user={me} logout={logout} />
             <div className="border-t border-line p-4 text-[11px] text-dim">Uploads are analyzed by the local backend. No partner data connectors are configured.</div>
           </aside>
           <div className="min-w-0 flex-1">
             <main className="mx-auto max-w-[1280px] space-y-6 px-5 py-6">
-              <nav className="flex w-full gap-1 overflow-x-auto pb-1 lg:hidden" aria-label="AI Engine mobile">{BASE_NAV.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium', isActive ? 'bg-indigo-50 text-indigo-700' : 'text-mute')}>{n.label}</NavLink>)}</nav>
+              <nav className="flex w-full gap-1 overflow-x-auto pb-1 lg:hidden" aria-label="AI Engine mobile">{BASE_NAV.map(n => <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium', isActive ? 'border-crust bg-crust text-[#140b05]' : 'border-line2 text-mute')}>{n.label}</NavLink>)}</nav>
               <div className="rounded-lg border border-line bg-panel lg:hidden"><SignedInAs user={me} logout={logout} /></div>
               {hasRun && (
                 <nav className="flex w-full items-center gap-1 overflow-x-auto rounded-xl border border-line bg-panel p-1.5" aria-label="Active case views">
                   <span className="px-2.5 text-xs font-semibold text-ink shrink-0">{custom.profile.name}</span>
                   <span className="text-line2 shrink-0">|</span>
                   {caseNav.map(n => (
-                    <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors', isActive ? 'bg-indigo-600 text-white' : 'text-mute hover:bg-panel2 hover:text-ink')}>
+                    <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors', isActive ? 'bg-crust text-[#140b05] font-semibold' : 'text-mute hover:bg-panel2 hover:text-ink')}>
                       <n.icon size={13} />{n.label}
                     </NavLink>
                   ))}

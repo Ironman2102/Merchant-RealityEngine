@@ -23,7 +23,7 @@ export interface Trace {
   scope: { label: string; sales: number; share: number };
   caseSummary: {
     merchant: string; mcc: string; decision: string; posterior: number; ci: [number, number];
-    conformalSet: ('GENUINE' | 'FRONT')[]; abstainRecommended: boolean;
+    uncertaintySet: ('GENUINE' | 'FRONT')[]; abstainRecommended: boolean;
     prior: number; action: ResponseLevel; mechanism: string; mechanismP: number;
   };
   coverage: { name: string; state: string; records: number }[];
@@ -108,7 +108,7 @@ export function buildTrace(r: InvestigationResult): Trace {
     scope: { label: r.scope.label, sales: r.scope.sales, share: r.scope.share },
     caseSummary: {
       merchant: p.name, mcc: p.mcc, decision: f.decision, posterior: f.posterior, ci: f.posteriorCi,
-      conformalSet: f.conformalSet, abstainRecommended: f.abstainRecommended,
+      uncertaintySet: f.uncertaintySet, abstainRecommended: f.abstainRecommended,
       prior: f.prior, action: r.review.recommended, mechanism: top.id, mechanismP: f.mechanismPosterior[top.id],
     },
     coverage: r.l1.sources.map(s => ({ name: s.name, state: s.state, records: s.records })),

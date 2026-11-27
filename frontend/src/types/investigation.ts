@@ -47,7 +47,7 @@ export interface FusionResult {
   prior: number;                          // base rate P(front) before evidence
   posterior: number;                      // P(front | evidence), median of draws
   posteriorCi: [number, number];          // 90% interval from detector-uncertainty draws
-  conformalSet: ('GENUINE' | 'FRONT')[];  // 90% prediction set wrt gate.openPosterior
+  uncertaintySet: ('GENUINE' | 'FRONT')[];  // classes the 90% interval allows wrt gate.openPosterior (interval check, not conformal: no calibration set)
   abstainRecommended: boolean;            // true when CI straddles decision gate or lacks corroboration
   logOdds: { prior: number; families: { family: Family; llr: number; items: string[] }[]; overrides: { id: string; llr: number; when: string }[]; total: number };
   provenances: { provenance: string; nats: number }[];
@@ -59,8 +59,8 @@ export interface FusionResult {
   /** Log-odds added to the prior because several streams were tested. */
   priorShift: number;
 }
-/** What the headline evidence and probability refer to: the whole account, one QR / link, or its repeat payers. */
-export interface Scope { kind: 'account' | 'link' | 'repeat-payers'; id: string; label: string; sales: number; share: number }
+/** What the headline evidence and probability refer to: the whole account, one QR / link, one payment rail, or repeat payers. */
+export interface Scope { kind: 'account' | 'link' | 'channel' | 'repeat-payers'; id: string; label: string; sales: number; share: number }
 export interface StreamResult { scope: Scope; posterior: number; decision: 'OPEN_CASE' | 'NO_CASE'; followUp: 'ASK' | 'NONE'; fired: string[] }
 export interface DecisionAnalysis {
   actions: { level: ResponseLevel; label: string; expectedLoss: number; expectedLossLow: number; expectedLossHigh: number; autoAllowed: boolean }[];

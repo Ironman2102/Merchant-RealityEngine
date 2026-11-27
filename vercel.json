@@ -2,5 +2,14 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "includeFiles": "workflow/*.json"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index?__mre_path=:path*" },
+    { "source": "/((?!api(?:/|$)).*)", "destination": "/index.html" }
+  ]
 }

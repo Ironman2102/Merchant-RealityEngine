@@ -2,6 +2,7 @@
 import { DETECTORS } from '../frontend/src/engines/detectors';
 import type { InvestigationResult } from '../frontend/src/types/investigation';
 import type { CoverageKey } from '../frontend/src/types/merchant';
+import { benford, payerConcentration, repeatPayers, timing } from './fraudMath';
 
 const COVERAGE: CoverageKey[] = ['acquiring', 'website', 'orders', 'bank', 'fulfillment', 'calendar', 'verification'];
 
@@ -17,6 +18,11 @@ export const BEHAVIORAL_FEATURE_COLUMNS: string[] = [
   ...DETECTORS.flatMap(d => [`llr_${d.id}`, `eff_${d.id}`, `fired_${d.id}`]),
   'n_sales',
   'night_share', 'weekend_share', 'refund_ratio', 'payer_hhi', 'ticket_cv', 'sweep_lag_median_h',
+  // Fraud-detection statistics (engine/fraudMath.ts).
+  'benford_chi2_per_n', 'benford_p', 'benford_mad',
+  'daily_dispersion', 'gap_burstiness', 'gap_cv',
+  'payer_entropy', 'payer_gini',
+  'returning_share', 'repeat_gap_cv',
 ];
 
 export function behavioralFeatures(result: InvestigationResult): Record<string, number> {
@@ -37,7 +43,7 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
   }
   row.n_sales = sales.length;
   const IST = 19_800_000;
-  let night = 0, weekend = 0, sum = 0;
+  let night = 0, weekend = 0, sum = 0, identifiedSales = 0;
   const payerCounts = new Map<string, number>();
   for (const s of sales) {
     const d = new Date(s.eventTime + IST);
@@ -45,17 +51,32 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
     if (h >= 23 || h < 6) night++;
     if (wd === 0 || wd === 6) weekend++;
     sum += s.amount;
-    if (s.payerHash) payerCounts.set(s.payerHash, (payerCounts.get(s.payerHash) ?? 0) + 1);
+    if (s.payerHash && s.payerHash !== '—') {
+      identifiedSales++;
+      payerCounts.set(s.payerHash, (payerCounts.get(s.payerHash) ?? 0) + 1);
+    }
   }
   row.night_share = sales.length ? night / sales.length : 0;
   row.weekend_share = sales.length ? weekend / sales.length : 0;
   row.refund_ratio = sales.length ? refunds.length / sales.length : 0;
   let hhi = 0;
-  if (sales.length) for (const c of payerCounts.values()) hhi += (c / sales.length) ** 2;
+  if (identifiedSales) for (const c of payerCounts.values()) hhi += (c / identifiedSales) ** 2;
   row.payer_hhi = hhi;
   const mean = sales.length ? sum / sales.length : 0;
   const variance = sales.length && mean > 0 ? sales.reduce((s, e) => s + (e.amount - mean) ** 2, 0) / sales.length : 0;
   row.ticket_cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
+
+  // Benford first-digit test, payment timing, payer concentration and repeat-payer regularity.
+  const bf = benford(sales.map(s => s.amount));
+  row.benford_chi2_per_n = bf.chi2PerN; row.benford_p = bf.p; row.benford_mad = bf.mad;
+  const tm = timing(sales.map(s => s.eventTime), IST);
+  row.daily_dispersion = tm.dispersion; row.gap_burstiness = tm.burstiness; row.gap_cv = tm.gapCv;
+  const pc = payerConcentration([...payerCounts.values()]);
+  row.payer_entropy = pc.entropy; row.payer_gini = pc.gini;
+  const byPayer = new Map<string, number[]>();
+  for (const s of sales) if (s.payerHash && s.payerHash !== '—') (byPayer.get(s.payerHash) ?? byPayer.set(s.payerHash, []).get(s.payerHash)!).push(s.eventTime);
+  const rp = repeatPayers(byPayer);
+  row.returning_share = rp.returningShare; row.repeat_gap_cv = rp.repeatGapCv;
 
   // Median hours from settlement to next onward payout (capped at 72 h if un-swept or missing).
   let sweepLagMedian = 72;
@@ -78,6 +99,16 @@ export function behavioralFeatures(result: InvestigationResult): Record<string, 
   }
   row.sweep_lag_median_h = sweepLagMedian;
   return row;
+}
+
+/**
+ * Exactly the row the Stage 2 models are trained on (ml/generate_synthetic_features.ts). Anything that scores with the
+ * models must send this, not features() alone: features() lacks the six behavioural columns, which the scorer would
+ * then fill with 0 (for sweep_lag_median_h, 0 means "swept at once", the opposite of the 72 h "never swept" default).
+ */
+export const MODEL_FEATURE_COLUMNS: string[] = [...new Set([...FEATURE_COLUMNS, ...BEHAVIORAL_FEATURE_COLUMNS])];
+export function modelFeatures(result: InvestigationResult): Record<string, number> {
+  return { ...features(result), ...behavioralFeatures(result) };
 }
 
 export function features(result: InvestigationResult): Record<string, number> {

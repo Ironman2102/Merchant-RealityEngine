@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { analyze, BEHAVIORAL_FEATURE_COLUMNS } from '../../engine/index';
-import { makeSuite, type SyntheticMerchant } from '../../engine/synthetic';
+import { makeContextSuite, makeSuite, type SyntheticMerchant } from '../../engine/synthetic';
 
 /** Best separation any single cut on a label-irrelevant field achieves (Youden's J: 0 = none, 1 = perfect leak). */
 function separation(suite: SyntheticMerchant[], value: (m: SyntheticMerchant) => number): number {
@@ -30,6 +30,15 @@ export default function (): number {
     'purchaser panel': m => Number(!!m.dataset.purchaserVerification),
   };
   for (const [name, f] of Object.entries(fields)) { const j = separation(suite, f); check(`${name} does not reveal the label`, j < 0.25, j.toFixed(2)); }
+  // The training-only context generator must not give the label away through which feeds exist either.
+  const ctx = makeContextSuite(10, 515);
+  const ctxFields: Record<string, (m: SyntheticMerchant) => number> = {
+    'context: website feed': m => Number(m.dataset.dataAvailability?.website === 'AVAILABLE'),
+    'context: orders feed': m => Number(m.dataset.dataAvailability?.orders === 'AVAILABLE'),
+    'context: purchaser panel': m => Number(!!m.dataset.purchaserVerification),
+    'context: account age': m => m.dataset.merchant.accountAgeDays,
+  };
+  for (const [name, f] of Object.entries(ctxFields)) { const j = separation(ctx, f); check(`${name} does not reveal the label`, j < 0.25, j.toFixed(2)); }
   const ledgers = new Set(suite.map(m => JSON.stringify(m.dataset.transactions.map(t => [t.amount, t.time]))));
   check('no two merchants share a ledger', ledgers.size === suite.length);
   check('behavioral feature schema has no age, prior or feed input', BEHAVIORAL_FEATURE_COLUMNS.every(isSafeFeature));

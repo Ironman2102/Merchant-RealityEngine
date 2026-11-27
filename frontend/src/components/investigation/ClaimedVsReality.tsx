@@ -15,16 +15,21 @@ export interface RealitySnapshot {
   outOfStateShare: number;
   offHoursShare: number;
   refundRate: number;
+  chargebackCount: number;
+  chargebackRate: number;
   upiLinkShare: number;
+  remoteShare: number;
+  channelMix: { channel: string; count: number; share: number }[];
   hourlyCounts: number[];
   windowDays: number;
 }
 
-/** `linkId` narrows the snapshot to one QR or link. */
+/** `linkId` narrows the snapshot to one payment link/QR. */
 export function computeMerchantReality(result: InvestigationResult, linkId?: string): RealitySnapshot {
   const sales = result.events.filter(e => e.type === 'SALE' && (!linkId || e.linkId === linkId));
   const saleIds = new Set(sales.map(e => e.id));
   const refunds = result.events.filter(e => e.type === 'REFUND' && (!linkId || e.linkId === linkId || (!!e.linkedSaleId && saleIds.has(e.linkedSaleId))));
+  const chargebacks = result.events.filter(e => e.type === 'CHARGEBACK' && (!linkId || e.linkId === linkId || (!!e.linkedSaleId && saleIds.has(e.linkedSaleId))));
   const p = result.scenario.profile;
 
   const amounts = sales.map(s => s.amount).sort((a, b) => a - b);
@@ -62,9 +67,19 @@ export function computeMerchantReality(result: InvestigationResult, linkId?: str
   const offHoursShare = sales.length ? offHoursCount / sales.length : 0;
 
   const refundRate = sales.length ? refunds.length / sales.length : 0;
+  const chargebackCount = chargebacks.length;
+  const chargebackRate = sales.length ? chargebackCount / sales.length : 0;
   const upiLinkShare = sales.length
     ? sales.filter(s => s.channel === 'UPI_LINK' || s.channel === 'UPI_COLLECT').length / sales.length
     : 0;
+  const remoteShare = sales.length
+    ? sales.filter(s => s.channel !== 'POS' && s.channel !== 'UPI_QR').length / sales.length
+    : 0;
+  const chCounts = new Map<string, number>();
+  for (const s of sales) chCounts.set(s.channel, (chCounts.get(s.channel) ?? 0) + 1);
+  const channelMix = [...chCounts.entries()]
+    .map(([channel, count]) => ({ channel, count, share: sales.length ? count / sales.length : 0 }))
+    .sort((a, b) => b.count - a.count);
 
   return {
     salesCount: sales.length,
@@ -76,7 +91,11 @@ export function computeMerchantReality(result: InvestigationResult, linkId?: str
     outOfStateShare,
     offHoursShare,
     refundRate,
+    chargebackCount,
+    chargebackRate,
     upiLinkShare,
+    remoteShare,
+    channelMix,
     hourlyCounts,
     windowDays,
   };
@@ -151,21 +170,23 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
     },
     {
       icon: CreditCard,
-      label: 'Payment Links & Channels',
+      label: 'Payment Methods & Channels',
       claimed: p.declaredChannels.length ? p.declaredChannels.join(', ') : 'Not declared',
-      observed: `${pct(r.upiLinkShare)} via remote UPI links / collect requests`,
-      barValue: r.upiLinkShare,
-      barLabel: 'Remote UPI link share',
-      ...status('G6', 'E1'),
+      observed: r.channelMix.length
+        ? r.channelMix.slice(0, 3).map(c => `${c.channel.replace(/_/g, ' ')} ${pct(c.share)}`).join(' · ')
+        : 'No payment channels observed',
+      barValue: r.remoteShare,
+      barLabel: 'Remote / non-walk-in share',
+      ...status('G6', 'E1', 'K2'),
     },
     {
       icon: RefreshCcw,
-      label: 'Refunds & Payout Linkage',
-      claimed: 'Refunds tied to original customer orders',
-      observed: `${pct(r.refundRate)} refund rate · ${result.l1.refundLinkage.orphan} unlinked / orphan refund(s)`,
-      barValue: Math.min(1, r.refundRate * 4),
-      barLabel: 'Refund intensity',
-      ...status('D7', 'D9'),
+      label: 'Refunds, Disputes & Payout Linkage',
+      claimed: 'Refunds tied to original customer orders; low chargebacks',
+      observed: `${pct(r.refundRate)} refund rate · ${result.l1.refundLinkage.orphan} orphan refund(s)${r.chargebackCount ? ` · ${r.chargebackCount} chargeback(s) (${pct(r.chargebackRate, 1)})` : ''}`,
+      barValue: Math.min(1, (r.refundRate + r.chargebackRate) * 4),
+      barLabel: 'Refund & dispute intensity',
+      ...status('D7', 'D9', 'D11'),
     },
   ];
 
@@ -173,7 +194,7 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
     <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
       {/* Left: Claimed vs. Reality table */}
       <Card className="overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-slate-50/80 px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-panel2 px-5 py-3.5">
           <div>
             <h3 className="text-sm font-semibold text-ink">Declared KYC Profile vs. Observed Payment Reality</h3>
             <p className="text-xs text-mute">{result.scope.kind === 'link' ? `${result.scope.label}: ` : 'Whole account: '}{r.salesCount.toLocaleString()} observed sales ({Math.round(r.windowDays)} days)</p>
@@ -185,22 +206,22 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
 
         <div className="divide-y divide-line">
           {rows.map(row => (
-            <div key={row.label} className={cx('grid gap-3 px-5 py-3.5 sm:grid-cols-[1fr_1.15fr_auto] sm:items-center', row.mismatch && 'bg-rose-50/40')}>
+            <div key={row.label} className={cx('grid gap-3 px-5 py-3.5 sm:grid-cols-[1fr_1.15fr_auto] sm:items-center', row.mismatch && 'bg-rose-500/10')}>
               <div>
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-ink">
-                  <row.icon size={14} className={row.mismatch ? 'text-rose-600' : 'text-slate-500'} />
+                  <row.icon size={14} className={row.mismatch ? 'text-rose-400' : 'text-mute'} />
                   {row.label}
                 </div>
                 <div className="mt-1 text-xs text-mute">
-                  <span className="font-medium text-slate-500">Claimed:</span> {row.claimed}
+                  <span className="font-medium text-dim">Claimed:</span> {row.claimed}
                 </div>
               </div>
               <div>
                 <div className="text-xs font-medium text-ink">{row.observed}</div>
                 <div className="mt-1.5 flex items-center gap-2">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                     <div
-                      className={cx('h-full rounded-full transition-all', row.mismatch ? 'bg-rose-500' : row.warn ? 'bg-amber-500' : 'bg-emerald-500')}
+                      className={cx('h-full rounded-full transition-all', row.mismatch ? 'bg-rose-400' : row.warn ? 'bg-amber-400' : 'bg-emerald-400')}
                       style={{ width: `${Math.max(4, Math.min(100, row.barValue * 100))}%` }}
                     />
                   </div>
@@ -217,7 +238,7 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
 
       {/* Right: 24-Hour IST Activity Chart */}
       <Card className="flex flex-col overflow-hidden">
-        <div className="border-b border-line bg-slate-50/80 px-5 py-3.5">
+        <div className="border-b border-line bg-panel2 px-5 py-3.5">
           <h3 className="text-sm font-semibold text-ink">24-Hour Payment Activity (IST)</h3>
           <p className="text-xs text-mute">
             {!hoursKnown || (openH === 0 && closeH === 24)
@@ -239,10 +260,10 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
                     className={cx(
                       'w-full rounded-t transition-all',
                       count === 0
-                        ? 'bg-slate-100'
+                        ? 'bg-white/5'
                         : isOffSpike
-                          ? 'bg-rose-500 hover:bg-rose-600'
-                          : 'bg-indigo-500/80 hover:bg-indigo-600',
+                          ? 'bg-rose-400 hover:bg-rose-300'
+                          : 'bg-cyan-400/80 hover:bg-cyan-300',
                     )}
                     style={{ height: `${heightPct}%` }}
                   />
@@ -259,12 +280,12 @@ export function ClaimedVsReality({ result }: { result: InvestigationResult }) {
             <span>23:00</span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-slate-50 px-3.5 py-2.5 text-xs">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-panel2 px-3.5 py-2.5 text-xs">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-indigo-500/80" />Open hours</span>
-              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />Closed hours</span>
+              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-cyan-400/80" />Open hours</span>
+              <span className="inline-flex items-center gap-1.5 text-mute"><span className="h-2.5 w-2.5 rounded-sm bg-rose-400" />Closed hours</span>
             </div>
-            <span className={cx('font-semibold', status('C2').warn ? 'text-rose-700' : 'text-emerald-700')}>
+            <span className={cx('font-semibold', status('C2').warn ? 'text-rose-300' : 'text-emerald-300')}>
               {hoursKnown ? `${pct(r.offHoursShare)} outside declared hours` : 'Hours not declared'}
             </span>
           </div>

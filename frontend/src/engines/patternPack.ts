@@ -13,6 +13,7 @@ import type { Label } from '../types/merchant';
 import { RULES } from '../../../rules/index';
 import { istDayKey, istHour, inrK } from '../utils/format';
 import { extent, hasBetween } from '../utils/num';
+import { outsideHours } from './detectors';
 
 export type PatternStatus = 'FLAGGED' | 'CLEAR' | 'UNKNOWN' | 'INPUT';
 export interface PatternResult {
@@ -23,14 +24,16 @@ export interface PatternResult {
 
 const H = 3600000;
 const pc = (x: number) => `${Math.round(x * 100)}%`;
+const hasPayer = (e: PaymentEvent) => !!e.payerHash && e.payerHash !== '—';
 
 /* ---------- behaviour features ---------- */
 export interface Features { median: number; round: number; outState: number; night: number; repeat: number; refund: number; payers: number; sales: number }
 export function features(sales: PaymentEvent[], refunds: number, local: string[]): Features {
   const n = sales.length || 1;
   const am = sales.map(e => e.amount).sort((a, b) => a - b);
+  const identified = sales.filter(hasPayer);
   const perDay = new Map<string, number>();
-  sales.forEach(e => { const k = e.payerHash + istDayKey(e.eventTime); perDay.set(k, (perDay.get(k) ?? 0) + 1); });
+  identified.forEach(e => { const k = e.payerHash + istDayKey(e.eventTime); perDay.set(k, (perDay.get(k) ?? 0) + 1); });
   return {
     median: am[am.length >> 1] ?? 0,
     round: sales.filter(e => e.amount > 0 && e.amount % 500 === 0).length / n,
@@ -39,9 +42,9 @@ export function features(sales: PaymentEvent[], refunds: number, local: string[]
       return known.length && area.size ? known.filter(e => !area.has(e.payerState)).length / known.length : 0; // no location is not "out of state"
     })(),
     night: sales.filter(e => { const h = istHour(e.eventTime); return h >= 23 || h < 6; }).length / n,
-    repeat: sales.filter(e => (perDay.get(e.payerHash + istDayKey(e.eventTime)) ?? 0) >= 3).length / n,
+    repeat: identified.length ? identified.filter(e => (perDay.get(e.payerHash + istDayKey(e.eventTime)) ?? 0) >= 3).length / identified.length : 0,
     refund: refunds / n,
-    payers: new Set(sales.map(e => e.payerHash)).size,
+    payers: new Set(identified.map(e => e.payerHash)).size,
     sales: sales.length,
   };
 }
@@ -49,7 +52,7 @@ export function features(sales: PaymentEvent[], refunds: number, local: string[]
 /** Payers who made 3+ rising payments within 2 hours (betting top-ups after losses). */
 export function chasingSequences(sales: PaymentEvent[]) {
   const byPayer = new Map<string, PaymentEvent[]>();
-  sales.forEach(e => { if (!byPayer.has(e.payerHash)) byPayer.set(e.payerHash, []); byPayer.get(e.payerHash)!.push(e); });
+  sales.filter(hasPayer).forEach(e => { if (!byPayer.has(e.payerHash)) byPayer.set(e.payerHash, []); byPayer.get(e.payerHash)!.push(e); });
   const out: { payer: string; state: string; events: PaymentEvent[]; windows: number }[] = [];
   byPayer.forEach((list, payer) => {
     let windows = 0; const hit = new Set<PaymentEvent>();
@@ -132,9 +135,9 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
     detail: [{ label: 'Round-amount share', value: `${pc(f.round)} vs ${pc(ref.round)}` }, { label: 'Out-of-state payers', value: `${pc(f.outState)} vs ${pc(ref.outState)}` }] });
 
   // S3 — payer network
-  const mine = new Set(sales.map(e => e.payerHash));
+  const mine = new Set(sales.filter(hasPayer).map(e => e.payerHash));
   const others = [...new Set(sc.events.filter(e => e.merchantId !== p.id && e.type === 'SALE').map(e => e.merchantId))];
-  const overlaps = others.map(id => { const ps = new Set(sc.events.filter(e => e.merchantId === id && e.type === 'SALE').map(e => e.payerHash)); return { id, n: [...mine].filter(h => ps.has(h)).length }; }).filter(x => x.n > 0);
+  const overlaps = others.map(id => { const ps = new Set(sc.events.filter(e => e.merchantId === id && e.type === 'SALE' && hasPayer(e)).map(e => e.payerHash)); return { id, n: [...mine].filter(h => ps.has(h)).length }; }).filter(x => x.n > 0);
   const myLinks = new Set(sales.map(e => e.linkId).filter(Boolean));
   const extHosts = sc.web.embeds.filter(e => e.merchantId === p.id && !p.declaredDomains.includes(e.host)).map(e => e.host);
   const sharedHost = sc.web.embeds.filter(e => e.merchantId !== p.id && extHosts.includes(e.host));
@@ -193,12 +196,15 @@ export function runPatternPack(res: InvestigationResult, label: Label | null = n
     why: 'Bettors who lose top up again, often with bigger amounts. Shop customers do not.',
     data: 'Payment ledger' });
 
-  // N2 — late-night collections
+  // N2 — late-night collections (respects 24h and overnight trading hours)
+  const is24h = p.hours[0] === 0 && p.hours[1] === 24;
+  const closedNightSales = is24h ? 0 : sales.filter(e => { const h = istHour(e.eventTime); return (h >= 23 || h < 6) && outsideHours(h, p.hours); }).length;
+  const closedNightShare = sales.length ? closedNightSales / sales.length : 0;
   out.push({ id: 'N2', name: 'Late-night collections (23:00–06:00)', group: 'New pattern',
-    status: f.night >= 0.1 ? 'FLAGGED' : 'CLEAR',
-    observed: `${pc(f.night)} of sales between 23:00 and 06:00`,
-    expected: `Declared hours ${p.hours[0]}:00–${p.hours[1]}:00; under 2% at night`,
-    why: 'Live betting and casino play peak late at night, long after most shops have closed.',
+    status: is24h ? 'CLEAR' : closedNightShare >= 0.1 ? 'FLAGGED' : 'CLEAR',
+    observed: is24h ? `${pc(f.night)} of sales between 23:00 and 06:00 (24h merchant)` : `${pc(closedNightShare)} of sales between 23:00 and 06:00 outside declared hours`,
+    expected: is24h ? 'Open 24 hours' : `Declared hours ${p.hours[0]}:00–${p.hours[1]}:00; under 10% closed-night sales`,
+    why: 'Live betting and casino play peak late at night, long after most daytime shops have closed. Overnight and 24h businesses are not penalised.',
     data: 'Payment ledger' });
 
   // N3 — rapid pass-through (settlement swept out to third parties)

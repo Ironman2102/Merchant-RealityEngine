@@ -67,10 +67,13 @@ case "${1:-web}" in
     if [[ -n "$PY_BIN" && -f ml/models/nn-v0/network.json ]] && "$PY_BIN" -c 'import fastapi, numpy, sklearn, uvicorn' >/dev/null 2>&1; then
       check_port_free 8790
       echo "Starting the local Stage 2 ML scorer (${PY_BIN}) at http://127.0.0.1:8790"
-      "$PY_BIN" -m uvicorn ml.serve:app --host 127.0.0.1 --port 8790 &
-      ML_PID=$!
-      if ! "$PY_BIN" -c 'import transformers, torch' >/dev/null 2>&1; then
-        echo "Optional text encoder is disabled. Install it with: ${PY_BIN} -m pip install -r ml/requirements-encoder.txt"
+      if "$PY_BIN" -c 'import transformers, torch' >/dev/null 2>&1; then
+        MRE_ENCODER_PRELOAD=1 "$PY_BIN" -m uvicorn ml.serve:app --host 127.0.0.1 --port 8790 &
+        ML_PID=$!
+      else
+        "$PY_BIN" -m uvicorn ml.serve:app --host 127.0.0.1 --port 8790 &
+        ML_PID=$!
+        echo "Optional neural text encoders are disabled (lexical bi-encoder + NumPy encoders stay active). Install with: ${PY_BIN} -m pip install -r ml/requirements-encoder.txt"
       fi
     else
       echo "Stage 2 ML scorer dependencies are missing (checked ${PY_BIN:-none}). Install ml/requirements.txt in .venv to enable Stage 2 model scoring."

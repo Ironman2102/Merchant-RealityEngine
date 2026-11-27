@@ -242,13 +242,13 @@ export function PortfolioPage() {
           {entries.length > 2 && (
             <div className="grid gap-4 lg:grid-cols-2">
               <Panel
-                title="Calibration Drift & Conformal Abstention Monitor"
+                title="Calibration Drift & Abstention Monitor"
                 subtitle="Population Stability Index (PSI) on P(front) and detector false-positive drift on cleared accounts."
                 right={<Badge tone={batchReport.drift.psiStatus === 'OK' ? 'ok' : batchReport.drift.psiStatus === 'MODERATE' ? 'warn' : 'bad'}>PSI {batchReport.drift.psi.toFixed(3)} · {batchReport.drift.psiStatus}</Badge>}
               >
                 <div className="space-y-2 text-xs text-mute">
                   <div>
-                    Uncertain boundary cases (90% conformal set spans open threshold):{' '}
+                    Uncertain boundary cases (90% interval spans the open threshold):{' '}
                     <span className="font-mono font-semibold text-ink">{batchReport.drift.abstainCount} / {batchReport.drift.n}</span>{' '}
                     ({(batchReport.drift.abstainShare * 100).toFixed(1)}%)
                   </div>

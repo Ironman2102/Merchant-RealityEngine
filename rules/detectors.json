@@ -346,6 +346,30 @@
   "test": "Exact binomial upper tail of unmatched payments vs 5%; effect = excess share",
   "class": "conduct"
  },
+ "D11": {
+  "name": "Elevated chargeback / dispute rate",
+  "family": "D",
+  "lineage": "chargebacks",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.55,
+  "falsePositive": 0.02,
+  "alpha": 0.01,
+  "minEffect": 0.02,
+  "effectFull": 0.08,
+  "minN": 20,
+  "fakeDifficulty": 0.85,
+  "affinity": [
+   0.1,
+   0.4,
+   0.8,
+   0.3
+  ],
+  "test": "Exact binomial upper tail of chargebacks per sale vs 1% norm; effect = excess share. Abstains when no chargeback events exist in the feed.",
+  "class": "conduct"
+ },
  "E1": {
   "name": "Payment link shared with other merchants",
   "family": "E",
@@ -697,6 +721,31 @@
   "test": "Chi-square on standardised gaps between the declared profile and the category norm (catchment, hours width, ticket ceiling, round share)",
   "class": "profile",
   "categoryNorm": true,
+  "level": "merchant"
+ },
+ "K2": {
+  "name": "Payments on undeclared payment channels",
+  "family": "K",
+  "lineage": "channels",
+  "provenance": "payments",
+  "requires": [
+   "acquiring"
+  ],
+  "sensitivity": 0.4,
+  "falsePositive": 0.05,
+  "alpha": 0.01,
+  "minEffect": 0.25,
+  "effectFull": 0.6,
+  "minN": 20,
+  "fakeDifficulty": 0.35,
+  "affinity": [
+   0.1,
+   0.6,
+   0.2,
+   0.2
+  ],
+  "test": "Exact binomial upper tail of sales arriving on payment rails not declared in merchant.declaredChannels vs 10% norm; effect = excess share.",
+  "class": "profile",
   "level": "merchant"
  }
 }

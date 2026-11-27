@@ -9,7 +9,7 @@
     "type": { "column": "txn_type", "map": { "PAYMENT": "SALE", "REFUND": "REFUND", "SETTLEMENT": "SETTLEMENT", "PAYOUT": "TRANSFER", "CHARGEBACK": "CHARGEBACK" } },
     "amount": "amount", "time": "txn_time", "settledAt": "settled_at",
     "payerId": "payer_vpa", "payerState": "payer_state", "payerMobile": "payer_mobile",
-    "channel": { "column": "channel", "map": { "UPI_INTENT": "UPI_LINK", "UPI_COLLECT": "UPI_COLLECT", "QR": "POS", "POS": "POS", "CARD_ONLINE": "ONLINE", "NETBANKING": "ONLINE", "PAYOUT": "PAYOUT", "BANK": "BANK" } },
+    "channel": { "column": "channel", "map": { "UPI_INTENT": "UPI_LINK", "UPI_LINK": "UPI_LINK", "UPI_COLLECT": "UPI_COLLECT", "QR": "UPI_QR", "UPI_QR": "UPI_QR", "POS": "POS", "CARD": "CARD", "CARD_ONLINE": "CARD", "CREDIT_CARD": "CARD", "DEBIT_CARD": "CARD", "NETBANKING": "NETBANKING", "WALLET": "WALLET", "BNPL": "BNPL", "EMI": "BNPL", "ONLINE": "ONLINE", "PAYOUT": "PAYOUT", "BANK": "BANK" } },
     "paymentLinkId": "link_id", "orderId": "order_id", "refundOfTransactionId": "original_txn_id",
     "paidTo": "refund_to", "destHolder": "refund_to_holder", "beneficiaryAccount": "beneficiary_account"
   },

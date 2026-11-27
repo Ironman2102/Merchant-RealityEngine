@@ -144,8 +144,11 @@ export default function (): number {
     }
 
     // ==================== CROSS-PORTFOLIO COVERAGE & FDR QUEUE CHECKS ====================
-    const missingDetectors = DETECTORS.map(d => d.id).filter(id => id !== 'C6' && !detectorsFiredEver.has(id));
-    check('all core detectors (A1..K1 excl. standalone C6) fired across the 100-dataset test pack',
+    // D11 (chargebacks) and K2 (undeclared rails) postdate this pack, which has no chargeback rows or multi-rail sales;
+    // their firing is asserted in payment-rails-and-fallacies.test.ts.
+    const elsewhere = new Set(['C6', 'D11', 'K2']);
+    const missingDetectors = DETECTORS.map(d => d.id).filter(id => !elsewhere.has(id) && !detectorsFiredEver.has(id));
+    check('all core detectors (excl. C6, D11, K2, tested separately) fired across the 100-dataset test pack',
       missingDetectors.length === 0,
       `never fired: [${missingDetectors.join(', ')}]`);
 

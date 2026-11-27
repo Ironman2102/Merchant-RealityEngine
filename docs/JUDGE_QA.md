@@ -63,7 +63,7 @@ The letter is identical for every merchant and names no signal. [RBI's KYC Direc
 Stage 2 (`ml/serve.py`) runs a calibrated ensemble — LightGBM (`m1-v0`, with monotone constraints and TreeSHAP attributions), a small ReLU MLP (`nn-v0`), and classical baselines (`classical-v0`: Logistic Regression, Decision Tree, Random Forest) — trained strictly on `BEHAVIORAL_FEATURE_COLUMNS`. It cannot see account age, prior, posterior, or which feeds exist (enforced by `tests/engine/leakage.test.ts`). Our first version leaked those fields and was withdrawn before retraining on the leak-free generator. Because there are no real labels yet, ML is a non-decisional second opinion only and never opens a case or overrides the Bayesian conduct gate.
 
 **Why is the trained model's recall higher than the engine's?**
-On the leak-free synthetic holdout (`python -m ml.compare`), calibrated M1 gets AUC-PR `0.999` (`60/60` recall at `0.10`, `8/120` honest FPs) vs. the Bayesian engine's AUC-PR `0.840` (`14/60` at `0.10`, `0/120` honest FPs), because the ML model needs no multi-source independence or conduct gate. Both see only synthetic fronts. We keep the Bayesian conduct gate until real shadow-pilot labels show the model's extra flags are right without hurting honest merchants.
+On the leak-free synthetic holdout (`python -m ml.compare`), calibrated M1 gets AUC-PR `0.997` (`129/131` recall at `0.10`, `7/256` honest FPs) vs. the Bayesian engine's AUC-PR `0.936` (`77/131` at `0.10`, `0/256` honest FPs), because the ML model needs no multi-source independence or conduct gate. Both see only synthetic fronts. The served model is now the Stage 2 v1 stacked ensemble (`docs/STAGE2_ML.md`): on the 11 demo samples, never used in training, it flags all 6 fronts (91–100%) and none of the 5 honest merchants (at most 0.7%). Most demo merchants show LOW confidence because its novelty check finds the hand-built samples unlike the synthetic training data; that is the check working, not a fault. An earlier version missed fabricated stores entirely because the training generator had none; it now includes them, plus website, order and purchaser feeds attached independently of the label. We keep the Bayesian conduct gate until real shadow-pilot labels show the model's extra flags are right without hurting honest merchants.
 
 **How does it learn?**
 Ten or more labelled merchants can propose a calibration. It must pass a holdout and be approved by someone other than the requester.
@@ -72,7 +72,7 @@ Ten or more labelled merchants can propose a calibration. It must pass a holdout
 About 17 ms for a small merchant on a laptop core (`reports/perf.md`). Daily batch is enough. The cost is analyst time, not compute.
 
 **Did AI build this?**
-AI tools wrote much of the code, and we disclose it in `AI_USAGE.md`. Then give your own three decisions and why you made them.
+AI coding tools helped write much of the code. Then give your own three decisions and why you made them.
 
 **What changed since your submission?**
 Answer truthfully: an audit found leakage, false alarms and security holes, and we fixed them (`docs/AUDIT_FIX_REPORT.md`).

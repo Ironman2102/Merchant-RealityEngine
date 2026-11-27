@@ -22,6 +22,12 @@ export function FlowchartExperience({ mode }: { mode: Mode }) {
       .case-card{cursor:default}
       .case-card:hover{transform:none;box-shadow:none}
       @media(max-width:820px){.case-studies{padding-top:8px}}
+      .flowchart-app{--bg:#0d0b09;--fg:#f6efe4;--mut:#b7aa98;--line:#3e352c;--green:#ffb07a;--green2:#ffd3b0;font-family:'Inter Tight',Inter,system-ui,sans-serif;color:#f6efe4}
+      .flowchart-app *{font-family:'Inter Tight',Inter,system-ui,sans-serif}
+      .flowchart-app h1,.flowchart-app h2,.flowchart-app h3{font-family:'Bricolage Grotesque','Inter Tight',sans-serif!important;letter-spacing:-.02em}
+      .flowchart-app text{font-family:'Inter Tight',Inter,system-ui,sans-serif!important}
+      .flowchart-app .stage{border-color:#2a241e;border-radius:18px;background:linear-gradient(180deg,#17130f,#110e0b)}
+      .flowchart-app .bx{fill:#15110e;stroke:color-mix(in srgb,var(--c) 30%,#3e352c)}
     `;
     const fonts = document.createElement('link');
     fonts.rel = 'stylesheet';

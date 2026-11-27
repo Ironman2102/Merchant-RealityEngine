@@ -64,7 +64,12 @@ export function fuse(
   const posFamOrder = rawFamRows.filter(f => f.llr > 0).sort((a, b) => b.llr - a.llr);
   const dampedSet = new Set(posFamOrder.slice(3).map(f => f.family));
   const famRows = rawFamRows.map(f => (dampedSet.has(f.family) ? { ...f, llr: f.llr * 0.85 } : f));
-  const overrides = RULES.overrides.rules.filter(r => evidence.some(e => e.id === r.detector && e.status === 'ILLICIT' && (r.id !== 'R-01' || (e.effect ?? 0) >= 1.25)))
+  const overrides = RULES.overrides.rules.filter(r => evidence.some(e => {
+    if (e.id !== r.detector || e.status !== 'ILLICIT') return false;
+    if (r.id === 'R-01') return (e.effect ?? 0) >= 1.25;
+    if (r.id === 'R-02') return e.metrics?.sharedWithPeer === 'yes';
+    return true;
+  }))
     .map(r => ({ id: r.id, llr: r.llr, when: r.when }));
   const overrideSum = overrides.reduce((s, o) => s + o.llr, 0);
   const total = priorLogOdds + famRows.reduce((s, f) => s + f.llr, 0) + overrideSum;
@@ -172,14 +177,14 @@ export function fuse(
   const illicitMass = famRows.reduce((s, f) => s + Math.max(0, f.llr), 0), benignMass = famRows.reduce((s, f) => s + Math.max(0, -f.llr), 0);
   const decisionAnalysis = decide(posterior, posteriorCi, gatePassed, followUp);
   const tau = E.gate.openPosterior;
-  const conformalSet: ('GENUINE' | 'FRONT')[] =
+  const uncertaintySet: ('GENUINE' | 'FRONT')[] =
     posteriorCi[1] < tau ? ['GENUINE'] : posteriorCi[0] >= tau ? ['FRONT'] : ['GENUINE', 'FRONT'];
-  const abstainRecommended = conformalSet.length > 1 || (!gatePassed && posterior >= tau);
+  const abstainRecommended = uncertaintySet.length > 1 || (!gatePassed && posterior >= tau);
   const priority = !gatePassed ? 'NONE' : posterior >= E.priority.high ? 'HIGH' : posterior >= E.priority.medium ? 'MEDIUM' : 'LOW';
   return {
     items, families, independentFamilies: strongFam.map(f => f.family), systems: strongProv.map(p => p.provenance), gatePassed, gateReason, illicitMass, benignMass, mechanisms,
     decision: gatePassed ? 'OPEN_CASE' : 'NO_CASE', priority, priorityScore: posterior, unknownIds: evidence.filter(e => e.status === 'UNKNOWN').map(e => e.id),
-    rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi, conformalSet, abstainRecommended,
+    rulesVersion: RULES.version, prior: sigmoid(priorLogOdds), posterior, posteriorCi, uncertaintySet, abstainRecommended,
     followUp, conductSignals: conduct.map(e => e.id), priorShift: shift,
     logOdds: { prior: priorLogOdds, families: famRows, overrides, total }, provenances, mechanismPosterior, decisionAnalysis,
   };

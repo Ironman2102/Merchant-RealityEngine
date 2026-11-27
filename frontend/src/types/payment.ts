@@ -1,5 +1,16 @@
 export type EventType = 'SALE' | 'REFUND' | 'TRANSFER' | 'SETTLEMENT' | 'CHARGEBACK';
-export type Channel = 'POS' | 'UPI_LINK' | 'UPI_COLLECT' | 'ONLINE' | 'PAYOUT' | 'BANK';
+export type Channel =
+  | 'POS'
+  | 'UPI_QR'
+  | 'UPI_LINK'
+  | 'UPI_COLLECT'
+  | 'CARD'
+  | 'NETBANKING'
+  | 'WALLET'
+  | 'BNPL'
+  | 'ONLINE'
+  | 'PAYOUT'
+  | 'BANK';
 
 /** Normalised payment event (L1 output). All timestamps are epoch ms. */
 export interface PaymentEvent {

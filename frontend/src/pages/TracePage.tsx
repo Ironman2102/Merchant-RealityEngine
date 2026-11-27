@@ -14,7 +14,7 @@ const nats = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
 
 /** The reasoning trace: every number on this page comes from the engine's result, a rules file or a formula shown here. */
 export function TracePage() {
-  const { result, caseId } = useInvestigation();
+  const { result, caseId, scenarioId } = useInvestigation();
   const t = useMemo(() => buildTrace(result), [result]);
   const [filter, setFilter] = useState<Filter>('fired');
   const [packError, setPackError] = useState('');
@@ -44,7 +44,7 @@ export function TracePage() {
 
       <Panel title="Verdict" subtitle="Probability that this merchant is not the business it declares, with a 90% interval from detector uncertainty.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div><div className="text-xs text-mute">Decision</div><div className="mt-1 flex flex-wrap items-center gap-1.5"><Badge tone={t.caseSummary.decision === 'OPEN_CASE' ? 'bad' : result.fusion.followUp === 'ASK' ? 'warn' : 'ok'}>{t.caseSummary.decision === 'OPEN_CASE' ? 'Case opened' : result.fusion.followUp === 'ASK' ? 'Ask merchant' : 'No case'}</Badge>{t.caseSummary.abstainRecommended && <Badge tone="warn">Review: [{t.caseSummary.conformalSet.join(' / ')}]</Badge>}</div></div>
+          <div><div className="text-xs text-mute">Decision</div><div className="mt-1 flex flex-wrap items-center gap-1.5"><Badge tone={t.caseSummary.decision === 'OPEN_CASE' ? 'bad' : result.fusion.followUp === 'ASK' ? 'warn' : 'ok'}>{t.caseSummary.decision === 'OPEN_CASE' ? 'Case opened' : result.fusion.followUp === 'ASK' ? 'Ask merchant' : 'No case'}</Badge>{t.caseSummary.abstainRecommended && <Badge tone="warn">Review: [{t.caseSummary.uncertaintySet.join(' / ')}]</Badge>}</div></div>
           <div><div className="text-xs text-mute">P(front)</div><div className="mt-1 font-mono text-xl">{fmtProb(t.caseSummary.posterior)}</div><div className="text-[11px] text-dim">{fmtInterval(t.caseSummary.ci)}</div></div>
           <div><div className="text-xs text-mute">Base rate</div><div className="mt-1 font-mono text-xl">{fmtProb(t.caseSummary.prior)}</div><div className="text-[11px] text-dim">before any evidence (rules/priors.json)</div></div>
           <div><div className="text-xs text-mute">Recommended</div><div className="mt-1 text-xl font-semibold">{t.caseSummary.action}</div><div className="text-[11px] text-dim">{RESPONSE_LEVELS.find(l => l.id === t.caseSummary.action)?.name}</div></div>
@@ -52,7 +52,7 @@ export function TracePage() {
         </div>
       </Panel>
 
-      <MlPanel caseId={caseId} posterior={t.caseSummary.posterior} />
+      <MlPanel caseId={caseId} scenarioId={scenarioId} posterior={t.caseSummary.posterior} />
 
       <Panel title="How the probability was reached" subtitle="Bayes' rule in log-odds: start from the base rate, add each evidence family's weight (nats). Positive moves towards 'front', negative towards 'genuine'." bodyClass="p-0 overflow-x-auto">
         <table className={tableCls}><thead><tr><Th>Step</Th><Th>Weight</Th><Th>Running P(front)</Th></tr></thead><tbody>

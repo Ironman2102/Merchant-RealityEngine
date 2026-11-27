@@ -2,8 +2,8 @@ import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseCanonicalDataset } from '../backend/src/adapters/canonicalDataset';
 import { runInvestigation } from '../frontend/src/engines/investigationEngine';
-import { analyze, behavioralFeatures, features } from '../engine/index';
-import { makePortfolio, makeSuite } from '../engine/synthetic';
+import { analyze, behavioralFeatures, modelFeatures } from '../engine/index';
+import { makeContextPortfolio, makeContextSuite, makePortfolio, makeSuite } from '../engine/synthetic';
 
 // 1. Curated synthetic sample fixtures (uses behavioralFeatures — no age/prior/feed shortcuts).
 const root = join(import.meta.dirname, '..');
@@ -50,18 +50,20 @@ writeFileSync(
 );
 
 // 2. Leak-free behavioral corpus from engine/synthetic.ts (no cloned samples, no feed/age leakage).
-const syntheticMerchants = [...makeSuite(12, 42), ...makePortfolio(240, 77, 0.25)];
-const portfolioRows: Array<{ merchant_id: string; label: number; features: Record<string, number> }> = [];
+// The context suite and portfolio add website, order, delivery and purchaser feeds (half of merchants, independent of
+// the label) and fabricated-store fronts, which the payment-only generator above cannot represent.
+const syntheticMerchants = [...makeSuite(12, 42), ...makePortfolio(240, 77, 0.25), ...makeContextSuite(8, 4242), ...makeContextPortfolio(400, 31337)];
+const portfolioRows: Array<{ merchant_id: string; label: number; kind: string; features: Record<string, number> }> = [];
 for (const m of syntheticMerchants) {
   const analyzed = analyze(m.dataset, { posteriorDraws: 0 });
   if (!analyzed.ok) continue;
-  const merged = { ...features(analyzed.result), ...behavioralFeatures(analyzed.result) };
-  portfolioRows.push({ merchant_id: m.dataset.merchant.id, label: m.label, features: merged });
+  const merged = modelFeatures(analyzed.result);
+  portfolioRows.push({ merchant_id: m.dataset.merchant.id, label: m.label, kind: m.kind, features: merged });
 }
 const portCols = Object.keys(portfolioRows[0].features);
 const portCsv = [
-  ['merchant_id', 'label', ...portCols].join(','),
-  ...portfolioRows.map(r => [r.merchant_id, r.label, ...portCols.map(c => r.features[c] ?? 0)].join(',')),
+  ['merchant_id', 'label', 'kind', ...portCols].join(','),
+  ...portfolioRows.map(r => [r.merchant_id, r.label, JSON.stringify(r.kind), ...portCols.map(c => r.features[c] ?? 0)].join(',')),
 ].join('\n') + '\n';
 writeFileSync(join(out, 'features.csv'), portCsv);
 

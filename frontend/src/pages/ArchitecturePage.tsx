@@ -7,7 +7,7 @@ import { LAYERS } from '../data/evidence';
 const IMPL: [string, string, string][] = [
   ['L1 Ingest & Lineage', 'Event normalisation, refund linkage, HMAC-SHA256 pseudonymisation, coverage map, PA CSV adapter', 'Kafka or streaming connectors, schema registry, HSM-managed keys'],
   ['L2 Merchant Profile', 'Log-normal weekly volume model with festival calendar offsets, ARL-calibrated CUSUM (h = 2.35), Bayesian online changepoint', 'Live portfolio peer cohort calibration across all active merchants'],
-  ['L3 Detection', '28 live detectors across 10 families, run on the account, each QR with 30+ sales (up to 50) and the repeat-payer group; 10 advisory patterns (S1–S7, N1–N3)', 'Portfolio-wide linking, cross-PA consortium signals'],
+  ['L3 Detection', '30 live detectors across 10 families, run on the account, each QR/link and payment rail (UPI, cards, netbanking, wallets, POS) with 30+ sales, plus the repeat-payer group; 10 advisory patterns (S1–S7, N1–N3)', 'Portfolio-wide linking, cross-PA consortium signals'],
   ['L4 Evidence Fusion', 'Bayesian log-odds fusion with within-family shrinkage (ρ = 0.3), Monte-Carlo 90% interval, conduct + independence gate, question-before-case, 4 mechanisms', 'Isotonic/conformal recalibration on 1,000+ real shadow-pilot labels'],
   ['L5 Analyst Review', 'Competing explanations, reasoning trace waterfall, single-signal and greedy flip-set counterfactuals, Value of Information (₹), constrained logistic second opinion', 'Enterprise case assignment, SLA queues, merchant document portal'],
   ['L6 Governed Response', 'Expected-loss decision theory (L0–L5), maker/checker role separation, link-scoped L3 restriction (recorded, not sent to a payment rail)', 'Direct payment-rail webhooks, escrow ledger integration'],
@@ -15,7 +15,7 @@ const IMPL: [string, string, string][] = [
 ];
 export function ArchitecturePage() {
   return (
-    <div className="min-h-screen bg-bg"><PublicNav />
+    <div className="mre-app min-h-screen bg-bg text-ink"><PublicNav />
       <div className="mx-auto max-w-7xl px-5 py-16">
         <h1 className="max-w-3xl text-4xl font-semibold tracking-tight">Architecture</h1>
         <p className="mt-3 max-w-2xl text-mute">Seven layers, each with a single job and an explicit handoff. Evidence moves forward; labels and outcomes move back.</p>

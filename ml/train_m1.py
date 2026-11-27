@@ -20,7 +20,7 @@ def main() -> None:
     y = df['label'].to_numpy()
     ids = df['merchant_id']
     # Drop Bayesian output leakage (posterior, prior, logodds_total), account age, and missingness shortcuts (cov_*, unk_*)
-    drop_cols = {'merchant_id', 'label', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
+    drop_cols = {'merchant_id', 'label', 'kind', 'posterior', 'prior', 'logodds_total', 'account_age_days'}
     cols = [c for c in df.columns if c not in drop_cols and not c.startswith('cov_') and not c.startswith('unk_')]
     X = df[cols].copy()
     mono = [1 if c.startswith('llr_') or c.startswith('fired_') else 0 for c in cols]
@@ -90,7 +90,7 @@ Features: {len(cols)} columns from the TypeScript engine. Monotone +1 on llr_* a
 
 Params: {json.dumps(best)}. Cross-validated average precision {best_score:.4f}.
 
-Limits: trained on synthetic data derived from nine hand-built samples. Not a measure of real-world accuracy. Second opinion only.
+Limits: trained on synthetic merchants from engine/synthetic.ts, never on the demo samples. Not a measure of real-world accuracy. Second opinion only.
 """
     (OUT / 'model_card.md').write_text(card)
     (ROOT / 'ml' / 'data' / 'test_ids.csv').write_text('merchant_id\n' + '\n'.join(ids.iloc[test_i].astype(str)) + '\n')

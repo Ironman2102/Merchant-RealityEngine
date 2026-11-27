@@ -15,8 +15,9 @@ try {
 const port = Number(process.env.PORT || 8787);
 // Loopback by default. A container must set HOST=0.0.0.0 or its published port answers nothing.
 const host = process.env.HOST || '127.0.0.1';
-const dist = join(process.cwd(), 'dist-console');
-const types: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json' };
+const dist = join(process.cwd(), process.env.MRE_STATIC_DIR || 'dist-console');
+const fallbackHtml = existsSync(join(dist, 'index.html')) ? 'index.html' : 'console.html';
+const types: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
 
 function staticFile(urlPath: string): string | null {
   if (!existsSync(dist)) return null;
@@ -24,7 +25,7 @@ function staticFile(urlPath: string): string | null {
   const candidate = join(dist, rel);
   if (!candidate.startsWith(dist)) return null;
   if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
-  const index = join(dist, 'console.html');
+  const index = join(dist, fallbackHtml);
   return existsSync(index) ? index : null;
 }
 
@@ -40,7 +41,7 @@ createServer((req, res) => {
     return;
   }
   if ((req.method === 'GET' || req.method === 'HEAD') && !path.startsWith('/api') && !path.startsWith('/v1')) {
-    const file = staticFile(path === '/' ? '/console.html' : path);
+    const file = staticFile(path === '/' ? `/${fallbackHtml}` : path);
     if (file) {
       const body = readFileSync(file);
       res.statusCode = 200;

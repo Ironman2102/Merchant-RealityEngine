@@ -21,7 +21,12 @@
     "dev:users": "tsx scripts/dev-users.ts",
     "mre": "tsx cli/mre.ts",
     "benchmark": "tsx scripts/benchmark.ts",
-    "redteam": "tsx scripts/redteam.ts"
+    "redteam": "tsx scripts/redteam.ts",
+    "ml:features": "tsx ml/generate_synthetic_features.ts",
+    "ml:labels": "tsx ml/export_labels.ts",
+    "ml:train": "python -m ml.train_stage2",
+    "ml:promote": "python -m ml.train_stage2 --promote",
+    "ml:baseline": "python -m ml.eval_v0"
   },
   "dependencies": {
     "@stdlib/math-base-special-betainc": "^0.2.3",
